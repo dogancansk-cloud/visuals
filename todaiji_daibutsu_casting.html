@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Tōdai-ji Büyük Buda nasıl döküldü? · 東大寺 盧舎那仏</title>
+<style>
+:root{--paper:#f5f0e5;--ink:#1d2a44;--shadow:#ddd4c3;--bronze:#a8743f;--bronzeD:#7d5329;--bronzeL:#c99a5e;--gold:#e2b23c;--goldD:#b98a1e;--goldL:#f4d77a;--clay:#c98f5b;--clayD:#a87347;--clayL:#e2b78d;--muted:#6b6257;
+--font:"Noto Sans","Noto Sans JP","Noto Sans CJK JP","Hiragino Sans","Yu Gothic","Segoe UI","DejaVu Sans",system-ui,-apple-system,Roboto,Arial,sans-serif;
+--hand:"Comic Relief","Comic Sans MS","Chalkboard SE","Marker Felt","Comic Neue","Noto Sans",cursive;}
+*{box-sizing:border-box}
+html,body{margin:0;overflow-x:hidden;background:var(--paper);color:var(--ink);font-family:var(--font);-webkit-text-size-adjust:100%}
+a{color:var(--ink)}
+.wrap{max-width:1500px;margin:0 auto;padding:14px 18px 30px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:8px}
+h1{font-size:clamp(19px,2.3vw,28px);margin:0;line-height:1.2}
+h1 .jp{font-weight:400;color:var(--muted);font-size:.75em;white-space:nowrap}
+.toolbar{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px}
+.seg{display:inline-flex;border:1.2px solid var(--ink);border-radius:999px;overflow:hidden;background:#fbf8f1}
+.seg button{font:inherit;border:0;background:transparent;color:var(--ink);padding:5px 11px;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+#restart{font-size:14px;cursor:pointer;text-decoration:underline;background:none;border:0;color:var(--ink);font-family:inherit;padding:4px}
+.hint{display:flex;gap:10px;align-items:flex-start;background:#fbf8f1;border:1.2px solid var(--ink);border-radius:12px;padding:9px 13px;box-shadow:3px 3px 0 var(--shadow);margin-bottom:10px;min-height:52px}
+.hint .num{flex:none;width:30px;height:30px;border-radius:50%;background:var(--gold);border:1.2px solid var(--ink);display:grid;place-items:center;font-weight:700}
+.hint p{margin:0;font-size:clamp(15px,1.5vw,18px);line-height:1.35}
+.fact{font-size:13.5px;color:#3d3a35;margin:3px 0 0}
+.main{display:grid;grid-template-columns:250px minmax(0,1fr) 300px;gap:16px;align-items:start}
+.steps{display:flex;flex-direction:column;gap:7px}
+.step{font:inherit;font-size:14.5px;text-align:left;display:flex;gap:9px;align-items:center;background:#fbf8f1;border:1.2px solid var(--ink);border-radius:10px;padding:7px 10px;color:var(--ink);cursor:pointer;box-shadow:2px 2px 0 var(--shadow)}
+.step .n{flex:none;width:24px;height:24px;border-radius:50%;border:1.2px solid var(--ink);display:grid;place-items:center;font-size:12.5px;font-weight:700;background:var(--paper)}
+.step:disabled{cursor:default;opacity:.55}
+.step.done{opacity:1;background:#efe5cf}
+.step.done .n{background:var(--bronze);color:#fff}
+.step.playing{background:var(--goldL);opacity:1}
+.step.next{opacity:1;background:#fff8e3}
+.step.next.pulse{animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:2px 2px 0 var(--shadow),0 0 0 0 rgba(226,178,60,.0)}50%{box-shadow:2px 2px 0 var(--shadow),0 0 0 6px rgba(226,178,60,.55)}}
+.figwrap{position:relative;background:var(--paper);border:1.2px solid var(--ink);border-radius:14px;overflow:hidden;box-shadow:4px 4px 0 var(--shadow)}
+#fig{display:block;width:100%;height:auto}
+.speed{position:absolute;right:10px;top:10px;background:var(--ink);color:var(--paper);border-radius:999px;padding:4px 11px;font-size:13px;line-height:1.25;text-align:right}
+.speed small{display:block;opacity:.8;font-size:11px}
+.bigidea{font-size:clamp(15px,1.5vw,19px);font-weight:700;text-align:center;margin:10px 4px 2px;line-height:1.35}
+.side{display:flex;flex-direction:column;gap:12px}
+.card{background:#fbf8f1;border:1.2px solid var(--ink);border-radius:12px;padding:9px 11px;box-shadow:3px 3px 0 var(--shadow)}
+.card h3{margin:0 0 4px;font-size:14px}
+#lens{display:block;width:100%;height:auto}
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{background:#fbf8f1;border:1.2px solid var(--ink);border-radius:10px;padding:6px 9px;box-shadow:2px 2px 0 var(--shadow);min-width:0}
+.chip .k{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.chip .v{font-size:19px;font-weight:700;white-space:nowrap}
+.chip.wide{grid-column:1/-1}
+.bar{height:10px;border:1.2px solid var(--ink);border-radius:6px;background:var(--paper);overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%;width:0;background:var(--bronze)}
+.sub{font-size:11.5px;color:#4a453e;line-height:1.3}
+.tag{display:inline-block;font-size:10px;font-weight:700;line-height:1;padding:2px 4px;border-radius:4px;border:1px solid currentColor;vertical-align:2px;margin-left:3px;font-style:normal;letter-spacing:.02em}
+.tag.est{color:#9a4b12}.tag.trad{color:#6b4f1d}.tag.calc{color:#4b5d33}
+.sources{margin-top:22px}
+.sources h2{font-size:17px;margin:0 0 6px}
+.sources table{width:100%;border-collapse:collapse;font-size:13px;background:#fbf8f1}
+.sources th,.sources td{border-top:1px solid #d8cfbd;padding:5px 6px;text-align:left;vertical-align:top}
+.sources td.v{white-space:nowrap;font-weight:700}
+.sources td a{word-break:break-word;overflow-wrap:anywhere}
+.legend{font-size:12.5px;color:#4a453e;margin:4px 0 8px}
+.foot{font-size:12px;color:var(--muted);margin-top:10px}
+svg text{font-family:var(--font)}
+svg .snd{font-family:var(--hand);font-weight:700;fill:#8a3b12;font-size:30px}
+svg .lbl{font-size:19px;fill:var(--ink)}
+@media (max-width:1180px){.main{grid-template-columns:220px minmax(0,1fr)}.side{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}}
+@media (max-width:760px){
+ .wrap{padding:10px 10px 24px}
+ .main{grid-template-columns:1fr;gap:10px}
+ .steps{flex-direction:row;overflow-x:auto;gap:6px;padding:2px 2px 8px;scroll-snap-type:x mandatory}
+ .step{flex:none;scroll-snap-align:start;font-size:13px;padding:6px 9px}
+ .side{display:flex}
+ .toolbar{margin-left:0}
+ svg .lbl{font-size:27px}
+ svg .snd{font-size:38px}
+ .sources table,.sources tbody,.sources tr,.sources td{display:block;width:100%}
+ .sources thead{display:none}
+ .sources tr{border-top:1px solid #cbbfa8;padding:6px 0}
+ .sources td{border:0;padding:1px 4px}
+ .sources td.v{white-space:normal}
+ .sources td a{word-break:break-word}
+ .speed{position:static;display:block;border-radius:0;text-align:left;font-size:12.5px;padding:5px 10px}
+ .speed small{display:inline;margin-left:6px}
+}
+body.render .toolbar,body.render .sources,body.render .foot{display:none}
+body.render .wrap{max-width:none;padding-top:8px;padding-bottom:0}
+body.render #bigidea{margin-top:4px;margin-bottom:0}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+ <h1 id="title"></h1>
+ <div class="toolbar">
+  <div class="seg" role="group" aria-label="mode"><button id="mManual"></button><button id="mAuto"></button></div>
+  <div class="seg" role="group" aria-label="language"><button id="lTR">TR</button><button id="lEN">EN</button></div>
+  <button id="restart"></button>
+ </div>
+</header>
+<div class="hint"><div class="num" id="hintNum">·</div><div><p id="hintText"></p><p class="fact" id="factText"></p></div></div>
+<div class="main">
+ <nav class="steps" id="steps" aria-label="steps"></nav>
+ <div>
+  <div class="figwrap"><svg id="fig" viewBox="0 0 1000 720" role="img"></svg><div class="speed" id="speed"></div></div>
+  <p class="bigidea" id="bigidea"></p>
+ </div>
+ <aside class="side">
+  <div class="card"><h3 id="lensTitle"></h3><svg id="lens" viewBox="0 0 340 236"></svg></div>
+  <div class="chips">
+   <div class="chip"><div class="k" id="kYear"></div><div class="v" id="vYear"></div><div class="sub" id="sYear"></div></div>
+   <div class="chip"><div class="k" id="kTier"></div><div class="v" id="vTier"></div><div class="sub" id="sTier"></div></div>
+   <div class="chip wide"><div class="k" id="kBronze"></div><div class="bar"><i id="barBronze"></i></div><div class="sub" id="sBronze"></div></div>
+   <div class="chip wide"><div class="k" id="kMound"></div><div class="v" id="vMound"></div><div class="sub" id="sMound"></div></div>
+  </div>
+ </aside>
+</div>
+<section class="sources"><h2 id="srcTitle"></h2><p class="legend" id="srcLegend"></p><table><thead><tr id="srcHead"></tr></thead><tbody id="srcBody"></tbody></table>
+<p class="foot" id="foot"></p></section>
+</div>
+<script>
+/* ===== DATA MODEL (pure; every on-screen number comes from here) ===== */
+function buildModel(){
+  const S = {
+    tdj_hist:{name:"Tōdai-ji (official): History", url:"https://www.todaiji.or.jp/en/about/history/"},
+    tdj_hall:{name:"Tōdai-ji (official): Daibutsuden / Great Buddha", url:"https://www.todaiji.or.jp/information/daibutsuden/"},
+    tdj_edo:{name:"Tōdai-ji (official): Edo-period rebuild", url:"https://www.todaiji.or.jp/history/edoki/"},
+    tdj_kids:{name:"Tōdai-ji KIDS (official): How the Great Buddha was made", url:"https://www.todaiji.or.jp/kids/kids2-2.html"},
+    tdj_pam:{name:"Tōdai-ji (official) pamphlet PDF", url:"https://www.todaiji.or.jp/pdf/panflet.pdf"},
+    ndl:{name:"National Diet Library reference entry (quotes Tōdaiji Yōroku; Katori 1981; Kamitsukasa 1974)", url:"https://crd.ndl.go.jp/reference/entry/index.php?id=1000159706&page=ref_view"},
+    ishino:{name:"Ishino Tōru (2000), 'Casting technique of the Great Buddha at Nara', Imono / J. JFS 72(3)", url:"https://www.jstage.jst.go.jp/article/jfes/72/3/72_197/_pdf"},
+    kawahata:{name:"Kawahata et al. (2014), Progress in Earth and Planetary Science 1:15 (citing Konishi 2002)", url:"https://link.springer.com/article/10.1186/2197-4284-1-15"},
+    jjrs:{name:"Japanese Journal of Religious Studies 19/2-3 (1992): excavations at Tōdai-ji (Katori's theory via Piggott)", url:"https://doi.org/10.18874/jjrs.19.2-3.1992.245-254"},
+    jawiki:{name:"Japanese Wikipedia: 東大寺盧舎那仏像 (citing Daibutsuden-hibun, Shoku Nihongi, Shōsōin documents)", url:"https://ja.wikipedia.org/wiki/%E5%A5%88%E8%89%AF%E5%A4%A7%E4%BB%8F"},
+    heritage:{name:"Agency for Cultural Affairs, Japan Heritage: Koganeyama gold site", url:"https://japan-heritage.bunka.go.jp/ja/culturalproperties/result/4126/"},
+    grokian:{name:"Grokian's Tōdai-ji briefing (/workspace/briefings/todaiji.md; Nara Women's Univ.)", url:"https://www.nara-wu.ac.jp/grad-GP-life/bunkashi_hp/hist_todaiji/hist_todaiji.html"}
+  };
+  // tag: off = official/primary statement, trad = traditional record (old units/lunar), est = scholarly estimate, calc = computed here from listed numbers
+  const N = {
+    edict:{v:743, tag:"off", src:["tdj_hist","tdj_hall"], label:{tr:"Büyük Buda fermanı (Shigaraki)",en:"Great Buddha edict (Shigaraki)"}},
+    restart:{v:745, tag:"off", src:["tdj_hist"], label:{tr:"Nara'da işe yeniden başlama",en:"Work restarts at Nara"}},
+    restartDate:{v:"745-09-23", tag:"trad", src:["jawiki"], label:{tr:"Başlangıç (745/8/23 ay takvimi)",en:"Start (lunar 745/8/23)"}},
+    coreDone:{v:"746-11-23", tag:"est", src:["jawiki"], label:{tr:"Kil model bitti (746 kandil töreni; yorum)",en:"Clay model done (746 lamp rite; interpretation)"}},
+    castStart:{v:747, tag:"trad", src:["jawiki"], label:{tr:"Döküm başlar (747/9/29)",en:"Casting begins (747/9/29)"}},
+    castStartDate:{v:"747-11-06", tag:"trad", src:["jawiki"]},
+    castEnd:{v:749, tag:"off", src:["tdj_hall","tdj_hist"], label:{tr:"Gövde dökümü biter (749, 10. ay)",en:"Body casting ends (749, 10th month)"}},
+    castEndDate:{v:"749-12-08", tag:"trad", src:["jawiki"]},
+    pours:{v:8, tag:"off", src:["tdj_hall","tdj_kids","tdj_pam"], label:{tr:"Döküm sayısı (aşağıdan yukarı)",en:"Number of pours (bottom to top)"}},
+    castYearsTrad:{v:3, tag:"trad", src:["tdj_hall"], label:{tr:"Kayıtta döküm süresi ('3 yıl, 8 kez')",en:"Recorded casting span ('3 years, 8 times')"}},
+    castMonths:{v:25, tag:"est", src:["ishino","jawiki"], label:{tr:"Gerçek döküm süresi (ay)",en:"Actual casting span (months)"}},
+    tierH:{v:2, tag:"est", src:["ishino"], label:{tr:"Dış kalıp parçası yüksekliği (≈ halka yüksekliği)",en:"Outer-mould piece height (≈ ring height)"}},
+    moldPiece:{v:[2,1,0.6], tag:"est", src:["ishino"], label:{tr:"Dış kalıp parçası (m)",en:"Outer-mould piece (m)"}},
+    wall:{v:5.5, tag:"est", src:["ishino"], label:{tr:"Bronz duvar kalınlığı (cm)",en:"Bronze wall thickness (cm)"}},
+    chaplets:{v:3350, tag:"trad", src:["jawiki"], label:{tr:"Metal kalıp tutucu (Shōsōin belgeleri)",en:"Metal chaplets (Shōsōin documents)"}},
+    tier1t:{v:100, tag:"est", src:["ishino"], label:{tr:"En alt dökümde aynı anda dökülen bronz (t)",en:"Bronze poured at once in lowest ring (t)"}},
+    furnaceT:{v:1, tag:"est", src:["ishino"], label:{tr:"Bir fırının kapasitesi (t)",en:"Capacity of one furnace (t)"}},
+    furnacesIshino:{v:100, tag:"est", src:["ishino"], label:{tr:"Tepedeki fırın sayısı (Ishino: 100'den fazla)",en:"Furnaces on the mound (Ishino: 100+)"}},
+    furnacesKatori:{v:[20,30], tag:"est", src:["jjrs"], label:{tr:"Tepedeki fırın sayısı (Katori/Piggott)",en:"Furnaces on the mound (Katori/Piggott)"}},
+    copperKin:{v:739560, tag:"trad", src:["jawiki","ndl"], note:{tr:"bazı baskılarda 739.561",en:"some editions: 739,561"}, label:{tr:"Arıtılmış bakır (kin)",en:"Refined copper (kin)"}},
+    tinKin:{v:12618, tag:"trad", src:["ndl","jawiki"], label:{tr:"Kalay (kin)",en:"Tin (kin)"}},
+    goldRyo:{v:10436, tag:"trad", src:["ndl"], note:{tr:"bir başka okuma 10.446",en:"another reading: 10,446"}, label:{tr:"Altın (ryō)",en:"Gold (ryō)"}},
+    mercRyo:{v:58620, tag:"trad", src:["ndl","jawiki"], label:{tr:"Cıva (ryō)",en:"Mercury (ryō)"}},
+    charcoal:{v:16656, tag:"trad", src:["ndl"], note:{tr:"bir başka okuma 18.656",en:"another reading: 18,656"}, label:{tr:"Odun kömürü (koku)",en:"Charcoal (koku)"}},
+    copperT:{v:499, tag:"est", src:["kawahata"], label:{tr:"Bakır, bugünkü birimle (t)",en:"Copper in modern units (t)"}},
+    tinT:{v:8.5, tag:"est", src:["kawahata"], label:{tr:"Kalay, bugünkü birimle (t)",en:"Tin in modern units (t)"}},
+    goldKg:{v:146, tag:"est", src:["kawahata"], note:{tr:"başka tahminler daha yüksek",en:"other estimates are higher"}, label:{tr:"Altın, bugünkü birimle (kg)",en:"Gold in modern units (kg)"}},
+    mercKg:{v:820, tag:"est", src:["kawahata"], label:{tr:"Cıva, bugünkü birimle (kg)",en:"Mercury in modern units (kg)"}},
+    amalgam:{v:5, tag:"est", src:["kawahata"], label:{tr:"Amalgam oranı altın:cıva = 1:5",en:"Amalgam ratio gold:mercury = 1:5"}},
+    personDays:{v:2603638, tag:"trad", src:["ndl"], label:{tr:"Kayıtlı toplam emek (kişi-gün, heykel + salon)",en:"Recorded labour (person-days, statue + hall)"}},
+    metalDonors:{v:372075, tag:"trad", src:["ndl"], label:{tr:"Metal bağışçısı (kişi-gün)",en:"Metal donors (person-days)"}},
+    metalWorkers:{v:514902, tag:"trad", src:["ndl"], label:{tr:"Metal işçisi (kişi-gün)",en:"Metal labourers (person-days)"}},
+    mutsuGold:{v:900, tag:"off", src:["heritage"], label:{tr:"749'da Mutsu'dan gelen ilk Japon altını (ryō)",en:"Japan's first gold from Mutsu, 749 (ryō)"}},
+    mutsuKg:{v:13.5, tag:"est", src:["heritage"], label:{tr:"…bugünkü birimle (kg)",en:"…in modern units (kg)"}},
+    finishYears:{v:5, tag:"est", src:["ishino"], label:{tr:"Onarım döküm ve rötuş süresi (yıl)",en:"Repair-casting & finishing (years)"}},
+    finishStart:{v:750, tag:"trad", src:["jawiki"], label:{tr:"Rötuş başlar",en:"Finishing begins"}},
+    gildYears:{v:5, tag:"est", src:["ishino"], label:{tr:"Yaldızlama süresi (yıl)",en:"Gilding (years)"}},
+    gildStart:{v:752, tag:"trad", src:["jawiki"], label:{tr:"Yaldızlama başlar (752/3/14)",en:"Gilding begins (752/3/14)"}},
+    hallStart:{v:747, tag:"trad", src:["jawiki"], label:{tr:"Salon inşaatı başlar",en:"Hall construction begins"}},
+    hallDone:{v:751, tag:"off", src:["tdj_hall"], label:{tr:"İlk Daibutsuden tamam",en:"First Daibutsuden completed"}},
+    hallBays:{v:11, tag:"off", src:["tdj_hall"], label:{tr:"İlk salonun genişliği (açıklık)",en:"Original hall width (bays)"}},
+    hallW0:{v:88, tag:"off", src:["tdj_hall"], label:{tr:"İlk salonun genişliği ≈ (m)",en:"Original hall width ≈ (m)"}},
+    hallBaysEdo:{v:7, tag:"off", src:["tdj_hall"], label:{tr:"Edo salonu (açıklık)",en:"Edo hall (bays)"}},
+    hallW:{v:57.012, tag:"off", src:["tdj_hall"], label:{tr:"Bugünkü salon genişliği, doğu–batı (m)",en:"Today's hall width, east–west (m)"}},
+    eyeDate:{v:"752-05-26", tag:"trad", src:["jawiki"]},
+    eyeOpening:{v:752, tag:"off", src:["tdj_hist","tdj_hall"], label:{tr:"Göz açma töreni (752/4/9)",en:"Eye-opening ceremony (752/4/9)"}},
+    hOrig:{v:16, tag:"est", src:["ishino","jjrs"], label:{tr:"İlk heykelin yüksekliği ≈ (m, '16 m'den fazla')",en:"Original statue height ≈ (m, '16 m+')"}},
+    hToday:{v:14.98, tag:"off", src:["tdj_hall"], label:{tr:"Bugünkü heykel yüksekliği (m)",en:"Statue height today (m)"}},
+    pedestal:{v:3.05, tag:"off", src:["tdj_hall"], label:{tr:"Kaide yüksekliği (m)",en:"Pedestal height (m)"}},
+    face:{v:5.33, tag:"off", src:["tdj_hall"], label:{tr:"Yüz uzunluğu (m)",en:"Face length (m)"}},
+    quake:{v:855, tag:"off", src:["tdj_hist"], label:{tr:"Deprem: baş düştü, onarıldı",en:"Earthquake: head fell, repaired"}},
+    fire1:{v:1180, tag:"off", src:["tdj_hist"], label:{tr:"Taira yangını",en:"Taira fire"}},
+    recast1:{v:1185, tag:"off", src:["tdj_hist","grokian"], label:{tr:"Yeni baş (Chōgen; dökümcü Chen Heqing), göz açma",en:"New head (Chōgen; caster Chen Heqing), eye-opening"}},
+    hall2:{v:1195, tag:"off", src:["tdj_hist"], label:{tr:"Kamakura salonu tamam",en:"Kamakura hall completed"}},
+    fire2:{v:1567, tag:"off", src:["tdj_hist"], label:{tr:"İkinci yangın; geçici bakır kaplı baş",en:"Second fire; temporary copper-clad head"}},
+    recast2:{v:1692, tag:"off", src:["tdj_edo"], label:{tr:"Yeni baş + 18 lotus yaprağı (Kōkei), göz açma",en:"New head + 18 lotus petals (Kōkei), eye-opening"}},
+    petals:{v:18, tag:"off", src:["tdj_edo"], label:{tr:"1692'de yeniden dökülen lotus yaprağı",en:"Lotus petals recast in 1692"}},
+    hall3:{v:1709, tag:"off", src:["tdj_edo"], label:{tr:"Bugünkü salon (≈%60 genişlik)",en:"Today's hall (≈60% width)"}},
+    hallShare:{v:60, tag:"off", src:["tdj_edo"], label:{tr:"Edo salonu eskisinin yüzde kaçı",en:"Edo hall as % of old width"}}
+  };
+  const days = (a,b)=> (Date.UTC(...b.split('-').map((x,i)=>i==1?x-1:+x)) - Date.UTC(...a.split('-').map((x,i)=>i==1?x-1:+x)))/864e5;
+  const castDays = days(N.castStartDate.v, N.castEndDate.v);           // calc
+  const coreDays = days(N.restartDate.v, N.coreDone.v);                 // calc
+  const yr = d => { const [y,m,dd]=d.split('-').map(Number); return y + ((m-1)*30.4+dd)/365.25; };
+  const cs = yr(N.castStartDate.v), ce = yr(N.castEndDate.v);
+  const tierYear = k => cs + (ce-cs)*k/N.pours.v;  // even split = assumption (est.)
+  const DAY = 86400;
+  const steps = [
+    {id:1, dur:7,  name:{tr:"Kil çekirdek",en:"Clay core"}, y0:yr(N.restartDate.v), y1:yr(N.coreDone.v), yTag:"trad", real:coreDays*DAY, realTag:"est",
+     hint:{tr:"Önce tahtadan bir iskelet yapılır, üstü kil ile sıvanır: kocaman bir çamur Buda!",en:"First a wooden skeleton, then lots of clay on top: a giant mud Buddha!"}},
+    {id:2, dur:7,  name:{tr:"Dış kalıp ve boşluk",en:"Outer mould & gap"}, y0:cs, y1:cs, yTag:"trad", real:null,
+     hint:{tr:"Çamur Buda'nın üstünden bir kılıf alınır. Sonra Buda biraz kazınır, arada ince bir boşluk kalır.",en:"A clay shell is copied off the mud Buddha. Then the Buddha is scraped thinner, leaving a thin gap."}},
+    {id:3, dur:8,  name:{tr:"1. halka dökülür",en:"Ring 1 is poured"}, tiers:[1,1], y0:tierYear(0), y1:tierYear(1), yTag:"est", real:castDays/8*DAY, realTag:"est",
+     hint:{tr:"Kalıbın çevresine toprak yığılır. Fırınlar bakırı eritir ve boşluğa dökülür!",en:"Earth is piled around the mould. Furnaces melt the bronze and pour it into the gap!"}},
+    {id:4, dur:10.8, name:{tr:"2.–4. halkalar",en:"Rings 2–4"}, tiers:[2,4], y0:tierYear(1), y1:tierYear(4), yTag:"est", real:castDays*3/8*DAY, realTag:"est",
+     hint:{tr:"Her seferinde bir halka daha: kalıp, toprak, fırın, döküm. Toprak tepe de büyüyor.",en:"One more ring each time: mould, earth, furnace, pour. The earth hill grows too."}},
+    {id:5, dur:12.8, name:{tr:"5.–8. halkalar",en:"Rings 5–8"}, tiers:[5,8], y0:tierYear(4), y1:tierYear(8), yTag:"est", real:castDays*4/8*DAY, realTag:"est",
+     hint:{tr:"En son baş dökülür. Artık Buda bütünüyle toprağın içinde!",en:"Last comes the head. Now the whole Buddha is hidden inside a hill!"}},
+    {id:6, dur:6,  name:{tr:"Tepeyi kaldır",en:"Dig it out"}, y0:ce, y1:ce+0.1, yTag:"trad", real:null,
+     hint:{tr:"Toprak tepe ve kalıplar kaldırılır. Sürpriz: içinden bronz Buda çıkar!",en:"The hill and moulds are taken away. Surprise: a bronze Buddha comes out!"}},
+    {id:7, dur:7,  name:{tr:"Rötuş",en:"Finishing"}, y0:N.finishStart.v, y1:N.finishStart.v+N.finishYears.v, yTag:"est", real:N.finishYears.v*365.25*DAY, realTag:"est",
+     hint:{tr:"Delikler yamalanır, ekler düzeltilir, yüzey parlatılır, lotus yapraklarına resim kazınır.",en:"Holes are patched, joins smoothed, the surface polished, pictures carved on the lotus petals."}},
+    {id:8, dur:7,  name:{tr:"Daibutsuden",en:"Daibutsuden"}, y0:N.hallStart.v, y1:N.hallDone.v, yTag:"trad", real:(N.hallDone.v-N.hallStart.v)*365.25*DAY, realTag:"trad", parallel:true,
+     hint:{tr:"Buda'nın üstüne dev bir ahşap salon kurulur. (Bu iş dökümle aynı yıllarda yürüdü.)",en:"A giant wooden hall is built over the Buddha. (This ran in the same years as the casting.)"}},
+    {id:9, dur:7,  name:{tr:"Altın kaplama",en:"Gilding"}, y0:N.gildStart.v, y1:N.gildStart.v+N.gildYears.v, yTag:"est", real:N.gildYears.v*365.25*DAY, realTag:"est", parallel:true,
+     hint:{tr:"Altın cıvada eritilir, Buda'ya boyanır, ısıtılır. Cıva uçar, altın kalır!",en:"Gold is dissolved in mercury, painted on and heated. The mercury flies off, the gold stays!"}},
+    {id:10, dur:5, name:{tr:"Göz açma töreni",en:"Eye-opening"}, y0:yr(N.eyeDate.v), y1:yr(N.eyeDate.v), yTag:"off", real:DAY, realTag:"off",
+     hint:{tr:"Uzun bir ipe bağlı fırçayla gözler boyanır; kalabalık ipi tutar. Buda 'uyanır'!",en:"The eyes are painted with a brush on a long cord the crowd holds. The Buddha 'wakes up'!"}},
+    {id:11, dur:12, name:{tr:"Yangınlar ve yeni başlar",en:"Fires & new heads"}, y0:N.eyeOpening.v, y1:N.hall3.v, yTag:"off", real:(N.hall3.v-N.eyeOpening.v)*365.25*DAY, realTag:"off",
+     hint:{tr:"Deprem ve yangınlar başını yıktı; her seferinde yeniden yapıldı. Bugün gördüğün baş {recast2}'den!",en:"An earthquake and fires wrecked the head; each time it was remade. The head you see today is from {recast2}!"}}
+  ];
+  let t=0; steps.forEach(s=>{s.t0=t; t+=s.dur; s.t1=t;});
+  // later-history keyframes inside step 11 (phase -> year)
+  const later = [[0,N.eyeOpening.v],[0.10,N.quake.v],[0.22,N.quake.v],[0.30,N.fire1.v],[0.40,N.fire1.v],[0.48,N.recast1.v],[0.54,N.hall2.v],[0.58,N.fire2.v],[0.70,N.fire2.v],[0.80,N.recast2.v],[0.86,N.recast2.v],[1,N.hall3.v]];
+  return {S,N,steps,total:t,castDays,coreDays,tierYear,later,
+    bigIdea:{tr:"8 halka halinde aşağıdan yukarı döküldü; her halkada yanında bir toprak tepe de yükseldi.",
+             en:"It was cast in 8 rings from the bottom up, with a hill of earth climbing alongside it."}};
+}
+if (typeof module!=='undefined') module.exports={buildModel};
+
+/* ===== SCENE ===== */
+const M = buildModel();
+const NS = 'http://www.w3.org/2000/svg';
+const C = {ink:'#1d2a44', sh:'#ddd4c3', paper:'#f5f0e5',
+  clay:['#e2b78d','#c98f5b','#a87347'], mould:['#e6dfd0','#cdc3b0','#a59a86'], bronze:['#c99a5e','#a8743f','#7d5329'],
+  dark:['#8f6c48','#6d5235','#4f3a25'], gold:['#f4d77a','#e2b23c','#b98a1e'], silver:['#ece7dc','#d2cbbd','#aca393'],
+  soil:['#c9a67c','#a67d52','#80603e'], wood:['#dcb47c','#b88a55','#8a6234'], fire:['#ffd166','#f08a24','#c8501a'],
+  copper:['#dc9466','#b9693f','#8a4528'], roof:['#8d847a','#6f675e','#57504a'], cloth:['#d6c7a6','#9a7b58','#5f6b4a']};
+const cx = 500, y0 = 610, PX = 25;         // 25 px per metre (statue scale)
+const X = dx => cx + dx, Y = h => y0 - h;
+const clamp = (v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const remap = (v,a,b)=>clamp((v-a)/(b-a));
+const ease = v=>v*v*(3-2*v);
+const lerp = (a,b,u)=>a+(b-a)*u;
+function lerpCol(c1,c2,u){const p=c=>[1,3,5].map(i=>parseInt(c.slice(i,i+2),16));const a=p(c1),b=p(c2);return '#'+a.map((v,i)=>Math.round(lerp(v,b[i],u)).toString(16).padStart(2,'0')).join('');}
+function el(tag, attrs={}, parent){const e=document.createElementNS(NS,tag);for(const k in attrs){if(k==='text')e.textContent=attrs[k];else if(k==='href')e.setAttribute('href',attrs[k]);else e.setAttribute(k,attrs[k]);}if(parent)parent.appendChild(e);return e;}
+const set=(e,a)=>{for(const k in a)e.setAttribute(k,a[k]);};
+
+/* --- statue geometry (front view, h in px above ground) --- */
+const BODY=[[0,150],[10,160],[34,166],[54,170],[60,190],[68,204],[88,208],[106,204],[118,194],[124,178],[132,168],[170,166],[220,160],[256,152],[276,140],[290,118],[298,84],[303,50],[314,46]];
+const ENV=[[0,172],[54,208],[100,210],[113,184],[225,172],[250,168],[262,150],[270,70],[290,84],[370,84],[400,60],[416,30]];
+const HS=1.25, HB=294, HN=268; // head scale & placement (bigger head, as on the real statue)
+const HEAD_T=`translate(${cx},${y0-HN}) scale(${HS}) translate(${-cx},${-(y0-HB)})`;
+const headPt=(dx,h)=>[cx+dx*HS, y0-(HN+(h-HB)*HS)];
+const BS=0.9; BODY.forEach(p=>p[0]*=BS);
+function interp(tab,h){if(h<=tab[0][0])return tab[0][1];for(let i=1;i<tab.length;i++){if(h<=tab[i][0]){const[a,b]=[tab[i-1],tab[i]];return lerp(a[1],b[1],(h-a[0])/(b[0]-a[0]));}}return tab[tab.length-1][1];}
+const halfW = h=>interp(ENV,h);
+function crPath(pts,closed){let d=`M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;const n=pts.length;for(let i=0;i<n-1;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(n-1,i+2)];const c1=[p1[0]+(p2[0]-p0[0])/6,p1[1]+(p2[1]-p0[1])/6],c2=[p2[0]-(p3[0]-p1[0])/6,p2[1]-(p3[1]-p1[1])/6];d+=`C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;}return d+(closed?'Z':'');}
+function bodyPath(){const L=BODY.map(([h,w])=>[X(-w),Y(h)]);const R=BODY.slice().reverse().map(([h,w])=>[X(w),Y(h)]);return crPath(L)+' L'+crPath(R).slice(1)+'Z';}
+const poly = pts=>'M'+pts.map(([dx,h])=>`${X(dx).toFixed(1)},${Y(h).toFixed(1)}`).join('L')+'Z';
+const smooth = pts=>crPath(pts.map(([dx,h])=>[X(dx),Y(h*BS)]).concat([[X(pts[0][0]),Y(pts[0][1])]]),true);
+const ARMS = [
+  smooth([[-170,148],[-164,246],[-120,246],[-126,148]]),                                               // right forearm raised (viewer left)
+  smooth([[-172,238],[-178,300],[-166,312],[-146,315],[-128,309],[-116,298],[-116,238]]),              // palm facing out (abhaya)
+  smooth([[130,172],[168,172],[194,112],[160,100]]),                                                   // left forearm to knee
+  smooth([[156,112],[208,120],[218,100],[198,86],[160,92]])                                            // left hand, palm up
+];
+const HEAD = { neck: poly([[-40,294],[40,294],[40,318],[-40,318]]),
+  earL: smooth([[-50,370],[-64,360],[-66,330],[-58,312],[-48,318],[-50,350]]), earR: smooth([[50,370],[64,360],[66,330],[58,312],[48,318],[50,350]]),
+  head: `M${X(-52)},${Y(350)} a52,48 0 1,0 104,0 a52,48 0 1,0 -104,0Z`, ush: `M${X(-34)},${Y(392)} a34,20 0 1,0 68,0 a34,20 0 1,0 -68,0Z` };
+
+/* --- build SVG --- */
+const fig = document.getElementById('fig');
+const defs = el('defs',{},fig);
+const R = {}; // references
+function clipRect(id,x,y,w,h){const cp=el('clipPath',{id},defs);return el('rect',{x,y,width:w,height:h},cp);}
+el('path',{id:'sBody',d:bodyPath()},defs);
+const gArms=el('g',{id:'sArms'},defs); ARMS.forEach(d=>el('path',{d},gArms));
+const gHead=el('g',{id:'sHead',transform:HEAD_T},defs); ['earL','earR','head','ush'].forEach(k=>el('path',{d:HEAD[k]},gHead));
+el('g',{id:'sAll'},defs).append(el('use',{href:'#sBody'}),el('use',{href:'#sArms'}));
+for(let k=1;k<=8;k++){ R['tier'+k]=clipRect('tier'+k,0,Y(50*k),1000,50); if(k===8) set(R.tier8,{y:Y(440),height:90}); if(k===1) set(R.tier1,{height:80});
+  clipRect('tierL'+k,0,Y(50*k)-(k==8?40:0),cx,50+(k==8?40:0)+(k==1?30:0)); clipRect('tierR'+k,cx,Y(50*k)-(k==8?40:0),500,50+(k==8?40:0)+(k==1?30:0)); }
+R.coreClip=clipRect('coreClip',0,Y(0),1000,0);
+clipRect('shadeR',X(52),0,400,720); clipRect('lightL',0,0,X(-128),720);
+R.goldClip=clipRect('goldClip',0,Y(0),1000,0); R.silverClip=clipRect('silverClip',0,Y(0),1000,0);
+const bodyClip=el('clipPath',{id:'bodyClip'},defs); el('use',{href:'#sBody'},bodyClip);
+R.skelClip=clipRect('skelClip',0,Y(0),1000,0);
+R.hallClip=clipRect('hallClip',0,720,1000,0);
+R.notch=clipRect('notchTop',0,0,1000,0);
+
+/* background */
+const bg=el('g',{},fig);
+el('rect',{x:0,y:0,width:1000,height:720,fill:C.paper},bg);
+el('path',{d:'M0,520 C120,470 210,488 300,470 C390,452 470,488 560,466 C660,442 760,480 860,458 C920,446 970,456 1000,450 L1000,560 L0,560Z',fill:'#e9dfcb',stroke:C.ink,'stroke-width':1.2},bg);
+el('path',{d:'M0,548 C160,522 300,536 440,520 C600,504 760,532 1000,512 L1000,580 L0,580Z',fill:'#e2d5bb',stroke:C.ink,'stroke-width':1.2},bg);
+// ground slab (isometric)
+el('path',{d:'M20,640 L500,560 L980,640 L500,720Z',fill:'#d9c9a8',stroke:C.ink,'stroke-width':1.2},bg);
+el('path',{d:'M20,640 L500,720 L500,730 L20,650Z',fill:'#b9a37e',stroke:C.ink,'stroke-width':1.2},bg);
+el('path',{d:'M980,640 L500,720 L500,730 L980,650Z',fill:'#9e8763',stroke:C.ink,'stroke-width':1.2},bg);
+for(let i=1;i<6;i++){el('path',{d:`M${20+80*i},${640-13.3*i} L${500+80*i},${720-13.3*i}`,stroke:'#c8b691','stroke-width':1},bg);el('path',{d:`M${980-80*i},${640-13.3*i} L${500-80*i},${720-13.3*i}`,stroke:'#c8b691','stroke-width':1},bg);}
+// foundation stones (always)
+const found=el('g',{},bg);
+el('path',{d:`M${X(-215)},${Y(-6)} L${X(215)},${Y(-6)} L${X(235)},${Y(-22)} L${X(-235)},${Y(-22)}Z`,fill:'#cfc2a8',stroke:C.ink,'stroke-width':1.2},found);
+for(let i=-4;i<=4;i++) el('rect',{x:X(i*48-20),y:Y(-4)-0,width:40,height:10,rx:2,fill:'#bfb196',stroke:C.ink,'stroke-width':1},found);
+
+/* hall (back) */
+const hall=el('g',{},fig); R.hall=hall;
+const hallBack=el('g',{},hall); R.hallBack=hallBack;
+el('rect',{x:110,y:150,width:780,height:Y(0)-150,fill:'#e7d6b4',stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},hallBack);
+for(let i=0;i<14;i++) el('rect',{x:140+i*54,y:170,width:34,height:60,fill:'#d4bd92',stroke:C.ink,'stroke-width':1,'vector-effect':'non-scaling-stroke'},hallBack);
+el('rect',{x:110,y:150,width:780,height:16,fill:C.wood[1],stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},hallBack);
+const hallCols=el('g',{'clip-path':'url(#hallClip)'},hall); R.hallCols=hallCols;
+[120,250,750,880].forEach(x=>{el('rect',{x:x-11,y:150,width:22,height:Y(0)-150,fill:C.wood[1],stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},hallCols);el('rect',{x:x+3,y:150,width:8,height:Y(0)-150,fill:C.wood[2]},hallCols);});
+R.hallChar=el('rect',{x:100,y:140,width:800,height:480,fill:'#3b2f25',opacity:0},hall);
+
+/* skeleton */
+const skel=el('g',{'clip-path':'url(#skelClip)'},fig); R.skel=skel;
+[-150,-90,-30,30,90,150].forEach(dx=>el('rect',{x:X(dx)-5,y:Y(Math.min(400,interp(ENV,0)>0?380:380)),width:10,height:380,fill:C.wood[1],stroke:C.ink,'stroke-width':1.1},skel));
+for(let h=40;h<=380;h+=48){const w=halfW(h)-24;el('rect',{x:X(-w),y:Y(h)-4,width:2*w,height:8,fill:C.wood[0],stroke:C.ink,'stroke-width':1},skel);}
+for(let h=20;h<=390;h+=16){const w=halfW(h)-10;el('path',{d:`M${X(-w)},${Y(h)} L${X(w)},${Y(h+8)}`,stroke:'#9c8a5a','stroke-width':1},skel);}
+el('path',{d:`M${X(-36)},${Y(300)} L${X(-36)},${Y(400)} M${X(36)},${Y(300)} L${X(36)},${Y(400)}`,stroke:C.wood[2],'stroke-width':6},skel);
+
+/* mound back + section (drawn before statue) */
+R.moundBack=el('path',{fill:C.soil[0],stroke:C.ink,'stroke-width':1.2},fig);
+R.furnL=el('g',{},fig);
+R.section=el('path',{fill:C.soil[2],stroke:C.ink,'stroke-width':1.2},fig);
+R.sectionStrata=el('path',{fill:'none',stroke:'#6a4e33','stroke-width':1.1,'stroke-dasharray':'10 6'},fig);
+
+/* statue */
+const statue=el('g',{'clip-path':'url(#coreClip)'},fig); R.statue=statue;
+function matLayers(parent, shapes, clip){ // 3-tone flat fills
+  const g=el('g',clip?{'clip-path':`url(#${clip})`}:{},parent);
+  const out={g,base:[],shade:[],light:[]};
+  const gb=el('g',{},g),gs=el('g',{'clip-path':'url(#shadeR)'},g),gl=el('g',{'clip-path':'url(#lightL)'},g);
+  shapes.forEach(s=>{out.base.push(el('use',{href:s},gb));out.shade.push(el('use',{href:s},gs));out.light.push(el('use',{href:s},gl));});
+  out.set=(col)=>{gb.setAttribute('fill',col[1]);gs.setAttribute('fill',col[2]);gl.setAttribute('fill',col[0]);};
+  return out;}
+R.tiers=[]; for(let k=1;k<=8;k++) R.tiers[k]=matLayers(statue,['#sBody','#sArms'],'tier'+k);
+R.silverB=matLayers(statue,['#sBody','#sArms'],'silverClip'); R.goldB=matLayers(statue,['#sBody','#sArms'],'goldClip');
+R.silverB.set(C.silver); R.goldB.set(C.gold);
+const det=el('g',{fill:'none',stroke:C.ink,'stroke-width':1.2,'stroke-linecap':'round'},statue);
+el('use',{href:'#sBody'},det); el('use',{href:'#sArms'},det);
+// lotus petals
+const petals=el('g',{},det);
+for(let i=-3;i<=3;i++){const px=X(i*44);el('path',{d:`M${px-22},${Y(4)} C${px-24},${Y(30)} ${px-6},${Y(52)} ${px},${Y(58)} C${px+6},${Y(52)} ${px+24},${Y(30)} ${px+22},${Y(4)}`},petals);}
+R.engrave=el('g',{stroke:'#5b3d1d','stroke-width':.9,fill:'none'},statue);
+for(let i=-3;i<=3;i++){const px=X(i*44);el('path',{d:`M${px-10},${Y(14)} L${px+10},${Y(14)} M${px},${Y(10)} L${px},${Y(40)} M${px-8},${Y(26)} a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0`},R.engrave);}
+// robe folds, arm lines, fingers
+['M%-138,%276 C%-150,%230 %-160,%190 %-166,%140','M%138,%276 C%150,%230 %158,%200 %160,%176','M%118,%286 C%60,%250 %0,%214 %-80,%170','M%96,%262 C%40,%226 %-20,%196 %-90,%158','M%-100,%200 C%-60,%190 %-20,%186 %20,%190','M%-190,%96 C%-110,%120 %-40,%124 %40,%116','M%-160,%74 C%-60,%98 %40,%100 %170,%82','M%30,%132 C%70,%124 %110,%116 %140,%104','M%-160,%300 L%-160,%280 M%-146,%306 L%-146,%282 M%-132,%302 L%-132,%280','M%-30,%300 C%-10,%292 %10,%292 %30,%300','M%-36,%308 C%-10,%300 %10,%300 %36,%308']
+ .forEach(t=>{el('path',{d:t.replace(/%(-?\d+),%(\d+)/g,(m,a,b)=>`${X(+a)},${Y(+b*BS)}`)},det);});
+R.seams=el('g',{stroke:'#4f3a25','stroke-width':1.6,'stroke-dasharray':'7 4'},statue);
+for(let k=1;k<8;k++){const h=50*k,w=halfW(h)-2;el('path',{d:`M${X(-w)},${Y(h)} L${X(w)},${Y(h)}`},R.seams);}
+R.rough=el('g',{fill:'#5a4128'},statue);
+[[-60,90],[80,140],[-30,210],[60,250],[-120,60],[130,40],[-20,160],[20,280]].forEach(([dx,h],i)=>el('ellipse',{cx:X(dx),cy:Y(h),rx:6+(i%3)*2,ry:4},R.rough));
+
+// head group (can fall / be replaced)
+R.headG=el('g',{},statue);
+R.headInner=el('g',{},R.headG);
+R.hTiers=[]; for(let k=6;k<=8;k++) R.hTiers[k]=matLayers(R.headInner,['#sHead'],'tier'+k);
+R.silverH=matLayers(R.headInner,['#sHead'],'silverClip'); R.goldH=matLayers(R.headInner,['#sHead'],'goldClip'); R.silverH.set(C.silver); R.goldH.set(C.gold);
+R.eraHead=matLayers(R.headInner,['#sHead']); R.eraHead.g.setAttribute('opacity',0);
+el('use',{href:'#sHead',fill:'none',stroke:C.ink,'stroke-width':1.2},R.headInner);
+const hdet=el('g',{fill:'none',stroke:C.ink,'stroke-width':1.2/1.25,'stroke-linecap':'round'},null);
+R.headDet=el('g',{transform:HEAD_T},R.headInner);
+R.curls=el('g',{fill:'none',stroke:C.ink,'stroke-width':.8},R.headDet);
+for(let r=0;r<5;r++){for(let i=-4;i<=4;i++){const h=366+r*8+(r>3?6:0);const dx=i*11+(r%2)*5;if(Math.hypot(dx/50,(h-350)/48)<0.97||(h>380&&Math.abs(dx)<30))el('circle',{cx:X(dx),cy:Y(h),r:3.2},R.curls);}}
+el('path',{d:`M${X(-28)},${Y(338)} q10,-6 20,0 M${X(8)},${Y(338)} q10,-6 20,0 M${X(-30)},${Y(346)} q12,-8 24,-2 M${X(6)},${Y(344)} q12,-6 24,2 M${X(0)},${Y(334)} l-5,-22 q5,3 10,0 M${X(-12)},${Y(306)} q12,6 24,0`},hdet);
+el('circle',{cx:X(0),cy:Y(352),r:3,fill:C.ink},hdet);
+R.headDet.appendChild(hdet);
+R.eyes=el('g',{fill:C.ink,opacity:0},R.headDet);
+el('ellipse',{cx:X(-18),cy:Y(339),rx:5,ry:3},R.eyes); el('ellipse',{cx:X(18),cy:Y(339),rx:5,ry:3},R.eyes);
+
+/* outer moulds */
+R.moulds=[];
+const mouldG=el('g',{},fig);
+for(let k=1;k<=8;k++){
+  const m={};
+  ['L','R'].forEach(side=>{
+    const g=el('g',{'clip-path':`url(#tier${side}${k})`},mouldG);
+    const inner=el('g',{},g);
+    const full=el('g',{},inner), band=el('g',{opacity:0},inner);
+    const shapes=['#sBody'].concat(k>=6?['#sHead']:[]);
+    shapes.forEach(s=>{el('use',{href:s,fill:'none',stroke:C.ink,'stroke-width':27,'stroke-linejoin':'round'},full);});
+    shapes.forEach(s=>{el('use',{href:s,fill:C.mould[1],stroke:C.mould[1],'stroke-width':24.6,'stroke-linejoin':'round'},full);});
+    const pl=el('g',{'clip-path':'url(#bodyClip)',stroke:C.mould[2],'stroke-width':1.3},full);
+    for(let dx=-200;dx<=200;dx+=25) el('path',{d:`M${X(dx)},${Y(50*k)} L${X(dx)},${Y(50*(k-1))}`},pl);
+    {const hh=50*k-1,ww=halfW(Math.min(hh,400))+14;el('path',{d:`M${X(-ww)},${Y(hh)} L${X(ww)},${Y(hh)}`,stroke:C.mould[2],'stroke-width':2},full);}
+    shapes.forEach(s=>{el('use',{href:s,fill:'none',stroke:C.ink,'stroke-width':27,'stroke-linejoin':'round'},band);});
+    shapes.forEach(s=>{el('use',{href:s,fill:'none',stroke:C.mould[2],'stroke-width':24.6,'stroke-linejoin':'round'},band);});
+    shapes.forEach(s=>{el('use',{href:s,fill:'none',stroke:C.mould[1],'stroke-width':14,'stroke-linejoin':'round'},band);});
+    m[side]={g,inner,full,band};
+  });
+  R.moulds[k]=m;
+}
+
+/* mound front (right half) */
+R.moundFront=el('path',{fill:C.soil[1],stroke:C.ink,'stroke-width':1.2},fig);
+R.moundShade=el('path',{fill:C.soil[2],stroke:'none'},fig);
+R.moundStrata=el('path',{fill:'none',stroke:'#7a5a3a','stroke-width':1.1,'stroke-dasharray':'12 7'},fig);
+R.moundTopF=el('path',{fill:C.soil[0],stroke:C.ink,'stroke-width':1.2},fig);
+R.cutEdge=el('path',{fill:'none',stroke:C.ink,'stroke-width':2.2},fig);
+
+/* furnaces, pour */
+function furnace(parent){const g=el('g',{},parent);
+  el('ellipse',{cx:6,cy:2,rx:24,ry:6,fill:C.sh},g);
+  el('path',{d:'M-17,0 L-13,-40 L13,-40 L17,0Z',fill:C.clay[1],stroke:C.ink,'stroke-width':1.2},g);
+  el('path',{d:'M5,0 L7,-40 L13,-40 L17,0Z',fill:C.clay[2]},g);
+  el('ellipse',{cx:0,cy:-40,rx:13,ry:4,fill:C.clay[0],stroke:C.ink,'stroke-width':1.2},g);
+  const mouth=el('ellipse',{cx:-4,cy:-10,rx:6,ry:4,fill:C.fire[1],stroke:C.ink,'stroke-width':1},g);
+  const fl=el('path',{d:'M-8,-42 C-10,-56 -2,-58 0,-70 C3,-58 10,-56 8,-42Z',fill:C.fire[0],stroke:C.ink,'stroke-width':1},g);
+  // foot bellows (tatara) + worker
+  el('path',{d:'M18,-2 L44,-2 L46,-8 L20,-8Z',fill:C.wood[1],stroke:C.ink,'stroke-width':1.1},g);
+  const w=el('g',{},g); person(w,32,-8,C.cloth[1]);
+  return {g,mouth,fl,w};}
+function person(parent,x,y,col){const g=el('g',{transform:`translate(${x},${y})`},parent);
+  el('path',{d:'M-4,0 L-3,-10 M4,0 L3,-10',stroke:C.ink,'stroke-width':2.2,'stroke-linecap':'round'},g);
+  el('path',{d:'M-6,-10 L-5,-24 L5,-24 L6,-10Z',fill:col,stroke:C.ink,'stroke-width':1.1},g);
+  el('circle',{cx:0,cy:-28,r:4.2,fill:'#e8c9a0',stroke:C.ink,'stroke-width':1.1},g);
+  el('path',{d:'M-5,-30 Q0,-36 5,-30',fill:C.ink},g);
+  return g;}
+R.fL=furnace(R.furnL);
+const furnR=el('g',{},fig); R.furnR=furnR;
+R.fR=[furnace(furnR),furnace(furnR),furnace(furnR)];
+R.pourGlow=el('path',{fill:'none',stroke:C.fire[0],'stroke-width':11,'stroke-linecap':'round',opacity:0},fig);
+R.pour=el('path',{fill:'none',stroke:C.fire[1],'stroke-width':5,'stroke-linecap':'round','stroke-dasharray':'14 8',opacity:0},fig);
+R.trough=el('path',{fill:'none',stroke:C.ink,'stroke-width':1.2,opacity:0},fig);
+R.carriers=el('g',{},fig); R.carry=[0,1,2].map(i=>{const g=el('g',{},R.carriers);person(g,0,0,C.cloth[2]);el('path',{d:'M-9,-34 L9,-34 L6,-42 L-6,-42Z',fill:C.wood[0],stroke:C.ink,'stroke-width':1},g);return g;});
+
+/* scaffolding + workers (core & finishing) */
+R.scaf=el('g',{},fig);
+[-250,-235,235,250].forEach(dx=>el('rect',{x:X(dx)-3,y:Y(420),width:6,height:420,fill:C.wood[1],stroke:C.ink,'stroke-width':1},R.scaf));
+for(let h=60;h<=400;h+=68){el('rect',{x:X(-262),y:Y(h)-3,width:40,height:7,fill:C.wood[0],stroke:C.ink,'stroke-width':1},R.scaf);el('rect',{x:X(222),y:Y(h)-3,width:40,height:7,fill:C.wood[0],stroke:C.ink,'stroke-width':1},R.scaf);}
+R.workerL=el('g',{},fig); R.wl=person(R.workerL,0,0,C.cloth[1]); R.toolL=el('path',{d:'M4,-20 L16,-26',stroke:C.ink,'stroke-width':2.4,'stroke-linecap':'round'},R.wl);
+R.workerR=el('g',{},fig); R.wr=person(R.workerR,0,0,C.cloth[2]); R.toolR=el('path',{d:'M-4,-20 L-16,-26',stroke:C.ink,'stroke-width':2.4,'stroke-linecap':'round'},R.wr);
+
+/* vapour, fire, crowd, brush */
+R.vapour=el('g',{fill:'none',stroke:'#b8ad9b','stroke-width':3,'stroke-linecap':'round'},fig);
+R.wisps=[0,1,2,3,4].map(()=>el('path',{},R.vapour));
+R.crowd=el('g',{},fig);
+for(let i=0;i<11;i++) person(R.crowd,170+i*26+(i%2)*6,690-(i%2)*8,[C.cloth[0],C.cloth[1],C.cloth[2]][i%3]);
+R.cord=el('path',{fill:'none',stroke:'#8a3b12','stroke-width':1.6,'stroke-dasharray':'2 3'},fig);
+R.brush=el('g',{},fig); el('path',{d:'M0,0 L-70,120',stroke:C.wood[2],'stroke-width':4,'stroke-linecap':'round'},R.brush); el('path',{d:'M0,0 l6,-10 l-2,-4 l-8,8Z',fill:C.ink},R.brush);
+
+/* hall front columns + roof */
+const hallF=el('g',{},fig); R.hallF=hallF;
+const hallFC=el('g',{'clip-path':'url(#hallClip)'},hallF);
+[160,840].forEach(x=>{el('rect',{x:x-12,y:150,width:24,height:Y(0)-150+18,fill:C.wood[1],stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},hallFC);el('rect',{x:x+4,y:150,width:8,height:Y(0)-150+18,fill:C.wood[2]},hallFC);});
+R.roof=el('g',{},hallF);
+el('path',{d:'M60,170 L130,140 L870,140 L940,170 L870,176 L130,176Z',fill:C.roof[1],stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},R.roof);
+el('path',{d:'M170,140 L250,62 L750,62 L830,140Z',fill:C.roof[1],stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},R.roof);
+el('path',{d:'M500,62 L750,62 L830,140 L500,140Z',fill:C.roof[2]},R.roof);
+el('path',{d:'M500,140 L870,140 L940,170 L500,170Z',fill:C.roof[2]},R.roof);
+el('path',{d:'M230,62 L770,62 L760,52 L240,52Z',fill:C.roof[0],stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},R.roof);
+el('path',{d:'M240,52 l-12,-14 l10,2 Z M760,52 l12,-14 l-10,2Z',fill:C.gold[1],stroke:C.ink,'stroke-width':1,'vector-effect':'non-scaling-stroke'},R.roof);
+for(let i=0;i<22;i++){const x=190+i*29;el('path',{d:`M${x},${136} L${x+12},${68}`,stroke:C.roof[2],'stroke-width':1,'vector-effect':'non-scaling-stroke'},R.roof);}
+el('path',{d:'M60,170 L130,140 L870,140 L940,170 L870,176 L130,176Z',fill:'none',stroke:C.ink,'stroke-width':1.2,'vector-effect':'non-scaling-stroke'},R.roof);
+R.fire=el('g',{},fig); R.flames=[];
+[[180,300],[300,190],[520,200],[700,190],[820,300],[460,140],[620,150]].forEach(([x,y])=>{const g=el('g',{transform:`translate(${x},${y})`},R.fire);el('path',{d:'M-22,0 C-30,-30 -8,-44 -4,-80 C10,-50 30,-40 22,0Z',fill:C.fire[1],stroke:C.ink,'stroke-width':1.2},g);el('path',{d:'M-10,0 C-14,-18 -2,-26 0,-46 C8,-26 16,-20 10,0Z',fill:C.fire[0]},g);R.flames.push(g);});
+R.smoke=el('g',{fill:'#cfc4b2',stroke:C.ink,'stroke-width':1},fig);
+[[300,90],[520,60],[720,90]].forEach(([x,y])=>{el('path',{d:`M${x-40},${y} a22,22 0 0,1 30,-24 a26,26 0 0,1 46,4 a20,20 0 0,1 8,34 Z`},R.smoke);});
+
+/* lens marker, labels, sound words, event banner */
+R.marker=el('g',{},fig); el('circle',{r:17,fill:'none',stroke:C.ink,'stroke-width':2.6},R.marker); el('circle',{r:17,fill:'none',stroke:C.gold[1],'stroke-width':1.2,'stroke-dasharray':'4 3'},R.marker); el('path',{d:'M12,12 L24,24',stroke:C.ink,'stroke-width':4,'stroke-linecap':'round'},R.marker);
+R.labels=el('g',{},fig);
+R.sounds=el('g',{},fig);
+R.banner=el('g',{opacity:0},fig); R.bannerBg=el('rect',{x:0,y:0,width:10,height:44,rx:10,fill:'#fbf8f1',stroke:C.ink,'stroke-width':1.2},R.banner); R.bannerTx=el('text',{x:0,y:30,'font-size':25,'font-weight':700,'text-anchor':'middle',fill:C.ink},R.banner);
+
+/* ===== text & i18n ===== */
+const BANNER={quake:{tr:'deprem, baş düştü',en:'earthquake, head fell'},fire1:{tr:'yangın',en:'fire'},recast1:{tr:'yeni baş (Chōgen)',en:'new head (Chōgen)'},fire2:{tr:'yine yangın',en:'fire again'},recast2:{tr:'yeni baş (Kōkei)',en:'new head (Kōkei)'},hall3:{tr:'bugünkü salon (≈%{p})',en:"today's hall (≈{p}%)"}};
+const UI={
+ title:{tr:'Tōdai-ji\'nin Büyük Buda\'sı nasıl döküldü? <span class="jp">東大寺 盧舎那仏</span>',en:'How was the Great Buddha of Tōdai-ji cast? <span class="jp">東大寺 盧舎那仏</span>'},
+ manual:{tr:'Elle',en:'Manual'},auto:{tr:'Otomatik',en:'Auto'},restart:{tr:'Baştan başla',en:'Start over'},
+ intro:{tr:'{edict}\'te İmparator Shōmu dev bir bronz Buda yapılsın diye ferman verdi. Nasıl yaptılar? Parlayan adıma bas!',en:'In {edict} Emperor Shōmu ordered a giant bronze Buddha. How did they make it? Tap the glowing step!'},
+ kYear:{tr:'Yıl',en:'Year'},kTier:{tr:'Halka',en:'Ring'},kBronze:{tr:'Dökülen bronz',en:'Bronze poured'},kMound:{tr:'Toprak tepe yüksekliği',en:'Earth-mound height'},
+ lens:{tr:'Kesit penceresi',en:'Cut-away window'},parallel:{tr:'dökümle aynı yıllarda',en:'same years as casting'},parFin:{tr:'rötuşla aynı yıllarda',en:'alongside the finishing'},
+ pouring:{tr:'dökülüyor',en:'pouring'},noReal:{tr:'gerçek süre kaydı yok',en:'real duration not recorded'},
+ sec:{tr:'1 sn ≈',en:'1 s ≈'},day:{tr:'gün',en:'days'},yr:{tr:'yıl',en:'years'},hr:{tr:'saat',en:'hours'},speedK:{tr:'hız',en:'speed'},
+ src:{tr:'Kaynaklar: ekrandaki her sayı',en:'Sources: every number on screen'},
+ legend:{tr:'Etiketler: <i class="tag trad">trad.</i> geleneksel kayıt (eski birim / ay takvimi) · <i class="tag est">est.</i> bilimsel tahmin veya yorum · etiketsiz = Tōdai-ji / resmî kaynak.',en:'Tags: <i class="tag trad">trad.</i> traditional record (old units / lunar calendar) · <i class="tag est">est.</i> scholarly estimate or interpretation · no tag = Tōdai-ji / official source.'},
+ head:{tr:['Ne','Değer','Durum','Kaynak'],en:['What','Value','Status','Source']},
+ foot:{tr:'Çizim ölçekli değildir (heykel ≈ ölçekli; salon ve fırınlar şematik). Halkaların yılları, döküm süresinin {pours} eşit parçaya bölünmesiyle hesaplanmıştır (tahmin).',en:'Drawing not to scale (statue roughly to scale; hall and furnaces schematic). Ring years assume the casting span split into {pours} equal parts (estimate).'},
+ noneYet:{tr:'henüz yok',en:'none yet'}
+};
+let LANG = localStorage.getItem('tdj-lang')||'tr', MODE = localStorage.getItem('tdj-mode')||'manual';
+const L = o=>o[LANG];
+const nf = (v,d)=>new Intl.NumberFormat(LANG==='tr'?'tr-TR':'en-GB',{maximumFractionDigits:d??2}).format(v);
+const TAGTXT={est:'est.',trad:'trad.',calc:'calc.'};
+function nv(key,d){const n=M.N[key];const v=Array.isArray(n.v)?n.v.map(x=>nf(x,d)).join(n.v.length==2?'–':' × '):(typeof n.v==='number'&&n.v>=1000&&n.v<3000&&Number.isInteger(n.v)&&/^(edict|restart|castStart|castEnd|finishStart|gildStart|hallStart|hallDone|eyeOpening|quake|fire1|recast1|hall2|fire2|recast2|hall3)$/.test(key)?String(n.v):nf(n.v,d));return v;}
+const tg = key=>{const t=M.N[key].tag;return TAGTXT[t]?`<i class="tag ${t}">${TAGTXT[t]}</i>`:'';};
+const HT = (key,d)=>nv(key,d)+tg(key);              // HTML number + tag
+const T = (key,d)=>{const t=M.N[key].tag;return nv(key,d)+(TAGTXT[t]?` (${TAGTXT[t]})`:'');}; // SVG text
+const FACT={
+ 1:()=>LANG=='tr'?`Kayıtlı toplam emek: ${HT('personDays')} kişi-gün (heykel + salon; aynı kişiler tekrar sayılır). Kil model ${M.N.coreDone.v.slice(0,3)}'da bitti${tg('coreDone')}.`:`Recorded labour: ${HT('personDays')} person-days (statue + hall; the same people counted again each day). Clay model finished in ${M.N.coreDone.v.slice(0,3)}${tg('coreDone')}.`,
+ 2:()=>LANG=='tr'?`Boşluk = bronzun kalınlığı ≈ ${HT('wall',1)} cm. Kalıp parçaları ≈ ${HT('moldPiece',1)} m. Boşluğu korumak için ${HT('chaplets')} metal tutucu.`:`Gap = bronze thickness ≈ ${HT('wall',1)} cm. Mould pieces ≈ ${HT('moldPiece',1)} m. ${HT('chaplets')} metal chaplets keep the gap open.`,
+ 3:()=>LANG=='tr'?`En alt halkaya bir seferde ≈ ${HT('tier1t')} t bronz. Fırın başına ≈ ${HT('furnaceT')} t → ${nv('furnacesIshino')}'den fazla fırın${tg('furnacesIshino')} (başka tahmin: ${HT('furnacesKatori')}).`:`Lowest ring: ≈ ${HT('tier1t')} t of bronze at once. ≈ ${HT('furnaceT')} t per furnace → ${nv('furnacesIshino')}+ furnaces${tg('furnacesIshino')} (another estimate: ${HT('furnacesKatori')}).`,
+ 4:()=>LANG=='tr'?`Kayıttaki malzeme: ${HT('copperKin')} kin bakır, ${HT('tinKin')} kin kalay, ${HT('charcoal')} koku odun kömürü.`:`Recorded materials: ${HT('copperKin')} kin copper, ${HT('tinKin')} kin tin, ${HT('charcoal')} koku charcoal.`,
+ 5:()=>LANG=='tr'?`Kayıt "${HT('castYearsTrad')} yıl, ${nv('pours')} kez" der; gerçekte ${nv('castStart')}–${nv('castEnd')}, ≈ ${Math.floor(M.N.castMonths.v/12)} yıl ${M.N.castMonths.v%12} ay${tg('castMonths')}. Bugünkü birimle ≈ ${HT('copperT')} t bakır + ${HT('tinT',1)} t kalay.`:`The record says "${HT('castYearsTrad')} years, ${nv('pours')} times"; really ${nv('castStart')}–${nv('castEnd')}, ≈ ${Math.floor(M.N.castMonths.v/12)} yr ${M.N.castMonths.v%12} mo${tg('castMonths')}. In modern units ≈ ${HT('copperT')} t copper + ${HT('tinT',1)} t tin.`,
+ 6:()=>LANG=='tr'?`İlk Buda ≈ ${HT('hOrig')} m yüksekti; bugünkü ${HT('hToday')} m (kaide ${HT('pedestal')} m ayrı).`:`The first Buddha was ≈ ${HT('hOrig')} m tall; today ${HT('hToday')} m (pedestal ${HT('pedestal')} m extra).`,
+ 7:()=>LANG=='tr'?`Yama dökümü ve rötuş ${HT('finishStart')}'de başladı ve ≈ ${HT('finishYears')} yıl sürdü.`:`Patch-casting and finishing began in ${HT('finishStart')} and took ≈ ${HT('finishYears')} years.`,
+ 8:()=>LANG=='tr'?`İlk salon ${HT('hallBays')} açıklık, ≈ ${HT('hallW0')} m genişti; ${HT('hallDone')}'de bitti.`:`The first hall was ${HT('hallBays')} bays, ≈ ${HT('hallW0')} m wide; finished ${HT('hallDone')}.`,
+ 9:()=>LANG=='tr'?`Kayıt: ${HT('goldRyo')} ryō altın, ${HT('mercRyo')} ryō cıva ≈ ${HT('goldKg')} kg + ${HT('mercKg')} kg. Altın:cıva ≈ 1:${HT('amalgam')}. ${HT('castEnd')}'da Mutsu'dan ilk Japon altını: ${HT('mutsuGold')} ryō (≈ ${HT('mutsuKg',1)} kg).`:`Record: ${HT('goldRyo')} ryō gold, ${HT('mercRyo')} ryō mercury ≈ ${HT('goldKg')} kg + ${HT('mercKg')} kg. Gold:mercury ≈ 1:${HT('amalgam')}. In ${HT('castEnd')} Japan's first gold came from Mutsu: ${HT('mutsuGold')} ryō (≈ ${HT('mutsuKg',1)} kg).`,
+ 10:()=>LANG=='tr'?`${HT('eyeOpening')}: göz açma töreni. Yaldız o gün henüz bitmemişti.`:`${HT('eyeOpening')}: eye-opening ceremony. The gilding was not finished yet.`,
+ 11:()=>LANG=='tr'?`${HT('quake')} deprem · ${HT('fire1')} yangın → ${HT('recast1')} yeni baş · ${HT('fire2')} yangın → ${HT('recast2')} yeni baş + ${HT('petals')} lotus yaprağı · ${HT('hall3')} bugünkü salon: ${HT('hallBaysEdo')} açıklık, ${HT('hallW',3)} m (eskinin ≈ %${HT('hallShare')}).`:`${HT('quake')} earthquake · ${HT('fire1')} fire → ${HT('recast1')} new head · ${HT('fire2')} fire → ${HT('recast2')} new head + ${HT('petals')} lotus petals · ${HT('hall3')} today's hall: ${HT('hallBaysEdo')} bays, ${HT('hallW',3)} m (≈ ${HT('hallShare')}% of the old).`
+};
+// figure labels: [stepFrom, stepTo, x, y, anchorX, anchorY, key/text]
+const LABELS=[
+ {s:[1,1],p:[0.05,0.45],x:150,y:250,a:[X(-150),Y(250)],t:{tr:'ahşap iskelet',en:'wooden skeleton'}},
+ {s:[1,1],p:[0.55,1],x:150,y:250,a:[X(-140),Y(250)],t:{tr:'kil çekirdek',en:'clay core'}},
+ {s:[2,2],p:[0.05,1],x:150,y:520,a:[X(-188),Y(30)],t:{tr:'dış kalıp',en:'outer mould'}},
+ {s:[2,2],p:[0.05,1],x:150,y:250,a:[X(-140),Y(250)],t:{tr:'kil çekirdek',en:'clay core'}},
+ {s:[3,5],p:[0,1],x:820,y:620,a:null,t:{tr:'toprak tepe',en:'earth mound'},dyn:'mound'},
+ {s:[3,5],p:[0,1],x:150,y:600,a:null,t:{tr:'kesit',en:'cut-away'},dyn:'section'},
+ {s:[3,5],p:[0,1],x:880,y:300,a:null,t:{tr:'fırın + körük',en:'furnace + bellows'},dyn:'furnace'},
+ {s:[3,5],p:[0,1],x:150,y:200,a:null,t:{tr:'dış kalıp',en:'outer mould'},dyn:'mould'},
+ {s:[6,6],p:[0.75,1],x:150,y:250,a:[X(-128),Y(240)],t:{tr:'bronz Buda',en:'bronze Buddha'}},
+ {s:[7,7],p:[0.2,0.9],x:850,y:330,a:[X(60),Y(250)],t:{tr:'ek yerleri',en:'joins'}},
+ {s:[7,7],p:[0.4,1],x:850,y:600,a:[X(120),Y(30)],t:{tr:'lotus kazıması',en:'lotus engraving'}},
+ {s:[8,8],p:[0.6,1],x:500,y:205,a:null,t:{tr:'Daibutsuden (ölçeksiz)',en:'Daibutsuden (not to scale)'},plain:true},
+ {s:[9,9],p:[0.05,0.95],x:850,y:380,a:null,t:{tr:'altın + cıva',en:'gold + mercury'},dyn:'gild'},
+ {s:[9,9],p:[0.15,0.95],x:150,y:330,a:null,t:{tr:'cıva buharı',en:'mercury vapour'},dyn:'vapour'},
+ {s:[10,10],p:[0.1,1],x:830,y:440,a:headPt(-14,339),t:{tr:'gözler boyanır',en:'eyes painted'}}
+];
+const SOUNDS=[
+ {s:1,p:[0.5,0.95],x:790,y:330,r:-8,t:{tr:'şap! şap!',en:'slap! slap!'}},
+ {s:2,p:[0.5,0.72],x:740,y:520,r:6,t:{tr:'kazı kazı',en:'scrape scrape'}},
+ {s:'cast',p:[0.22,0.47],x:0,y:0,r:-6,t:{tr:'püf püf!',en:'whoosh!'},dyn:'bellows'},
+ {s:'cast',p:[0.52,0.9],x:0,y:0,r:7,t:{tr:'fısss!',en:'hisss!'},dyn:'hiss'},
+ {s:6,p:[0.05,0.6],x:730,y:470,r:-5,t:{tr:'hart hurt',en:'crunch crunch'}},
+ {s:7,p:[0.15,0.85],x:225,y:420,r:-7,t:{tr:'tak! tok!',en:'tok! tok!'}},
+ {s:8,p:[0.05,0.55],x:620,y:120,r:5,t:{tr:'tak tak tak',en:'knock knock'}},
+ {s:9,p:[0.2,0.9],x:800,y:230,r:-6,t:{tr:'cızz!',en:'tsss!'},dyn:'gild'},
+ {s:10,p:[0.55,0.95],x:300,y:640,r:-4,t:{tr:'ooo!',en:'ooh!'}},
+ {s:11,p:[0.13,0.19],x:250,y:560,r:-10,t:{tr:'güm!',en:'boom!'}},
+ {s:11,p:[0.30,0.40],x:800,y:110,r:8,t:{tr:'çıtır çıtır',en:'crackle'}}
+];
+const lblEls=LABELS.map(L0=>{const g=el('g',{opacity:0},R.labels);const line=el('path',{fill:'none',stroke:C.ink,'stroke-width':1.2},g);const rect=el('rect',{rx:8,fill:'#fbf8f1',stroke:C.ink,'stroke-width':1.2},g);const tx=el('text',{class:'lbl','text-anchor':'middle'},g);return {g,line,rect,tx,def:L0,w:0};});
+const sndEls=SOUNDS.map(S0=>{const g=el('g',{opacity:0},R.sounds);const tx=el('text',{class:'snd','text-anchor':'middle',stroke:'#fbf8f1','stroke-width':5,'paint-order':'stroke'},g);return {g,tx,def:S0};});
+
+/* lens */
+const lens=document.getElementById('lens'); const LD=el('defs',{},lens);
+const lc=el('clipPath',{id:'lensClip'},LD); el('circle',{cx:112,cy:118,r:104},lc);
+const LG=el('g',{'clip-path':'url(#lensClip)'},lens);
+el('rect',{x:0,y:0,width:240,height:240,fill:'#efe5cf'},LG);
+const lz={};
+lz.soil=el('rect',{x:168,y:0,width:60,height:240,fill:C.soil[1]},LG);
+lz.soilL=el('path',{d:'M172,30 l40,0 M176,80 l36,0 M172,130 l44,0 M178,180 l30,0',stroke:C.soil[2],'stroke-width':2,'stroke-dasharray':'8 5'},LG);
+lz.mould=el('rect',{x:112,y:0,width:56,height:240,fill:C.mould[1],stroke:C.ink,'stroke-width':1.2},LG);
+lz.gap=el('rect',{x:92,y:0,width:20,height:240,fill:'#f7efdc'},LG);
+lz.bronze=el('rect',{x:92,y:240,width:20,height:0,fill:C.bronze[1]},LG);
+lz.gold=el('rect',{x:110,y:240,width:4,height:0,fill:C.gold[1]},LG);
+lz.core=el('rect',{x:0,y:0,width:92,height:240,fill:C.clay[1],stroke:C.ink,'stroke-width':1.2},LG);
+lz.coreHatch=el('path',{d:Array.from({length:12},(_,i)=>`M${-40+i*14},240 L${40+i*14},0`).join(' '),stroke:C.clay[2],'stroke-width':1.2},LG);
+lz.wood=el('rect',{x:14,y:0,width:16,height:240,fill:C.wood[1],stroke:C.ink,'stroke-width':1.2},LG);
+lz.chap=el('g',{},LG); [40,120,200].forEach(y=>el('rect',{x:88,y:y-6,width:28,height:12,fill:'#6e6a62',stroke:C.ink,'stroke-width':1},lz.chap));
+lz.drip=el('path',{fill:C.fire[1],stroke:C.ink,'stroke-width':1},LG);
+lz.glow=el('rect',{x:92,y:0,width:20,height:6,fill:C.fire[0],opacity:0},LG);
+el('circle',{cx:112,cy:118,r:104,fill:'none',stroke:C.ink,'stroke-width':2.4},lens);
+const LL=[{k:'core',y:30,ax:50},{k:'gap',y:76,ax:102},{k:'chap',y:120,ax:110},{k:'mould',y:164,ax:140},{k:'soil',y:208,ax:196}];
+const LLT={core:{tr:'kil çekirdek',en:'clay core'},gap:{tr:'boşluk',en:'gap'},bronze:{tr:'bronz duvar',en:'bronze wall'},chap:{tr:'metal tutucu',en:'chaplet'},mould:{tr:'dış kalıp',en:'outer mould'},soil:{tr:'toprak tepe',en:'earth mound'},gold:{tr:'altın kaplama',en:'gold layer'}};
+lz.labels=LL.map(o=>{const g=el('g',{},lens);const ln=el('path',{fill:'none',stroke:C.ink,'stroke-width':1},g);const dot=el('circle',{r:3,fill:C.ink},g);const t1=el('text',{x:226,y:o.y+1,'font-size':14.5,fill:C.ink},g);const t2=el('text',{x:226,y:o.y+17,'font-size':12,fill:'#5a5249'},g);return {...o,g,ln,dot,t1,t2};});
+
+/* ===== state from time ===== */
+const ST=M.steps; const sIdx=id=>ST.findIndex(s=>s.id===id);
+let t=0;
+const ph = id=>{const s=ST[sIdx(id)];return clamp((t-s.t0)/s.dur);};
+function tierProg(k){for(const s of ST){if(s.tiers&&k>=s.tiers[0]&&k<=s.tiers[1]){const n=s.tiers[1]-s.tiers[0]+1;return clamp(ph(s.id)*n-(k-s.tiers[0]));}}return 0;}
+function castStep(){for(const s of ST){if(s.tiers&&t>=s.t0&&t<s.t1)return s;}return null;}
+function currentStep(){for(let i=0;i<ST.length;i++){if(t<ST[i].t1-1e-9)return t>ST[i].t0+1e-9?i:i-0.5;}return ST.length-1;}
+function laterYear(p){const k=M.later;for(let i=1;i<k.length;i++)if(p<=k[i][0])return lerp(k[i-1][1],k[i][1],(p-k[i-1][0])/(k[i][0]-k[i-1][0]));return k[k.length-1][1];}
+
+function moundShape(H){
+  const a=halfW(H)+58, ra=a*0.15, b=a+H*0.75+34, yb=y0+16, rb=b*0.15, ty=Y(H);
+  const top=s=>[cx+a*s, ty+ra*Math.sqrt(Math.max(0,1-s*s))], bot=s=>[cx+b*s, yb+rb*Math.sqrt(Math.max(0,1-s*s))];
+  const seq=(f,s0,s1,n=24)=>Array.from({length:n+1},(_,i)=>f(lerp(s0,s1,i/n)));
+  const P=pts=>'M'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join('L');
+  const front=P(seq(top,0,1).concat(seq(bot,1,0)))+'Z';
+  const shade=P(seq(top,0.55,1,10).concat(seq(bot,1,0.55,10)))+'Z';
+  const back=`M${cx-a},${ty} A${a},${ra} 0 1,1 ${cx+a},${ty} A${a},${ra} 0 1,1 ${cx-a},${ty}Z`;
+  const topF=P(seq(top,0,1))+`L${cx+a},${ty} A${a},${ra} 0 0,0 ${cx},${ty-ra}Z`;
+  const topF2=`M${cx},${ty} L${cx+a},${ty} A${a},${ra} 0 0,1 ${cx},${ty+ra}Z`;
+  const section=`M${cx-a},${ty} L${cx-b},${yb} L${cx},${yb} L${cx},${ty}Z`;
+  let strata='';for(let f=0.25;f<1;f+=0.25){const y=lerp(ty,yb,f);const w=lerp(a,b,f);strata+=`M${cx-w+6},${y} L${cx-4},${y} `;}
+  let strataF='';for(let f=0.3;f<1;f+=0.3){const pts=seq(s=>{const tp=top(s),bt=bot(s);return [lerp(tp[0],bt[0],f),lerp(tp[1],bt[1],f)];},0.03,0.97,16);strataF+=P(pts)+' ';}
+  return {a,ra,b,ty,yb,front,shade,back,topF:topF2,section,strata,strataF,edge:`M${cx},${ty+ra} L${cx},${yb+rb}`};
+}
+
+function render(){
+  const p1=ph(1),p2=ph(2),p6=ph(6),p7=ph(7),p8=ph(8),p9=ph(9),p10=ph(10),p11=ph(11);
+  // core & skeleton
+  const skelH=ease(remap(p1,0,0.35))*420, coreH=ease(remap(p1,0.42,1))*440;
+  set(R.skelClip,{y:Y(skelH),height:skelH+20}); set(R.coreClip,{y:Y(coreH),height:coreH+40});
+  R.skel.setAttribute('opacity',p1<1?1:0);
+  // tiers
+  const lateP=p11, fire1=remap(lateP,0.30,0.42), darkU=ease(fire1);
+  let bronzeSum=0, poured=0, active=0;
+  for(let k=1;k<=8;k++){
+    const tp=tierProg(k), bz=ease(remap(tp,0.5,0.9)); bronzeSum+=bz; if(bz>0.99)poured++; if(tp>0&&tp<1)active=k;
+    let col=[0,1,2].map(i=>lerpCol(C.clay[i],C.bronze[i],bz));
+    col=col.map((c,i)=>lerpCol(c,C.dark[i],darkU));
+    R.tiers[k].set(col); if(R.hTiers[k]) R.hTiers[k].set(col);
+  }
+  // mound height
+  let H=0; for(let k=1;k<=8;k++) H+=50*ease(remap(tierProg(k),0.18,0.42));
+  const rem=ease(remap(p6,0,0.75)); H=H*(1-rem);
+  // moulds
+  for(let k=1;k<=8;k++){
+    const tp=tierProg(k); let vis = k===1 ? ease(remap(p2,0,0.3)) : ease(remap(tp,0,0.18));
+    if(p6>0) vis*=clamp((H-50*(k-1))/50);
+    const off = k===1 ? 42*(ease(remap(p2,0.3,0.45))-ease(remap(p2,0.85,1))) : 0;
+    const covered = H>=50*k-1 && p6===0 || (p6>0 && H>50*(k-1));
+    const m=R.moulds[k];
+    m.L.inner.setAttribute('transform',`translate(${-off},0)`); m.R.inner.setAttribute('transform',`translate(${off},0)`);
+    m.L.g.setAttribute('opacity',vis); m.R.g.setAttribute('opacity',vis);
+    m.L.full.setAttribute('opacity',covered?0:1); m.L.band.setAttribute('opacity',covered?1:0);
+  }
+  // mound drawing
+  const showM=H>1;
+  [R.moundBack,R.section,R.sectionStrata,R.moundFront,R.moundShade,R.moundStrata,R.moundTopF,R.cutEdge].forEach(e=>e.setAttribute('opacity',showM?1:0));
+  let ms=null;
+  if(showM){ms=moundShape(H);set(R.moundBack,{d:ms.back});set(R.section,{d:ms.section});set(R.sectionStrata,{d:ms.strata});set(R.moundFront,{d:ms.front});set(R.moundShade,{d:ms.shade});set(R.moundStrata,{d:ms.strataF});set(R.moundTopF,{d:ms.topF});set(R.cutEdge,{d:ms.edge});}
+  // furnaces & pouring
+  const cs=castStep(); let fire=0,pourOn=0,lp=0;
+  if(cs){const n=cs.tiers[1]-cs.tiers[0]+1;const loc=ph(cs.id)*n;const k=Math.min(cs.tiers[1],cs.tiers[0]+Math.floor(loc));lp=loc-Math.floor(loc);if(ph(cs.id)>=1)lp=1;fire=remap(lp,0.22,0.3)*(1-remap(lp,0.88,0.95));pourOn=remap(lp,0.48,0.52)*(1-remap(lp,0.86,0.9));}
+  const fShow = showM && (cs!==null) ? 1 : 0;
+  R.furnL.setAttribute('opacity',fShow); R.furnR.setAttribute('opacity',fShow);
+  let pourStart=null, pourEnd=null;
+  if(ms&&fShow){
+    const a=ms.a, ty=ms.ty, ra=ms.ra;
+    const pos=[[cx+a*0.5,ty+ra*0.75],[cx+a*0.78,ty+ra*0.45],[cx+a*0.3,ty-ra*0.6]];
+    R.fR.forEach((f,i)=>{f.g.setAttribute('transform',`translate(${pos[i][0].toFixed(1)},${pos[i][1].toFixed(1)}) scale(${i==2?1.2:1.45})`);});
+    R.fL.g.setAttribute('transform',`translate(${(cx-a*0.72).toFixed(1)},${(ty-ra*0.5).toFixed(1)}) scale(1.2)`);
+    [...R.fR,R.fL].forEach((f,i)=>{const fl=0.5+0.5*Math.sin(t*14+i*1.7);f.fl.setAttribute('opacity',fire); f.fl.setAttribute('transform',`translate(0,${-40*(1-0.85-0.15*fl)}) scale(1,${0.7+0.3*fl}) translate(0,${40*(1-0.85-0.15*fl)})`);f.mouth.setAttribute('fill',fire>0.1?C.fire[1]:C.clay[2]);
+      const bob=fire>0?Math.abs(Math.sin(t*9+i))*4:0; f.w.setAttribute('transform',`translate(0,${bob.toFixed(1)})`);});
+    pourStart=[pos[0][0]-24,pos[0][1]-20]; pourEnd=[cx+halfW(H)+4,ty-2];
+  }
+  if(pourStart&&pourOn>0){const mx=(pourStart[0]+pourEnd[0])/2, my=Math.min(pourStart[1],pourEnd[1])-6;const d=`M${pourStart[0].toFixed(1)},${pourStart[1].toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${pourEnd[0].toFixed(1)},${pourEnd[1].toFixed(1)}`;
+    set(R.pour,{d,opacity:pourOn,'stroke-dashoffset':(-t*60).toFixed(1)});set(R.pourGlow,{d,opacity:pourOn*0.8});set(R.trough,{d:`M${pourStart[0]},${pourStart[1]+5} Q${mx},${my+6} ${pourEnd[0]},${pourEnd[1]+5}`,opacity:pourOn});}
+  else{R.pour.setAttribute('opacity',0);R.pourGlow.setAttribute('opacity',0);R.trough.setAttribute('opacity',0);}
+  // carriers on the right slope (casting + unbury)
+  const carryOn=(cs||(p6>0&&p6<1))&&ms?1:0; R.carriers.setAttribute('opacity',carryOn);
+  if(carryOn){R.carry.forEach((g,i)=>{let u=((t*0.25+i/3)%1); if(p6>0&&p6<1)u=1-u; const s=0.35+0.5*u; const x=lerp(cx+ms.b*0.92,cx+ms.a*0.95,u)-20*i*0; const y=lerp(ms.yb+ms.b*0.15*0.4,ms.ty+ms.ra*0.3,u); g.setAttribute('transform',`translate(${(x-30*(1-u)).toFixed(1)},${y.toFixed(1)})`);});}
+  // scaffolding & workers
+  const scafV = (p1>0&&p1<1? ease(remap(p1,0.3,0.42))*(1-ease(remap(p1,0.96,1))) : 0) + (p7>0&&p7<1? ease(remap(p7,0,0.12))*(1-ease(remap(p7,0.88,1))):0);
+  R.scaf.setAttribute('opacity',scafV);
+  const wv=(p1>0.42&&p1<0.97)||(p7>0.1&&p7<0.88)||(p2>0.45&&p2<0.75);
+  R.workerL.setAttribute('opacity',wv?1:0);R.workerR.setAttribute('opacity',wv?1:0);
+  if(wv){let hh= p1>0.42&&p1<1 ? Math.min(coreH,390) : p2>0&&p2<1 ? 40 : 60+((t*30)%300);
+    const sw=Math.sin(t*16)*12; const wL=halfW(hh);
+    R.workerL.setAttribute('transform',`translate(${X(-wL-30).toFixed(1)},${Y(hh-6).toFixed(1)})`);R.workerR.setAttribute('transform',`translate(${X(wL+30).toFixed(1)},${Y(Math.max(20,hh-40)).toFixed(1)})`);
+    R.toolL.setAttribute('transform',`rotate(${sw.toFixed(1)} 4 -20)`);R.toolR.setAttribute('transform',`rotate(${(-sw).toFixed(1)} -4 -20)`);}
+  // finishing: seams & rough spots
+  const seamV = (p6>0.6?1:0)*(1-ease(remap(p7,0.2,0.9)));
+  R.seams.setAttribute('opacity',seamV); R.rough.setAttribute('opacity',(p6>0.6?1:0)*(1-ease(remap(p7,0.1,0.7))));
+  R.engrave.setAttribute('opacity',ease(remap(p7,0.4,0.9)));
+  // hall
+  let hallU=ease(remap(p8,0,0.55)), roofU=ease(remap(p8,0.5,0.95)), wallU=ease(remap(p8,0.3,0.6));
+  let hallSX=1, charU=0, fireU=0, hallA=1;
+  if(p11>0){
+    const burn1=remap(p11,0.30,0.40), re1=remap(p11,0.46,0.54), burn2=remap(p11,0.58,0.68), re2=remap(p11,0.84,0.98);
+    fireU = Math.sin(Math.PI*clamp(remap(p11,0.30,0.42)))+Math.sin(Math.PI*clamp(remap(p11,0.58,0.70)));
+    const alive = p11<0.30?1 : p11<0.46?1-ease(burn1) : p11<0.58?ease(re1) : p11<0.84?1-ease(burn2) : ease(re2);
+    hallA=alive; charU=(p11>0.3&&p11<0.42)||(p11>0.58&&p11<0.7)?0.5:0;
+    hallSX = p11>=0.84 ? lerp(1,M.N.hallShare.v/100,ease(re2)) : 1;
+    if(p11>=0.84){hallU=ease(re2);roofU=ease(remap(p11,0.9,0.98));wallU=re2>0.3?1:0;} else {hallU=hallA;wallU=hallA>0.4?1:0;roofU=hallA>0.75?ease(remap(hallA,0.75,1)):0;}
+  }
+  const hallV = p8>0 ? 1 : 0;
+  const hT=`translate(${cx},0) scale(${hallSX.toFixed(3)},1) translate(${-cx},0)`;
+  R.hall.setAttribute('opacity',hallV); R.hallF.setAttribute('opacity',hallV); R.hall.setAttribute('transform',hT); R.hallF.setAttribute('transform',hT);
+  set(R.hallClip,{y:Y(0)+18-(Y(0)+18-150)*hallU,height:(Y(0)+18-150)*hallU+2}); R.hallBack.setAttribute('opacity',wallU);
+  R.roof.setAttribute('transform',`translate(0,${(-260*(1-roofU)).toFixed(1)})`); R.roof.setAttribute('opacity',roofU>0.001?1:0);
+  R.hallChar.setAttribute('opacity',0);
+  R.fire.setAttribute('opacity',clamp(fireU)); R.smoke.setAttribute('opacity',clamp(fireU)*0.9);
+  R.flames.forEach((g,i)=>{const s=0.85+0.15*Math.sin(t*12+i);const tr=g.getAttribute('transform').split(' scale')[0];g.setAttribute('transform',`${tr} scale(${s.toFixed(3)})`);});
+  // gilding
+  const gold=ease(remap(p9,0.18,1))*440, silver=ease(remap(p9,0,0.82))*440;
+  let goldA = darkU>0.5?0:1;
+  set(R.silverClip,{y:Y(silver),height:silver+40}); set(R.goldClip,{y:Y(gold),height:gold+40});
+  [R.silverB.g,R.silverH.g].forEach(g=>g.setAttribute('opacity',goldA)); [R.goldB.g,R.goldH.g].forEach(g=>g.setAttribute('opacity',goldA));
+  const vapOn = p9>0.15&&p9<1 ? 1 : 0; R.vapour.setAttribute('opacity',vapOn);
+  if(vapOn){R.wisps.forEach((w,i)=>{const hh=clamp(gold+20,0,420);const wx=halfW(hh);const side=i%2?1:-1;const x0=X(side*(wx-10-i*14));const y=Y(hh)-((t*40+i*25)%70);w.setAttribute('d',`M${x0},${y} c${side*-10},-12 ${side*12},-22 0,-34 c${side*-12},-12 ${side*10},-22 0,-32`);w.setAttribute('opacity',1);});}
+  // eye opening
+  const eyeU=ease(remap(p10,0.5,0.7)); R.eyes.setAttribute('opacity',eyeU);
+  const crowdOn=p10>0&&p10<1?1:(p10>=1&&p11===0?1:0); R.crowd.setAttribute('opacity',crowdOn);
+  const bU=ease(remap(p10,0,0.5)), bOut=p10>=1?0:1;
+  R.brush.setAttribute('opacity',p10>0&&p10<1?1:0); R.cord.setAttribute('opacity',p10>0&&p10<1?1:0);
+  const EP=headPt(-22,337); const bx=lerp(X(-260),EP[0],bU), by=lerp(Y(120),EP[1],bU)+Math.sin(t*10)*(p10>0.5&&p10<0.7?2:0);
+  R.brush.setAttribute('transform',`translate(${bx.toFixed(1)},${by.toFixed(1)})`);
+  R.cord.setAttribute('d',`M${(bx-70).toFixed(1)},${(by+120).toFixed(1)} Q${(bx-120).toFixed(1)},${(by+230).toFixed(1)} 210,660`);
+  // later history: head
+  let headT='', headCol=null, headA=1;
+  if(p11>0){
+    const fall=ease(remap(p11,0.11,0.15)), back=ease(remap(p11,0.19,0.23));
+    const shake=(p11>0.10&&p11<0.14)?Math.sin(t*90)*4:0;
+    const f=fall*(1-back);
+    headT=`translate(${(-230*f+shake).toFixed(1)},${(258*f).toFixed(1)}) rotate(${(-80*f).toFixed(1)} ${cx} ${Y(330)})`;
+    statue.setAttribute('transform',`translate(${shake.toFixed(1)},0)`);
+    const melt=ease(remap(p11,0.32,0.40)), newH1=ease(remap(p11,0.42,0.50)), dmg=ease(remap(p11,0.60,0.68)), newH2=ease(remap(p11,0.72,0.80));
+    // head sinks/melts in the fires and a new one rises: scale about the neck
+    let sy=1;
+    if(p11>=0.30&&p11<0.42){sy=1-melt;headCol=melt>0.05?C.fire:null;}
+    else if(p11>=0.42&&p11<0.60){sy=newH1;headCol=C.dark;}
+    else if(p11>=0.60&&p11<0.72){sy=1;headCol=dmg>0.5?C.copper:C.dark;}
+    else if(p11>=0.72){sy=newH2<0.5?1-newH2*2:newH2*2-1;headCol=newH2<0.5?C.copper:C.dark;}
+    sy=Math.max(0.001,sy);
+    headT+=` translate(${cx},${Y(HN)}) scale(1,${sy.toFixed(3)}) translate(${-cx},${-Y(HN)})`;
+  } else statue.setAttribute('transform','');
+  R.headG.setAttribute('transform',headT); R.headG.setAttribute('opacity',headA);
+  if(headCol){R.eraHead.g.setAttribute('opacity',1);R.eraHead.set(headCol);} else R.eraHead.g.setAttribute('opacity',0);
+  // banner (later history)
+  if(p11>0&&p11<1){const ev=[[0.10,0.26,'quake'],[0.28,0.42,'fire1'],[0.42,0.56,'recast1'],[0.58,0.72,'fire2'],[0.74,0.86,'recast2'],[0.86,1.01,'hall3']].find(e=>p11>=e[0]&&p11<e[1]);
+    if(ev){const n=M.N[ev[2]];R.bannerTx.textContent=`${n.v}: ${L(BANNER[ev[2]]).replace('{p}',nv('hallShare'))}`;R.banner.setAttribute('opacity',1);const w=R.bannerTx.getComputedTextLength()+30;set(R.bannerBg,{x:-w/2,width:w});R.banner.setAttribute('transform',`translate(${(VX0+w/2+14).toFixed(1)},${VX0>0?40:14})`);} else R.banner.setAttribute('opacity',0);}
+  else R.banner.setAttribute('opacity',0);
+  // lens marker position
+  const lensTier = active || (p2>0&&p2<1||p1>0&&p1<1 ? 1 : (poured?Math.min(poured,4):1));
+  const mh = 50*lensTier-25; const markOn = (p1>0.45 && p6===0)? 1 : (p6>0&&p9<1&&p11===0?1:0);
+  R.marker.setAttribute('opacity',markOn); R.marker.setAttribute('transform',`translate(${(X(-halfW(mh))-34).toFixed(1)},${Y(mh).toFixed(1)})`);
+  // labels
+  const curI=currentStep(); const cur=ST[Math.max(0,Math.ceil(curI))]; const curId=cur?cur.id:0; const isPlaying = Number.isInteger(curI);
+  const shownStep = Number.isInteger(curI)?ST[curI].id: (curI>=0? ST[Math.floor(curI)].id : 0);
+  lblEls.forEach(o=>{const d=o.def;let on=shownStep>=d.s[0]&&shownStep<=d.s[1];let pp=ph(shownStep||1); if(on&&!(pp>=d.p[0]&&pp<=d.p[1]))on=false;
+    let x=d.x,y=d.y,a=d.a;
+    if(on&&d.dyn){ if(d.dyn==='mound'){if(!ms)on=false;else{a=[cx+ms.b*0.8,ms.yb+ms.b*0.15*0.3];x=820;y=H<150?680:Math.max(ms.ty+60,560);}}
+      if(d.dyn==='section'){if(!ms||H<40)on=false;else{a=[cx-ms.b*0.62,lerp(ms.ty,ms.yb,0.8)];x=135;y=ms.yb-14;}}
+      if(d.dyn==='furnace'){if(!ms)on=false;else{const fx=cx+ms.a*0.78,fy=ms.ty+ms.ra*0.45-30;a=[fx+22,fy+12];x=fx+150;y=H<150?ms.ty-ms.ra-40:ms.ty+ms.ra+34; if(H<150)a=[fx+22,fy-10];}}
+      if(d.dyn==='mould'){const k=Math.min(8,active||poured+1);if(!ms||k>8){on=false;}else{const h=Math.min(410,50*k-20);a=[X(-halfW(h)-12),Y(h)];x=140;y=clamp(Y(h)-50,60,540);}}
+      if(d.dyn==='gild'){const h=clamp(gold,30,400);a=[X(halfW(h)-10),Y(h)];x=860;y=Y(h)-30;}
+      if(d.dyn==='vapour'){const h=clamp(gold+40,40,420);a=[X(-halfW(Math.min(h,400))+10),Y(h)-20];x=140;y=Math.max(70,Y(h)-90);}
+    }
+    // keep labels clear of the hall roof once it exists
+    if(on&&roofU>0.5&&y<200&&!d.plain) y=200;
+    o.g.setAttribute('opacity',on?1:0); if(!on)return;
+    const txt=L(d.t); if(o.tx.textContent!==txt){o.tx.textContent=txt;o.w=0;}
+    if(!o.w){o.w=o.tx.getComputedTextLength()+22;}
+    x=clamp(x,VX0+o.w/2+8,VX1-o.w/2-8);
+    set(o.tx,{x:x.toFixed(1),y:(y+6.5).toFixed(1)}); set(o.rect,{x:(x-o.w/2).toFixed(1),y:(y-15).toFixed(1),width:o.w.toFixed(1),height:31});
+    if(a){const ex = a[0]<x-o.w/2? x-o.w/2 : a[0]>x+o.w/2? x+o.w/2 : x; const ey = (a[0]>=x-o.w/2&&a[0]<=x+o.w/2)? (a[1]<y? y-15: y+16): y; o.line.setAttribute('d',`M${ex.toFixed(1)},${ey.toFixed(1)} L${a[0].toFixed(1)},${a[1].toFixed(1)}`); o.line.setAttribute('opacity',1);} else o.line.setAttribute('opacity',0);
+  });
+  // sounds
+  sndEls.forEach(o=>{const d=o.def;let on=false,pp=0,x=d.x,y=d.y;
+    if(d.s==='cast'){if(cs&&ms){pp=lp;on=pp>=d.p[0]&&pp<=d.p[1]; if(d.dyn==='bellows'){x=cx+ms.a*0.15;y=ms.ty-ms.ra-95;} else {x=cx+halfW(H)+10;y=ms.ty-115;}}}
+    else{pp=ph(d.s);on=shownStep===d.s&&pp>=d.p[0]&&pp<=d.p[1]; if(d.dyn==='gild'){y=Y(clamp(gold,30,400))>400?250:540;}}
+    if(d.s===11&&p11>=1)on=false;
+    o.g.setAttribute('opacity',on?1:0); if(!on)return;
+    const u=remap(pp,d.p[0],d.p[1]); const sc=0.85+0.25*Math.sin(Math.PI*clamp(u*1.6)); o.tx.textContent=L(d.t);
+    o.g.setAttribute('transform',`translate(${x.toFixed(1)},${y.toFixed(1)}) rotate(${d.r}) scale(${sc.toFixed(3)})`);});
+  renderLens({p1,p2,p6,p9,darkU,active,lensTier,poured,H,cs,lp});
+  renderUI({curI,H,bronzeSum,poured,active,cs,lp,p11,gold});
+}
+
+function renderLens(s){
+  const {p1,p2,p6,p9,darkU,active,lensTier,H,cs,lp}=s;
+  const mouldOn = p2>0 && !(p6>0 && H<50*(lensTier-1)+25);
+  const mouldX = 112 + 30*(ease(remap(p2,0.3,0.45))-ease(remap(p2,0.85,1)));
+  const shaved = ease(remap(p2,0.5,0.7));
+  const coreR = 112 - 20*shaved;
+  const chapOn = p2>0.7 || ph(3)>0;
+  const covered = H>=50*lensTier-2 || (p6>0 && H>50*(lensTier-1));
+  const tp = tierProg(lensTier); let fill = ease(remap(tp,0.5,0.9));
+  const coreOn = p1>0.42;
+  set(lz.core,{width:coreR,opacity:coreOn?1:0}); lz.coreHatch.setAttribute('opacity',coreOn?1:0); lz.wood.setAttribute('opacity',p1>0?1:0);
+  set(lz.mould,{x:mouldX.toFixed(1),opacity:mouldOn?1:0}); set(lz.soil,{opacity:covered?1:0}); lz.soilL.setAttribute('opacity',covered?1:0);
+  lz.gap.setAttribute('opacity',shaved>0.02?1:0); lz.chap.setAttribute('opacity',chapOn&&shaved>0.5?1:0);
+  const bcol=lerpCol(C.bronze[1],C.dark[1],darkU);
+  set(lz.bronze,{y:(240-240*fill).toFixed(1),height:(240*fill).toFixed(1),fill:bcol});
+  const pouring = cs && tp>0.45 && tp<0.92;
+  const lvl=240-240*fill;
+  set(lz.drip,{d:`M96,0 L108,0 L106,${lvl} L98,${lvl}Z`,opacity:pouring?1:0});
+  set(lz.glow,{y:Math.max(0,lvl-6).toFixed(1),opacity:pouring?1:0});
+  const g=ease(remap(p9,0.18,1)); set(lz.gold,{y:(240-240*g).toFixed(1),height:(240*g).toFixed(1),opacity:darkU>0.5?0:1});
+  // labels
+  const state={core:coreOn, gap:shaved>0.02&&fill<0.5, chap:chapOn&&shaved>0.5&&p6===0, mould:mouldOn, soil:covered};
+  lz.labels.forEach(o=>{let key=o.k, on=state[o.k], sub='';
+    if(o.k==='gap'){ if(fill>=0.5){key='bronze';on=true;} if(g>0.05&&darkU<0.5){} sub=`≈ ${nv('wall',1)} cm${M.N.wall.tag==='est'?' (est.)':''}`; if(!(shaved>0.02))on=false;}
+    if(o.k==='chap'){sub=`× ${nv('chaplets')} (trad.)`;}
+    if(o.k==='mould'){sub=`${nv('moldPiece',1).replace(/ /g,'')} m (est.)`;}
+    if(o.k==='soil' && !on && g>0.05 && darkU<0.5){key='gold';on=true;sub=`1:${nv('amalgam')} (est.)`;}
+    o.g.setAttribute('opacity',on?1:0); if(!on)return;
+    o.t1.textContent=L(LLT[key]); o.t2.textContent=sub;
+    const ax = key==='gold'?112:o.ax; const ay=key==='gold'?60:o.y-4;
+    set(o.ln,{d:`M${ax},${ay} L${key==='gold'?150:Math.max(ax+8,150)},${ay} L222,${o.y-4}`}); set(o.dot,{cx:ax,cy:ay});
+  });
+  document.getElementById('lensTitle').textContent = `${L(UI.lens)} · ${LANG==='tr'?lensTier+'. '+L(UI.kTier).toLowerCase():L(UI.kTier)+' '+lensTier}`;
+}
+
+function fmtSpeed(step){
+  if(!step) return '';
+  if(step.real==null) return `<b>${L(UI.speedK)}</b><small>${L(UI.noReal)}</small>`;
+  const ratio=step.real/step.dur; const daysPerSec=ratio/86400;
+  const big = ratio>=1e9? nf(ratio/1e9,1)+(LANG==='tr'?' mlr':' bn') : ratio>=1e6? nf(ratio/1e6,1)+(LANG==='tr'?' mn':' M') : nf(Math.round(ratio),0);
+  const per = daysPerSec>=365? `${nf(daysPerSec/365.25,0)} ${L(UI.yr)}` : daysPerSec>=1.5? `${nf(daysPerSec,0)} ${L(UI.day)}` : `${nf(daysPerSec*24,1)} ${L(UI.hr)}`;
+  const tag = step.realTag==='est'?' (est.)':step.realTag==='trad'?' (trad.)':'';
+  return `<b>${L(UI.speedK)} ×${big}</b><small>${L(UI.sec)} ${per}${tag}</small>`;
+}
+let lastUIkey='', lastFocus=-1;
+function renderUI(s){
+  const {curI,H,bronzeSum,poured,active,cs,lp,p11,gold}=s;
+  const playingIdx = Number.isInteger(curI)? curI : -1;
+  const doneCount = Number.isInteger(curI)? curI : Math.ceil(curI); // steps fully done
+  const shown = playingIdx>=0 ? ST[playingIdx] : (doneCount>0? ST[doneCount-1] : null);
+  // year
+  let yv, ysub='', approx=false;
+  if(!shown){ yv=M.N.edict.v; ysub=L(M.N.edict.label);}
+  else { const st=shown; const u=playingIdx>=0? clamp((t-st.t0)/st.dur):1;
+    yv = st.id===11 ? laterYear(u) : lerp(st.y0,st.y1,u); approx = st.yTag==='est';
+    if(st.parallel) ysub=L(UI.parallel); if(st.id===8) ysub=`${M.N.hallStart.v}–${M.N.hallDone.v} · `+ysub;
+    if(st.id===7) ysub=`${M.N.finishStart.v}–${M.N.finishStart.v+M.N.finishYears.v} (est.)`; if(st.id===9) ysub=`${M.N.gildStart.v}–${M.N.gildStart.v+M.N.gildYears.v} (est.) · `+L(UI.parFin);
+    if(st.tiers) ysub = (LANG==='tr'?'halkalara eşit bölünmüş (est.)':'split evenly by ring (est.)'); }
+  document.getElementById('vYear').textContent=(approx?'≈ ':'')+Math.floor(yv+1e-6);
+  document.getElementById('sYear').textContent=ysub;
+  document.getElementById('vTier').textContent=`${active||poured} / ${M.N.pours.v}`; document.getElementById('sTier').textContent=(cs&&lp>0.45&&lp<0.92)?L(UI.pouring):'';
+  document.getElementById('barBronze').style.width=(100*bronzeSum/8).toFixed(1)+'%';
+  let bs = bronzeSum<0.01? L(UI.noneYet) : `${nf(bronzeSum/8*100,0)}%`;
+  if(ph(3)>0&&ph(3)<1) bs+= LANG==='tr'?` · bu döküm ≈ ${nv('tier1t')} t (est.)`:` · this pour ≈ ${nv('tier1t')} t (est.)`;
+  if(bronzeSum>7.99) bs+= LANG==='tr'?` · toplam ≈ ${nv('copperT')} t bakır + ${nv('tinT',1)} t kalay (est.)`:` · total ≈ ${nv('copperT')} t copper + ${nv('tinT',1)} t tin (est.)`;
+  document.getElementById('sBronze').textContent=bs;
+  const mh=H/PX; document.getElementById('vMound').textContent= mh<0.05? '0 m' : `≈ ${nf(mh,1)} m`;
+  document.getElementById('sMound').textContent= LANG==='tr'?`halka başına ≈ ${nv('tierH')} m (est.)`:`≈ ${nv('tierH')} m per ring (est.)`;
+  {const sp=document.getElementById('speed');sp.innerHTML = fmtSpeed(shown);sp.style.visibility=shown?'visible':'hidden';}
+  // hint + fact
+  const key=LANG+'|'+(shown?shown.id:0);
+  if(key!==lastUIkey){lastUIkey=key;
+    document.getElementById('hintNum').textContent= shown? shown.id : '·';
+    document.getElementById('hintText').textContent= (shown? L(shown.hint) : L(UI.intro)).replace(/\{(\w+)\}/g,(m0,k)=>nv(k));
+    document.getElementById('factText').innerHTML= shown? FACT[shown.id]() : (LANG==='tr'?`Ferman: ${HT('edict')} (Shigaraki) · Nara'da yeniden başlama: ${HT('restart')}.`:`Edict: ${HT('edict')} (Shigaraki) · restart at Nara: ${HT('restart')}.`);
+  }
+  // step buttons
+  const focusI = playingIdx>=0?playingIdx:Math.min(doneCount,ST.length-1); if(focusI!==lastFocus){lastFocus=focusI; if(window.innerWidth<760){const b=BTN[focusI]; const nav=stepsNav; nav.scrollTo({left:b.offsetLeft-nav.offsetLeft-8,behavior:RENDER?'auto':'smooth'});}}
+  const next = doneCount; // index of next step to play
+  BTN.forEach((b,i)=>{b.classList.toggle('done',i<doneCount && i!==playingIdx);b.classList.toggle('playing',i===playingIdx);
+    const isNext = i===next && playingIdx<0; b.classList.toggle('next',isNext); b.classList.toggle('pulse',isNext&&MODE==='manual');
+    b.disabled = !(isNext && MODE==='manual' && !RENDER);});
+}
+
+/* ===== UI wiring & engine ===== */
+const RENDER = new URLSearchParams(location.search).has('render');
+if(RENDER) document.body.classList.add('render');
+const stepsNav=document.getElementById('steps');
+const BTN=ST.map((s,i)=>{const b=document.createElement('button');b.className='step';b.innerHTML=`<span class="n">${s.id}</span><span class="nm"></span>`;b.addEventListener('click',()=>playStep(i));stepsNav.appendChild(b);return b;});
+let playing=false, playTo=0, lastTs=null, autoWait=0;
+function playStep(i){ if(MODE!=='manual'||playing)return; t=ST[i].t0; playTo=ST[i].t1; playing=true; lastTs=null; }
+function setMode(m){MODE=m;localStorage.setItem('tdj-mode',m);
+  document.getElementById('mManual').setAttribute('aria-pressed',m==='manual');document.getElementById('mAuto').setAttribute('aria-pressed',m==='auto');
+  if(m==='auto'){ if(!playing){playing=true;} playTo=M.total; lastTs=null;}
+  else { if(playing){const i=ST.findIndex(s=>t<s.t1); playTo=i>=0?ST[i].t1:M.total;} }
+  render();}
+function setLang(l){LANG=l;localStorage.setItem('tdj-lang',l);document.documentElement.lang=l;
+  document.getElementById('lTR').setAttribute('aria-pressed',l==='tr');document.getElementById('lEN').setAttribute('aria-pressed',l==='en');
+  document.getElementById('title').innerHTML=L(UI.title); document.title=document.getElementById('title').textContent;
+  document.getElementById('mManual').textContent=L(UI.manual);document.getElementById('mAuto').textContent=L(UI.auto);document.getElementById('restart').textContent='↺ '+L(UI.restart);
+  ['kYear','kTier','kBronze','kMound'].forEach(k=>document.getElementById(k).textContent=L(UI[k]));
+  document.getElementById('bigidea').textContent=L(M.bigIdea);
+  BTN.forEach((b,i)=>b.querySelector('.nm').textContent=L(ST[i].name));
+  buildSources(); lastUIkey=''; lblEls.forEach(o=>o.w=0); render();}
+function buildSources(){
+  document.getElementById('srcTitle').textContent=L(UI.src); document.getElementById('srcLegend').innerHTML=L(UI.legend);
+  document.getElementById('srcHead').innerHTML=L(UI.head).map(h=>`<th>${h}</th>`).join('');
+  const rows=Object.entries(M.N).filter(([k,n])=>n.label).map(([k,n])=>{
+    const tagTxt={off:LANG==='tr'?'resmî/kayıt':'official/record',trad:'trad.',est:'est.',calc:'calc.'}[n.tag];
+    const note=n.note?` <span style="font-weight:400;color:#6b6257">(${L(n.note)})</span>`:'';
+    return `<tr><td>${L(n.label)}</td><td class="v">${nv(k,3)}${note}</td><td>${n.tag==='off'?tagTxt:`<i class="tag ${n.tag}">${tagTxt}</i>`}</td><td>${n.src.map(s=>`<a href="${M.S[s].url}" target="_blank" rel="noopener">${M.S[s].name}</a>`).join('<br>')}</td></tr>`;});
+  const calc=[[LANG==='tr'?'Döküm süresi (gün), 747-11-06 → 749-12-08':'Casting span (days), 747-11-06 → 749-12-08', nf(M.castDays,0),'calc.','jawiki'],
+              [LANG==='tr'?'Kil model süresi (gün), 745-09-23 → 746-11-23':'Clay-model span (days), 745-09-23 → 746-11-23', nf(M.coreDays,0),'calc.','jawiki'],
+              [LANG==='tr'?'Hız rozeti = gerçek süre ÷ animasyon süresi':'Speed badge = real duration ÷ animation duration','—','calc.','jawiki']];
+  calc.forEach(r=>rows.push(`<tr><td>${r[0]}</td><td class="v">${r[1]}</td><td><i class="tag calc">calc.</i></td><td><a href="${M.S[r[3]].url}" target="_blank" rel="noopener">${M.S[r[3]].name}</a></td></tr>`));
+  document.getElementById('srcBody').innerHTML=rows.join('');
+  document.getElementById('foot').textContent=L(UI.foot).replace('{pours}',nv('pours'));
+}
+function frame(ts){
+  if(!RENDER){
+    if(lastTs==null)lastTs=ts; const dt=Math.min(0.05,(ts-lastTs)/1000); lastTs=ts;
+    if(playing){ t=Math.min(playTo,t+dt); if(t>=playTo-1e-9){ playing=false; if(MODE==='auto'){autoWait=t>=M.total-1e-9?2.5:0.6;} } }
+    else if(MODE==='auto'){ autoWait-=dt; if(autoWait<=0){ if(t>=M.total-1e-9) t=0; playing=true; playTo=M.total; } }
+    render();
+  }
+  requestAnimationFrame(frame);
+}
+document.getElementById('mManual').onclick=()=>setMode('manual');
+document.getElementById('mAuto').onclick=()=>setMode('auto');
+document.getElementById('lTR').onclick=()=>setLang('tr');
+document.getElementById('lEN').onclick=()=>setLang('en');
+document.getElementById('restart').onclick=()=>{t=0;playing=MODE==='auto';playTo=M.total;lastTs=null;autoWait=0;render();};
+window.seek=(x)=>{t=clamp(x,0,M.total);render();return t;};
+window.TOTAL=M.total; window.STEPS=ST.map(s=>({id:s.id,t0:s.t0,t1:s.t1}));
+window.setLang=setLang;
+// phone: crop the figure a little
+let VX0=0,VX1=1000;function fitView(){const ph=window.innerWidth<760 && !RENDER;VX0=ph?90:0;VX1=ph?910:1000;fig.setAttribute('viewBox', ph ? '90 30 820 690' : '0 0 1000 720');lblEls&&lblEls.forEach(o=>o.w=0);if(typeof render==='function'&&BTN)render();}
+window.addEventListener('resize',fitView); fitView();
+const qs=new URLSearchParams(location.search); if(qs.get('lang')) LANG=qs.get('lang');
+setLang(LANG); setMode(RENDER?'manual':MODE); if(RENDER){playing=false;}
+requestAnimationFrame(frame);
+
+</script>
+</body>
+</html>
