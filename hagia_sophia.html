@@ -9,10 +9,10 @@
 :root{--ink:#1d2733;--ink2:#4a5666;--mute:#7b8796;--saf:#F5A400;--saf2:#FFB81F;--glass:rgba(255,255,255,.66);--line:rgba(255,255,255,.85);
 --sky0:#8EC8EF;--sky1:#C3E3F6;--sky2:#FCEAD3}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;overflow:hidden;background:#cfe6f5;font-family:'Fig',system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+html,body{margin:0;height:100%;height:100dvh;overflow:hidden;background:#cfe6f5;font-family:'Fig',system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
 #sky{position:fixed;inset:0;background:linear-gradient(180deg,var(--sky0) 0%,var(--sky1) 48%,var(--sky2) 100%)}
 #sky:after{content:"";position:absolute;inset:0;background:radial-gradient(60% 45% at 78% 8%,rgba(255,250,235,.75),rgba(255,250,235,0) 70%)}
-#gl{position:fixed;inset:0;width:100vw;height:100vh;display:block;touch-action:none;cursor:grab}
+#gl{position:fixed;left:0;top:0;width:100%;height:100%;height:100dvh;display:block;touch-action:none;cursor:grab}
 #gl.drag{cursor:grabbing}
 #labels{position:fixed;inset:0;pointer-events:none;z-index:3}
 .lbl{position:absolute;left:0;top:0;white-space:nowrap;font-size:13px;font-weight:650;color:var(--ink);background:rgba(255,255,255,.88);padding:5px 10px 5px 8px;border-radius:999px;box-shadow:0 4px 14px rgba(30,50,80,.16);transition:opacity .25s;display:flex;align-items:center;gap:6px}
@@ -35,7 +35,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#cfe6f5;font-family:'F
 #srcBtn{margin-top:9px;font:inherit;font-size:12px;font-weight:700;color:#7a5200;background:none;border:0;padding:0;cursor:pointer}
 .tag{display:inline-block;font-style:normal;font-size:9.5px;font-weight:750;line-height:1;padding:3px 6px;border-radius:999px;margin-left:4px;vertical-align:1px;letter-spacing:.02em;background:#e9eef4;color:#3c4a5c;white-space:nowrap}
 .tag.off{background:#dff1e4;color:#22663b}.tag.est{background:#e4ecf7;color:#2e4f7a}.tag.trad{background:#efe6f8;color:#5b3a86}
-.tag.unc,.tag.uncf{background:#fde9d2;color:#8a4a00;outline:1px dashed #d79a52;outline-offset:-1px}.tag.calc{background:#eceae6;color:#555}.tag.ss{background:#f2f2f2;color:#777;outline:1px dashed #aaa;outline-offset:-1px}
+.tag.unc,.tag.uncf{background:#fde9d2;color:#8a4a00;outline:1px dashed #d79a52;outline-offset:-1px}.tag.deb{background:#fff3c4;color:#7a5a00;outline:1px dashed #d4a72c;outline-offset:-1px}.tag.calc{background:#eceae6;color:#555}.tag.ss{background:#f2f2f2;color:#777;outline:1px dashed #aaa;outline-offset:-1px}
 #dock{position:fixed;z-index:5;left:50%;transform:translateX(-50%);bottom:20px;width:min(1000px,calc(100vw - 48px));border-radius:24px;padding:12px 18px 12px}
 #tl{position:relative;height:40px;margin:0 6px;touch-action:none;cursor:pointer}
 #track{position:absolute;left:0;right:0;top:10px;height:6px;border-radius:99px;background:rgba(29,39,51,.13)}
@@ -50,7 +50,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#cfe6f5;font-family:'F
 .btn{font:inherit;border:0;cursor:pointer;background:rgba(29,39,51,.07);color:var(--ink);border-radius:999px;height:36px;min-width:36px;padding:0 12px;font-size:13px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
 .btn:hover{background:rgba(29,39,51,.12)}
 .ico svg{width:14px;height:14px}
-#modeSeg button{padding:8px 14px;font-size:13px}
+#modeSeg button{padding:8px 14px;font-size:13px;white-space:nowrap}
 #mAuto[aria-pressed=true]{background:var(--saf);color:#fff}
 .spacer{flex:1}
 .kbd{font-size:11px;color:var(--mute);font-weight:650;white-space:nowrap}
@@ -66,27 +66,35 @@ html,body{margin:0;height:100%;overflow:hidden;background:#cfe6f5;font-family:'F
 #sheetIn td.v{font-weight:700;white-space:nowrap}#sheetIn .alt{font-weight:450;color:var(--mute);white-space:normal;font-size:12px}
 #sheetIn a{color:#2e5c9a;text-decoration:none}#sheetIn .big{font-size:15px;color:var(--ink2);margin:0 0 10px}
 #closeBtn{float:right}
+#foldBtn{display:none;font:inherit;border:0;background:rgba(29,39,51,.07);color:var(--ink2);width:26px;height:26px;border-radius:50%;padding:0;cursor:pointer;align-items:center;justify-content:center;flex:none}
+#foldBtn svg{width:13px;height:13px;transition:transform .25s}
+body.folded #foldBtn svg{transform:rotate(180deg)}
 #nogl{display:none;position:fixed;inset:0;z-index:30;align-items:center;justify-content:center;font-size:18px;font-weight:700}
 #nogl.on{display:flex}
 body.render #dragHint,body.render #resetBtn{display:none}
 @media (max-width:760px){
- #card{left:10px;right:10px;top:max(10px,env(safe-area-inset-top));width:auto;border-radius:20px;padding:12px 15px 11px}
- .eyebrow{font-size:10px;gap:8px}.seg button{font-size:11px;padding:4px 8px}
- #year{font-size:36px;margin:7px 0 2px}
- #title{font-size:17px;margin:0 0 5px}
- #hint{font-size:13.5px;line-height:1.4;margin-bottom:7px}
- #fact{font-size:11.5px;line-height:1.45;padding-top:6px}
- #srcBtn{font-size:11px;margin-top:5px}
- #dock{bottom:max(10px,env(safe-area-inset-bottom));width:calc(100vw - 20px);border-radius:20px;padding:8px 10px 10px}
+ #card{left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));width:auto;border-radius:18px;padding:9px 12px 9px}
+ .eyebrow{font-size:9.5px;gap:6px;letter-spacing:.1em}.seg button{font-size:11px;padding:3px 8px}
+ #foldBtn{display:inline-flex}
+ #yt{display:flex;align-items:baseline;gap:9px;margin:5px 0 3px}
+ #year{font-size:27px;margin:0;flex:none}
+ #title{font-size:15.5px;margin:0;line-height:1.2}
+ #hint{font-size:12.8px;line-height:1.38;margin:0 0 5px}
+ #fact{font-size:11px;line-height:1.4;padding-top:5px}
+ #srcBtn{font-size:11px;margin-top:4px}
+ body.folded #hint,body.folded #fact,body.folded #srcBtn{display:none}
+ #dock{bottom:max(8px,env(safe-area-inset-bottom));width:calc(100vw - 16px);border-radius:20px;padding:8px 10px 10px}
  #tl{height:36px;margin:0 4px}.tick{font-size:10px}
  #ctrls{gap:6px}.btn{height:34px;min-width:34px;padding:0 9px;font-size:12px}
- #modeSeg button{padding:7px 10px;font-size:12px}
+ #modeSeg button{padding:7px 10px;font-size:12px;white-space:nowrap}
+ #ctrls{flex-wrap:nowrap}.seg{flex:none}
  .kbd{display:none}
  #resetBtn{right:12px;bottom:128px;width:38px;height:38px}
  #dragHint{top:auto;bottom:130px;right:auto;left:12px;font-size:11px;padding:6px 11px}
  .lbl{font-size:11.5px;padding:4px 9px 4px 7px}
  #sheet{padding:8px}#sheetIn{padding:16px;font-size:12px}
 }
+@media (max-width:380px){#ctrls{gap:4px}.btn{padding:0 7px;min-width:32px}#modeSeg button{padding:7px 8px;font-size:11.5px}#spdSeg button{padding:4px 6px}}
 </style>
 </head>
 <body>
@@ -95,10 +103,11 @@ body.render #dragHint,body.render #resetBtn{display:none}
 <div id="labels"></div>
 <div id="card" class="glass">
   <div class="eyebrow"><span class="brand" id="brand"></span><span id="stepNo">01 / 18</span>
-    <span class="seg" id="langSeg"><button id="lTR" aria-pressed="true">TR</button><button id="lEN" aria-pressed="false">EN</button></span></div>
+    <span class="seg" id="langSeg"><button id="lTR" aria-pressed="true">TR</button><button id="lEN" aria-pressed="false">EN</button></span>
+    <button id="foldBtn" aria-expanded="true" aria-label="fold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg></button></div>
   <div id="cardBody">
-    <div id="year"></div>
-    <div id="title"></div>
+    <div id="yt"><div id="year"></div>
+    <div id="title"></div></div>
     <p id="hint"></p>
     <p id="fact"></p>
     <button id="srcBtn"></button>
@@ -164,6 +173,12 @@ function buildModel(){
     phaidra:{name:"Univ. Wien PHAIDRA o:250461: Aya Sofya, Kuppel (survey notes)", url:"https://phaidra.univie.ac.at/detail/o:250461"},
     ktsv:{name:"Klasik Türk Sanatları Vakfı: 'Ayasofya levhaları' (2008)", url:"https://www.ktsv.com.tr/guncel/ayasoyfa-levhalari"},
     wikiT1:{name:"Wikipedia (EN): T1 (Istanbul Tram) — secondary, tram model only", url:"https://en.wikipedia.org/wiki/T1_(Istanbul_Tram)"},
+    taylor:{name:"R. Taylor, 'A Literary and Structural Analysis of the First Dome on Justinian's Hagia Sophia', JSAH 55.1 (1996) 66–78", url:"https://doi.org/10.2307/991056"},
+    cakmak:{name:"A. Ş. Çakmak, R. M. Taylor, E. Durukal, 'The structural configuration of the first dome of Justinian's Hagia Sophia (A.D. 537–558)', Soil Dyn. & Earthq. Eng. 29 (2009) 693–698", url:"https://avesis.bogazici.edu.tr/yayin/ce871eb2-b29d-448b-a2ea-9fdad628357c/the-structural-configuration-of-the-first-dome-of-justinians-hagia-sophia-a-d-537-558-an-investigation-based-on-structural-and-literary-analysis"},
+    mainstone:{name:"R. J. Mainstone, 'Justinian's Church of St Sophia, Istanbul: Recent Studies of Its Construction and First Partial Reconstruction', Architectural History 12 (1969); Hagia Sophia (1988), as summarised by Taylor 1996", url:"https://doi.org/10.2307/1568335"},
+    ehw:{name:"J. Kostenec, 'Hagia Sophia', Encyclopaedia of the Hellenic World: Constantinople (2007)", url:"http://constantinople.ehw.gr/forms/filePage.aspx?lemmaId=10894"},
+    archnet:{name:"Archnet: Hagia Sophia (site record)", url:"https://www.archnet.org/sites/1989"},
+    wikiHS:{name:"Wikipedia (EN): Hagia Sophia — secondary, only for 20 Byzantine ft ≈ 6.25 m", url:"https://en.wikipedia.org/wiki/Hagia_Sophia"},
     tp:{name:"TransPhoto: Alstom Citadis 304 #828 on T1 between Gülhane and Sultanahmet (2020)", url:"https://transphoto.org/photo/1385229/"}
   };
   // tag: off = official (Ministry / Diyanet / Metro İstanbul / UNESCO) · est = scholarly or approximate
@@ -186,7 +201,8 @@ function buildModel(){
     reign:{v:[527,565], tag:"est", yr:true, src:["angi"], label:{tr:"I. Justinianus",en:"Justinian I"}},
     domeD:{v:31.04, tag:"est", u:"m", src:["dogan"], alt:[["30,80–31,88 m (oval, resmî / official)","ktb"],["≈32,0 m (105 ft)","maa"],["31,87 m","eiao"],["31,90 / 30,87 m","phaidra"],["31,24 / 32,81 m — yalnızca arama özeti / search summary only","dogan"]], label:{tr:"Kubbe çapı (Hoffmann 2005; kubbe ovaldir)",en:"Dome diameter (Hoffmann 2005; the dome is oval)"}},
     domeH:{v:56.1, tag:"est", u:"m", src:["dogan"], alt:[["55,60 m (resmî / official)","ktb"],["≈54,9 m (180 ft)","maa"],["56,2 m","phaidra"]], label:{tr:"Kubbe tepesinin zeminden yüksekliği (Hoffmann 2005)",en:"Dome crown above the floor (Hoffmann 2005)"}},
-    windows:{v:40, tag:"est", src:["maa","phaidra"], label:{tr:"Kubbe eteğindeki pencere",en:"Windows round the base of the dome"}},
+    windows:{v:40, tag:"trad", src:["paul","archnet","maa"], note:{tr:"562 kubbesi: Paul 562/63'te '40 kemerli pencere' der; bugünkü kubbede de 40",en:"The 562 dome: Paul (562/63) says 'forty arched windows'; today's dome also has 40"}, label:{tr:"İkinci (562) kubbenin eteğindeki pencere",en:"Windows round the base of the second (562) dome"}},
+    win537:{v:"var, sayısı bilinmiyor / yes, number unknown", tag:"deb", txt:true, src:["proc","taylor","cakmak","mainstone"], note:{tr:"Prokopios (ilk kubbe ayaktayken yazar): kemerlerin üstündeki yuvarlak yapıda 'kısa aralıklarla' ışık açıklıkları. Kasnakta mı (Taylor 1996; Çakmak–Taylor–Durukal 2009), basık kubbenin eteğinde mi (Mainstone) tartışmalı",en:"Procopius (writing while the first dome stood): light openings 'at short intervals' in the round structure on the arches. Whether in a drum (Taylor 1996; Çakmak–Taylor–Durukal 2009) or at the foot of a shallow dome (Mainstone) is debated"}, label:{tr:"İlk (537) kubbenin pencereleri",en:"Windows of the first (537) dome"}},
     ribs:{v:40, tag:"off", src:["ktb"], label:{tr:"Kubbe kaburgası",en:"Dome ribs"}},
     piers:{v:4, tag:"trad", src:["proc"], label:{tr:"Kubbeyi taşıyan ana paye",en:"Main piers carrying the dome"}},
     arches:{v:4, tag:"trad", src:["proc"], label:{tr:"Büyük kemer",en:"Great arches"}},
@@ -197,8 +213,8 @@ function buildModel(){
     Lin:{v:74.7, tag:"est", u:"m", src:["dogan"], label:{tr:"İç uzunluk (nartheks ve apsis hariç)",en:"Interior length (without narthex & apse)"}},
     Win:{v:69.87, tag:"est", u:"m", src:["dogan"], label:{tr:"İç genişlik",en:"Interior width"}},
     quakes:{v:[553,557], tag:"est", yr:true, src:["angi","mango"], label:{tr:"Depremler kubbeyi çatlatır",en:"Earthquakes crack the dome"}},
-    collapse:{v:558, tag:"trad", yr:true, src:["mango","malalas","paul"], note:{tr:"7 Mayıs 558",en:"7 May 558"}, label:{tr:"İlk kubbenin doğu kısmı çöker (onarım sırasında)",en:"East part of the first dome collapses (during repairs)"}},
-    raise:{v:[6,7], tag:"est", u:"m", approx:true, src:["mango","angi"], alt:[["20 ayaktan fazla / more than 20 ft (Theophanes)","mango"],["30 ayak / 30 ft ≈ 9,1 m (Malalas)","mango"],["6,25 m","angi"]], label:{tr:"Yeni kubbe ne kadar yüksek",en:"How much higher the new dome is"}},
+    collapse:{v:558, tag:"trad", yr:true, src:["mango","malalas","paul"], note:{tr:"7 Mayıs 558",en:"7 May 558"}, label:{tr:"İlk kubbenin doğu kısmı çöker (onarım sırasında); kalanı sökülür",en:"East part of the first dome collapses (during repairs); the rest is taken down"}},
+    raise:{v:6.25, tag:"est", u:"m", approx:true, src:["mango","angi","wikiHS"], note:{tr:"Theophanes: '20 ayaktan fazla'; 20 Bizans ayağı ≈ 6,25 m",en:"Theophanes: 'more than 20 feet'; 20 Byzantine ft ≈ 6.25 m"}, alt:[["30 ayak / 30 ft ≈ 9,4 m (Malalas)","mango"],["≈ 6 m","ehw"],["ilk kubbe 28, bugünkü 48 Bizans ayağı derinlikte (öneri; yalnızca arama özeti) / first dome 28 vs today's 48 Byzantine ft deep (proposal; search summary only)","cakmak"]], label:{tr:"Yeni kubbe ne kadar yüksek",en:"How much higher the new dome is"}},
     reconsec:{v:562, tag:"est", yr:true, src:["mango","paul","dogan"], note:{tr:"24 Aralık 562",en:"24 Dec 562"}, alt:[["24 Aralık 563 / 24 Dec 563","eiao"]], label:{tr:"Yeni kubbeyle yeniden açılış",en:"Rededicated with the new dome"}},
     q989:{v:989, tag:"est", yr:true, src:["engberg","angi","dogan"], note:{tr:"26 Ekim 989",en:"26 Oct 989"}, label:{tr:"Deprem: batı kemeri ve kubbenin bir kısmı çöker",en:"Earthquake: western arch and part of the dome fall"}},
     trdat:{v:994, tag:"est", yr:true, approx:true, src:["dogan","engberg"], label:{tr:"Mimar Trdat'ın onarımı biter (yaklaşık)",en:"Architect Trdat's repair finished (approx.)"}},
@@ -233,7 +249,7 @@ function buildModel(){
     route2024:{v:2024, tag:"off", yr:true, src:["ktbpress"], note:{tr:"15 Ocak 2024",en:"15 Jan 2024"}, label:{tr:"Turistler galeri katından gezer",en:"Tourists visit via the upper gallery"}}
   };
   // ---- derived (calc) ----
-  const H2 = N.domeH.v, RAISE = (N.raise.v[0]+N.raise.v[1])/2, H1 = H2 - RAISE;   // first dome ≈ crown − 6.5 m
+  const H2 = N.domeH.v, RAISE = N.raise.v, H1 = H2 - RAISE;   // first dome ≈ crown − 6.25 m (20 Byzantine ft)
   const R  = N.domeD.v/2;
   const layers = [
     {k:'base',  n:4+2+2+2+4, name:{tr:'payeler + duvarlar + nartheks',en:'piers + walls + narthex'}},
@@ -244,7 +260,9 @@ function buildModel(){
     {k:'tower', n:N.minarets.v+4+4, name:{tr:'minareler + payandalar',en:'minarets + buttresses'}}
   ];
   const parts = layers.reduce((a,l)=>a+l.n,0);
-  const C = {H1, H2, RAISE, R, parts, layerCount:layers.length, ratio:Math.round(H2/N.domeD.v*10)/10, churchYears:1453-537, mosqueYears:1934-1453};
+  // 7 May 558 → 24 Dec 562
+  const rebuildY = Math.round(((Date.UTC(562,11,24)-Date.UTC(558,4,7))/864e5/365.25)*10)/10;
+  const C = {H1, H2, RAISE, R, parts, rebuildY, layerCount:layers.length, ratio:Math.round(H2/N.domeD.v*10)/10, churchYears:1453-537, mosqueYears:1934-1453};
 
   const HIST = {
    1:{name:{tr:'İlk kilise',en:'The first church'},
@@ -265,18 +283,18 @@ function buildModel(){
    6:{name:{tr:'Pandantifler',en:'Pendentives'},
       hint:{tr:'Kare nasıl yuvarlağa döner? Köşelere dört kavisli üçgen konur: pandantifler!',en:'How do you turn a square into a circle? Put four curved triangles in the corners: pendentives!'},
       fact:{tr:'Prokopios bunlara "dört üçgen" der{tag:pend}. Üstte tam bir halka olur; kubbe bu halkaya oturur.',en:'Procopius calls them "four triangles"{tag:pend}. Together they make a ring; the dome sits on that ring.'}},
-   7:{name:{tr:'İlk kubbe, 40 pencere',en:'First dome, 40 windows'},
-      hint:{tr:'Halkaya 40 pencereli bir etek, üstüne basık ilk kubbe kurulur. Doğu ve batıya yarım kubbeler yaslanır.',en:'A ring of 40 windows goes on, then the first, flatter dome. Half-domes lean on it, east and west.'},
-      fact:{tr:'Açılış {consec} (27 Aralık). Eteğinde {windows} pencere. Efsane: "Süleyman, seni geçtim!"<i class="tag unc">{UNC}</i>',en:'Inaugurated {consec} (27 December). {windows} windows at its base. Legend: "Solomon, I have surpassed thee!"<i class="tag unc">{UNC}</i>'}},
+   7:{name:{tr:'İlk kubbe: daha basık',en:'The first dome: flatter'},
+      hint:{tr:'Halkanın üstüne ilk kubbe kurulur: bugünkünden daha basık. Eteğinden ışık girer ama kaç pencere olduğunu bilmiyoruz. Doğu ve batıya yarım kubbeler yaslanır.',en:'The first dome goes on the ring: flatter than today\'s. Light comes in round its base, but we don\'t know how many windows it had. Half-domes lean on it, east and west.'},
+      fact:{tr:'Açılış {consec} (27 Aralık). Prokopios eteğinde "kısa aralıklarla" ışık açıklıkları anlatır; sayı vermez{tag:win537}. Kasnak mı, kubbe eteği mi: tartışmalı. Efsane: "Süleyman, seni geçtim!"<i class="tag unc">{UNC}</i>',en:'Inaugurated {consec} (27 December). Procopius describes light openings "at short intervals" round its base but gives no number{tag:win537}. A drum or the foot of the dome: debated. Legend: "Solomon, I have surpassed thee!"<i class="tag unc">{UNC}</i>'}},
    8:{name:{tr:'Kesit: yük nereye?',en:'Cut-away: where the weight goes'},
       hint:{tr:'Bir köşeyi keselim. Kubbenin ağırlığı halkadan pandantiflere, oradan 4 payeye ve yere iner.',en:'Let\'s slice off a corner. The dome\'s weight flows into the pendentives, down the 4 piers, into the ground.'},
-      fact:{tr:'Bugünkü kubbe: çap {domeD}, tepe {domeH}. Yük yolu: kubbe → pandantif → {piers:plain} paye → temel.',en:'Today\'s dome: {domeD} across, crown {domeH} high. Load path: dome → pendentives → {piers:plain} piers → foundations.'}},
+      fact:{tr:'Kubbe çapı {domeD} (bugünkü ölçüm). Yük yolu: kubbe → pandantif → {piers:plain} paye → temel.',en:'Dome diameter {domeD} (today\'s survey). Load path: dome → pendentives → {piers:plain} piers → foundations.'}},
    9:{name:{tr:'558: kubbe çöker',en:'558: the dome falls'},
-      hint:{tr:'Depremler basık kubbeyi çatlatır. Onarım sırasında doğu tarafı çöker: güm!',en:'Earthquakes crack the flat dome. During the repairs its east side crashes down: boom!'},
-      fact:{tr:'Depremler {quakes}. Çöküş {collapse} (7 Mayıs, Theophanes): kubbenin doğu kısmı ve doğu kemeri.',en:'Earthquakes {quakes}. Collapse {collapse} (7 May, Theophanes): the east part of the dome and the eastern arch.'}},
-   10:{name:{tr:'562: daha dik kubbe',en:'562: a steeper dome'},
-      hint:{tr:'Genç İsidoros kubbeyi daha dar, daha dik ve daha yüksek yapar. Artık yana daha az iter.',en:'Isidore the Younger rebuilds the dome narrower, steeper and taller. Now it pushes outward less.'},
-      fact:{tr:'Yeni kubbe {raise} daha yüksek (Theophanes "20 ayaktan fazla", Malalas "30 ayak"). Yeniden açılış {reconsec} (24 Aralık).',en:'The new dome is {raise} higher (Theophanes "more than 20 ft", Malalas "30 ft"). Rededicated {reconsec} (24 December).'}},
+      hint:{tr:'Depremler basık kubbeyi çatlatır. Onarım sırasında doğu tarafı çöker: güm! Kalan kısmı da sökülür.',en:'Earthquakes crack the flat dome. During the repairs its east side crashes down: boom! The rest is taken down.'},
+      fact:{tr:'Depremler {quakes}. Çöküş {collapse} (7 Mayıs, Theophanes): kubbenin doğu kısmı ve doğu kemeri. Agathias: mimarlar eski tasarımı inceler, kuzey ve güney kemerlerini içe doğru genişletir.',en:'Earthquakes {quakes}. Collapse {collapse} (7 May, Theophanes): the east part of the dome and the eastern arch. Agathias: the engineers study the old design and widen the north and south arches inward.'}},
+   10:{name:{tr:'562: dik kubbe, 40 pencere',en:'562: steeper dome, 40 windows'},
+      hint:{tr:'Genç İsidoros kubbeyi baştan kurar: daha dik ve daha yüksek. Eteğinde 40 kaburga arasında 40 pencere. Artık yana daha az iter.',en:'Isidore the Younger rebuilds the dome from scratch: steeper and taller. Round its base, 40 windows between 40 ribs. Now it pushes outward less.'},
+      fact:{tr:'Yeni kubbe {raise} daha yüksek (Theophanes "20 ayaktan fazla", Malalas "30 ayak"). Eteğinde {windows} pencere (Paul, 562/63). Yeniden açılış {reconsec} (24 Aralık), çöküşten ≈ {C.rebuildY}{CALC} yıl sonra.',en:'The new dome is {raise} higher (Theophanes "more than 20 ft", Malalas "30 ft"). {windows} windows round its base (Paul, 562/63). Rededicated {reconsec} (24 December), ≈ {C.rebuildY}{CALC} years after the collapse.'}},
    11:{name:{tr:'Hasarlar, payandalar',en:'Damage & buttresses'},
       hint:{tr:'Depremler yine vurur, kemerler ve kubbe parçaları düşer, onarılır. Dışarıdan kalın payandalar yapıyı iter: "Dur bakalım!"',en:'More earthquakes: arches and parts of the dome fall and get repaired. Thick buttresses push back from outside: "Stay put!"'},
       fact:{tr:'{q989}: batı kemeri (Trdat onarır, ≈{trdat:plain}). {by1317}: kuzey ve doğuya payandalar. {c1346}: kubbenin ≈⅓\'ü; onarım {r1354}.',en:'{q989}: western arch (Trdat repairs, c. {trdat:plain}). {by1317}: buttresses on the north and east. {c1346}: ≈⅓ of the dome; repaired {r1354}.'}},
@@ -316,7 +334,9 @@ if (typeof module!=='undefined') module.exports={buildModel};
  [{tr:'415: Angı bunu yeni, ikinci bir yapı olarak anlatır (II. Theodosius, mimar Rufinos). Doğan önce "404 yangınından sonra onarılıp 415\'te yeniden açılır" der, sonra "ikinci yapıyı olasılıkla Arkadios başlatmış" diye yazar',en:'415: Angı describes a new, second building (Theodosius II, architect Rufinus). Doğan first says it was "repaired after the 404 fire and reopened in 415", then that "the second building was probably begun by Arcadius"'},['angi','dogan'],'est'],
  [{tr:'Kuzu frizi (12 kuzu = 12 havari) Theodosius dönemi girişine atfedilir; bunu doğrudan anlatan resmî ya da akademik bir kaynak açılamadı. Portik kalıntıları ve 1935 kazısı doğrulandı',en:'The lamb frieze (12 lambs = 12 apostles) is attributed to the Theodosian entrance, but no official or academic page describing it could be opened. The portico remains and the 1935 dig are confirmed'},['angi','dogan'],'uncf'],
  [{tr:'Kubbe dört kemere, kemerler dört payeye oturur; köşelerdeki "dört üçgen" (pandantifler) kareyi halkaya çevirir',en:'The dome rests on four arches on four piers; the "four triangles" (pendentives) turn the square into a ring'},['proc'],'trad'],
+ [{tr:'40 pencere: sayıyı ilk veren Paul\'dur (562/63) ve 562\'de yeniden kurulan kubbeyi anlatır; bugünkü kubbede de 40 pencere ve 40 kaburga var. İlk (537) kubbe için Prokopios ışık açıklıklarından söz eder ama sayı vermez. Bu açıklıkların bir kasnakta mı (Taylor 1996; Çakmak–Taylor–Durukal 2009) yoksa doğrudan pandantif halkasına oturan basık kubbenin eteğinde mi (Mainstone) olduğu tartışmalı. "İlk kubbede pencere yoktu" diyen bir kaynak bulunamadı. Kaynaklar 4,5 yıllık yeniden yapımı pencerelere bağlamaz; Agathias kuzey ve güney kemerlerinin genişletilmesini ve kubbenin baştan kurulmasını anlatır',en:'40 windows: the number is first given by Paul (562/63) and describes the dome rebuilt in 562; today\'s dome also has 40 windows and 40 ribs. For the first (537) dome Procopius mentions light openings but gives no number. Whether they sat in a drum (Taylor 1996; Çakmak–Taylor–Durukal 2009) or at the foot of a shallow dome rising straight from the pendentive ring (Mainstone) is debated. No source was found saying the first dome had no windows. The sources do not tie the 4.5-year rebuild to the windows; Agathias describes widening the north and south arches and building the dome anew'},['proc','paul','taylor','cakmak','mainstone','mango'],'deb'],
  [{tr:'İkinci kubbe birinciden "daha dar ve daha dik", ama "çok daha sağlam" (Agathias)',en:'The second dome was "narrower and steeper" but "far more securely set up" (Agathias)'},['mango'],'trad'],
+ [{tr:'Yükseklik farkı: Theophanes "20 ayaktan fazla", Malalas "30 ayak" der. 20 Bizans ayağı ≈ 6,25 m; Kostenec "yaklaşık 6 m" der. Çakmak–Taylor–Durukal\'ın ilk kubbe için 28, bugünkü için 48 ayak derinlik önerdiği yalnızca bir arama özetinde görüldü: gösterilmedi',en:'Height difference: Theophanes says "more than 20 feet", Malalas "30 feet". 20 Byzantine ft ≈ 6.25 m; Kostenec says "about 6 m". That Çakmak–Taylor–Durukal propose 28 ft of depth for the first dome vs 48 ft today was seen only in a search summary: not shown'},['mango','ehw','wikiHS','cakmak'],'est'],
  [{tr:'558 çöküşü: Theophanes ve Malalas yorumu çöküşü depremden sonraki onarım sırasına koyar; Angı "7 Mayıs 558 depremi" der',en:'558 collapse: Theophanes/Malalas place it during repairs after the 557 quakes; Angı calls it "the earthquake of 7 May 558"'},['mango','malalas','angi'],'est'],
  [{tr:'Yeniden açılış 24 Aralık 562 (Mango); bir kaynak 563 der; Paul\'un şiiri 563 başında okunur',en:'Rededication 24 Dec 562 (Mango); one source says 563; Paul\'s poem recited early 563'},['mango','paul','eiao'],'est'],
  [{tr:'Kubbe oval: çap ölçümü 30,8–32,8 m arasında değişir; yükseklik 54,9–56,2 m (ölçüm ve referans noktasına göre)',en:'The dome is oval: diameters range 30.8–32.8 m; height 54.9–56.2 m depending on survey and reference point'},['dogan','ktb','maa','phaidra'],'est'],
@@ -332,7 +352,7 @@ if (typeof module!=='undefined') module.exports={buildModel};
  [{tr:'Resmî durak sırası: Gülhane → Sultanahmet → Çemberlitaş. Hattın hangi sokaklardan geçtiği resmî bir kaynakta bulunamadı: gösterilmedi',en:'Official stop order: Gülhane → Sultanahmet → Çemberlitaş. Which streets the line uses could not be found in an official source: not shown'},['metro'],'ss'],
  [{tr:'Çizilen tramvay Alstom Citadis tarzı (beyaz, kırmızı/lacivert, çok modüllü, pantograf). T1\'de Citadis ve Bombardier Flexity tramvaylar çalışır (ikincil kaynak)',en:'The tram is drawn in Alstom Citadis style (white, red/navy, multi-section, pantograph). T1 runs Citadis and Bombardier Flexity trams (secondary source)'},['wikiT1','tp'],'est']
 ];
-const UIC={src:{tr:'Kaynaklar: ekrandaki her sayı',en:'Sources: every number on screen'},claims:{tr:'Sayı olmayan iddialar ve çelişkiler',en:'Non-numeric claims and disagreements'}, legend:{tr:'Etiketler: <i class="tag off">resmî</i> Bakanlık / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> akademik veya yaklaşık · <i class="tag trad">trad.</i> antik/ortaçağ anlatısı · <i class="tag unc">trad./doğrulanmadı</i> efsane, doğrulanmamış · <i class="tag calc">calc.</i> burada hesaplandı · <i class="tag ss">yalnızca arama özeti</i> kaynağı açılamadı, olgu olarak gösterilmez. Kaynaklar farklıysa seçilen değer kalın, diğerleri altında.',          en:'Tags: <i class="tag off">official</i> Ministry / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> scholarly or approximate · <i class="tag trad">trad.</i> ancient/medieval account · <i class="tag unc">trad./unconfirmed</i> legend, unconfirmed · <i class="tag calc">calc.</i> computed here · <i class="tag ss">search summary only</i> source page not readable, not shown as fact. Where sources differ, the chosen value is bold and alternatives sit below it.'}, head:{tr:['Ne','Değer','Durum','Kaynak'],en:['What','Value','Status','Source']}, foot:{tr:'Ölçekli (1 birim = 1 m): kubbe çapı ve yüksekliği, iç uzunluk ve genişlik, nartheks derinlikleri, levha çapı. Şematik: kemerlerin başlama yüksekliği, galeri ve duvar yükseklikleri, payandaların ve minarelerin biçimi/yeri, eski kiliseler, tramvay ve rayların yeri. Tramvay burada yapının batısından düz bir hatla geçer; gerçek güzergâhın sokak adları resmî bir kaynakta doğrulanamadı (yalnızca arama özeti). Tramvay Alstom Citadis tarzında çizildi (beyaz, kırmızı/lacivert, 5 modül, pantograf); ölçü iddiası yoktur. Levhalar yazısız, sade disk olarak çizildi.',        en:'To scale (1 unit = 1 m): dome diameter and height, interior length and width, narthex depths, roundel diameter. Schematic: arch springing height, gallery and wall heights, the shape/position of buttresses and minarets, the old churches, the tram and its tracks. Here the tram runs straight past the west side; the real street names of the route could not be confirmed from an official source (search summary only). The tram is drawn in Alstom Citadis style (white, red/navy, 5 modules, pantograph); no dimensions are claimed. The roundels are drawn as plain discs, without script.'}};
+const UIC={src:{tr:'Kaynaklar: ekrandaki her sayı',en:'Sources: every number on screen'},claims:{tr:'Sayı olmayan iddialar ve çelişkiler',en:'Non-numeric claims and disagreements'}, legend:{tr:'Etiketler: <i class="tag off">resmî</i> Bakanlık / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> akademik veya yaklaşık · <i class="tag trad">trad.</i> antik/ortaçağ anlatısı · <i class="tag unc">trad./doğrulanmadı</i> efsane, doğrulanmamış · <i class="tag deb">tartışmalı</i> akademisyenler farklı yorumlar · <i class="tag calc">calc.</i> burada hesaplandı · <i class="tag ss">yalnızca arama özeti</i> kaynağı açılamadı, olgu olarak gösterilmez. Kaynaklar farklıysa seçilen değer kalın, diğerleri altında.',          en:'Tags: <i class="tag off">official</i> Ministry / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> scholarly or approximate · <i class="tag trad">trad.</i> ancient/medieval account · <i class="tag unc">trad./unconfirmed</i> legend, unconfirmed · <i class="tag deb">debated</i> scholars disagree · <i class="tag calc">calc.</i> computed here · <i class="tag ss">search summary only</i> source page not readable, not shown as fact. Where sources differ, the chosen value is bold and alternatives sit below it.'}, head:{tr:['Ne','Değer','Durum','Kaynak'],en:['What','Value','Status','Source']}, foot:{tr:'Ölçekli (1 birim = 1 m): kubbe çapı ve yüksekliği, iç uzunluk ve genişlik, nartheks derinlikleri, levha çapı. Şematik: kemerlerin başlama yüksekliği, galeri ve duvar yükseklikleri, payandaların ve minarelerin biçimi/yeri, eski kiliseler, tramvay ve rayların yeri. Tramvay burada yapının batısından düz bir hatla geçer; gerçek güzergâhın sokak adları resmî bir kaynakta doğrulanamadı (yalnızca arama özeti). Tramvay Alstom Citadis tarzında çizildi (beyaz, kırmızı/lacivert, 5 modül, pantograf); ölçü iddiası yoktur. Levhalar yazısız, sade disk olarak çizildi. İlk (537) kubbedeki açıklıkların sayısı ve biçimi bilinmediği için şematiktir (çizilen sayı bir iddia değildir); 562 kubbesinde 40 pencere ve 40 kaburga gerçek sayıdır. Kuzey ve güney dış payandalar, köşelerdeki küçük yarım kubbeler (eksedralar) ve çatı yükseklikleri şematiktir.',        en:'To scale (1 unit = 1 m): dome diameter and height, interior length and width, narthex depths, roundel diameter. Schematic: arch springing height, gallery and wall heights, the shape/position of buttresses and minarets, the old churches, the tram and its tracks. Here the tram runs straight past the west side; the real street names of the route could not be confirmed from an official source (search summary only). The tram is drawn in Alstom Citadis style (white, red/navy, 5 modules, pantograph); no dimensions are claimed. The roundels are drawn as plain discs, without script. The openings on the first (537) dome are schematic because their number and form are unknown (the number drawn is not a claim); on the 562 dome the 40 windows and 40 ribs are the real count. The north and south buttress piers, the small corner half-domes (exedrae) and the roof heights are schematic.'}};
 </script>
 <script>/* ===== Hagia Sophia v4 — bright daylight clay diorama (Three.js r147) ===== */
 const M=buildModel(), N=M.N, ST=M.steps, C=M.C, TOTAL=M.total;
@@ -342,12 +362,13 @@ const eOut=v=>1-Math.pow(1-v,3), eBack=v=>{const c1=1.5,c3=c1+1;return 1+c3*Math
 const qs=new URLSearchParams(location.search), RENDER=qs.has('render');
 if(RENDER) document.body.classList.add('render');
 let LANG=qs.get('lang')?(qs.get('lang')==='en'?'en':'tr'):(localStorage.getItem('hs4-lang')||'tr');
-let SPEED=+(localStorage.getItem('hs4-speed')||1); if(![1,1.5,2].includes(SPEED)) SPEED=1;
+let SPEED=+(localStorage.getItem('hs5-speed')||1); if(![1,1.5,2].includes(SPEED)) SPEED=1;
+const BASE_RATE=0.5; /* 1× = half the old pace (model seconds per real second) */
 const Lx=o=>o[LANG];
 
 /* ---------- text helpers (content rules unchanged from the verified model) ---------- */
 const nf=(v,d)=>new Intl.NumberFormat(LANG==='tr'?'tr-TR':'en-GB',{maximumFractionDigits:d??2}).format(v);
-const TAGTXT={est:()=>'est.',trad:()=>'trad.',calc:()=>'calc.',unc:()=>LANG=='tr'?'trad./doğrulanmadı':'trad./unconfirmed',off:()=>LANG=='tr'?'resmî':'official',ss:()=>LANG=='tr'?'yalnızca arama özeti':'search summary only',uncf:()=>LANG=='tr'?'doğrulanmadı':'unconfirmed'};
+const TAGTXT={est:()=>'est.',trad:()=>'trad.',calc:()=>'calc.',unc:()=>LANG=='tr'?'trad./doğrulanmadı':'trad./unconfirmed',off:()=>LANG=='tr'?'resmî':'official',ss:()=>LANG=='tr'?'yalnızca arama özeti':'search summary only',uncf:()=>LANG=='tr'?'doğrulanmadı':'unconfirmed',deb:()=>LANG=='tr'?'tartışmalı':'debated'};
 function nv(key,d){const n=N[key];if(n.txt)return n.v.split(' / ')[LANG=='tr'?0:1];const f=x=>n.yr?String(x):nf(x,d);let s=Array.isArray(n.v)?n.v.map(f).join('–'):f(n.v);if(n.approx)s='≈ '+s;return s;}
 function nvu(key,d){const n=N[key];return nv(key,d)+(n.u?(n.u==='°'?'°':' '+n.u):'');}
 const tg=key=>{const t=N[key].tag;return t!=='off'?`<i class="tag ${t}">${TAGTXT[t]()}</i>`:'';};
@@ -369,9 +390,9 @@ const UI={
 };
 
 /* ---------- geometry (metres; x = east, z = south, y = up) ---------- */
-const A=C.R, YS=24.5, YR=YS+A, DRUM=3.0, YD=YR+DRUM;
+const A=C.R, YS=23.1, YR=YS+A, DRUM=3.0, YD=YR+DRUM, B1=1.4; /* YS: pier/arch springing ≈ 23.1 m (Taylor 1996) */
 const XI=N.Lin.v/2, ZI=N.Win.v/2, WT=1.6, NAR1=9.55, NAR2=5.75, XW=-XI-WT-NAR1-NAR2;
-const YG=22, RB=A+0.6;
+const YG=20, RB=A+0.6;
 const PLX=-14, PLR=104, TRAM_X=-73;
 const at=(i,f)=>ST[i-1].t0+f*ST[i-1].dur;
 
@@ -549,17 +570,23 @@ const GALL=part('gall','base',0,0,0,12);{const mc=mat('gallery',COL.marble), mf=
     bx(GALL.g,mf,2*XI-2,0.8,ZI-A-1.8,0,10.2,sz*((ZI+A+2.2)/2+0.4),0.3,1);});}
 // narthexes
 const NARS=[];{const x1=-XI-WT,x2=x1-NAR1,x3=x2-NAR2;
-  const a=part('nar1','base',(x1+x2)/2,0,0,19);bx(a.g,mWall,NAR1,18,2*ZI+2*WT,0,0,0,0.6);bx(a.g,mRoof,NAR1+1,1,2*ZI+2*WT+1,0,18,0,0.4);wallWins(a.g,2*ZI-6,'z',-1,18,[]);
-  for(let i=0;i<9;i++)bx(a.g,mWin,0.5,4.4,1.8,-NAR1/2-0.13,11.5,-ZI+6+i*(2*ZI-12)/8,0.35,1);NARS.push(a);
-  const b=part('nar2','base',(x2+x3)/2,0,0,12);bx(b.g,mWall,NAR2,11,2*ZI-6,0,0,0,0.6);bx(b.g,mRoof,NAR2+1,1,2*ZI-5,0,11,0,0.4);
-  for(let i=0;i<7;i++)bx(b.g,mWin,0.5,5.2,2.2,-NAR2/2-0.13,1.2,-ZI+8+i*(2*ZI-16)/6,0.5,1);NARS.push(b);}
+  const a=part('nar1','base',(x1+x2)/2,0,0,17);bx(a.g,mWall,NAR1,16,2*ZI+2*WT,0,0,0,0.6);bx(a.g,mRoof,NAR1+1,1,2*ZI+2*WT+1,0,16,0,0.4);
+  for(let i=0;i<9;i++)bx(a.g,mWin,0.5,4.2,1.8,-NAR1/2-0.13,10.2,-ZI+6+i*(2*ZI-12)/8,0.35,1);NARS.push(a);
+  const b=part('nar2','base',(x2+x3)/2,0,0,10);bx(b.g,mWall,NAR2,9,2*ZI-6,0,0,0,0.6);bx(b.g,mRoof,NAR2+1,1,2*ZI-5,0,9,0,0.4);
+  for(let i=0;i<7;i++)bx(b.g,mWin,0.5,4.6,2.2,-NAR2/2-0.13,1.2,-ZI+8+i*(2*ZI-16)/6,0.5,1);NARS.push(b);}
 // apse (east)
 const APSE=part('apse','base',XI+WT,0,0,16);{const m=mWall;cyl(APSE.g,m,7.5,7.5,15,0,0,0,32,false,0,Math.PI);
   const c=new THREE.Mesh(new THREE.SphereGeometry(7.6,28,12,0,Math.PI,0,Math.PI/2),mRoof);c.position.set(0,15,0);c.castShadow=true;APSE.g.add(c);
   for(let i=0;i<3;i++){const a=(i+1)/4*Math.PI;const w=bx(APSE.g,mWin,1.6,4.4,0.5,Math.sin(a)*7.62,7,Math.cos(a)*7.62,0.4,1);w.rotation.y=a;}}
 // pier buttresses (N + S, Justinianic)
-const PBUT=[];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz],i)=>{const p=part('pbut'+i,'base',sx*(A+3.4),0,sz*(ZI+WT+4.4),30);
-  bx(p.g,mat('pbut',COL.pier),7,28,8.8,0,0,0,0.8);bx(p.g,mRoof,7.8,1.2,9.6,0,28,0,0.5);PBUT.push(p);});
+const PBH=35, PBZ0=ZI-10, PBZ1=ZI+WT+5.5;
+const PBUT=[];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz],i)=>{const L=PBZ1-PBZ0,p=part('pbut'+i,'base',sx*(A+2.6),0,sz*(PBZ0+L/2),PBH);const m=mat('pbut',COL.pier);
+  bx(p.g,m,7.6,PBH,L,0,0,0,0.8);bx(p.g,m,8.4,PBH*0.5,L-6,0,0,sz*3.2,0.8); /* stepped foot */
+  const rs=new THREE.Shape();rs.moveTo(-L/2-0.4,0);rs.lineTo(L/2+0.4,0);rs.lineTo(L/2+0.4,0.6);rs.lineTo(-L/2+3,3.2);rs.lineTo(-L/2-0.4,3.2);rs.closePath();
+  const rg=new THREE.ExtrudeGeometry(rs,{depth:8.2,bevelEnabled:true,bevelThickness:0.2,bevelSize:0.2,bevelSegments:2});rg.translate(0,0,-4.1);rg.rotateY(-Math.PI/2);if(sz<0)rg.rotateY(Math.PI);
+  mesh(rg,mRoof,0,PBH,0,p.g);
+  for(let k=0;k<2;k++)bx(p.g,mWin,1.6,3.4,0.5,0,PBH*0.5+3+k*7,sz*(L/2+0.13),0.35,1);
+  PBUT.push(p);});
 
 // 4 great arches (N,S at z=±A; E,W at x=±A)
 const ARCH={};{const rI=A-0.8,rO=A+1.4,g=archGeo(rI,rO,3.2);
@@ -574,6 +601,11 @@ const HALF=[];[[1,0],[-1,Math.PI]].forEach(([sx,t0],i)=>{const p=part('half'+i,'
   cyl(p.g,mat('halfdome',COL.wall),A+0.6,A+0.6,YS-YG+2,0,YG-2,0,40,true,t0,Math.PI);
   const d=new THREE.Mesh(new THREE.SphereGeometry(A+1.0,40,14,t0===0?Math.PI/2:-Math.PI/2,Math.PI,0,Math.PI/2),mat('halfdome',COL.lead,{r:0.7}));
   d.position.set(0,YS,0);d.castShadow=d.receiveShadow=true;p.g.add(d);HALF.push(p);});
+// 4 exedrae: small half-domes stepping down beside the big half-domes (schematic size)
+const EXED=[];{const RE=6.4;[[1,-1],[1,1],[-1,-1],[-1,1]].forEach(([sx,sz],i)=>{const cx=sx*(A+A*Math.SQRT1_2),cz=sz*A*Math.SQRT1_2,p=part('exed'+i,'pend',cx,0,cz,YG);
+  const face=Math.atan2(sx*Math.SQRT1_2,sz*Math.SQRT1_2); /* outward direction */
+  cyl(p.g,mat('exedra',COL.wall),RE,RE,4.2,0,YG-2,0,28,true,face-Math.PI/2,Math.PI);
+  const d=new THREE.Mesh(new THREE.SphereGeometry(RE+0.3,28,10,face,Math.PI,0,Math.PI/2),mat('exedra',COL.lead,{r:0.7}));d.position.set(0,YG+2.2,0);d.castShadow=d.receiveShadow=true;p.g.add(d);EXED.push(p);});}
 const RING=part('ring','pend',0,YR,0,2);{const t=new THREE.Mesh(new THREE.TorusGeometry(A+0.7,0.95,14,72),mat('ring',COL.trim));t.rotation.x=Math.PI/2;t.scale.z=0.7;t.castShadow=t.receiveShadow=true;RING.g.add(t);}
 // drum: wall + 40 windows + 40 rib-buttresses
 const DRUMW=part('drumw','drum',0,YR,0,DRUM);cyl(DRUMW.g,mat('drum',COL.drum),RB,RB,DRUM,0,0,0,80,true);
@@ -581,13 +613,16 @@ const DRUMW=part('drumw','drum',0,YR,0,DRUM);cyl(DRUMW.g,mat('drum',COL.drum),RB
 const WINS=[],NUBS=[];for(let i=0;i<N.windows.v;i++){const a=(i+0.5)/N.windows.v*Math.PI*2;
   const w=part('win'+i,'drum',Math.sin(a)*(RB+0.05),YR+0.45,Math.cos(a)*(RB+0.05),2);w.ry0=a;bx(w.g,mat('windows',COL.win),1.35,1.9,0.5,0,0,0,0.4,1);WINS.push(w);
   const b=a-Math.PI/N.windows.v;const n=part('nub'+i,'drum',Math.sin(b)*(RB+0.55),YR,Math.cos(b)*(RB+0.55),3);n.ry0=b;bx(n.g,mat('nubs',COL.nub),0.9,DRUM+0.4,1.4,0,0,0,0.35,1);NUBS.push(n);}
+// first dome's opening band (537): number of openings unknown -> schematic, not 40
+const W1=part('w1ring',-1,0,YR,0,B1);{cyl(W1.g,mat('dome1',COL.drum),RB,RB,B1,0,0,0,64,true);const NW1=24;
+  for(let i=0;i<NW1;i++){const a=(i+0.5)/NW1*Math.PI*2;const w=bx(W1.g,mat('win1',COL.win),1.5,1.0,0.5,Math.sin(a)*(RB+0.05),0.2,Math.cos(a)*(RB+0.05),0.3,1);w.rotation.y=a;}}
 // domes: first (flatter) and today's (562), each in 8 slices
-function domeSlices(prefix,h,tag,layer){const prof=capProfile(RB,h),arr=[];
+function domeSlices(prefix,h,tag,layer,yb=YD){const prof=capProfile(RB,h),arr=[];
   for(let k=0;k<8;k++){const phi=k*Math.PI/4,g=new THREE.LatheGeometry(prof,12,phi,Math.PI/4);const mid=phi+Math.PI/8;
     const cx=Math.sin(mid)*RB*0.55,cz=Math.cos(mid)*RB*0.55,cy=h*0.35;g.translate(-cx,-cy,-cz);
-    const p=part(prefix+k,layer,cx,YD+cy,cz,h);p.mid=mid;mesh(g,mat((tag==='dome1'&&Math.sin(mid)>0)?'dome1e':tag,COL.lead,{r:0.68}),0,0,0,p.g);arr.push(p);}
+    const p=part(prefix+k,layer,cx,yb+cy,cz,h);p.mid=mid;mesh(g,mat((tag==='dome1'&&Math.sin(mid)>0)?'dome1e':tag,COL.lead,{r:0.68}),0,0,0,p.g);arr.push(p);}
   return arr;}
-const DOME1=domeSlices('d1_',C.H1-YD,'dome1',-1), DOME2=domeSlices('d2_',C.H2-YD,'dome2','dome');
+const YB1=YR+B1, DOME1=domeSlices('d1_',C.H1-YB1,'dome1',-1,YB1), DOME2=domeSlices('d2_',C.H2-YD,'dome2','dome');
 const ALEM=part('alem','dome',0,C.H2,0,3);{const g=mat('alem',COL.gold,{r:0.45});cyl(ALEM.g,g,0.18,0.18,2.2,0,0,0,8);sph(ALEM.g,g,0.55,0,1.4,0,12,10);sph(ALEM.g,g,0.4,0,2.3,0,12,10);
   const cr=new THREE.Mesh(new THREE.TorusGeometry(0.75,0.18,8,20,Math.PI*1.4),g);cr.position.y=3.3;cr.rotation.z=-Math.PI*0.2-Math.PI/2;ALEM.g.add(cr);}
 // dust puffs (collapse)
@@ -639,8 +674,8 @@ const TRAM=part('tram',-1,TRAM_X,0.62,0,4);{const wh=mat('tram','#F7F6F2',{clip:
 
 /* load-path (cut-away step) */
 const LOAD=[];{const mL=new THREE.MeshBasicMaterial({color:'#FFB000',toneMapped:false}), mB=new THREE.MeshBasicMaterial({color:'#FFF1C2',toneMapped:false});
-  [[-1,-1],[1,-1]].forEach(([sx,sz])=>{const pts=[],h=C.H1-YD,Rs=(RB*RB+h*h)/(2*h),cy=h-Rs,a0=Math.asin(RB/Rs),dx=sx*Math.SQRT1_2,dz=sz*Math.SQRT1_2;
-    for(let i=0;i<=10;i++){const a=a0*i/10;pts.push(new THREE.Vector3(dx*Rs*Math.sin(a)*1.02,YD+cy+Rs*Math.cos(a)+0.6,dz*Rs*Math.sin(a)*1.02));}
+  [[-1,-1],[1,-1]].forEach(([sx,sz])=>{const pts=[],h=C.H1-YB1,Rs=(RB*RB+h*h)/(2*h),cy=h-Rs,a0=Math.asin(RB/Rs),dx=sx*Math.SQRT1_2,dz=sz*Math.SQRT1_2;
+    for(let i=0;i<=10;i++){const a=a0*i/10;pts.push(new THREE.Vector3(dx*Rs*Math.sin(a)*1.02,YB1+cy+Rs*Math.cos(a)+0.6,dz*Rs*Math.sin(a)*1.02));}
     pts.push(new THREE.Vector3(dx*(RB+0.3),YR+0.4,dz*(RB+0.3)));
     for(let i=1;i<=6;i++){const r=lerp(A+0.2,A*Math.SQRT2-0.6,i/6);pts.push(new THREE.Vector3(dx*r,YS+Math.sqrt(Math.max(0,2*A*A-r*r))-0.6,dz*r));}
     pts.push(new THREE.Vector3(sx*(A-1.3),YS-3,sz*(A-1.3)));pts.push(new THREE.Vector3(sx*(A-1.3),1.2,sz*(A-1.3)));
@@ -663,8 +698,8 @@ function sinkP(p,u){if(u<=0)return;if(u>=1){p.vis=0;return;}p.dy-=sm(u)*(p.h+2);
 function setAll(arr,u,how,stag=0){arr.forEach((p,i)=>showP(p,clamp((u*(1+stag*(arr.length-1))-i*stag)),how));}
 /* step → focus tags for the saffron highlight */
 const FOCUS=[[1,['church1'],0.05,0.6],[2,['church2','prop'],0.05,0.58],[3,['piers'],0.1],[4,['walls','gallery','pbut'],0.05],[5,['arches','archE','tymp'],0.05],
- [6,['pend','ring'],0.05],[7,['windows','nubs'],0.05,0.45],[7,['dome1','dome1e'],0.4,0.75],[7,['halfdome'],0.68],[8,['pend','piers','ring'],0.25],
- [9,['dome1e','archE'],0.25],[10,['archE'],0.04,0.3],[10,['dome2'],0.3],[11,['andr'],0.3],[12,['woodmin'],0.1],[12,['alem'],0.55],
+ [6,['pend','ring'],0.05],[7,['win1','dome1','dome1e'],0.05,0.6],[7,['halfdome','exedra'],0.64],[8,['pend','piers','ring'],0.25],
+ [9,['dome1e','archE'],0.25],[10,['archE'],0.04,0.3],[10,['windows','nubs','drum'],0.38,0.74],[10,['dome2'],0.6],[11,['andr'],0.3],[12,['woodmin'],0.1],[12,['alem'],0.55],
  [13,['minSE'],0.03,0.25],[13,['minNE'],0.18,0.4],[13,['sinanB'],0.36,0.62],[13,['minW'],0.64],[15,['pend','ring'],0.5],[16,['roundel'],0.28],
  [17,['frag'],0.1,0.55],[17,['rails'],0.52],[18,['tram'],0.05]];
 let SHAKE=0;
@@ -689,17 +724,19 @@ function state(t){
     TYMP.forEach((p,i)=>showP(p,pr(5,0.6+i*0.1,0.85+i*0.08,t),'drop'));
     PEND.forEach((p,i)=>showP(p,pr(6,0.06+i*0.11,0.4+i*0.11,t),'drop'));
     showP(RING,pr(6,0.62,0.85,t),'drop');
-    showP(DRUMW,pr(7,0.02,0.14,t),'grow');
-    WINS.forEach((p,i)=>showP(p,pr(7,0.06+i*0.006,0.12+i*0.006,t),'pop'));
-    NUBS.forEach((p,i)=>showP(p,pr(7,0.08+i*0.006,0.14+i*0.006,t),'pop'));
-    HALF.forEach((p,i)=>showP(p,pr(7,0.66+i*0.08,0.86+i*0.06,t),'drop'));
+    showP(W1,pr(7,0.03,0.16,t),'grow'); if(t>=at(10,0)){const f=pr(10,0.2,0.36,t);if(f>0){W1.dy+=eOut(f)*12;W1.s*=1-f;if(f>=1)W1.vis=0;}}
+    showP(DRUMW,pr(10,0.36,0.44,t),'grow');
+    WINS.forEach((p,i)=>showP(p,pr(10,0.4+i*0.004,0.45+i*0.004,t),'pop'));
+    NUBS.forEach((p,i)=>showP(p,pr(10,0.42+i*0.004,0.47+i*0.004,t),'pop'));
+    HALF.forEach((p,i)=>showP(p,pr(7,0.62+i*0.08,0.82+i*0.06,t),'drop'));
+    EXED.forEach((p,i)=>showP(p,pr(7,0.72+i*0.04,0.88+i*0.03,t),'drop'));
     // first dome: 537 → east part falls 558 → removed 562
-    DOME1.forEach((p,i)=>{showP(p,pr(7,0.4+i*0.03,0.6+i*0.03,t),'drop');
-      if(Math.sin(p.mid)>0){const f=pr(9,0.36+(i%4)*0.05,0.72+(i%4)*0.04,t);if(f>0){const e=f*f;p.dy-=e*(YD-6);p.dx-=Math.sin(p.mid)*e*4;p.dz-=Math.cos(p.mid)*e*4;p.rx+=e*1.4*(i%2?1:-1);p.rz+=e*1.1;if(f>0.82)p.s*=1-remap(f,0.82,1);if(f>=1)p.vis=0;}}
-      else{const f=pr(10,0.22,0.4,t);if(f>0){p.dy+=eOut(f)*14;p.s*=1-f;if(f>=1)p.vis=0;}}});
+    DOME1.forEach((p,i)=>{showP(p,pr(7,0.16+i*0.03,0.36+i*0.03,t),'drop');
+      if(Math.sin(p.mid)>0){const f=pr(9,0.36+(i%4)*0.05,0.72+(i%4)*0.04,t);if(f>0){const e=f*f;p.dy-=e*(YB1-6);p.dx-=Math.sin(p.mid)*e*4;p.dz-=Math.cos(p.mid)*e*4;p.rx+=e*1.4*(i%2?1:-1);p.rz+=e*1.1;if(f>0.82)p.s*=1-remap(f,0.82,1);if(f>=1)p.vis=0;}}
+      else{const f=pr(10,0.18,0.36,t);if(f>0){p.dy+=eOut(f)*14;p.s*=1-f;if(f>=1)p.vis=0;}}});
     {const f=pr(9,0.4,0.74,t);const p=ARCH.E;if(f>0&&t<at(10,0)){p.dy-=f*f*(YS-4);p.rz+=f*0.5;if(f>0.85)p.s*=1-remap(f,0.85,1);if(f>=1)p.vis=0;}
      const r=pr(10,0.04,0.3,t);if(t>=at(10,0)){p.vis=0;p.dy=0;p.rz=0;p.s=1;showP(p,r,'drop');}}
-    DOME2.forEach((p,i)=>showP(p,pr(10,0.34+i*0.04,0.6+i*0.04,t),'drop'));
+    DOME2.forEach((p,i)=>showP(p,pr(10,0.56+i*0.03,0.76+i*0.03,t),'drop'));
     // 989 / 1346 quakes: west arch knocked + repaired, a dome slice jolts
     {const q=pr(11,0.06,0.3,t);if(q>0&&q<1){const p=ARCH.W;p.dy-=Math.sin(q*Math.PI)*3;p.rx+=Math.sin(q*Math.PI)*0.12;}
      const q2=pr(11,0.68,0.88,t);if(q2>0&&q2<1){const p=DOME2[2];p.dy+=Math.sin(q2*Math.PI)*4;p.rz+=Math.sin(q2*Math.PI)*0.15;}
@@ -744,14 +781,40 @@ function camPreset(t){let i=ST.findIndex(s=>t<s.t1);if(i<0)i=ST.length-1;const s
   const drift=(t-s.t0)*(i===17?2.6:0.9);o[0]+=drift; if(i===0&&t<s.t0+0.01)o[0]+=0;
   return o;}
 let UAZ=0,UEL=0,UZ=1, CUR=null, EXTRA=0;
-function freeRect(){const W=innerWidth,H=innerHeight,phone=W<760,cd=$('card').getBoundingClientRect(),dk=$('dock').getBoundingClientRect();
-  if(phone)return{x0:0,y0:cd.bottom+4,x1:W,y1:dk.top-4,W,H,phone};return{x0:cd.right*0.8,y0:0,x1:W,y1:dk.top,W,H,phone};}
-function applyCam(o,R){const [az,el,rf,tx,ty,tz]=o;const W=R.W,H=R.H,fw=R.x1-R.x0,fh=R.y1-R.y0;const th=Math.tan(ang(cam.fov/2));
-  const d=rf*H/(th*Math.max(120,Math.min(fw,fh)))*UZ*(R.phone?1.02:1.0);
-  const e=ang(clamp(el+UEL,5,82)),a=ang(az+UAZ);
+let VW=innerWidth,VH=innerHeight;
+function freeRect(){const W=VW,H=VH,phone=W<760,cd=$('card').getBoundingClientRect(),dk=$('dock').getBoundingClientRect();
+  const fit=phone&&H>W*1.15; /* portrait phone: fit the model into the free rect */
+  if(phone)return{x0:0,y0:cd.bottom+6,x1:W,y1:Math.min(H,dk.top)-6,W,H,phone,fit};return{x0:cd.right*0.8,y0:0,x1:W,y1:dk.top,W,H,phone,fit:false};}
+/* portrait-phone fit: point sets that must stay fully on screen (between the card and the dock) */
+const FITPTS={};
+{const site=[],bld=[],ex=[];const ring=(arr,cx,cz,r,y,n)=>{for(let i=0;i<n;i++){const a=i/n*Math.PI*2;arr.push([cx+r*Math.cos(a),y,cz+r*Math.sin(a)]);}};
+ ring(site,PLX,0,PLR,-2.4,48);ring(site,PLX,0,PLR,-10,24);site.push([-51,64,42],[-51,64,-42],[0,C.H2+4,0],[TRAM_X,6,0]);
+ const x0=XW-1,x1=XI+WT+9,z1=ZI+WT+7;[[x0,-z1],[x0,z1],[x1,-z1],[x1,z1]].forEach(([x,z])=>{bld.push([x,0,z],[x,24,z]);});
+ ring(bld,0,0,RB+1,C.H2+3,12);ring(bld,0,0,6,C.H2+4,4);bld.push([x0,0,0],[x1,0,0],[0,0,z1],[0,0,-z1]);
+ ring(ex,0,0,48,0,16);ring(ex,0,0,RB+6,YD+86+C.H2-YD+4,12);[[-75,42],[-75,-42],[57,44],[57,-44]].forEach(([x,z])=>ex.push([x,0,z],[x,70,z]));
+ FITPTS.site=site;FITPTS.bld=bld;FITPTS.ex=ex;}
+FITPTS.ex=FITPTS.ex.concat(FITPTS.site);
+const FITSTEP={14:'ex'}; /* every other step: the whole diorama plate */
+const _f=new THREE.Vector3(),_r=new THREE.Vector3(),_u=new THREE.Vector3(),_tv=new THREE.Vector3(),UPV=new THREE.Vector3(0,1,0);
+function fitCam(pts,az,el,R){/* returns {d,tx,ty,tz,bx,by}: distance and pixel offset of the bbox centre */
+  let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
+  const e=ang(el),a=ang(az);_f.set(-Math.cos(e)*Math.sin(a),-Math.sin(e),-Math.cos(e)*Math.cos(a));_r.crossVectors(_f,UPV).normalize();_u.crossVectors(_r,_f);
+  const th=Math.tan(ang(cam.fov/2)),W=R.W,H=R.H,asp=W/H,pad=8,fw=R.x1-R.x0-2*pad,fh=R.y1-R.y0-2*pad;
+  const box=d=>{let a0=1e9,a1=-1e9,b0=1e9,b1=-1e9;for(const p of pts){_tv.set(p[0]-cx,p[1]-cy,p[2]-cz);const dep=d+_tv.dot(_f);if(dep<1)return null;
+      const px=_tv.dot(_r)/(dep*th*asp)*W/2,py=_tv.dot(_u)/(dep*th)*H/2;a0=Math.min(a0,px);a1=Math.max(a1,px);b0=Math.min(b0,py);b1=Math.max(b1,py);}return[a0,a1,b0,b1];};
+  let lo=20,hi=3000;for(let k=0;k<26;k++){const m=(lo+hi)/2,b=box(m);if(!b||b[1]-b[0]>fw||b[3]-b[2]>fh)lo=m;else hi=m;}
+  const b=box(hi);return{d:hi,tx:cx,ty:cy,tz:cz,bx:(b[0]+b[1])/2,by:(b[2]+b[3])/2};}
+let FITC=null;
+function applyCam(o,R){let [az,el,rf,tx,ty,tz]=o;const W=R.W,H=R.H,fw=R.x1-R.x0,fh=R.y1-R.y0;const th=Math.tan(ang(cam.fov/2));
+  const elc=clamp(el+UEL,5,82);let d,bx_=0,by_=0;
+  if(R.fit){const f=fitCam(FITPTS[FITSTEP[stepIdx(t)+1]||'site'],az+UAZ,elc,R);
+    if(!FITC||JUMPFIT)FITC=f;else{const k=1-Math.exp(-DT*3.2);for(const q in f)FITC[q]=lerp(FITC[q],f[q],k);}
+    d=FITC.d*UZ;tx=FITC.tx;ty=FITC.ty;tz=FITC.tz;bx_=FITC.bx/UZ;by_=FITC.by/UZ;}
+  else d=rf*H/(th*Math.max(120,Math.min(fw,fh)))*UZ;
+  const e=ang(elc),a=ang(az+UAZ);
   let sx=0,sy=0;if(SHAKE>0){const k=performanceClock();sx=Math.sin(k*41)*SHAKE*0.5;sy=Math.cos(k*37)*SHAKE*0.4;}
   cam.position.set(tx+sx+d*Math.cos(e)*Math.sin(a),ty+sy+d*Math.sin(e),tz+d*Math.cos(e)*Math.cos(a));cam.lookAt(tx+sx,ty+sy,tz);
-  const cx=(R.x0+R.x1)/2,cy=(R.y0+R.y1)/2;cam.setViewOffset(W,H,W/2-cx,H/2-cy,W,H);cam.near=Math.max(2,d-260);cam.far=d+600;cam.updateProjectionMatrix();}
+  const cx=(R.x0+R.x1)/2,cy=(R.y0+R.y1)/2;cam.setViewOffset(W,H,W/2+bx_-cx,H/2-by_-cy,W,H);cam.near=Math.max(2,d-260);cam.far=d+600;cam.updateProjectionMatrix();}
 let CLOCK=0;const performanceClock=()=>CLOCK;
 
 /* ================= LABELS ================= */
@@ -763,10 +826,11 @@ const LBL=[
  {a:[4,0.62],b:[4,1.05],p:()=>[XW+4,16,22],txt:{tr:'2 nartheks (giriş)',en:'2 narthexes (entrance)'}},
  {a:[5,0.35],b:[5,1.05],p:()=>[0,YR+2,A+0.5],txt:{tr:'büyük kemer',en:'great arch'}},
  {a:[6,0.35],b:[6,1.05],p:()=>[-A*0.86,YS+5,A*0.86],txt:{tr:'pandantif',en:'pendentive'}},
- {a:[7,0.14],b:[7,0.42],p:()=>[-RB*0.72,YR+2,RB*0.72],txt:{tr:N.windows.v+' pencere',en:N.windows.v+' windows'}},
+ {a:[7,0.2],b:[7,0.6],p:()=>[-RB*0.72,YR+3,RB*0.72],txt:{tr:'pencereler: sayısı bilinmiyor',en:'windows: number unknown'}},
  {a:[7,0.74],b:[7,1.05],p:()=>[-A-9,YS+11,4],txt:{tr:'yarım kubbe',en:'half-dome'}},
  {a:[8,0.35],b:[8,0.9],p:()=>[A-1.3,10,-(A-1.3)],txt:{tr:'yük → paye → temel',en:'load → pier → ground'}},
- {a:[10,0.6],b:[10,1.05],p:()=>[0,C.H2+3,0],txt:()=>(LANG==='tr'?'≈ 6–7 m daha yüksek':'≈ 6–7 m higher')},
+ {a:[10,0.44],b:[10,0.62],p:()=>[-RB*0.72,YR+4,RB*0.72],txt:()=>N.windows.v+(LANG==='tr'?' pencere + ':' windows + ')+N.ribs.v+(LANG==='tr'?' kaburga':' ribs')},
+ {a:[10,0.8],b:[10,1.05],p:()=>[0,C.H2+3,0],txt:()=>(LANG==='tr'?nv('raise')+' m daha yüksek':nv('raise')+' m higher')},
  {a:[11,0.45],b:[11,1.05],p:()=>[XI+WT+4,20,-24],txt:{tr:'payandalar',en:'buttresses'}},
  {a:[12,0.3],b:[12,1.05],p:()=>[-40,34,43],txt:{tr:'ahşap minare',en:'wooden minaret'}},
  {a:[13,0.42],b:[13,0.66],p:()=>[28,22,ZI+WT+5],txt:{tr:'Sinan: payandalar',en:'Sinan: buttresses'}},
@@ -820,12 +884,11 @@ function apply(t,ex=0){
   // camera
   const R=freeRect();let o=camPreset(t);o[0]+=ex*4;
   if(!RENDER&&CUR&&!JUMPCAM){const k=1-Math.exp(-DT*3.2);let da=o[0]-CUR[0];if(da>180)da-=360;if(da<-180)da+=360;CUR=[CUR[0]+da*k,...[1,2,3,4,5].map(j=>lerp(CUR[j],o[j],k))];}else CUR=o.slice();
-  JUMPCAM=false;
-  applyCam(CUR,R);
+  applyCam(CUR,R);JUMPCAM=false;JUMPFIT=false;
   renderer.render(scene,cam);
   updLabels(t,R);
 }
-let DT=0.016,JUMPCAM=false;
+let DT=0.016,JUMPCAM=false,JUMPFIT=true;
 
 /* ================= UI ================= */
 let t=0, playing=!RENDER, playTo=TOTAL, auto=true, curStep=-1, stepAt=0;
@@ -860,7 +923,9 @@ $('mAuto').onclick=()=>{if(auto&&playing){playing=false;}else{auto=true;if(t>=TO
 $('mManual').onclick=()=>{auto=false;const i=stepIdx(t);playTo=ST[i].t1-0.002;updButtons();};
 $('nextBtn').onclick=()=>{const i=stepIdx(t);auto=false;if(i>=ST.length-1){t=ST[i].t1-0.002;playing=false;}else goStep(i+1);updButtons();};
 $('prevBtn').onclick=()=>{const i=stepIdx(t);auto=false;goStep(t-ST[i].t0>1.5?i:i-1);};
-[...$('spdSeg').children].forEach(b=>b.onclick=()=>{SPEED=+b.dataset.s;localStorage.setItem('hs4-speed',SPEED);updButtons();});
+[...$('spdSeg').children].forEach(b=>b.onclick=()=>{SPEED=+b.dataset.s;localStorage.setItem('hs5-speed',SPEED);updButtons();});
+/* phone: fold the card to give the model more room */
+$('foldBtn').onclick=()=>{document.body.classList.toggle('folded');$('foldBtn').setAttribute('aria-expanded',!document.body.classList.contains('folded'));};
 addEventListener('keydown',e=>{if(e.key==='ArrowRight'){$('nextBtn').click();}else if(e.key==='ArrowLeft'){$('prevBtn').click();}else if(e.key===' '){e.preventDefault();$('mAuto').click();}else if(e.key==='Escape')$('sheet').hidden=true;});
 // scrubbing
 {const tl=$('tl');let sc=false,was=false;const set=e=>{const r=$('track').getBoundingClientRect();t=clamp((e.clientX-r.left)/r.width)*TOTAL;if(t>=TOTAL)t=TOTAL-0.002;};
@@ -885,7 +950,8 @@ function buildSources(){
   const tagCell=x=>`<i class="tag ${x}">${TAGTXT[x]()}</i>`, link=s=>`<a href="${M.S[s].url}" target="_blank" rel="noopener">${M.S[s].name}</a>`;
   const rows=Object.entries(N).map(([k,n])=>{const alt=n.alt?`<div class="alt">${LANG=='tr'?'Diğer kaynaklar':'Other sources'}: ${n.alt.map(([v,s])=>`${v} (<a href="${M.S[s].url}" target="_blank" rel="noopener">${M.S[s].name.split(':')[0].split(',')[0]}</a>)`).join('; ')}</div>`:'';
     const note=n.note?`<div class="alt">${Lx(n.note)}</div>`:'';return `<tr><td>${Lx(n.label)}</td><td class="v">${nvu(k,2)}${note}${alt}</td><td>${tagCell(n.tag)}</td><td>${n.src.map(link).join('<br>')}</td></tr>`;});
-  const calc=[[LANG=='tr'?'İlk kubbenin tepesi ≈ bugünkü tepe − 6,5 m (6–7 m aralığının ortası)':'First dome crown ≈ today\'s crown − 6.5 m (middle of the 6–7 m range)',`≈ ${nf(C.H1,1)} m`,['dogan','mango']],
+  const calc=[[LANG=='tr'?'İlk kubbenin tepesi ≈ bugünkü tepe − 6,25 m (20 Bizans ayağı); modelde ilk kubbe bu yüksekliğe göre çizildi':'First dome crown ≈ today\'s crown − 6.25 m (20 Byzantine ft); the model draws the first dome to this height',`≈ ${nf(C.H1,1)} m`,['dogan','mango','wikiHS']],
+   [LANG=='tr'?'Yeniden yapım: çöküş 7 Mayıs 558 → yeniden açılış 24 Aralık 562':'Rebuild: collapse 7 May 558 → rededication 24 Dec 562',`≈ ${nf(C.rebuildY,1)} ${LANG=='tr'?'yıl':'years'}`,['mango']],
    [LANG=='tr'?'Kubbe tepesi ÷ çap':'Dome crown ÷ diameter',`≈ ${nf(C.ratio,1)}`,['dogan']],
    [LANG=='tr'?'Kilise olarak yıl = 1453 − 537 (Kültür Portalı ve Angı da 916 der)':'Years as a church = 1453 − 537 (Kültür Portalı and Angı also say 916)',nf(C.churchYears),['kp','angi']],
    [(LANG=='tr'?'Bu modeldeki parçalar = ':'Parts in this model = ')+LCOUNT.join(' + ')+' ('+LAYERS.map(l=>Lx(M.layers.find(x=>x.k===l).name)).join(' · ')+')',`${nf(C.parts)} / ${C.layerCount} ${LANG=='tr'?'katman':'layers'}`,['dogan']]];
@@ -901,14 +967,17 @@ function applyLang(l){LANG=l;localStorage.setItem('hs4-lang',l);document.documen
 $('lTR').onclick=()=>applyLang('tr');$('lEN').onclick=()=>applyLang('en');
 
 /* ================= LOOP ================= */
-function resize(){const W=innerWidth,H=innerHeight;renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(W,H,false);cam.aspect=W/H;buildTicks();}
-addEventListener('resize',resize);resize();applyLang(LANG);
+function resize(){const r=canvas.getBoundingClientRect();VW=Math.max(1,Math.round(r.width||innerWidth));VH=Math.max(1,Math.round(r.height||innerHeight));
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));renderer.setSize(VW,VH,false);cam.aspect=VW/VH;buildTicks();JUMPFIT=true;}
+addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,250));if(window.visualViewport)visualViewport.addEventListener('resize',resize);
+resize();applyLang(LANG);
 let last=null;
 function loop(ts){if(last==null)last=ts;DT=Math.min(0.1,(ts-last)/1000);last=ts;CLOCK+=DT;
-  if(playing){t+=DT*SPEED;if(t>=playTo){t=playTo;playing=false;updButtons();}}
+  if(playing){t+=DT*SPEED*BASE_RATE;if(t>=playTo){t=playTo;playing=false;updButtons();}}
   updCard(t);apply(t);requestAnimationFrame(loop);}
 window.TOTAL=TOTAL;window.STEPS=ST.map(s=>({id:s.id,t0:s.t0,t1:s.t1}));
-window.seek=(tt,ex=0)=>{t=tt;playing=false;CLOCK=tt+ex;DT=0.016;JUMPCAM=true;updCard(tt);apply(tt,ex);return true;};
+window.seek=(tt,ex=0,clk)=>{t=tt;playing=false;CLOCK=clk??(tt+ex);DT=0.016;JUMPCAM=true;JUMPFIT=true;updCard(tt);apply(tt,ex);return true;};
+window.BASE_RATE=BASE_RATE;
 if(!RENDER)requestAnimationFrame(loop);else{window.seek(0);}
 </script>
 </body>
