@@ -1665,7 +1665,7 @@ labels.forEach(l => { const e = document.createElement('em'); l.el.appendChild(e
 function liveUI() { const u = LUI[LANG]; const A = $('lvA'), Bb = $('lvB');
   if (LIVE.on) { const age = nowS() - LIVE.gen; const stale = age > 30 * 60; lbadge.className = 'glass ' + (stale ? 'stale' : 'ok'); A.textContent = stale ? u.paused : u.live; Bb.textContent = `${u.upd}: ${ago(LIVE.gen)}`; $('lvC').textContent = `${istHM(LIVE.gen)} · ${u.tz}`; }
   else { lbadge.className = 'glass demo'; A.textContent = u.demo; Bb.textContent = u.nodata; $('lvC').textContent = ''; }
-  let nw = 0; labels.forEach(l => { const id = l.b.id, s = LIVE.on ? (l.b && BOTS[id].baseState === 'working' ? 'working' : 'idle') : null; l.el.classList.toggle('work', s === 'working'); l.st.textContent = !s ? '' : id === 'gronk' ? (s === 'working' ? u.sess : '') : (s === 'working' ? '· ' + u.working.toLowerCase() : ''); if (s === 'working') nw++; });
+  let nw = 0; labels.forEach(l => { const id = l.b.id, s = LIVE.on ? (l.b && BOTS[id].baseState === 'working' ? 'working' : 'idle') : null; l.el.classList.toggle('work', s === 'working'); l.st.textContent = !s ? '' : id === 'gronk' ? (s === 'working' ? u.sess : '') : (s === 'working' ? '· ' + u.working.toLowerCase() : ''); if (s === 'working' && id !== 'gronk') nw++; });
   if (LIVE.on) $('hint').textContent = (nw ? u.nWork(nw) : u.allIdle) + ' · ' + UI[LANG].hint; else $('hint').textContent = UI[LANG].hint;
   $('scrT').textContent = u.scrT; $('scrS').textContent = u.scrS; }
 const _fill0 = fillCard; fillCard = function () { _fill0(); const b = focusId && botOfRoom(focusId); if (!b) return; const u = LUI[LANG], d = b.d, id = b.id;
