@@ -224,7 +224,6 @@ const M = {
   plastic: (c, r = 0.4) => mstd('pl' + c + r, {color: c, roughness: r, metalness: 0, envMapIntensity: 0.45}),
   plaster: () => mstd('plaster', {color: '#f3ede3', map: plasterTex(), roughness: 0.92, envMapIntensity: 0.4}),
   glass: () => mstd('glass', {color: '#dfeef6', roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.22, envMapIntensity: 1.6, depthWrite: false}),
-  teaGlass: () => mstd('teaglass', {color: '#b8461b', roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.86, envMapIntensity: 1.4}),
   emis: (c, k = 1) => mstd('em' + c + k, {color: '#000', emissive: c, emissiveIntensity: k, roughness: 0.5}),
   tex: (t, o = {}) => new THREE.MeshStandardMaterial(Object.assign({map: t, roughness: 0.8, metalness: 0, envMapIntensity: 0.4}, o)),
   screen: (t) => new THREE.MeshStandardMaterial({map: t, emissiveMap: t, emissive: '#ffffff', emissiveIntensity: 0.85, roughness: 0.3, color: '#888'}),
@@ -596,19 +595,6 @@ function laptop(par, x, y, z, rot, tex) { const g = grp(par, x, z, rot, y); B(g,
 function keyboard(par, x, y, z, rot) { const g = grp(par, x, z, rot, y); B(g, 0.62, 0.03, 0.2, M.plastic('#2b2f36'), 0, 0, 0, false); Pl(g, 0.6, 0.18, M.tex(T.keyboard(), {roughness: 0.5}), 0, 0.032, 0); return g; }
 function mug(par, x, y, z, col = '#ffffff', coffee = '#4a2c1a', rot = 0) { const g = grp(par, x, z, rot, y); Cy(g, 0.075, 0.07, 0.17, M.plastic(col, 0.3), 0, 0, 0, 14, false); Cy(g, 0.066, 0.066, 0.005, M.paint(coffee, 0.2), 0, 0.15, 0, 12, false);
   const hd = new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.014, 6, 12), M.plastic(col, 0.3)); hd.position.set(0.08, 0.09, 0); g.add(hd); return g; }
-function tulipGlass(par, x, y, z, full = 1) { const g = grp(par, x, z, 0, y);
-  lathe(g, [[0, 0], [0.055, 0], [0.06, 0.01], [0.03, 0.03], [0.026, 0.06], [0.034, 0.1], [0.05, 0.15], [0.052, 0.17]], M.glass(), 0, 0.02, 0, 14, false);
-  if (full) lathe(g, [[0, 0.025], [0.024, 0.04], [0.022, 0.06], [0.03, 0.1], [0.045, 0.14], [0, 0.14]], M.teaGlass(), 0, 0.02, 0, 14, false);
-  Cy(g, 0.085, 0.08, 0.018, M.paint('#d5a64b', 0.4), 0, 0, 0, 16, false); return g; }
-function teapot(par, x, y, z, s = 1) { const g = grp(par, x, z, 30, y); const st = M.metal('#cfd3d6', 0.25);
-  lathe(g, [[0, 0], [0.2 * s, 0], [0.24 * s, 0.12 * s], [0.22 * s, 0.28 * s], [0.1 * s, 0.33 * s], [0, 0.33 * s]], st, 0, 0, 0, 20);
-  lathe(g, [[0, 0], [0.15 * s, 0], [0.18 * s, 0.1 * s], [0.15 * s, 0.22 * s], [0.06 * s, 0.26 * s], [0.03 * s, 0.3 * s], [0, 0.3 * s]], st, 0, 0.33 * s, 0, 20);
-  tube(g, [[0.17 * s, 0.4 * s, 0], [0.27 * s, 0.48 * s, 0], [0.31 * s, 0.56 * s, 0]], 0.02 * s, st);
-  tube(g, [[-0.14 * s, 0.6 * s, 0], [-0.08 * s, 0.72 * s, 0], [0.08 * s, 0.72 * s, 0], [0.14 * s, 0.6 * s, 0]], 0.014 * s, M.plastic('#2a2a2a'));
-  return g; }
-function steam(par, x, y, z, s = 1) { const mat = new THREE.MeshBasicMaterial({color: '#ffffff', transparent: true, opacity: 0.0, depthWrite: false});
-  const ps = []; for (let k = 0; k < 3; k++) { const m = new THREE.Mesh(new THREE.SphereGeometry(0.05 * s, 8, 6), mat.clone()); m.position.set(x, y, z); live.add(m); ps.push(m); }
-  ANIM.push(t => ps.forEach((m, k) => { const p = (t * 0.45 + k / 3) % 1; m.position.set(x + Math.sin(t * 1.3 + k * 2) * 0.04 * s, y + p * 0.45 * s, z); m.scale.setScalar(1 + p * 1.6); m.material.opacity = 0.32 * Math.sin(Math.PI * p); })); }
 function frame(par, axis, c, along, y, w, h, tex, col = '#3a2a1e', depth = 0.05, emiss = false) {
   const g = new THREE.Group(); if (axis === 'x') { g.position.set(c, y, along); g.rotation.y = Math.PI / 2; } else g.position.set(along, y, c); par.add(g);
   if (col) B(g, w + 0.1, h + 0.1, depth, M.wood(col, 0.5), 0, -(h + 0.1) / 2, depth / 2, false);
