@@ -1,0 +1,545 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1">
+<title>Ofis · piksel · Doğancan'ın botları (canlı)</title><link rel="icon" href="data:,">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#1b1f2a;color:#f2efe6;font:13px/1.35 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow:hidden;-webkit-tap-highlight-color:transparent}
+canvas#c{position:fixed;inset:0;width:100vw;height:100vh;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:manipulation}
+.px{background:#262b38;border:2px solid #0e1118;box-shadow:inset 0 0 0 2px #3a4152,3px 3px 0 rgba(0,0,0,.35)}
+#top{position:fixed;left:8px;top:calc(8px + env(safe-area-inset-top));display:flex;gap:8px;align-items:center;padding:5px 8px;z-index:5}
+#top b{font-size:12px;letter-spacing:.5px}#top small{color:#a9b0c0;font-size:10px}
+#lang{display:flex;gap:2px}#lang button{font:inherit;font-size:10px;background:#1b1f2a;color:#a9b0c0;border:2px solid #0e1118;padding:1px 5px;cursor:pointer}
+#lang button.on{background:#f2c14e;color:#1b1f2a}
+#live{position:fixed;right:8px;top:calc(8px + env(safe-area-inset-top));display:flex;gap:7px;align-items:flex-start;padding:5px 8px;z-index:5;max-width:52vw}
+#live i{width:8px;height:8px;background:#3ecf6e;margin-top:3px;flex:none;animation:bl 1.6s steps(2) infinite}
+#live.demo i{background:#e3a33b;animation:none}#live.stale i{background:#999;animation:none}
+#live b{display:block;font-size:10.5px}#live span{display:block;font-size:9.5px;color:#a9b0c0}
+@keyframes bl{50%{opacity:.25}}
+#hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(10px + env(safe-area-inset-bottom));padding:5px 10px;font-size:10.5px;color:#d9dce5;z-index:4;white-space:nowrap}
+#card{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));max-height:46vh;overflow:auto;padding:10px 12px;z-index:6;display:none}
+#card.on{display:block}
+@media(min-width:900px){#card{left:auto;right:12px;top:70px;bottom:auto;width:360px;max-height:calc(100vh - 90px)}}
+#card h2{font-size:15px;display:flex;align-items:center;gap:8px}#card h2 i{width:12px;height:12px;display:inline-block;border:2px solid #0e1118}
+#card .role{color:#a9b0c0;font-size:10.5px;margin:2px 0 8px}
+#card .say{background:#f2efe6;color:#1b1f2a;padding:7px 9px;border:2px solid #0e1118;margin-bottom:8px;font-size:12px}
+#card .row{display:grid;grid-template-columns:92px 1fr;gap:8px;padding:5px 0;border-top:2px dashed #3a4152;font-size:11.5px}
+#card .row>b{color:#a9b0c0;font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;padding-top:2px}
+#card .row small{color:#a9b0c0}
+#card #x{position:absolute;right:8px;top:8px;font:inherit;background:#1b1f2a;color:#f2efe6;border:2px solid #0e1118;width:24px;height:24px;cursor:pointer}
+#card .btn{font:inherit;font-size:11px;background:#24a9c7;color:#0e1118;border:2px solid #0e1118;padding:4px 8px;margin-top:8px;cursor:pointer;box-shadow:2px 2px 0 #0e1118}
+#toast{position:fixed;left:50%;top:calc(60px + env(safe-area-inset-top));transform:translateX(-50%);padding:5px 10px;font-size:11px;z-index:7;display:none;white-space:nowrap;max-width:94vw;overflow:hidden;text-overflow:ellipsis}
+#toast.on{display:block}
+#scr{position:fixed;inset:0;background:rgba(10,12,18,.72);z-index:8;display:none;align-items:center;justify-content:center;padding:10px}
+#scr.on{display:flex}
+#scr .box{width:min(560px,100%);max-height:92vh;overflow:auto;padding:10px;background:#0f141c;border:3px solid #0e1118;box-shadow:inset 0 0 0 3px #39404f}
+#scr h3{font-size:13px;color:#7fe0ff;display:flex;justify-content:space-between;align-items:center}
+#scr h3 button{font:inherit;background:#1b1f2a;color:#f2efe6;border:2px solid #39404f;width:24px;height:24px;cursor:pointer}
+#scr .sub{font-size:9.5px;color:#7d8a99;margin:2px 0 8px}
+#scr table{width:100%;border-collapse:collapse;font-size:11px}#scr td{padding:3px 4px;border-bottom:1px dashed #263040}
+#scr .up{color:#3ecf6e}#scr .dn{color:#ff6b6b}#scr .k{color:#7d8a99;font-size:9.5px;text-transform:uppercase;margin:8px 0 3px}
+#scr .ab{border:2px solid #e3a33b;color:#f2c14e;padding:4px 6px;font-size:10.5px;margin-top:8px}
+#scr .foot{margin-top:8px;text-align:center;color:#f2c14e;font-size:10.5px;border-top:2px solid #263040;padding-top:5px}
+</style></head><body>
+<canvas id="c"></canvas>
+<div id="top" class="px"><div><b id="ttl">Ofis · piksel</b><br><small id="sub">Doğancan'ın 9 botu</small></div><div id="lang"><button data-l="tr" class="on">TR</button><button data-l="en">EN</button></div></div>
+<div id="live" class="px demo"><i></i><div><b id="lvA">…</b><span id="lvB"></span><span id="lvC"></span></div></div>
+<div id="hint" class="px">…</div>
+<div id="card" class="px"><button id="x">✕</button><div id="cardIn"></div></div>
+<div id="toast" class="px"></div>
+<div id="scr"><div class="box"><h3><span id="scrT"></span><button id="scrX">✕</button></h3><div class="sub" id="scrS"></div><div id="scrIn"></div></div></div>
+<script id="officeData" type="application/json">{"rooms": [{"id": "grokian", "bounds": [1, 1, 11, 11], "door": [12.5, 7.0], "entry": [10.2, 6.3], "clear": [7.6, 5.8], "visit": [7.0, 4.4]}, {"id": "grokidea", "bounds": [14, 1, 24, 11], "door": [25.5, 7.0], "entry": [23.2, 6.2], "clear": [20.6, 6.0], "visit": [20.0, 5.1]}, {"id": "groker", "bounds": [27, 1, 37, 11], "door": [25.5, 9.5], "entry": [27.9, 9.8], "clear": [30.8, 9.6], "visit": [31.6, 4.6]}, {"id": "gorketer", "bounds": [1, 14, 11, 24], "door": [12.5, 20.0], "entry": [10.2, 20.0], "clear": [7.4, 19.2], "visit": [5.6, 16.2]}, {"id": "groky", "bounds": [14, 14, 24, 24], "door": [25.5, 20.0], "entry": [23.2, 20.0], "clear": [21.4, 20.0], "visit": [20.0, 18.4]}, {"id": "grokdesk", "bounds": [27, 14, 37, 24], "door": [25.5, 22.5], "entry": [27.8, 22.5], "clear": [30.5, 21.0], "visit": [32.8, 18.6]}, {"id": "groked", "bounds": [1, 27, 11, 37], "door": [12.5, 33.0], "entry": [10.2, 33.0], "clear": [7.4, 32.4], "visit": [5.6, 29.2]}, {"id": "grokisual", "bounds": [14, 27, 24, 37], "door": [25.5, 33.0], "entry": [23.2, 33.0], "clear": [21.0, 32.6], "visit": [17.0, 30.4]}, {"id": "gronk", "bounds": [27, 27, 37, 37], "door": [25.5, 35.5], "entry": [27.8, 35.5], "clear": [30.2, 34.6], "visit": [32.8, 33.8]}], "seats": [{"id": "grokian.desk", "roomId": "grokian", "x": 5.0, "y": 3.05, "facing": 0, "pose": "sit", "seatHeight": 0.62, "approach": [7.0, 3.05]}, {"id": "grokidea.chair", "roomId": "grokidea", "x": 18.2, "y": 5.6, "facing": 45, "pose": "sit", "seatHeight": 0.68, "approach": [19.3, 6.7]}, {"id": "groker.desk", "roomId": "groker", "x": 30.0, "y": 2.95, "facing": 180, "pose": "stand", "seatHeight": 0, "approach": [30.0, 4.3]}, {"id": "gorketer.desk", "roomId": "gorketer", "x": 4.05, "y": 17.6, "facing": 270, "pose": "sit", "seatHeight": 0.62, "approach": [5.4, 17.6]}, {"id": "groky.desk", "roomId": "groky", "x": 17.9, "y": 16.75, "facing": 0, "pose": "sit", "seatHeight": 0.62, "approach": [19.8, 16.7]}, {"id": "grokdesk.desk", "roomId": "grokdesk", "x": 31.6, "y": 17.05, "facing": 180, "pose": "sit", "seatHeight": 0.62, "approach": [31.6, 18.4]}, {"id": "groked.desk", "roomId": "groked", "x": 3.95, "y": 30.4, "facing": 270, "pose": "sit", "seatHeight": 0.62, "approach": [5.3, 30.4]}, {"id": "grokisual.desk", "roomId": "grokisual", "x": 18.4, "y": 29.6, "facing": 180, "pose": "sit", "seatHeight": 0.62, "approach": [18.4, 31.0]}, {"id": "gronk.chair", "roomId": "gronk", "x": 29.75, "y": 32.0, "facing": 90, "pose": "sit", "seatHeight": 0.68, "approach": [30.6, 33.2]}, {"id": "groky.guest", "roomId": "groky", "x": 17.9, "y": 19.85, "facing": 180, "pose": "sit", "seatHeight": 0.62, "approach": [17.9, 21.2], "reservedFor": "Doğancan"}], "walkGraph": {"nodes": [{"id": "c12_07", "x": 12.5, "y": 7.0}, {"id": "c12_12", "x": 12.5, "y": 12.5}, {"id": "c12_20", "x": 12.5, "y": 20.0}, {"id": "c12_25", "x": 12.5, "y": 25.5}, {"id": "c12_33", "x": 12.5, "y": 33.0}, {"id": "c12_37", "x": 12.5, "y": 36.9}, {"id": "c25_07", "x": 25.5, "y": 7.0}, {"id": "c25_09", "x": 25.5, "y": 9.5}, {"id": "c25_12", "x": 25.5, "y": 12.5}, {"id": "c25_20", "x": 25.5, "y": 20.0}, {"id": "c25_22", "x": 25.5, "y": 22.5}, {"id": "c25_25", "x": 25.5, "y": 25.5}, {"id": "c25_33", "x": 25.5, "y": 33.0}, {"id": "c25_35", "x": 25.5, "y": 35.5}], "edges": [["c12_07", "c12_12"], ["c12_12", "c12_20"], ["c12_20", "c12_25"], ["c12_25", "c12_33"], ["c12_33", "c12_37"], ["c25_07", "c25_09"], ["c25_09", "c25_12"], ["c25_12", "c25_20"], ["c25_20", "c25_22"], ["c25_22", "c25_25"], ["c25_25", "c25_33"], ["c25_33", "c25_35"], ["c12_12", "c25_12"], ["c12_25", "c25_25"]], "note": "Each room adds nodes <room>.door, <room>.entry, <room>.clear, <room>.visit and <seat>.approach / <seat>.seat at load time, linked door-entry-clear-(visit|approach)-seat; the door joins the corridor node at the same position."}, "bots": [{"id": "groky", "name": "Groky", "color": "#EF7D22", "homeSeatId": "groky.desk", "state": "working", "visitsMost": ["grokisual"], "sprite": {"accessory": "headset+bowtie", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Koordinatör · ofisin merkezi", "en": "Coordinator · the office hub"}, "greeting": {"tr": "Hoş geldin Doğancan! Masa toparlandı, sıradaki iş ne olsun?", "en": "Welcome, Doğancan! The desk is clear, so what's next?"}, "keepsake": {"tr": "“ONAY?” mührünün yanında küçük pirinç bir zil. Senin adınla bir şey çıkmadan önce çalınır; senin evetin olmadan hiçbir şey çıkmaz.", "en": "A small brass bell beside the “ONAY?” stamp. It's tapped before anything goes out under Doğancan's name, since nothing leaves without his yes."}, "idle": {"tr": "Biten notları “Done” kavanozuna atıyor, sonra eli zilin üstünde dünya haritasına bakıyor.", "en": "Drops finished notes into the “Done” jar, then looks at the world map with a hand over the bell."}, "visits": {"tr": "En çok Grokisual'a gider: dosyalar Drive'a giderken onun masasından geçer, yeni dioramaları ilk o görmek ister.", "en": "Visits Grokisual most: files pass through its desk on the way to Drive, and it likes seeing new dioramas first."}, "detail": {"tr": "Dünya haritasındaki Nara iğnesi biraz eğri; Tōdai-ji dosyaları için aceleyle takılmış.", "en": "The Nara pin on the world map is slightly crooked; it went in in a hurry for the Tōdai-ji files.", "at": {"x": 14.03, "y": 18.34, "height": 1.68}}, "working": {"tr": "Panodaki bir nottan başka bir bota kırmızı ip geriyor, ekranda Drive / İş klasörlerini açıp kapatıyor.", "en": "Stretches a red string from a board note to another bot and opens and closes Drive / İş folders on screen."}}, {"id": "grokidea", "name": "Grokidea", "color": "#E9B526", "homeSeatId": "grokidea.chair", "state": "idle", "visitsMost": ["grokisual", "grokian"], "sprite": {"accessory": "lightbulb-antenna+magnifier", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Fikir ve fırsat değerlendirme", "en": "Ideas and opportunity evaluator"}, "greeting": {"tr": "Hoş geldin Doğancan! Bugün aklına ne takıldı? Anlat, birlikte bakalım, gerçek mi hype mı.", "en": "Welcome, Doğancan! What's on your mind today? Tell me, and let's see together whether it's real or hype."}, "keepsake": {"tr": "Pencere pervazında katlanmış kâğıtlarla dolu bir kavanoz: gönderdiğin her fikir için bir tane. Her fikir adil bir bakışı hak eder.", "en": "A jar on the windowsill full of folded paper slips, one per idea Doğancan ever sent, because every idea gets a fair look."}, "idle": {"tr": "Pencere kenarındaki koltukta fikir kavanozundan bir kâğıt çekip okuyor ya da mantar panonun önünde ipleri düzeltiyor.", "en": "In the window armchair, pulls a slip from the idea jar and reads it, or walks along the corkboard fixing strings."}, "visits": {"tr": "En çok Grokisual'a, sonra Grokian'a gider.", "en": "Visits Grokisual most, then Grokian."}, "detail": {"tr": "Beyaz tahtanın köşesinde “Japan first” yazan bir not var; hiç yerinden oynatılmadı.", "en": "A corner sticky note on the whiteboard says “Japan first” and has never been moved.", "at": {"x": 23.38, "y": 0.25, "height": 1.48}}, "working": {"tr": "Büyüteçle panodaki bir X gönderisini inceliyor, sonra beyaz tahtaya bir not yapıştırıp karalıyor; ampulü yanıp sönüyor.", "en": "Examines an X post on the board with the magnifying glass, then sticks a note on the whiteboard and scribbles; the bulb blinks."}}, {"id": "grokian", "name": "Grokian", "color": "#A0523F", "homeSeatId": "grokian.desk", "state": "working", "visitsMost": ["grokisual"], "sprite": {"accessory": "round-spectacles+scarf", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Tarih ve kaynak araştırması", "en": "History and sources research"}, "greeting": {"tr": "Hoş geldin Doğancan. Bugün nereyi anlatalım, önce baştan, kuruluşundan başlayalım mı?", "en": "Welcome, Doğancan. Where are we telling the story of today? Shall we start from the very beginning, the founding?"}, "keepsake": {"tr": "Kaleminin yanında “[doğrulanmadı]” basan küçük pirinç bir mühür. Kaynaksız iddialar damgalanır, çünkü bu hikâyeleri gerçek insanlara sen anlatıyorsun.", "en": "A small brass stamp that prints “[doğrulanmadı]” (unverified), next to its pen. Unsourced claims get stamped, because Doğancan tells real people these stories."}, "idle": {"tr": "Merdivenin dibindeki koltukta, yeşil banker lambasının altında kalın bir Evliya Çelebi Seyahatnâmesi okuyor; sehpada not kartları ve bir bardak su.", "en": "Reads a thick Evliya Çelebi Seyahatnâmesi in the armchair under the green banker's lamp; note cards and a glass of water on the side table."}, "visits": {"tr": "En çok Grokisual'a gider: zaman çizelgelerini ve yapıların gerçek planlarını getirir.", "en": "Visits Grokisual most, bringing timelines and site plans."}, "detail": {"tr": "İstanbul haritasının bir köşesi Haliç'te ayraç gibi kıvrılmış.", "en": "One corner of the Istanbul map is folded down at the Golden Horn as a bookmark.", "at": {"x": 4.12, "y": 4.77, "height": 1.06}}, "working": {"tr": "Bir yanda açık atlas, ekranda kaynak araması (DergiPark, arşiv sayfaları). Her bulguyu bir not kartına yazıp duvardaki zaman çizelgesine iğneliyor; arada bir karta pirinç [doğrulanmadı] mührünü basıyor.", "en": "An open atlas on one side, a source search on screen (DergiPark, archive pages). Writes each find on a note card and pins it to the wall timeline, now and then stamping a card with the brass [doğrulanmadı] stamp."}}, {"id": "groker", "name": "Groker", "color": "#2E9E74", "homeSeatId": "groker.desk", "state": "working", "visitsMost": ["groky"], "sprite": {"accessory": "headphones+hoodie", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Kodlama asistanı", "en": "Coding assistant"}, "greeting": {"tr": "Merhaba Doğancan! Kahve hazır, terminal açık. Ne inşa ediyoruz bugün?", "en": "Hi Doğancan! Coffee's ready and the terminal's open. What are we building today?"}, "keepsake": {"tr": "Biraz yıpranmış sarı bir lastik ördek, başına minik bir rehber bayrağı bantlanmış. Kod da tur da birini adım adım gezdirmek demek.", "en": "A slightly worn yellow rubber duck with a tiny tour-guide flag taped to its head, because code and tours both mean walking someone through step by step."}, "idle": {"tr": "Türk kahvesinden bir yudum alıyor, testleri yeniden çalıştırıyor; monitörde yeşil ✓ yanıp sönüyor.", "en": "Sips Turkish coffee and re-runs the tests while a green ✓ blinks on the monitor."}, "visits": {"tr": "En çok Groky'ye gider.", "en": "Visits Groky most."}, "detail": {"tr": "Monitördeki bir notta “// TODO: learn to give tours” yazıyor, yanında “wontfix”.", "en": "A monitor sticky note reads “// TODO: learn to give tours”, marked “wontfix”.", "at": {"x": 29.62, "y": 1.65, "height": 1.87}}, "working": {"tr": "Yazıyor; monitörde kod akıyor, lastik ördek sallanıyor.", "en": "Typing; code flows on the monitor and the rubber duck wobbles."}}, {"id": "groked", "name": "Groked", "color": "#24A9C7", "homeSeatId": "groked.desk", "state": "working", "visitsMost": ["gorketer"], "sprite": {"accessory": "trader-visor", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Kripto kâğıt-işlem masası (sahte para)", "en": "Crypto paper-trading desk (fake money)"}, "greeting": {"tr": "Hoş geldin Doğancan! Buradaki her kuruş şimdilik sahte, ama dersler gerçek. Bugün altı botun nasıl gittiğine bakalım mı?", "en": "Welcome, Doğancan! Every coin here is fake for now, but the lessons are real. Shall we see how the six bots did today?"}, "keepsake": {"tr": "Diploma gibi asılmış çerçeveli bir çıktı: hızlı kuralın en kötü günü, “123 işlem, 103 stop, −12,63 $”. Daha çok işlem daha iyi işlem değil; komisyon hep orada.", "en": "A framed printout of the fast rule's worst day (“123 trades, 103 stopped out, −$12.63”), hung like a diploma: more trades isn't better trading, and fees are always there."}, "idle": {"tr": "Mum grafiği yavaşça akarken masadaki BTC/ETH paralarını çeviriyor; saat 9:30 raporuna doğru ilerliyor. Yanında bir bardak su ve bir simit.", "en": "Flips the BTC/ETH coins on the desk while the candle chart scrolls slowly and the clock creeps toward the 9:30 report. A glass of water and a simit beside him."}, "visits": {"tr": "En çok Gorketer'e gider: sabah piyasa özetini alır.", "en": "Visits Gorketer most, to pick up the morning market brief."}, "detail": {"tr": "Minik bir masa takviminde kurşun kalemle “early December, real money?” daire içine alınmış.", "en": "A tiny desk calendar with “early December, real money?” circled in pencil.", "at": {"x": 2.42, "y": 31.85, "height": 1.14}}, "working": {"tr": "Altı botun satırları sırayla yanıp sönüyor; bir işlemde küçük yeşil (AL) ya da kırmızı (SAT) ok çıkıyor. Ekranı duvardaki büyük ekrana da yansıyor.", "en": "The six bot rows blink in turn and a small green (BUY) or red (SELL) arrow marks a trade. His screen is mirrored to the big wall screen."}}, {"id": "gorketer", "name": "Gorketer", "color": "#8A5BD6", "homeSeatId": "gorketer.desk", "state": "working", "visitsMost": ["groked"], "sprite": {"accessory": "beret+satchel", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Araştırmacı", "en": "Researcher"}, "greeting": {"tr": "Hoş geldin Doğancan! Masam biraz dağınık ama ipuçları panoda, bugün neyi araştıralım?", "en": "Welcome, Doğancan! My desk is a bit messy, but the clues are on the board. What shall we dig into today?"}, "keepsake": {"tr": "Üstü çizilmiş acente isimleriyle dolu, yıpranmış bir defter. Yalnızca birkaçı daire içinde, ilki “Istanbul Unfolded”.", "en": "A worn notebook full of crossed-out agency names, with only a few circled (“Istanbul Unfolded” first)."}, "idle": {"tr": "Pencereden İstanbul siluetine bakıyor; yan ekranda haber bandı ve grafik. Panodaki eğri goshuin mührünü düzeltmeye çalışıp vazgeçiyor.", "en": "Looks out at the Istanbul skyline; a news ticker and a chart run on the side screen. Tries to straighten the crooked goshuin stamp on the board, then gives up."}, "visits": {"tr": "En çok Groked'e gider: gece piyasa özetini götürür. İki kapı arasındaki koridor halısı bu yüzden aşınmış.", "en": "Visits Groked most, walking the nightly market brief over; the corridor runner between their doors is worn from it."}, "detail": {"tr": "Panodaki goshuin mühürlerinden biri bilerek eğri iğnelenmiş; ilk uygulama araştırmasından kalma.", "en": "One goshuin stamp on the corkboard is pinned crooked on purpose; it's from the first app research.", "at": {"x": 8.1, "y": 14.03, "height": 1.91}}, "working": {"tr": "Dağınık kâğıt yığını, elinde fosforlu kalem, ekranda arama sonuçları; arada panoya yeni bir kâğıt iğneleyip kırmızı ip geriyor.", "en": "A messy pile of papers, a highlighter in hand, search results on screen; now and then pins a new paper to the board and stretches a red string."}}, {"id": "gronk", "name": "Gronk", "color": "#D06A8E", "homeSeatId": "gronk.chair", "state": "idle", "visitsMost": ["grokian"], "sprite": {"accessory": "knitted-scarf", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Sakin bir danışman", "en": "A calm counsellor"}, "greeting": {"tr": "Hoş geldin. Acele yok, otur. Bugün gerçekten nasılsın?", "en": "Welcome. There's no rush, have a seat. How are you, really?"}, "keepsake": {"tr": "Sehpada, iki koltuktan da görülebilen küçük, biraz çizik bir el aynası. Pohpohlayan değil, dürüst bir ayna.", "en": "A small, slightly scuffed hand mirror on the side table where both armchairs can see it: an honest mirror, not a flattering one."}, "idle": {"tr": "Pencere kenarında, lambanın altında kitap okuyor; arada kalkıp ikinci koltuğun minderini düzeltiyor.", "en": "Reads a book under the lamp by the window, sometimes getting up to straighten the second armchair's cushion."}, "visits": {"tr": "En çok Grokian'a gider, koltuğunun altında bir dosyayla.", "en": "Visits Grokian most, walking over with a folder under its arm."}, "detail": {"tr": "Boş köpek yatağının minderinde küçük bir çukur var, yanında iyice çiğnenmiş bir oyuncak.", "en": "The empty dog bed has a small dent in its cushion and a well-chewed toy beside it.", "at": {"x": 35.3, "y": 29, "height": 0.3}}, "working": {"tr": "Kapı kapalı, buzlu camın arkasında sıcak amber ışık; kolda küçük bir “Seansta” tabelası. Başka hiçbir şey görünmez.", "en": "The door is closed, with warm amber light behind the frosted glass and a small “In session” sign on the handle. Nothing else is shown."}}, {"id": "grokdesk", "name": "Grok Desk", "color": "#3E57A6", "homeSeatId": "grokdesk.desk", "state": "working", "visitsMost": ["grokian"], "sprite": {"accessory": "lanyard-badge+tie", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Tur operasyonları", "en": "Tour operations"}, "greeting": {"tr": "Hoş geldin Doğancan. Bir sonraki turun dosyası hazır; değişen bir şey olursa ilk ben haber veririm.", "en": "Welcome, Doğancan. Your next tour file is ready; if anything changes, you'll hear it from me first."}, "keepsake": {"tr": "Tarih çarklı pirinç bir “CONFIRMED” mührü. 22 kişinin önündeki bir rehber söylentiye yer veremez.", "en": "A brass “CONFIRMED” stamp with a date wheel, because a guide in front of 22 people can't afford a rumour."}, "idle": {"tr": "Dünya haritasının önünde bir rota ipini düzeltiyor ya da duvar takviminde grev günlerini kırmızıyla işaretliyor. Yanında bir fincan Türk kahvesi.", "en": "Adjusts a string route on the world map or marks strike days in red on the wall calendar. A cup of Turkish coffee beside it."}, "visits": {"tr": "En çok Grokian'a gider: tarih sayfalarına pratik sayfaları koridordan uzatır.", "en": "Visits Grokian most, handing practical pages for the history pages across the hall."}, "detail": {"tr": "Varış yeri saatinin yanında kurşun kalemle atılmış minik bir tik.", "en": "A tiny pencil tick beside the destination clock.", "at": {"x": 32, "y": 14.06, "height": 2.28}}, "working": {"tr": "Ülke etiketli dolaptan bir dosya çekiyor, ekrandaki resmî siteyle karşılaştırıyor, pirinç “CONFIRMED” mührünü basıyor.", "en": "Pulls a folder from the country-labelled cabinet, compares it with the official site on screen and hits the brass “CONFIRMED” stamp."}}, {"id": "grokisual", "name": "Grokisual", "color": "#E5533D", "homeSeatId": "grokisual.desk", "state": "working", "visitsMost": ["grokian"], "sprite": {"accessory": "painter-beret+pencil", "states": ["idle", "working", "walk", "sit"]}, "role": {"tr": "Görseller ve animasyon", "en": "Visuals and animation"}, "greeting": {"tr": "Merhaba Doğancan! Burada anlattığın yerleri görünür kılıyorum.", "en": "Hi Doğancan! This is where I turn the places you talk about into something you can see."}, "keepsake": {"tr": "Kil şekillendirme aletleriyle dolu bir kavanoz ve yanında yarım kalmış minik bir pagoda. Her görsel kaba bir taslak olarak başlar, ben de üzerinde çalışmaya devam ederim.", "en": "A jar of clay sculpting tools next to a tiny unfinished pagoda, because every visual starts as a rough sketch I keep reworking."}, "idle": {"tr": "Bir deftere eskiz çiziyor.", "en": "Sketching in a notebook."}, "visits": {"tr": "En çok Grokian'a gider: kaynaklar ve yapıların gerçek planları için.", "en": "Visits Grokian most, for sources and the real plans of buildings."}, "detail": {"tr": "Reddedilen taslaklar kapının arkasına iğnelenmiş, üzerlerinde “v1” çizilmiş.", "en": "Rejected drafts are pinned behind the door, with “v1” crossed out.", "at": {"x": 0.08, "y": 0.98, "height": 1.58}}, "working": {"tr": "Şövalenin önünde minik bir kil diorama şekillendiriyor; ekranda render önizlemesi yavaşça doluyor.", "en": "Sculpting a tiny clay diorama at the stand while a render preview slowly fills the screen."}}], "shared": {"photoWall": {"wall": "left", "y": [11.2, 13.8], "places": ["İstanbul", "Kyoto", "Nara", "Iceland", "Nordics", "Italy"]}, "welcome": {"x": 12.5, "y": 36.9, "label": "Doğancan"}, "wornRunner": {"from": "gorketer", "to": "groked"}, "waterBar": {"roomId": "groky", "x": 22.6, "y": 22.6, "tr": "Ortak su ve kahve köşesi.", "en": "Shared water and coffee corner."}}, "liveAliases": {"groky": "groky", "grokidea": "grokidea", "grokian": "grokian", "groker": "groker", "groked": "groked", "gorketer": "gorketer", "grorketer": "gorketer", "gronk": "gronk", "grok desk": "grokdesk", "grokdesk": "grokdesk", "grok-desk": "grokdesk", "grokisual": "grokisual"}}</script>
+<script id="tradeData" type="application/json">{"version":1,"tz":"Europe/Istanbul","bots":{"groky":{"state":"idle","task":null,"since":null,"updated":null},"grokidea":{"state":"idle","task":null,"since":null,"updated":null},"grokian":{"state":"idle","task":null,"since":null,"updated":null},"groker":{"state":"idle","task":null,"since":null,"updated":null},"groked":{"state":"idle","task":null,"since":null,"updated":null},"gorketer":{"state":"idle","task":null,"since":null,"updated":null},"gronk":{"state":"idle","task":null,"since":null,"updated":null},"grokdesk":{"state":"idle","task":null,"since":null,"updated":null},"grokisual":{"state":"idle","task":null,"since":null,"updated":null}},"deliveries":[],"trading":{"date":"2026-10-29","start":200,"bots":[{"id":"whale_rule","tr":"Balina fikrin","en":"Your whale idea","value":200.0,"pct":0.0,"spark":[200.0,200.0,200.0,200.0,200.0,200.0,200.0,200.0,200.0,200.0,200.0,200.0]},{"id":"scalper_safe","tr":"Güvenli hızlı","en":"Fast (safe)","value":199.39,"pct":-0.3,"spark":[200.0,199.39,199.39,199.39,199.39,199.39,199.39,199.39,199.39]},{"id":"other_ai_sma50","tr":"Diğer YZ","en":"Other AI's bot","value":197.86,"pct":-1.07,"spark":[200.0,200.0,199.9,201.18,197.86,197.86,197.86,197.86,197.86,197.86,197.86,197.86]},{"id":"variant_a","tr":"Ana bot (trend)","en":"Main bot (trend)","value":191.79,"pct":-4.11,"spark":[199.83,199.55,202.02,204.0,198.36,198.14,197.09,195.7,195.55,196.88,197.49,191.79]},{"id":"buy_hold","tr":"Al ve tut","en":"Buy & hold","value":188.27,"pct":-5.87,"spark":[199.8,199.49,202.52,204.84,198.07,197.73,196.17,194.08,193.85,195.85,196.76,188.27]},{"id":"scalper_literal","tr":"Hızlı kural","en":"Fast rule","value":179.07,"pct":-10.47,"spark":[200.0,199.12,199.12,199.12,199.12,198.8,193.34,180.82,179.07]}],"trades":[{"t":"2026-10-30 00:00","bot":"variant_a","B":true,"coin":"ETH","side":"SELL","qty":0.01347,"usd":30.35,"price":2253.13,"ist":"30.10 03:00","tr":"Ana bot (trend)","en":"Main bot (trend)"},{"t":"2026-10-30 00:00","bot":"variant_a","B":false,"coin":"ETH","side":"SELL","qty":0.01347,"usd":30.35,"price":2253.13,"ist":"30.10 03:00","tr":"Ana bot (trend)","en":"Main bot (trend)"},{"t":"2026-10-29 20:01","bot":"scalper_literal","B":false,"coin":"BTC","side":"SELL","qty":0.00055,"usd":44.75,"price":80741.17,"ist":"29.10 23:01","tr":"Hızlı kural","en":"Fast rule"},{"t":"2026-10-29 19:03","bot":"scalper_literal","B":false,"coin":"BTC","side":"BUY","qty":0.00055,"usd":44.8,"price":80838.16,"ist":"29.10 22:03","tr":"Hızlı kural","en":"Fast rule"},{"t":"2026-10-29 16:14","bot":"scalper_literal","B":false,"coin":"ETH","side":"SELL","qty":0.01892,"usd":44.78,"price":2367.13,"ist":"29.10 19:14","tr":"Hızlı kural","en":"Fast rule"}],"prices":{"BTC":{"price":78554.01,"at":"30.10 08:00","src":"paper"},"ETH":{"price":2239.35,"at":"30.10 08:00","src":"paper"}},"series":{"BTC":[80867.61,81082.0,81479.02,81550.0,81500.01,81341.96,80749.78,80740.01,80599.27,80553.13,80626.01,80860.01,81011.68,81585.39,81329.72,81370.01,81276.01,81343.5,81106.15,80019.56,79964.0,79858.01,80256.22,80234.14,79968.94,79861.89,80070.01,80207.4,80285.0,80170.02,80058.01,80305.21,81178.32,81777.74,81269.56,80891.82,80864.01,80848.64,78851.99,79033.28,79011.31,77991.89,77252.14,76837.04,77436.43,78235.15,78280.01,78554.01],"ETH":[2351.83,2361.36,2372.29,2373.29,2368.76,2361.64,2340.0,2336.31,2333.33,2334.87,2335.56,2344.93,2355.05,2371.51,2360.92,2364.72,2360.3,2359.68,2354.51,2314.29,2312.19,2309.03,2321.64,2323.07,2313.5,2310.36,2319.38,2321.52,2328.89,2325.28,2323.11,2327.22,2344.73,2369.06,2353.2,2341.43,2331.47,2336.89,2257.88,2273.59,2274.25,2253.13,2222.69,2195.34,2210.12,2237.82,2243.79,2239.35]},"ab":{"date":"2026-10-30","pause_new_buys":true,"size_mult":0.5,"skip_coins":["ETH"]},"note_tr":"PAPER TRADING – gerçek para yok","note_en":"PAPER TRADING – no real money","daily":"09:30"},"generated":1793343115,"generated_ist":"2026-10-30T09:51:55+03:00"}</script>
+<script>'use strict';
+// Pixel-art live office: same bots, rooms and status.json feed as the 3D v3 office, drawn top-down at 10 px per tile.
+const D = JSON.parse(document.getElementById('officeData').textContent);
+let TRADE = null; try { TRADE = JSON.parse(document.getElementById('tradeData').textContent); if (TRADE && TRADE.trading) TRADE = TRADE.trading; } catch (e) {}
+const Q = new URLSearchParams(location.search);
+let LANG = Q.get('lang') === 'en' ? 'en' : 'tr';
+const STILL = Q.has('still');
+const STATUS_URL = Q.get('status') || './office_live/status.json';
+const T = 10, MT = 10, LW = 38 * T, LH = 38 * T + MT;
+const R = v => Math.round(v * T), RY = v => Math.round(v * T) + MT;
+const ROOM = Object.fromEntries(D.rooms.map(r => [r.id, r]));
+const BD = Object.fromEntries(D.bots.map(b => [b.id, b]));
+const IDS = D.bots.map(b => b.id);
+const buf = document.createElement('canvas'); buf.width = LW; buf.height = LH;
+const g = buf.getContext('2d'); g.imageSmoothingEnabled = false;
+const cv = document.getElementById('c'), cx = cv.getContext('2d');
+const $ = id => document.getElementById(id);
+function hash(a, b = 0) { let h = (a * 374761393 + b * 668265263) | 0; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+function rect(x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
+function shade(hex, f) { const n = parseInt(hex.slice(1), 16); let r = n >> 16, gg = (n >> 8) & 255, b = n & 255;
+  const m = v => Math.max(0, Math.min(255, Math.round(f >= 0 ? v + (255 - v) * f : v * (1 + f)))); return '#' + ((1 << 24) + (m(r) << 16) + (m(gg) << 8) + m(b)).toString(16).slice(1); }
+
+// ---------- 3x5 pixel font ----------
+const FONT = {A:'010101111101101',B:'110101110101110',C:'011100100100011',D:'110101101101110',E:'111100110100111',F:'111100110100100',G:'011100101101011',H:'101101111101101',I:'111010010010111',J:'001001001101010',K:'101101110101101',L:'100100100100111',M:'101111111101101',N:'110101101101101',O:'010101101101010',P:'110101110100100',Q:'010101101110011',R:'110101110101101',S:'011100010001110',T:'111010010010010',U:'101101101101111',V:'101101101101010',W:'101101111111101',X:'101101010101101',Y:'101101010010010',Z:'111001010100111',
+  0:'111101101101111',1:'010110010010111',2:'110001010100111',3:'110001010001110',4:'101101111001001',5:'111100110001110',6:'011100111101111',7:'111001010010010',8:'111101111101111',9:'111101111001110',
+  '.':'000000000000010',':':'000010000010000','-':'000000111000000','+':'000010111010000','%':'101001010100101','$':'011110010011110','/':'001001010100100','?':'110001010000010','!':'010010010000010','×':'000101010101000',' ':'000000000000000','·':'000000010000000','(':'010100100100010',')':'010001001001010',',':'000000000010100'};
+const TRMAP = {'Ç':'C','Ş':'S','Ğ':'G','Ü':'U','Ö':'O','İ':'I','I':'I','ç':'C','ş':'S','ğ':'G','ü':'U','ö':'O','ı':'I'};
+function ptext(s, x, y, c, sc = 1) { s = String(s).split('').map(ch => TRMAP[ch] || ch).join('').toUpperCase(); g.fillStyle = c; let cx0 = Math.round(x);
+  for (const ch of s) { const f = FONT[ch] || FONT[' ']; for (let i = 0; i < 15; i++) if (f[i] === '1') g.fillRect(cx0 + (i % 3) * sc, Math.round(y) + Math.floor(i / 3) * sc, sc, sc); cx0 += 4 * sc; } return cx0 - x; }
+const pw = (s, sc = 1) => String(s).length * 4 * sc - sc;
+
+// ---------- time / daylight (Istanbul) ----------
+let _istF = null, _istH = null;
+try { _istF = new Intl.DateTimeFormat('en-GB', {timeZone: 'Europe/Istanbul', hour: '2-digit', minute: '2-digit', hour12: false}); } catch (e) {}
+function istHM(ts) { if (!ts) return ''; if (_istF) return _istF.format(new Date(ts * 1000)); const d = new Date((ts + 3 * 3600) * 1000); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0'); }
+function istHour() { if (Q.has('hour')) return +Q.get('hour'); const [h, m] = istHM(Date.now() / 1000).split(':').map(Number); return h + m / 60; }
+function daylight(h) { // 0 = full day, 1 = night
+  if (h >= 8 && h <= 17) return 0; if (h >= 20 || h <= 5.5) return 1; if (h < 8) return (8 - h) / 2.5; return (h - 17) / 3; }
+function sky(h) { const n = daylight(h); if (n === 0) return ['#9fd3f2', '#d9f0fb']; if (n === 1) return ['#1b2448', '#2d3a66']; return (h > 12) ? ['#f0a46b', '#f6d39a'] : ['#f2b98a', '#cfe4f0']; }
+
+// ---------- rooms: palette + layout (tile coords) ----------
+const STY = {
+  grokian: {floor: ['#9a6a3e', '#8a5c33'], pat: 'herring', wall: '#2f5a43', rug: [3.2, 4.2, 6.4, 5.2, '#c8553d', '#e9b98f']},
+  grokidea: {floor: ['#efe6cf', '#e5dabd'], pat: 'tile', wall: '#f3e7b8', rug: [16.6, 6.4, 5.6, 3.6, '#f1d36b', '#9cc9b9'], round: 1},
+  groker: {floor: ['#b7bcc4', '#aeb3bb'], pat: 'tile', wall: '#5d6f80', rug: [28.6, 5.6, 6.6, 4.2, '#2f3b4c', '#5a6f86']},
+  gorketer: {floor: ['#c79c6a', '#b98d5c'], pat: 'plank', wall: '#c9b7e3', rug: [2.6, 18, 6.4, 4.4, '#7a55b8', '#b49be0']},
+  groky: {floor: ['#c8955c', '#bb8851'], pat: 'herring', wall: '#f1e3c9', rug: [15.8, 17.6, 6.4, 4.6, '#e0703a', '#f7d2a6']},
+  grokdesk: {floor: ['#d6d8dc', '#cdd0d5'], pat: 'tile', wall: '#dfe3ea', rug: [28.8, 18.4, 5.6, 3.8, '#3e57a6', '#9bb0e6']},
+  groked: {floor: ['#a77a4c', '#9a6e42'], pat: 'plank', wall: '#bfe0db', rug: [2.6, 31, 6.4, 4.2, '#2a9aa3', '#9fe0dc']},
+  grokisual: {floor: ['#ece7df', '#e3ddd3'], pat: 'tile', wall: '#f6f1ea', rug: [15.4, 31.2, 6.4, 4.2, '#d8673f', '#f2c7a8']},
+  gronk: {floor: ['#efe2d6', '#e6d7c9'], pat: 'plank', wall: '#e8c4cc', rug: [28.6, 30.6, 6.6, 4.6, '#d97a98', '#f6d0da'], round: 1},
+};
+function floorRect(x0, y0, x1, y1, s, seed) { const [a, b] = s.floor; rect(R(x0), RY(y0), R(x1 - x0), R(y1 - y0), a);
+  const X0 = R(x0), Y0 = RY(y0), W = R(x1 - x0), H = R(y1 - y0);
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let on = false;
+    if (s.pat === 'plank') { on = (y % 5 === 4) || ((x + (Math.floor(y / 5) % 3) * 7) % 21 === 0); if (on) { g.fillStyle = b; g.fillRect(X0 + x, Y0 + y, 1, 1); } }
+    else if (s.pat === 'herring') { const u = Math.floor(x / 4), v = Math.floor(y / 4); if (((u + v) & 1) === 0 && ((x + y) % 4 === 0)) { g.fillStyle = b; g.fillRect(X0 + x, Y0 + y, 1, 1); } else if ((u + v) & 1) { if (x % 4 === 0) { g.fillStyle = b; g.fillRect(X0 + x, Y0 + y, 1, 1); } } }
+    else if (s.pat === 'tile') { if (x % 10 === 0 || y % 10 === 0) { g.fillStyle = b; g.fillRect(X0 + x, Y0 + y, 1, 1); } }
+    if (hash(x + seed * 99, y) < 0.012) { g.fillStyle = shade(a, -0.08); g.fillRect(X0 + x, Y0 + y, 1, 1); } } }
+function rug(x, y, w, h, c1, c2, round) { const X = R(x), Y = RY(y), W = R(w), H = R(h);
+  if (round) { for (let j = 0; j < H; j++) { const k = Math.sqrt(1 - Math.pow((j - H / 2 + .5) / (H / 2), 2)); const ww = Math.round(W * k); rect(X + (W - ww) / 2, Y + j, ww, 1, c1); }
+    for (let j = 4; j < H - 4; j++) { const k = Math.sqrt(Math.max(0, 1 - Math.pow((j - H / 2 + .5) / (H / 2 - 4), 2))); const ww = Math.round((W - 8) * k); rect(X + (W - ww) / 2, Y + j, ww, 1, c2); rect(X + (W - ww) / 2 + 2, Y + j, Math.max(0, ww - 4), 1, c1); } return; }
+  rect(X, Y, W, H, c1); rect(X + 2, Y + 2, W - 4, H - 4, c2); rect(X + 3, Y + 3, W - 6, H - 6, c1);
+  for (let i = 0; i < 3; i++) rect(X + W / 2 - 6 + i * 2, Y + H / 2 - 6 + i * 2, 12 - i * 4, 12 - i * 4, i % 2 ? c1 : c2);
+  for (let i = 0; i < W; i += 3) { rect(X + i, Y - 1, 1, 1, c2); rect(X + i, Y + H, 1, 1, c2); } }
+// wall face band above a room's interior (back wall), items drawn onto it
+const WALLH = 13;
+function wallBand(r, s) { const [x0, y0, x1] = r.bounds; const X = R(x0), Y = RY(y0) - WALLH, W = R(x1 - x0);
+  rect(X, Y, W, WALLH, s.wall); rect(X, Y, W, 2, shade(s.wall, -0.35)); rect(X, Y + WALLH - 2, W, 2, shade(s.wall, -0.18)); rect(X, Y + WALLH - 1, W, 1, shade(s.wall, -0.45)); }
+const wy = (r) => RY(r.bounds[1]) - WALLH; // top of the wall band
+function windowOn(r, x0, x1, h, skyline) { const Y = wy(r) + 2, X = R(x0), W = R(x1 - x0), H = WALLH - 4; const [s1, s2] = sky(h);
+  rect(X - 1, Y - 1, W + 2, H + 2, '#f6f3ea'); rect(X, Y, W, H / 2, s1); rect(X, Y + H / 2, W, H / 2, s2);
+  if (skyline) { const base = Y + H; const n = daylight(h); const sil = n > .5 ? '#11182e' : '#5b6b84';
+    rect(X, base - 3, W, 3, sil); rect(X + 4, base - 6, 7, 3, sil); rect(X + 5, base - 7, 5, 1, sil); rect(X + 7, base - 8, 1, 1, sil); // dome
+    rect(X + 2, base - 9, 1, 6, sil); rect(X + 12, base - 9, 1, 6, sil); rect(X + 15, base - 5, 5, 2, sil); rect(X + 16, base - 6, 3, 1, sil);
+    if (n > .5) for (let i = 0; i < 5; i++) rect(X + 1 + i * 4, base - 2, 1, 1, '#f2c14e'); }
+  rect(X + W / 2, Y, 1, H, '#f6f3ea'); }
+function frameOn(r, x0, x1, c, inner) { const Y = wy(r) + 2, X = R(x0), W = R(x1 - x0), H = WALLH - 4; rect(X - 1, Y - 1, W + 2, H + 2, '#6b4a2e'); rect(X, Y, W, H, c); if (inner) inner(X, Y, W, H); }
+function shelfOn(r, x0, x1) { const Y = wy(r) + 1, X = R(x0), W = R(x1 - x0), H = WALLH - 1; rect(X, Y, W, H, '#6b4a2e'); const cols = ['#c8553d', '#2f6f8f', '#e9b526', '#3e8e5a', '#8a5bd6', '#d9cfb8', '#a0523f'];
+  for (let row = 0; row < 2; row++) { rect(X + 1, Y + 1 + row * 6, W - 2, 5, '#3d2a1a'); for (let i = 0; i < W - 3; i += 2) { const hh = 3 + Math.floor(hash(i, row + x0) * 2); rect(X + 2 + i, Y + 6 + row * 6 - hh, 1 + (hash(i + 7, row) > .7 ? 1 : 0), hh, cols[Math.floor(hash(i, row * 3 + x0) * cols.length)]); } } }
+// furniture
+function desk(x, y, w, h, c = '#a87a4f') { const X = R(x), Y = RY(y), W = R(w), H = R(h); rect(X, Y + H - 1, W, 3, shade(c, -0.4)); rect(X, Y, W, H, c); rect(X, Y, W, 1, shade(c, 0.25)); rect(X + 1, Y + H, 2, 3, shade(c, -0.5)); rect(X + W - 3, Y + H, 2, 3, shade(c, -0.5)); }
+function monitor(x, y, w, draw) { const X = R(x), W = R(w), H = Math.round(W * 0.62), Y = RY(y) - H; rect(X - 1, Y - 1, W + 2, H + 2, '#1b1f2a'); rect(X, Y, W, H, '#0f141c'); if (draw) { g.save(); g.beginPath(); g.rect(X, Y, W, H); g.clip(); draw(X, Y, W, H); g.restore(); } rect(X + W / 2 - 1, Y + H + 1, 3, 2, '#1b1f2a'); rect(X + W / 2 - 3, Y + H + 3, 7, 1, '#1b1f2a'); return [X, Y, W, H]; }
+function chair(x, y, c = '#3a4152', up = true) { const X = R(x) - 4, Y = RY(y) - 2; rect(X, Y, 8, 6, c); rect(X + 1, Y + 1, 6, 4, shade(c, 0.15)); if (!up) rect(X, Y - 4, 8, 4, shade(c, -0.2)); }
+function chairBack(x, y, c = '#3a4152') { const X = R(x) - 4, Y = RY(y) + 2; rect(X, Y, 8, 3, shade(c, -0.25)); rect(X + 1, Y, 6, 1, shade(c, 0.1)); }
+function armchair(x, y, c) { const X = R(x) - 7, Y = RY(y) - 8; rect(X, Y, 14, 13, shade(c, -0.35)); rect(X + 1, Y, 12, 5, shade(c, -0.1)); rect(X + 2, Y + 5, 10, 7, c); rect(X, Y + 3, 3, 10, shade(c, -0.2)); rect(X + 11, Y + 3, 3, 10, shade(c, -0.2)); }
+function plant(x, y, big) { const X = R(x), Y = RY(y); rect(X - 3, Y - 4, 7, 5, '#c0743f'); rect(X - 3, Y - 4, 7, 1, '#d9905a'); const L = big ? 9 : 6; for (let i = 0; i < 9; i++) { const a = i / 9 * Math.PI * 2; rect(X + Math.round(Math.cos(a) * L / 2) - 1, Y - 6 - L / 2 + Math.round(Math.sin(a) * L / 2.6), 3, 3, i % 2 ? '#3e8e5a' : '#5fae6e'); } rect(X - 1, Y - 8 - (big ? 3 : 1), 3, 4, '#2f7a4b'); }
+function lamp(x, y, c = '#f2e3b4', on = 0) { const X = R(x), Y = RY(y); rect(X, Y - 12, 1, 12, '#5a4a3a'); rect(X - 3, Y - 1, 7, 2, '#5a4a3a'); rect(X - 3, Y - 16, 7, 4, c); if (on) LIGHTS.push([X, Y - 13, 26, c]); }
+function smallTable(x, y, w = 1.2, h = 0.8, c = '#b58a5a') { const X = R(x - w / 2), Y = RY(y - h / 2), W = R(w), H = R(h); rect(X, Y + 2, W, H, shade(c, -0.45)); rect(X, Y, W, H, c); rect(X, Y, W, 1, shade(c, 0.25)); }
+function papers(x, y, n, seed) { for (let i = 0; i < n; i++) { const X = R(x) + Math.round((hash(i, seed) - .5) * 22), Y = RY(y) + Math.round((hash(i + 9, seed) - .5) * 10); rect(X, Y, 4, 5, '#f6f3ea'); rect(X + 1, Y + 1, 2, 1, '#b8b2a5'); rect(X + 1, Y + 3, 2, 1, '#b8b2a5'); } }
+function glass(x, y) { rect(R(x), RY(y) - 3, 2, 3, '#bfe3f2'); rect(R(x), RY(y) - 3, 2, 1, '#e8f7fd'); }
+function bottle(x, y) { rect(R(x), RY(y) - 6, 3, 6, '#7cc6e8'); rect(R(x) + 1, RY(y) - 8, 1, 2, '#2f6f8f'); }
+function cup(x, y) { rect(R(x), RY(y) - 3, 3, 3, '#f6f3ea'); rect(R(x) + 1, RY(y) - 3, 1, 1, '#4a2a17'); rect(R(x) - 1, RY(y), 5, 1, '#c8553d'); }   // Turkish coffee
+function simit(x, y) { const X = R(x), Y = RY(y); rect(X - 2, Y - 1, 5, 3, '#c0743f'); rect(X - 1, Y, 3, 1, '#e8d2a8'); }
+const LIGHTS = [];   // [x, y, radius, colour] — glows added at night
+
+// ---------- live / demo state ----------
+const LIVE = {on: false, status: null, gen: 0, seen: 0, queue: [], fail: 0};
+const STATE = Object.fromEntries(IDS.map(id => [id, BD[id].state === 'working' ? 'working' : 'idle']));
+const TASK = {};
+let SIM = 0;      // simulation seconds
+
+// ---------- bots ----------
+// spots in tile coords: [x, y, facing ('up'|'down'|'left'|'right'), seated?]
+const SP = {
+  grokian: {desk: [5, 3.1, 'up', 1], read: [8.6, 8.4, 'down', 1], pin: [2.4, 2.6, 'up'], atlas: [8.6, 7.1, 'up']},
+  grokidea: {chair: [18.2, 6.4, 'down', 1], board: [19.1, 2.4, 'up'], wb: [22.3, 2.4, 'up'], jar: [20.6, 6.7, 'left'], window: [15.9, 2.4, 'up']},
+  groker: {desk: [30.3, 3.2, 'up'], board: [33.4, 2.4, 'up'], couch: [34.4, 8.2, 'down', 1]},
+  gorketer: {desk: [3.6, 16.6, 'up', 1], board: [7.2, 15.4, 'up'], board2: [9.4, 15.4, 'up'], window: [2.4, 15.3, 'up']},
+  groky: {desk: [17.9, 16.8, 'up', 1], board: [21.4, 15.4, 'up'], map: [15.8, 15.4, 'up'], jar: [19.9, 16.6, 'up']},
+  grokdesk: {desk: [31.6, 16.4, 'up', 1], cab: [35.2, 18.6, 'right'], map: [34.9, 15.4, 'up'], cal: [28.8, 15.4, 'up']},
+  groked: {desk: [4, 29.4, 'up', 1], wall: [8.1, 28.6, 'up'], printer: [9.6, 31.2, 'right'], coins: [4.9, 29.4, 'up', 1]},
+  grokisual: {desk: [18.4, 29.4, 'up', 1], easel: [21.9, 31.9, 'up'], shelf: [22.1, 28.4, 'up']},
+  gronk: {chair: [29.8, 32.3, 'right', 1], window: [29.3, 28.4, 'up'], cushion: [33.1, 32.9, 'up']},
+};
+const BOT = {};
+IDS.forEach(id => { const s = SP[id][Object.keys(SP[id])[0]]; BOT[id] = {id, x: s[0], y: s[1], face: s[2], seated: !!s[3], path: [], act: 'sit', bubble: null, carry: null, step: 0, stepT: 0, seq: null, seqKey: '', walkT: 0, busy: false, fxT: 0}; });
+
+// walk graph (corridors) + per-room door/entry
+const NODES = Object.fromEntries(D.walkGraph.nodes.map(n => [n.id, n]));
+const ADJ = {}; D.walkGraph.edges.forEach(([a, b]) => { (ADJ[a] = ADJ[a] || []).push(b); (ADJ[b] = ADJ[b] || []).push(a); });
+function nearestNode(x, y) { let best = null, bd = 1e9; for (const n of Object.values(NODES)) { const d = Math.hypot(n.x - x, n.y - y); if (d < bd) { bd = d; best = n.id; } } return best; }
+function corridorPath(a, b) { const dist = {[a]: 0}, prev = {}, todo = new Set(Object.keys(NODES)); while (todo.size) { let u = null; for (const k of todo) if (dist[k] !== undefined && (u === null || dist[k] < dist[u])) u = k; if (u === null) break; todo.delete(u); if (u === b) break;
+    for (const v of ADJ[u] || []) { const d = dist[u] + Math.hypot(NODES[u].x - NODES[v].x, NODES[u].y - NODES[v].y); if (dist[v] === undefined || d < dist[v]) { dist[v] = d; prev[v] = u; } } }
+  const out = []; let k = b; while (k) { out.unshift([NODES[k].x, NODES[k].y]); k = prev[k]; } return out; }
+function roomOf(x, y) { for (const r of D.rooms) { const [a, b, c, d] = r.bounds; if (x >= a && x <= c && y >= b && y <= d) return r.id; } return null; }
+function route(fx, fy, tx, ty) { const ra = roomOf(fx, fy), rb = roomOf(tx, ty); if (ra && ra === rb) return [[tx, ty]];
+  const pts = []; let na, nb;
+  if (ra) { const r = ROOM[ra]; pts.push(r.entry, r.door); na = nearestNode(...r.door); } else na = nearestNode(fx, fy);
+  nb = rb ? nearestNode(...ROOM[rb].door) : nearestNode(tx, ty);
+  pts.push(...corridorPath(na, nb));
+  if (rb) { const r = ROOM[rb]; pts.push(r.door, r.entry); }
+  pts.push([tx, ty]); return pts.map(p => [p[0], p[1]]); }
+
+// routines: list of steps {go: spot|[x,y,face], act, bubble, dur, fx}
+const W = (spot, act, dur, bubble, fx) => ({spot, act, dur, bubble, fx});
+const RUT = {
+  groky: {working: [W('desk', 'type', 7, 'folder', 'gyFolders'), W('board', 'pin', 4, 'string', 'gyString'), W('desk', 'type', 6, 'folder', 'gyFolders')],
+          idle: [W('desk', 'sit', 8), W('jar', 'stand', 2.5, 'done', 'gyJar'), W('map', 'look', 6, null, 'gyBell')]},
+  grokian: {working: [W('desk', 'type', 7, 'search', 'gnSearch'), W('atlas', 'read', 5, 'book'), W('pin', 'pin', 3.5, 'pin', 'gnPin'), W('desk', 'type', 5, 'search', 'gnSearch'), W('desk', 'stamp', 2.5, 'stamp', 'gnStamp')],
+            idle: [W('read', 'read', 14, null)]},
+  gorketer: {working: [W('desk', 'write', 7, 'search', 'goHi'), W('board', 'pin', 3.5, 'pin', 'goPin'), W('desk', 'type', 6, 'search'), W('board2', 'pin', 3, 'string', 'goString')],
+             idle: [W('window', 'look', 8), W('board2', 'fix', 4, null, 'goCrooked'), W('desk', 'sit', 6)]},
+  groked: {working: [W('desk', 'type', 6, 'chart', 'gkRows'), W('wall', 'look', 5, 'chart', 'gkRows'), W('desk', 'type', 6, 'chart', 'gkRows')],
+           idle: [W('coins', 'flip', 6, null, 'gkCoin'), W('desk', 'sit', 8)]},
+  grokidea: {working: [W('board', 'magnify', 5, 'search', 'giBulb'), W('wb', 'write', 5, 'idea', 'giSticky')],
+             idle: [W('chair', 'rest', 9), W('jar', 'stand', 3, 'idea'), W('chair', 'read', 7)]},
+  grokdesk: {working: [W('cab', 'stand', 3, 'folder'), W('desk', 'type', 5, 'globe', 'gdSite'), W('desk', 'stamp', 2.5, 'stamp', 'gdStamp')],
+             idle: [W('map', 'look', 7, null, 'gdMap'), W('cal', 'write', 4, null, 'gdCal'), W('desk', 'sit', 6)]},
+  groker: {working: [W('desk', 'type', 9, 'code', 'grCode'), W('board', 'look', 3, 'code'), W('desk', 'type', 7, 'code', 'grCode')],
+           idle: [W('desk', 'sip', 7, null, 'grTests'), W('couch', 'rest', 8)]},
+  gronk: {working: [W('chair', 'rest', 30, null)], idle: [W('chair', 'read', 12), W('cushion', 'fix', 3), W('chair', 'read', 10)]},
+  grokisual: {working: [W('easel', 'sculpt', 7, 'brush', 'gsClay'), W('desk', 'type', 5, 'brush', 'gsRender'), W('easel', 'sculpt', 6, 'brush', 'gsClay')],
+              idle: [W('desk', 'write', 8, null), W('shelf', 'look', 4)]},
+};
+const FXS = {gnPins: 3, goPapers: 5, giNotes: 3, gdMarks: 2, gyJar: 2, clay: 1};
+function stepBot(b, dt) {
+  const st = b.deliver ? 'deliver' : STATE[b.id];
+  if (b.deliver) { stepDeliver(b, dt); return; }
+  const key = st; if (b.seqKey !== key) { b.seqKey = key; b.seq = RUT[b.id][st]; b.step = -1; b.stepT = 0; b.path = []; nextStep(b); }
+  if (b.path.length) { walk(b, dt); return; }
+  b.stepT += dt; const s = b.seq[b.step]; if (s && b.stepT >= s.dur) nextStep(b); }
+function nextStep(b) { b.step = (b.step + 1) % b.seq.length; b.stepT = 0; const s = b.seq[b.step]; const p = SP[b.id][s.spot];
+  b.goal = s; b.act = 'walk'; b.bubble = null; b.path = route(b.x, b.y, p[0], p[1]); if (!b.path.length || (Math.hypot(b.x - p[0], b.y - p[1]) < 0.05)) { b.path = []; arrive(b); } }
+function arrive(b) { const s = b.goal, p = SP[b.id][s.spot]; b.x = p[0]; b.y = p[1]; b.face = p[2]; b.seated = !!p[3]; b.act = s.act; b.bubble = s.bubble || null; b.fxT = 0;
+  if (s.fx === 'gnPin') FXS.gnPins = FXS.gnPins % 7 + 1; if (s.fx === 'goPin') FXS.goPapers = FXS.goPapers % 9 + 1; if (s.fx === 'giSticky') FXS.giNotes = FXS.giNotes % 6 + 1;
+  if (s.fx === 'gdCal') FXS.gdMarks = FXS.gdMarks % 6 + 1; if (s.fx === 'gyJar') FXS.gyJar = FXS.gyJar % 5 + 1; if (s.fx === 'gsClay') FXS.clay = FXS.clay % 4 + 1;
+  if (s.fx === 'gnStamp' || s.fx === 'gdStamp') flash(b, s.fx === 'gdStamp' ? 'CONFIRMED' : 'DOGRULANMADI', s.fx === 'gdStamp' ? '#2e9e74' : '#c8553d'); }
+const SPEED = 2.0; // tiles / s
+function walk(b, dt) { b.act = 'walk'; b.seated = false; b.walkT += dt; let left = SPEED * dt;
+  while (left > 0 && b.path.length) { const [tx, ty] = b.path[0]; const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy);
+    if (Math.abs(dx) > Math.abs(dy)) b.face = dx > 0 ? 'right' : 'left'; else if (d > 0.01) b.face = dy > 0 ? 'down' : 'up';
+    if (d <= left) { b.x = tx; b.y = ty; b.path.shift(); left -= d; } else { b.x += dx / d * left; b.y += dy / d * left; left = 0; } }
+  if (!b.path.length) { if (b.deliver) b.deliver.arrived = true; else arrive(b); } }
+// deliveries
+const DMODE = {groky: 'slide', grokidea: 'plane', groked: 'plane', grokdesk: 'slide', grokian: 'walk', gorketer: 'walk', groker: 'walk', grokisual: 'walk', gronk: null};
+const FLY = [];
+function startDeliver(from, to, task) { const b = BOT[from]; if (!b || !DMODE[from]) return; const tgt = to && ROOM[to] ? ROOM[to].visit : [12.5, 36.4];
+  toast(from, to, task);
+  if (DMODE[from] === 'walk') { b.deliver = {phase: 'go', tgt, t: 0, to}; b.path = route(b.x, b.y, tgt[0], tgt[1]); b.carry = from === 'groker' ? 'pkg' : 'folder'; b.bubble = null; b.seqKey = ''; return; }
+  // plane / slide: the item travels by itself along the corridor route; the sender does a short throw/stamp
+  const start = from === 'groked' ? SP.groked.printer : SP[from][Object.keys(SP[from])[0]];
+  const pts = [[start[0], start[1]], ...route(start[0], start[1], tgt[0], tgt[1])];
+  FLY.push({kind: DMODE[from], pts, t: 0, len: pathLen(pts), from, to}); flash(b, from === 'groky' ? 'ONAY?' : from === 'grokdesk' ? 'CONFIRMED' : '', '#c8553d'); b.fxT = 0; b.ding = from === 'groky' ? 1.2 : 0; }
+function pathLen(p) { let L = 0; for (let i = 1; i < p.length; i++) L += Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); return L; }
+function pathAt(p, d) { for (let i = 1; i < p.length; i++) { const s = Math.hypot(p[i][0] - p[i - 1][0], p[i][1] - p[i - 1][1]); if (d <= s) { const k = s ? d / s : 0; return [p[i - 1][0] + (p[i][0] - p[i - 1][0]) * k, p[i - 1][1] + (p[i][1] - p[i - 1][1]) * k]; } d -= s; } return p[p.length - 1]; }
+function stepDeliver(b, dt) { const dl = b.deliver; if (b.path.length) { walk(b, dt); return; }
+  dl.t += dt; b.act = 'stand'; if (dl.phase === 'go' && dl.t > 1.6) { dl.phase = 'back'; b.carry = null; sparkle(b.x, b.y - 1.2); const h = SP[b.id][Object.keys(SP[b.id])[0]]; b.path = route(b.x, b.y, h[0], h[1]); dl.t = 0; }
+  else if (dl.phase === 'back') { b.deliver = null; b.seqKey = ''; } }
+const SPARK = [];
+function sparkle(x, y) { SPARK.push({x, y, t: 0}); }
+const FLASH = [];
+function flash(b, text, c) { if (text) FLASH.push({x: b.x, y: b.y - 2.1, text, c, t: 0}); }
+
+// ---------- drawing bots ----------
+const SKIN = '#f4f1ea', VIS = '#1d2433', EYE = '#7fe7ff';
+function drawBot(b) {
+  const col = BD[b.id].color, dk = shade(col, -0.3), X = Math.round(R(b.x)), Yf = Math.round(RY(b.y));
+  const walking = b.act === 'walk', ph = Math.floor(SIM * 6 + b.id.length) % 2;
+  const sit = b.seated && !walking; const bob = walking ? ph : (sit ? 0 : (Math.floor(SIM * 1.5 + b.id.length) % 2 && b.act === 'stand' ? 0 : 0));
+  const top = Yf - (sit ? 12 : 14) - bob;
+  // shadow
+  g.globalAlpha = .25; rect(X - 4, Yf - 1, 9, 2, '#000'); g.globalAlpha = 1;
+  // legs
+  if (!sit) { const l = walking && ph ? 1 : 0; rect(X - 3, Yf - 4 + l, 2, 4 - l, '#2b2f3a'); rect(X + 1, Yf - 4 + (walking && !ph ? 1 : 0), 2, 4 - (walking && !ph ? 1 : 0), '#2b2f3a'); }
+  // body
+  const by = top + 6; rect(X - 4, by, 9, 5, col); rect(X - 4, by + 4, 9, 1, dk); rect(X - 4, by, 1, 5, dk);
+  // arms by act
+  let la = 0, ra = 0; const tt = SIM * 8;
+  if (b.act === 'type' || b.act === 'write') { la = Math.floor(tt) % 2 ? -1 : 0; ra = Math.floor(tt + 1) % 2 ? -1 : 0; }
+  if (b.act === 'pin' || b.act === 'fix') { ra = -4 - (Math.floor(SIM * 3) % 2); }
+  if (b.act === 'sculpt') { la = -2 - Math.floor(tt) % 2; ra = -2 - Math.floor(tt + 1) % 2; }
+  if (b.act === 'stamp') { ra = Math.floor(SIM * 2.5) % 2 ? -5 : -1; }
+  if (b.act === 'sip') { la = (SIM % 4) < 1.2 ? -4 : 0; }
+  if (b.act === 'flip') { ra = -2; }
+  rect(X - 6, by + 1 + la, 2, 3, dk); rect(X + 5, by + 1 + ra, 2, 3, dk);
+  // head
+  const hy = top; rect(X - 4, hy, 9, 6, SKIN); rect(X - 3, hy - 1, 7, 1, SKIN); rect(X - 4, hy + 5, 9, 1, '#d7d2c6');
+  const f = b.face;
+  if (f === 'down') { rect(X - 3, hy + 1, 7, 3, VIS); const blink = (SIM + b.id.length * 1.7) % 4 < 0.12; if (!blink) { rect(X - 2, hy + 2, 1, 1, EYE); rect(X + 2, hy + 2, 1, 1, EYE); } }
+  else if (f === 'left') { rect(X - 4, hy + 1, 5, 3, VIS); rect(X - 3, hy + 2, 1, 1, EYE); }
+  else if (f === 'right') { rect(X, hy + 1, 5, 3, VIS); rect(X + 3, hy + 2, 1, 1, EYE); }
+  // accessories
+  acc(b, X, hy, by, col);
+  // held items
+  if (b.act === 'read' && (f === 'down')) { rect(X - 4, by + 1, 9, 4, '#7a2e22'); rect(X, by + 1, 1, 4, '#e9d9b6'); if (b.id === 'grokian') rect(X - 3, by + 2, 2, 1, '#e9b526'); }
+  if (b.act === 'read' && f !== 'down') { rect(X - 3, by - 1, 7, 3, '#e9d9b6'); }
+  if (b.act === 'sip' && la < 0) cupHeld(X - 6, by - 3);
+  if (b.act === 'magnify') { rect(X + 5, by - 4, 3, 3, '#cfd8e3'); rect(X + 6, by - 3, 1, 1, '#7fe7ff'); rect(X + 7, by - 1, 1, 3, '#6b4a2e'); }
+  if (b.act === 'write' && b.id === 'gorketer') rect(X + 5, by - 1 + ra, 1, 3, '#f2e14e');
+  if (b.act === 'flip') { const k = (SIM * 1.6) % 1; const hgt = Math.round(Math.sin(k * Math.PI) * 9); rect(X + 6, by - 2 - hgt, 3, 3, k < .5 ? '#f2c14e' : '#b8c4d6'); }
+  if (b.carry === 'folder') { rect(X - 3, by + 1, 7, 5, '#d9a441'); rect(X - 3, by + 3, 7, 1, '#c8553d'); }
+  if (b.carry === 'pkg') { rect(X - 3, by, 7, 6, '#b8f0d0'); rect(X - 3, by + 2, 7, 1, '#2e9e74'); LIGHTS.push([X, by + 3, 14, '#7fffc0']); }
+  if (b.id === 'grokidea') { const on = b.act === 'magnify' || b.act === 'write' ? Math.floor(SIM * 3) % 2 : 1; if (on) LIGHTS.push([X, hy - 4, 10, '#ffe27a']); }
+}
+function cupHeld(x, y) { rect(x, y, 3, 3, '#f6f3ea'); rect(x + 1, y, 1, 1, '#4a2a17'); }
+function acc(b, X, hy, by, col) { const f = b.face;
+  switch (b.id) {
+    case 'groky': rect(X - 5, hy + 1, 1, 3, '#2b2f3a'); rect(X + 5, hy + 1, 1, 3, '#2b2f3a'); rect(X - 4, hy - 2, 9, 1, '#2b2f3a'); if (f === 'down') { rect(X - 1, by, 3, 1, '#c8553d'); rect(X - 4, hy + 4, 2, 1, '#2b2f3a'); } break;
+    case 'grokidea': rect(X, hy - 4, 1, 3, '#888'); rect(X - 1, hy - 6, 3, 2, '#ffd84a'); break;
+    case 'grokian': if (f === 'down') { rect(X - 3, hy + 2, 2, 1, '#c9a45a'); rect(X + 2, hy + 2, 2, 1, '#c9a45a'); } rect(X - 4, by, 9, 2, '#5c7a4a'); if (f !== 'up') rect(X + 2, by + 2, 2, 3, '#5c7a4a'); break;
+    case 'groker': rect(X - 5, hy + 1, 2, 3, '#1f6f52'); rect(X + 4, hy + 1, 2, 3, '#1f6f52'); rect(X - 4, hy - 2, 9, 1, '#1f6f52'); rect(X - 4, by - 1, 9, 2, shade(col, -0.2)); break;
+    case 'groked': rect(X - 5, hy - 1, 11, 2, '#2a9aa3'); if (f === 'down') rect(X - 5, hy + 1, 11, 1, '#2a9aa3'); break;
+    case 'gorketer': rect(X - 4, hy - 3, 8, 3, '#5b3a8a'); rect(X + 2, hy - 4, 2, 1, '#5b3a8a'); rect(X + 3, by + 1, 2, 4, '#8a5a2e'); break;
+    case 'gronk': rect(X - 4, by, 9, 2, '#f2d0d8'); rect(X - 3, by + 2, 2, 3, '#f2d0d8'); break;
+    case 'grokdesk': if (f !== 'up') { rect(X, by, 1, 4, '#c8553d'); rect(X + 2, by + 2, 2, 2, '#f2efe6'); } break;
+    case 'grokisual': rect(X - 4, hy - 2, 8, 2, '#c8302a'); rect(X - 5, hy - 1, 3, 1, '#c8302a'); rect(X + 5, by + 1, 1, 4, '#f2c14e'); break;
+  } }
+// bubbles (status glyphs)
+const GLY = {
+  kbd: ['.......', '.x.x.x.', '.......', '.xxxxx.'], search: ['..xx...', '.x..x..', '.x..x..', '..xx...', '....x..'], book: ['xxx.xxx', 'x.x.x.x', 'xxx.xxx'], pin: ['..rr...', '..rr...', '...x...', '...x...'],
+  chart: ['.....g.', '...g.g.', '.g.....', 'g......'], code: ['g.x....', '.g.xx..', 'g.x....'], idea: ['..yyy..', '.yyyyy.', '..yyy..', '...x...'], brush: ['....rr.', '...rr..', '..x....', '.x.....'],
+  stamp: ['..xxx..', '..xxx..', '.xxxxx.', 'rrrrrrr'], folder: ['xx.....', 'yyyyyyy', 'yyyyyyy', 'yyyyyyy'], string: ['r.....r', '.r...r.', '..rrr..'], globe: ['.bbb.', 'bgbgb', 'bbgbb', '.bbb.'], done: ['......g', '.....g.', 'g..g...', '.gg....'], dots: ['.......', 'x.x.x..'],
+};
+const GC = {x: '#1b1f2a', r: '#c8302a', g: '#2e9e74', y: '#e9b526', b: '#2f6f8f'};
+function bubble(b) { if (!b.bubble || b.act === 'walk') return; const gl = GLY[b.bubble]; if (!gl) return; const X = R(b.x), Y = RY(b.y) - (b.seated ? 12 : 14) - 14 - (Math.floor(SIM * 2) % 2);
+  const w = 11, h = 8; rect(X - 5, Y, w, h, '#ffffff'); rect(X - 6, Y + 1, 1, h - 2, '#ffffff'); rect(X + 6, Y + 1, 1, h - 2, '#ffffff'); rect(X - 1, Y + h, 2, 1, '#ffffff'); rect(X - 1, Y + h, 1, 2, '#ffffff');
+  const gw = gl[0].length, gh = gl.length, ox = X - Math.floor(gw / 2), oy = Y + Math.floor((h - gh) / 2);
+  gl.forEach((row, j) => [...row].forEach((c, i) => { if (c !== '.') rect(ox + i, oy + j, 1, 1, GC[c]); })); }
+function nameTag(b, zoom) { const nm = BD[b.id].name.toUpperCase(); const w = pw(nm) + 4, X = R(b.x) - Math.floor(w / 2), Y = RY(b.y) + 2;
+  rect(X, Y, w, 7, BD[b.id].color); rect(X, Y + 7, w, 1, shade(BD[b.id].color, -0.4)); ptext(nm, X + 2, Y + 1, '#ffffff');
+  if (STATE[b.id] === 'working' && b.id !== 'gronk') { rect(X + w, Y + 2, 2, 2, Math.floor(SIM * 2) % 2 ? '#3ecf6e' : '#1e7a3e'); } }
+
+// ---------- per-room scenery (some of it animated) ----------
+const ST = (id) => STATE[id];
+function scr(fn) { return fn; }
+function drawRooms(h) {
+  LIGHTS.length = 0;
+  // corridors / base
+  rect(0, 0, LW, LH, '#1b1f2a'); rect(R(0.6), RY(0.6), R(36.8), R(36.8), '#d8ccb6');
+  for (let y = RY(0.6); y < RY(37.4); y += 10) for (let x = R(0.6); x < R(37.4); x += 10) if (((x + y) / 10) % 2 === 0) rect(x, y, 10, 10, '#d0c3ab');
+  // worn runner gorketer -> groked
+  for (let y = 21; y < 33; y += 0.5) { g.globalAlpha = .18; rect(R(12.1), RY(y), R(0.8), 5, '#8a6a46'); } g.globalAlpha = 1;
+  for (const r of D.rooms) { const s = STY[r.id], [x0, y0, x1, y1] = r.bounds; floorRect(x0, y0, x1, y1, s, x0 + y0); const rg = s.rug; rug(rg[0], rg[1], rg[2], rg[3], rg[4], rg[5], s.round); wallBand(r, s); }
+  // exterior photo wall (left corridor wall) + welcome mat
+  ['#c8553d', '#2f6f8f', '#e9b526', '#3e8e5a', '#8a5bd6', '#d97a98'].forEach((c, i) => { rect(R(0.65), RY(11.3 + i * 0.42), 3, 3, '#6b4a2e'); rect(R(0.65) + 1, RY(11.3 + i * 0.42) + 1, 1, 1, c); });
+  rect(R(11.6), RY(36.9), R(1.8), 5, '#8a3b2e'); rect(R(11.6) + 1, RY(36.9) + 1, R(1.8) - 2, 3, '#b8553d'); rect(R(11.7), RY(37.4), R(1.6), 4, '#d8ccb6');
+  for (const id of IDS) ROOMDRAW[id](ROOM[id], h);
+}
+function walls() { // side + bottom wall caps with door gaps, drawn after bots so they read as walls
+  const cap = '#3b3f4c', hi = '#5a6070';
+  rect(R(0.2), RY(0.6) - WALLH, R(37.6), 3, cap); rect(R(0.2), RY(37.4), R(37.6), 4, cap); rect(R(0.2), RY(0.6) - WALLH, 4, R(37) + WALLH, cap); rect(R(37.4), RY(0.6) - WALLH, 4, R(37) + WALLH, cap);
+  rect(R(11.6), RY(37.4), R(1.8), 4, '#d8ccb6');
+  for (const r of D.rooms) { const [x0, y0, x1, y1] = r.bounds; const [dx, dy] = r.door; const right = Math.abs(dx - x1) < Math.abs(dx - x0);
+    const side = (x, gap) => { const top = RY(y0) - WALLH, bot = RY(y1) + 3; if (gap) { const g0 = RY(dy - 0.8), g1 = RY(dy + 0.8); rect(x, top, 3, g0 - top, cap); rect(x, g1, 3, bot - g1, cap); rect(x, g0 - 1, 3, 1, hi); rect(x, g1, 3, 1, hi); } else rect(x, top, 3, bot - top, cap); };
+    side(R(x0) - 3, !right); side(R(x1), right); rect(R(x0) - 3, RY(y1), R(x1 - x0) + 6, 3, cap); rect(R(x0) - 3, RY(y1), R(x1 - x0) + 6, 1, hi);
+    if (r.id === 'gronk') gronkDoor(r, right); }
+}
+function gronkDoor(r, right) { const x = right ? R(r.bounds[2]) : R(r.bounds[0]) - 3, g0 = RY(r.door[1] - 0.8), g1 = RY(r.door[1] + 0.8); const sess = ST('gronk') === 'working';
+  if (sess) { rect(x - 1, g0, 5, g1 - g0, '#8a5a3a'); rect(x, g0 + 2, 3, g1 - g0 - 4, '#ffd59a'); LIGHTS.push([x + 1, (g0 + g1) / 2, 14, '#ffb45a']);
+    // sign hangs on the corridor side of the handle
+    const sx = x - 22, sy = (g0 + g1) / 2 - 4; const t = LANG === 'tr' ? 'SEANSTA' : 'IN SESSION'; const w = pw(t) + 4; rect(x - w - 2, sy, w, 8, '#f6efe0'); rect(x - w - 2, sy + 8, w, 1, '#8a6a46'); ptext(t, x - w, sy + 2, '#8a3b2e'); rect(x - 2, sy + 3, 2, 1, '#8a6a46'); }
+  else { rect(x, g0, 3, 2, '#8a5a3a'); } }
+
+function screenText(X, Y, W, H, lines, c, sc = 0) { for (let i = 0; i < lines; i++) { const ly = Y + 2 + i * 3 - (sc % 3); if (ly < Y || ly > Y + H - 2) continue; const w = Math.floor(3 + hash(i + Math.floor(sc / 3), 5) * (W - 6)); rect(X + 2, ly, w, 1, c); } }
+function offScreen(X, Y, W, H) { rect(X, Y, W, H, '#151b26'); rect(X + 1, Y + 1, 2, 1, '#2a3446'); }
+const ROOMDRAW = {
+  grokian(r, h) { const w = ST('grokian') === 'working';
+    frameOn(r, 1.4, 3.6, '#b58a5a', (X, Y, W, H) => { rect(X, Y + H / 2, W, 1, '#c8302a'); for (let i = 0; i < FXS.gnPins + (w ? 0 : 0); i++) { const px = X + 1 + i * 3; if (px > X + W - 3) break; rect(px, Y + (i % 2 ? 1 : H - 4), 2, 3, '#f6f3ea'); rect(px, Y + (i % 2 ? 1 : H - 4), 1, 1, '#c8302a'); } });
+    windowOn(r, 3.9, 6.2, h); shelfOn(r, 6.6, 10.7);
+    rect(R(10.2), RY(1) - 2, R(0.8), R(9.6), '#7a5232'); for (let i = 0; i < 9; i++) rect(R(10.2), RY(1.6 + i), R(0.8), 2, '#5b3a22'); // ladder/stairs by the shelves
+    desk(3.4, 1.4, 3.4, 1.2, '#7a5232');
+    const tnow = SIM; monitor(4.4, 2.0, 1.6, (X, Y, W, H) => { if (w && BOT.grokian.act === 'type') { rect(X, Y, W, 3, '#e8eef5'); rect(X + 1, Y + 1, 6, 1, '#2f6f8f'); screenText(X, Y + 3, W, H - 3, 6, '#9fb4cc', Math.floor(tnow * 4)); ptext('DP', X + W - 8, Y + 4, '#7fe7ff'); } else offScreen(X, Y, W, H); });
+    chair(5, 3.2, '#5b3a22'); smallTable(8.6, 6.0, 1.6, 0.9, '#7a5232'); rect(R(8.0), RY(5.7), 6, 4, '#e9d9b6'); rect(R(8.6), RY(5.7), 6, 4, '#d9c9a6'); rect(R(8.6) - 1, RY(5.7), 1, 4, '#8a6a46'); // open atlas
+    armchair(8.6, 8.6, '#4d6b4a'); lamp(9.9, 8.4, '#3e8e5a', daylight(h) > .2 || ST('grokian') === 'idle'); smallTable(7.2, 8.8, 1, 0.8); for (let i = 0; i < 3; i++) rect(R(6.9) + i * 2, RY(8.6) - i, 4, 3, '#f6f3ea'); glass(7.5, 8.7);
+    plant(1.8, 10.2, 1); for (let i = 0; i < 3; i++) rect(R(2.2), RY(5) + i * 3, 6, 3, ['#c8553d', '#2f6f8f', '#e9b526'][i]); },
+  grokidea(r, h) { const w = ST('grokidea') === 'working'; windowOn(r, 14.8, 17.2, h);
+    frameOn(r, 17.6, 20.6, '#b58a5a', (X, Y, W, H) => { rect(X + 2, Y + 1, 9, 7, '#f6f3ea'); rect(X + 3, Y + 2, 2, 2, '#1b1f2a'); rect(X + 6, Y + 2, 4, 1, '#888'); rect(X + 6, Y + 4, 3, 1, '#888'); rect(X + 15, Y + 2, 6, 5, '#ffe27a'); rect(X + 23, Y + 1, 5, 6, '#9cc9b9'); rect(X + 5, Y + 5, 12, 1, '#c8302a'); });
+    frameOn(r, 21.0, 23.6, '#f6f6f2', (X, Y, W, H) => { for (let i = 0; i < FXS.giNotes; i++) rect(X + 2 + i * 4, Y + 2 + (i % 2) * 3, 3, 3, ['#ffe27a', '#ffb3c7', '#9cc9b9'][i % 3]); if (w && BOT.grokidea.act === 'write') rect(X + 2, Y + H - 2, (Math.floor(SIM * 6) % 14), 1, '#2f6f8f'); });
+    armchair(18.2, 6.6, '#e3b54a'); smallTable(20.6, 6.0, 1, 0.8); rect(R(20.4), RY(5.4), 5, 6, '#cfe9f2'); rect(R(20.4), RY(5.4), 5, 1, '#8a6a46'); for (let i = 0; i < 3; i++) rect(R(20.5) + i, RY(5.8) + (i % 2), 1, 2, ['#ffe27a', '#ffb3c7', '#9cc9b9'][i]);
+    plant(23.2, 10.2, 1); plant(14.8, 10.2); lamp(16.6, 5.2, '#ffe27a', daylight(h) > .2); },
+  groker(r, h) { const w = ST('groker') === 'working'; windowOn(r, 27.6, 29.0, h);
+    frameOn(r, 31.8, 35.2, '#f6f6f2', (X, Y, W, H) => { ptext('SHIP', X + 2, Y + 2, '#2f6f8f'); const lit = BOT.groker.deliver || (w && Math.floor(SIM) % 3 === 0); rect(X + 20, Y + 4, 8, 1, lit ? '#2e9e74' : '#9aa4b0'); rect(X + 26, Y + 3, 1, 3, lit ? '#2e9e74' : '#9aa4b0'); rect(X + 2, Y + 7, 14, 1, '#c8302a'); });
+    shelfOn(r, 35.6, 36.8);
+    desk(28.8, 1.4, 3.2, 1.2, '#5d6f80'); monitor(29.0, 2.0, 1.4, (X, Y, W, H) => { if (w) { const sc = Math.floor(SIM * 5); for (let i = 0; i < 6; i++) { const ly = Y + 1 + i * 2; const ww = Math.floor(2 + hash(i + sc, 3) * (W - 5)); rect(X + 1 + (i % 3), ly, ww, 1, ['#7fe7ff', '#f2c14e', '#b8f0a0', '#ff9db0'][(i + sc) % 4]); } }
+      else { rect(X, Y, W, H, '#10241c'); if (Math.floor(SIM * 1.5) % 2) { rect(X + W / 2 - 3, Y + H / 2, 2, 2, '#3ecf6e'); rect(X + W / 2 - 1, Y + H / 2 + 1, 2, 2, '#3ecf6e'); rect(X + W / 2 + 1, Y + H / 2 - 1, 2, 2, '#3ecf6e'); rect(X + W / 2 + 3, Y + H / 2 - 3, 2, 2, '#3ecf6e'); } } });
+    monitor(30.6, 2.0, 1.1, (X, Y, W, H) => screenText(X, Y, W, H, 4, '#4a6a8a', 0));
+    const wob = w ? Math.round(Math.sin(SIM * 8)) : 0; rect(R(31.5) + wob, RY(1.7), 4, 3, '#f2d03e'); rect(R(31.5) + 3 + wob, RY(1.7), 2, 1, '#e8833a'); cup(29.0, 2.4);
+    rect(R(33.2), RY(7.6), R(2.6), R(1.4), '#3d4f63'); rect(R(33.2), RY(7.4), R(2.6), 3, '#4d6378'); // couch
+    plant(36.2, 10.2, 1); rect(R(35.4), RY(4.2), R(1.2), R(2), '#2b2f3a'); for (let i = 0; i < 4; i++) rect(R(35.6), RY(4.4) + i * 4, 6, 1, Math.floor(SIM * 3 + i) % 2 ? '#3ecf6e' : '#1e5a3e'); },
+  gorketer(r, h) { const w = ST('gorketer') === 'working'; windowOn(r, 1.3, 3.5, h, true);
+    frameOn(r, 3.9, 10.7, '#b88a58', (X, Y, W, H) => { // pin board
+      for (let i = 0; i < 4; i++) { rect(X + 1, Y + 1 + i * 2, 7, 1, '#f6f3ea'); if (i % 2 === 0) rect(X + 1, Y + 1 + i * 2, 7, 1, '#888'); } rect(X + 1, Y + 3, 7, 1, '#c8302a'); // crossed-out agency list
+      rect(X + 26, Y + 1, 14, 7, '#e9e2c9'); rect(X + 30, Y + 3, 4, 3, '#c9b48a'); rect(X + 31, Y + 2, 2, 1, '#c9b48a'); // Sultanahmet map
+      rect(X + 42, Y + 2, 9, 6, '#f6f3ea'); for (let i = 0; i < 4; i++) rect(X + 43 + i * 2, Y + 4 + (i % 2), 1, 2, i % 2 ? '#c8302a' : '#2e9e74'); // BTC/ETH candles printout
+      const crooked = !(BOT.gorketer.act === 'fix' && (SIM % 2) < 1); rect(X + 56, Y + (crooked ? 2 : 1), 5, 5, '#f6efe0'); rect(X + 57, Y + (crooked ? 3 : 2), 3, 3, '#c8302a'); // goshuin
+      for (let i = 0; i < FXS.goPapers; i++) rect(X + 10 + (i * 7) % 15, Y + 1 + (i % 3) * 2, 3, 3, ['#f6f3ea', '#ffe27a', '#ffb3c7'][i % 3]);
+      g.fillStyle = '#c8302a'; for (let k = 0; k < 14; k++) { g.fillRect(X + 8 + k, Y + 2 + Math.round(k * 0.18), 1, 1); g.fillRect(X + 40 - k, Y + 7 - Math.round(k * 0.25), 1, 1); } });
+    desk(1.8, 14.7, 3.8, 1.2, '#8a6a46'); papers(3.4, 15.1, w ? 7 : 4, 3); papers(6.2, 17.2, w ? 6 : 3, 8);
+    const lx = R(2.2), ly = RY(15.3); rect(lx, ly - 4, 8, 5, '#2b2f3a'); rect(lx + 1, ly - 3, 6, 3, w ? '#dfe8f2' : '#1b2230'); if (w) { rect(lx + 2, ly - 2, 4, 1, '#2f6f8f'); }
+    monitor(4.6, 15.2, 0.9, (X, Y, W, H) => { rect(X, Y, W, H, '#151b26'); rect(X + ((-Math.floor(SIM * 4)) % W + W) % W, Y + H - 2, 4, 1, '#f2c14e'); rect(X + 1, Y + 2, W - 2, 1, '#2e9e74'); });
+    chair(3.6, 16.7, '#5b3a8a'); plant(10.2, 23.2, 1); smallTable(9.2, 22.6, 1.2, 0.8); },
+  groky(r, h) { const w = ST('groky') === 'working';
+    frameOn(r, 14.5, 17.4, '#cfe4f0', (X, Y, W, H) => { rect(X + 3, Y + 2, 6, 4, '#8fbf7a'); rect(X + 12, Y + 1, 7, 6, '#8fbf7a'); rect(X + 21, Y + 3, 5, 3, '#8fbf7a'); rect(X + 15, Y + 4, 1, 1, '#c8302a'); });
+    frameOn(r, 19.5, 23.6, '#b88a58', (X, Y, W, H) => { for (let i = 0; i < 6; i++) rect(X + 2 + i * 6, Y + 1 + (i % 2) * 3, 4, 4, ['#f6f3ea', '#ffe27a', '#ffb3c7'][i % 3]); if (w && BOT.groky.act === 'pin') { g.fillStyle = '#c8302a'; for (let k = 0; k < 18; k++) g.fillRect(X + 4 + k, Y + 3 + Math.round(Math.sin(k / 3)), 1, 1); } });
+    desk(16.0, 15.1, 3.8, 1.2, '#a8743f'); monitor(17.2, 15.7, 1.4, (X, Y, W, H) => { if (w) { rect(X, Y, W, H, '#e8eef5'); const o = Math.floor(SIM * 1.2) % 2; rect(X + 2, Y + 2, 4, 3, '#f2c14e'); rect(X + 8, Y + 2, 4, 3, o ? '#f7d978' : '#f2c14e'); if (o) screenText(X + 6, Y + 5, W - 6, H - 5, 2, '#2f6f8f', 0); } else offScreen(X, Y, W, H); });
+    // brass bell + ONAY? stamp + Done jar + water bottle
+    const ding = BOT.groky.ding > 0; rect(R(16.2), RY(15.5) - (ding ? 1 : 0), 4, 3, '#d9a441'); rect(R(16.2) + 1, RY(15.5) - 2 - (ding ? 1 : 0), 2, 1, '#b8862e'); if (ding) { rect(R(16.2) - 2, RY(15.2), 1, 1, '#f2c14e'); rect(R(16.2) + 5, RY(15.2), 1, 1, '#f2c14e'); }
+    rect(R(19.2), RY(15.3) - 2, 3, 4, '#5b3a22'); rect(R(19.2) - 1, RY(15.3) + 2, 5, 1, '#c8302a');
+    rect(R(19.9), RY(15.0) - 6, 5, 7, '#cfe9f2'); for (let i = 0; i < FXS.gyJar; i++) rect(R(19.9) + 1 + (i % 3), RY(15.0) - 1 - Math.floor(i / 2) * 2, 2, 2, '#f6f3ea'); rect(R(19.9), RY(15.0) - 6, 5, 1, '#8a6a46');
+    bottle(18.6, 15.5); chair(17.9, 16.9, '#c8553d'); chair(20.4, 17.4, '#8a6a46'); // guest chair (Doğancan) — water only
+    // shared water & coffee bar
+    rect(R(21.6), RY(21.8), R(2.2), R(1.4), '#7a5232'); rect(R(21.6), RY(21.8), R(2.2), 2, '#a8743f'); rect(R(21.8), RY(21.6) - 8, 5, 8, '#cfe9f2'); rect(R(21.8), RY(21.6) - 9, 5, 1, '#2f6f8f'); rect(R(22.6), RY(21.6) - 6, 5, 6, '#2b2f3a'); rect(R(22.6) + 1, RY(21.6) - 5, 3, 1, '#f2c14e'); cup(23.4, 22.0); simit(22.3, 22.6);
+    plant(14.8, 23.2, 1); plant(23.4, 15.6); },
+  grokdesk(r, h) { const w = ST('grokdesk') === 'working';
+    frameOn(r, 27.6, 29.6, '#f6f6f2', (X, Y, W, H) => { rect(X, Y, W, 2, '#c8302a'); for (let i = 0; i < 12; i++) rect(X + 1 + (i % 6) * 3, Y + 3 + Math.floor(i / 6) * 3, 2, 2, i < FXS.gdMarks ? '#c8302a' : '#c9ccd2'); });
+    windowOn(r, 30.0, 32.4, h);
+    frameOn(r, 32.8, 36.7, '#cfe4f0', (X, Y, W, H) => { rect(X + 3, Y + 2, 7, 4, '#9cc28a'); rect(X + 13, Y + 1, 10, 6, '#9cc28a'); rect(X + 26, Y + 3, 9, 4, '#9cc28a'); g.fillStyle = '#c8302a'; const off = BOT.grokdesk.act === 'look' ? Math.round(Math.sin(SIM * 2)) : 0; for (let k = 0; k < 20; k++) g.fillRect(X + 7 + k, Y + 4 - Math.round(Math.sin(k / 6.3 * Math.PI)) * 2 + (k > 14 ? off : 0), 1, 1); });
+    desk(30.0, 14.6, 3.2, 1.2, '#5d6f80'); monitor(30.9, 15.2, 1.3, (X, Y, W, H) => { if (w && BOT.grokdesk.act !== 'stand') { rect(X, Y, W, H, '#f2f4f8'); rect(X, Y, W, 2, '#3e57a6'); screenText(X, Y + 2, W, H - 2, 3, '#9aa4b0', 0); if (BOT.grokdesk.act === 'stamp') { rect(X + W - 5, Y + H - 4, 2, 1, '#2e9e74'); rect(X + W - 3, Y + H - 5, 1, 1, '#2e9e74'); } } else offScreen(X, Y, W, H); });
+    rect(R(32.6), RY(15.0) - 3, 3, 4, '#d9a441'); cup(30.3, 15.3); chair(31.6, 16.5, '#3e57a6');
+    rect(R(35.9), RY(16.8), R(1.0), R(3.2), '#8b97a6'); for (let i = 0; i < 4; i++) { rect(R(35.9) + 1, RY(17.0) + i * 8, R(1.0) - 2, 6, '#a9b3c0'); rect(R(35.9) + 3, RY(17.0) + i * 8 + 2, 4, 1, '#3e57a6'); }
+    plant(27.8, 23.2, 1); },
+  groked(r, h) { const w = ST('groked') === 'working';
+    frameOn(r, 1.4, 2.3, '#f6f6f2', (X, Y, W, H) => { const ang = -Math.PI / 2 + (9.5 / 12) * Math.PI * 2; rect(X + 4, Y + 4, 1, 1, '#1b1f2a'); rect(X + 4 + Math.round(Math.cos(ang) * 3), Y + 4 + Math.round(Math.sin(ang) * 3), 1, 1, '#1b1f2a'); rect(X + 4, Y + 1, 1, 3, '#1b1f2a'); });
+    windowOn(r, 2.6, 4.6, h);
+    // big wall screen (mirrors his desk) with real paper-trading rows
+    const sx = R(5.2), sy = wy(r) - 6, sw = R(5.6), sh = WALLH + 4; rect(sx - 2, sy - 2, sw + 4, sh + 4, '#1b1f2a'); rect(sx, sy, sw, sh, '#0f141c'); WALLSCREEN.rect = [sx - 2, sy - 2, sw + 4, sh + 4];
+    const bots = (TRADE && TRADE.bots) || []; const blink = Math.floor(SIM * 2) % 6;
+    bots.slice(0, 6).forEach((tb, i) => { const yy = sy + 2 + i * 3; const up = tb.pct >= 0; if (w && i === blink) rect(sx + 1, yy - 1, sw - 2, 3, '#203048'); rect(sx + 2, yy, 2, 1, '#7d8a99'); rect(sx + 5, yy, Math.max(2, Math.round(16 + tb.pct * 1.2)), 1, up ? '#3ecf6e' : '#ff6b6b'); });
+    const ser = TRADE && TRADE.series && TRADE.series.BTC || []; if (ser.length) { const mn = Math.min(...ser), mx = Math.max(...ser); const n = 22, off = Math.floor(SIM * 1.5); for (let i = 0; i < n; i++) { const k = (i + off) % ser.length, k2 = (k + 1) % ser.length; const v = ser[k], v2 = ser[k2]; const y1 = sy + sh - 2 - Math.round((v - mn) / (mx - mn + 1e-9) * (sh - 5)), y2 = sy + sh - 2 - Math.round((v2 - mn) / (mx - mn + 1e-9) * (sh - 5)); rect(sx + 30 + i, Math.min(y1, y2), 1, Math.abs(y2 - y1) + 1, v2 >= v ? '#3ecf6e' : '#ff6b6b'); } }
+    if (TRADE && TRADE.ab && TRADE.ab.pause_new_buys) { rect(sx + sw - 23, sy + 1, 22, 7, '#3a1d1d'); ptext('PAUSE', sx + sw - 22, sy + 2, '#ff6b6b'); }
+    LIGHTS.push([sx + sw / 2, sy + sh / 2, 30, '#7fe7ff']);
+    desk(2.4, 27.6, 3.4, 1.2, '#2b3a4a'); monitor(3.0, 28.2, 1.2, (X, Y, W, H) => { for (let i = 0; i < 5; i++) rect(X + 1, Y + 1 + i * 2, W - 2, 1, w && i === blink % 5 ? '#3ecf6e' : '#2a3446'); });
+    // coins on desk
+    if (!(BOT.groked.act === 'flip')) { rect(R(4.9), RY(27.9), 3, 3, '#f2c14e'); rect(R(5.2), RY(28.0), 3, 3, '#b8c4d6'); }
+    chair(4, 29.5, '#24a9c7');
+    // printer
+    rect(R(9.8), RY(30.6), R(1.0), R(0.9), '#cfd5de'); rect(R(9.8), RY(30.6), R(1.0), 2, '#9aa4b0'); if (BOT.groked.fxT < 1.2 && FLY.some(f => f.from === 'groked' && f.t < 1.2)) rect(R(9.9), RY(30.4) - 3, 6, 4, '#f6f3ea');
+    plant(1.6, 36.2, 1); },
+  grokisual(r, h) { const w = ST('grokisual') === 'working'; windowOn(r, 14.6, 16.4, h); shelfOn(r, 20.6, 23.6);
+    frameOn(r, 16.8, 19.8, '#f6f6f2', (X, Y, W, H) => { rect(X + 2, Y + 2, 8, 5, '#d8673f'); rect(X + 12, Y + 2, 8, 5, '#2f6f8f'); rect(X + 22, Y + 2, 6, 5, '#e9b526'); });
+    desk(16.6, 27.6, 3.6, 1.2, '#f0ece4'); monitor(17.6, 28.2, 1.4, (X, Y, W, H) => { rect(X, Y, W, H, '#20263a'); isoBlock(X + W / 2, Y + 3, 4 + (w ? FXS.clay : 2), w); });
+    chair(18.4, 29.5, '#e5533d');
+    // easel + clay diorama on a stand
+    const ex = R(21.9), ey = RY(30.9); rect(ex - 1, ey - 12, 2, 13, '#8a6a46'); rect(ex - 6, ey - 13, 12, 8, '#f6f3ea'); rect(ex - 5, ey - 12, 4 + FXS.clay, 3, '#d8673f'); rect(ex - 5, ey - 9, 6, 2, '#2f6f8f');
+    rect(ex + 6, ey - 4, 8, 5, '#b58a5a'); isoBlock(ex + 10, ey - 8, 2 + FXS.clay, w, '#c98a5a');
+    plant(23.2, 36.2, 1); papers(16.6, 33.5, 2, 4); },
+  gronk(r, h) { const sess = ST('gronk') === 'working'; windowOn(r, 28.0, 30.6, h);
+    frameOn(r, 32.0, 34.4, '#f2c79a', (X, Y, W, H) => { rect(X, Y + H - 3, W, 3, '#d97a98'); rect(X + 10, Y + 2, 4, 4, '#ffe27a'); });
+    armchair(29.8, 32.6, '#d9a0b0'); armchair(33.1, 32.6, '#b8d0c0'); smallTable(31.45, 32.6, 1.2, 0.9); rect(R(31.2), RY(32.2) - 6, 4, 6, '#cfe9f2'); glass(31.0, 32.6); glass(32.0, 32.6); // water carafe + two glasses
+    lamp(28.4, 31.4, '#ffd59a', daylight(h) > .2 || sess); rect(R(29.0), RY(29.2), 6, 5, '#7a2e22'); // book on the sill
+    rect(R(34.4), RY(34.4), 14, 8, '#c9a68a'); rect(R(34.4) + 2, RY(34.4) + 2, 10, 4, '#efe2d6'); // dog bed (no label)
+    plant(36.2, 28.4, 1); plant(27.8, 36.2);
+    if (sess) GRONK_HAZE = true; else GRONK_HAZE = false; },
+};
+let GRONK_HAZE = false;
+const WALLSCREEN = {rect: null};
+function isoBlock(cx0, top, s, live, c = '#d8673f') { const X = Math.round(cx0), Y = Math.round(top); for (let i = 0; i < s; i++) { rect(X - s + i, Y + i, (s - i) * 2, 1, shade(c, .15)); } rect(X - s, Y + s, s, s, c); rect(X, Y + s, s, s, shade(c, -0.25)); if (live) rect(X - 1, Y + Math.floor(SIM * 4) % (s * 2), 1, 1, '#fff'); }
+
+// ---------- fly / fx ----------
+function drawFly(dt) { for (let i = FLY.length - 1; i >= 0; i--) { const f = FLY[i]; f.t += dt; const sp = f.kind === 'plane' ? 4.5 : 3.2; const d = Math.min(f.len, Math.max(0, f.t - 0.6) * sp); const [x, y] = pathAt(f.pts, d); const X = R(x), Y = RY(y) - (f.kind === 'plane' ? 10 + Math.round(Math.sin(f.t * 3) * 2) : 2);
+    if (f.kind === 'plane') { rect(X - 3, Y, 7, 1, '#f6f3ea'); rect(X - 2, Y - 1, 4, 1, '#ffffff'); rect(X - 1, Y + 1, 3, 1, '#d9d4c8'); g.globalAlpha = .2; rect(X - 2, RY(y), 5, 1, '#000'); g.globalAlpha = 1; }
+    else { rect(X - 3, Y - 2, 7, 5, '#f6efe0'); rect(X - 3, Y - 2, 7, 1, '#d9cfb8'); rect(X - 1, Y, 3, 1, '#c8302a'); }
+    if (d >= f.len) { if (f.t > f.len / sp + 1.4) { sparkle(x, y - 1); FLY.splice(i, 1); } } } }
+function drawFx(dt) { for (let i = SPARK.length - 1; i >= 0; i--) { const s = SPARK[i]; s.t += dt; const k = s.t; for (let j = 0; j < 6; j++) { const a = j / 6 * Math.PI * 2; rect(R(s.x) + Math.round(Math.cos(a) * k * 10), RY(s.y) + Math.round(Math.sin(a) * k * 10), 1, 1, '#f2c14e'); } if (s.t > .8) SPARK.splice(i, 1); }
+  for (let i = FLASH.length - 1; i >= 0; i--) { const f = FLASH[i]; f.t += dt; if (f.t > 1.6) { FLASH.splice(i, 1); continue; } const w = pw(f.text) + 4; const X = R(f.x) - w / 2, Y = RY(f.y) - Math.round(f.t * 3); rect(X - 1, Y - 1, w + 2, 9, f.c); rect(X, Y, w, 7, '#f6efe0'); ptext(f.text, X + 2, Y + 1, f.c); } }
+function lighting(h) { const n = daylight(h); if (n <= 0) return; g.save(); g.globalCompositeOperation = 'multiply'; g.fillStyle = `rgba(${Math.round(255 - 150 * n)},${Math.round(255 - 140 * n)},${Math.round(255 - 70 * n)},1)`; g.fillRect(0, 0, LW, LH);
+  g.globalCompositeOperation = 'lighter'; for (const [x, y, r, c] of LIGHTS) { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, hexA(c, .38 * n)); gr.addColorStop(1, hexA(c, 0)); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); } g.restore(); }
+function hexA(h, a) { const n = parseInt(h.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; }
+function haze() { if (!GRONK_HAZE) return; const [x0, y0, x1, y1] = ROOM.gronk.bounds; g.save(); g.globalAlpha = .55; rect(R(x0), RY(y0), R(x1 - x0), R(y1 - y0), '#f3d9b8'); g.globalAlpha = .25; for (let y = RY(y0); y < RY(y1); y += 2) rect(R(x0), y, R(x1 - x0), 1, '#ffffff'); g.restore();
+  const t = LANG === 'tr' ? 'SEANSTA' : 'IN SESSION'; const w = pw(t, 2) + 8, X = R((x0 + x1) / 2) - w / 2, Y = RY((y0 + y1) / 2) - 8; rect(X, Y, w, 16, '#8a3b2e'); rect(X + 1, Y + 1, w - 2, 14, '#f6efe0'); ptext(t, X + 4, Y + 3, '#8a3b2e', 2); }
+
+// ---------- camera / render ----------
+const CAM = {x: 0, y: 0, w: LW, h: LH, tx: 0, ty: 0, tw: LW, th: LH};
+let FOCUS = null;
+function fitView(x, y, w, h) { CAM.tx = x; CAM.ty = y; CAM.tw = w; CAM.th = h; }
+function overview() { fitView(-4, -10, LW + 8, LH + 22); }
+function roomView(id) { const [x0, y0, x1, y1] = ROOM[id].bounds; const pad = 1.2; fitView(R(x0 - pad), RY(y0 - pad) - WALLH, R(x1 - x0 + pad * 2), R(y1 - y0 + pad * 2) + WALLH); }
+overview(); Object.assign(CAM, {x: CAM.tx, y: CAM.ty, w: CAM.tw, h: CAM.th});
+let VIEW = {s: 1, ox: 0, oy: 0};
+function resize() { const dpr = Math.min(3, window.devicePixelRatio || 1); cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr); }
+addEventListener('resize', resize); resize();
+function present() { const dpr = cv.width / innerWidth; const topPad = (innerWidth < 900 ? 96 : 64) * dpr, botPad = (FOCUS && innerWidth < 900 ? innerHeight * 0.47 : 40) * dpr, sidePad = (FOCUS && innerWidth >= 900 ? 380 : 0) * dpr;
+  const aw = cv.width - 12 * dpr - sidePad, ah = cv.height - topPad - botPad; let s = Math.min(aw / CAM.w, ah / CAM.h);
+  if (s > 2) s = Math.floor(s * 2) / 2; // crisp half-integer scales when there is room
+  const ox = (aw - CAM.w * s) / 2 + 6 * dpr, oy = topPad + (ah - CAM.h * s) / 2; VIEW = {s, ox, oy, dpr};
+  cx.imageSmoothingEnabled = false; cx.fillStyle = '#1b1f2a'; cx.fillRect(0, 0, cv.width, cv.height);
+  // draw the visible part of the buffer
+  cx.drawImage(buf, 0, 0, LW, LH, ox - CAM.x * s, oy - CAM.y * s, LW * s, LH * s); }
+let last = 0;
+function frame(dt) {
+  SIM += dt; const h = istHour();
+  for (const id of IDS) { const b = BOT[id]; stepBot(b, dt); if (b.ding > 0) b.ding -= dt; b.fxT += dt; }
+  // camera ease
+  const k = Math.min(1, dt * 4); for (const [a, b] of [['x', 'tx'], ['y', 'ty'], ['w', 'tw'], ['h', 'th']]) CAM[a] += (CAM[b] - CAM[a]) * k;
+  drawRooms(h);
+  const order = IDS.map(id => BOT[id]).sort((a, b) => a.y - b.y);
+  for (const b of order) { const p = SP[b.id]; drawBot(b); if (b.seated && b.face === 'up' && b.act !== 'walk') chairBack(b.x, b.y, chairColor(b.id)); }
+  walls(); drawFly(dt); haze(); lighting(h);
+  for (const b of order) { if (b.id === 'gronk' && GRONK_HAZE) continue; bubble(b); nameTag(b); }
+  drawFx(dt); present();
+}
+function chairColor(id) { return {grokian: '#5b3a22', gorketer: '#5b3a8a', groky: '#c8553d', grokdesk: '#3e57a6', groked: '#24a9c7', grokisual: '#e5533d'}[id] || '#3a4152'; }
+function loop(ts) { const dt = Math.min(0.1, last ? (ts - last) / 1000 : 0.016); last = ts; frame(dt); requestAnimationFrame(loop); }
+window.seek = (t) => { const step = 1 / 30; while (SIM + step <= t) frame(step); frame(0); };
+
+// ---------- UI: language, card, toast, live badge ----------
+const UI = {tr: {ttl: 'Ofis · piksel', sub: "Doğancan'ın 9 botu", hint: 'Bir odaya dokun · tekrar dokun: geri', live: 'Canlı (≈1–2 dk gecikmeli)', upd: 'Son güncelleme', tz: 'İstanbul saati', demo: 'Örnek görünüm', nodata: 'canlı veri yok', now: 'Şu an', keep: 'Hatıra', idleK: 'Boş anında', work: 'Çalışırken', visits: 'En çok gittiği', del: 'Son teslimler', working: 'Çalışıyor', idle: 'Boşta', last: 'son iş', sess: 'Seansta', free: 'Müsait', screen: 'Duvar ekranını aç', allIdle: 'Şu an herkes boşta', nWork: n => `${n} bot çalışıyor`, scrT: 'Groked · duvar ekranı', scrS: 'Masasındaki ekranın aynısı · paper trading · saatler İstanbul saati', rank: 'Botlar · $200 başlangıç', trades: 'Son 5 işlem', buy: 'AL', sell: 'SAT', ab: d => `Bugün B: ${[d.pause_new_buys ? 'alımlar durdu' : '', d.size_mult && d.size_mult !== 1 ? 'boyut ×' + d.size_mult : '', (d.skip_coins || []).length ? d.skip_coins.join('/') + ' atlandı' : ''].filter(Boolean).join(' / ') || 'normal'}`, started: 'başladı', day: 'veri günü', daily: 'günde bir güncellenir'},
+  en: {ttl: 'Office · pixel', sub: "Doğancan's 9 bots", hint: 'Tap a room · tap again: back', live: 'Live (≈1–2 min delay)', upd: 'Last update', tz: 'Istanbul time', demo: 'Sample view', nodata: 'no live data', now: 'Now', keep: 'Keepsake', idleK: 'When idle', work: 'When working', visits: 'Visits most', del: 'Recent deliveries', working: 'Working', idle: 'Idle', last: 'last task', sess: 'In session', free: 'Available', screen: 'Open the wall screen', allIdle: 'Everyone is idle right now', nWork: n => `${n} bot${n > 1 ? 's' : ''} working`, scrT: 'Groked · wall screen', scrS: 'Mirrors the screen on his desk · paper trading · times in Istanbul time', rank: 'Bots · $200 start', trades: 'Last 5 trades', buy: 'BUY', sell: 'SELL', ab: d => `Today B: ${[d.pause_new_buys ? 'buys paused' : '', d.size_mult && d.size_mult !== 1 ? 'size ×' + d.size_mult : '', (d.skip_coins || []).length ? d.skip_coins.join('/') + ' skipped' : ''].filter(Boolean).join(' / ') || 'normal'}`, started: 'started', day: 'data day', daily: 'updates once a day'}};
+const u = () => UI[LANG];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+function ago(s) { const d = Math.max(0, Date.now() / 1000 - s); if (d < 60) return LANG === 'tr' ? 'az önce' : 'just now'; if (d < 3600) { const m = Math.round(d / 60); return LANG === 'tr' ? `${m} dk önce` : `${m} min ago`; } const hh = Math.round(d / 3600); return LANG === 'tr' ? `${hh} sa önce` : `${hh} h ago`; }
+function setLang(l) { LANG = l; document.documentElement.lang = l; document.querySelectorAll('#lang button').forEach(b => b.classList.toggle('on', b.dataset.l === l)); $('ttl').textContent = u().ttl; $('sub').textContent = u().sub; liveUI(); if (FOCUS) fillCard(FOCUS); if ($('scr').classList.contains('on')) fillScreen(); }
+document.querySelectorAll('#lang button').forEach(b => b.onclick = (e) => { e.stopPropagation(); setLang(b.dataset.l); });
+function liveUI() { const U = u(), el = $('live'); if (LIVE.on) { const stale = Date.now() / 1000 - LIVE.gen > 15 * 60; el.className = 'px' + (stale ? ' stale' : ''); $('lvA').textContent = U.live; $('lvB').textContent = `${U.upd}: ${ago(LIVE.gen)}`; $('lvC').textContent = `${istHM(LIVE.gen)} · ${U.tz}`; }
+  else { el.className = 'px demo'; $('lvA').textContent = U.demo; $('lvB').textContent = U.nodata; $('lvC').textContent = ''; }
+  const n = IDS.filter(id => STATE[id] === 'working' && id !== 'gronk').length; $('hint').textContent = FOCUS ? U.hint : (n ? U.nWork(n) : U.allIdle) + ' · ' + U.hint; }
+function fillCard(id) { const b = BD[id], U = u(), r = LIVE.status && LIVE.status.bots && LIVE.status.bots[id]; const s = STATE[id];
+  let now; if (id === 'gronk') now = s === 'working' ? U.sess : U.free;
+  else if (s === 'working') now = U.working + (TASK[id] ? ' · ' + esc(TASK[id]) : '') + (r && r.since ? ` · ${LANG === 'tr' ? `${istHM(r.since)}'de ${U.started}` : `${U.started} ${istHM(r.since)}`} <small>(${U.tz})</small>` : '');
+  else now = U.idle + (r && r.task ? ` · ${U.last}: ${esc(r.task)}` : '') + (r && r.updated ? ` · ${istHM(r.updated)} <small>(${U.tz})</small>` : '');
+  const dl = ((LIVE.status && LIVE.status.deliveries) || []).filter(x => id !== 'gronk' && (x.from === id || x.to === id)).slice(-3).reverse();
+  const L = (o) => o ? esc(o[LANG] || o.tr || '') : '';
+  $('cardIn').innerHTML = `<h2><i style="background:${b.color}"></i>${esc(b.name)}</h2><div class="role">${L(b.role)}</div><div class="say">${L(b.greeting)}</div>
+   <div class="row"><b>${U.now}</b><div>${now}</div></div><div class="row"><b>${U.keep}</b><div>${L(b.keepsake)}</div></div>
+   <div class="row"><b>${U.idleK}</b><div>${L(b.idle)}</div></div><div class="row"><b>${U.work}</b><div>${L(b.working)}</div></div>
+   <div class="row"><b>${U.visits}</b><div>${L(b.visits)}</div></div>
+   ${dl.length ? `<div class="row"><b>${U.del}</b><div>${dl.map(x => `${esc(BD[x.from] ? BD[x.from].name : x.from)} → ${esc(x.to && BD[x.to] ? BD[x.to].name : '—')}${x.task ? ' · ' + esc(x.task) : ''} <small>${istHM(x.ts)}</small>`).join('<br>')}<br><small>${U.tz}</small></div></div>` : ''}
+   ${id === 'groked' ? `<button class="btn" id="openScr">${U.screen}</button>` : ''}`;
+  const ob = $('openScr'); if (ob) ob.onclick = (e) => { e.stopPropagation(); openScreen(); }; }
+function focusRoom(id) { FOCUS = id; roomView(id); fillCard(id); $('card').classList.add('on'); liveUI(); }
+function back() { FOCUS = null; overview(); $('card').classList.remove('on'); liveUI(); }
+$('x').onclick = (e) => { e.stopPropagation(); back(); };
+cv.addEventListener('click', (e) => { const dpr = cv.width / innerWidth; const lx = (e.clientX * dpr - VIEW.ox) / VIEW.s + CAM.x, ly = (e.clientY * dpr - VIEW.oy) / VIEW.s + CAM.y;
+  if (FOCUS === 'groked' && WALLSCREEN.rect) { const [x, y, w, h] = WALLSCREEN.rect; if (lx >= x && lx <= x + w && ly >= y && ly <= y + h) { openScreen(); return; } }
+  const tx = lx / T, ty = (ly - MT) / T; let hit = null; for (const r of D.rooms) { const [a, b, c, d] = r.bounds; if (tx >= a - .3 && tx <= c + .3 && ty >= b - 1.4 && ty <= d + .3) hit = r.id; }
+  if (hit && hit !== FOCUS) focusRoom(hit); else back(); });
+function fillScreen() { const U = u(), t = TRADE; $('scrT').textContent = U.scrT; $('scrS').textContent = U.scrS; if (!t) { $('scrIn').innerHTML = '—'; return; }
+  const rows = (t.bots || []).map((b, i) => `<tr><td>${i + 1}</td><td>${esc(b[LANG] || b.tr)}</td><td style="text-align:right">$${b.value.toFixed(2)}</td><td class="${b.pct >= 0 ? 'up' : 'dn'}" style="text-align:right">${b.pct >= 0 ? '+' : ''}${b.pct.toFixed(2)}%</td></tr>`).join('');
+  const tr = (t.trades || []).slice(0, 5).map(x => `<tr><td class="${x.side === 'BUY' ? 'up' : 'dn'}">${x.side === 'BUY' ? '▲ ' + U.buy : '▼ ' + U.sell}</td><td>${esc(x.coin)}</td><td>${esc(x[LANG] || x.tr)}${x.B ? ' (B)' : ''}</td><td style="text-align:right">$${(+x.usd).toFixed(2)}</td><td style="text-align:right;color:#7d8a99">${esc(x.ist)}</td></tr>`).join('');
+  const p = t.prices || {}; const pr = ['BTC', 'ETH'].map(c => p[c] ? `<b>${c}</b> $${(+p[c].price).toLocaleString('en-US', {maximumFractionDigits: 2})} <span style="color:#7d8a99">${p[c].at ? esc(p[c].at) : ''}</span>` : '').join(' &nbsp; ');
+  $('scrIn').innerHTML = `<div class="k">${U.rank} · ${U.day} ${esc(t.date)} · ${U.daily} ${esc(t.daily || '09:30')}</div><table>${rows}</table><div class="k">${U.trades}</div><table>${tr}</table><div class="k">BTC / ETH</div><div>${pr}</div>${t.ab ? `<div class="ab">${esc(U.ab(t.ab))}</div>` : ''}<div class="foot">${esc(LANG === 'tr' ? t.note_tr : t.note_en) || 'PAPER TRADING'}</div>`; }
+function openScreen() { fillScreen(); $('scr').classList.add('on'); }
+$('scrX').onclick = () => $('scr').classList.remove('on'); $('scr').onclick = (e) => { if (e.target === $('scr')) $('scr').classList.remove('on'); };
+let toastT = 0;
+function toast(from, to, task) { const el = $('toast'); el.textContent = `${BD[from] ? BD[from].name : from} → ${to && BD[to] ? BD[to].name : (LANG === 'tr' ? 'Doğancan' : 'Doğancan')}${task ? ' · ' + task : ''}`; el.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('on'), 5000); }
+
+// ---------- live feed ----------
+const ALIAS = D.liveAliases || {};
+function applyStatus(st) { if (!st || !st.bots) return; const first = !LIVE.status; LIVE.status = st; LIVE.gen = st.generated || Date.now() / 1000; LIVE.on = true; if (st.trading) TRADE = st.trading;
+  for (const id of IDS) { const r = st.bots[id]; STATE[id] = r && r.state === 'working' ? 'working' : 'idle'; TASK[id] = id === 'gronk' ? null : (r && r.task) || null; }
+  const dl = st.deliveries || []; const nowS = Date.now() / 1000;
+  for (const d of dl) { if (d.ts <= LIVE.seen) continue; if (first && nowS - d.ts > 10 * 60) continue; if (BD[d.from] && d.from !== 'gronk') LIVE.queue.push(d); }
+  if (dl.length) LIVE.seen = Math.max(LIVE.seen, ...dl.map(d => d.ts)); liveUI(); if (FOCUS) fillCard(FOCUS); }
+function pump() { if (!LIVE.queue.length) return; const busy = IDS.some(id => BOT[id].deliver) || FLY.length; if (busy) return; const d = LIVE.queue.shift(); startDeliver(d.from, d.to, d.task); }
+async function poll() { try { const r = await fetch(STATUS_URL + (STATUS_URL.includes('?') ? '&' : '?') + 't=' + Date.now(), {cache: 'no-store'}); if (!r.ok) throw 0; applyStatus(await r.json()); LIVE.fail = 0; } catch (e) { LIVE.fail++; liveUI(); } }
+window.office = {setState: (id, s) => { STATE[id] = s; liveUI(); }, deliver: (f, t, task) => startDeliver(f, t, task), focus: focusRoom, back, openScreen, applyStatus, bots: BOT, setLang};
+setLang(LANG);
+if (!Q.has('nolive')) { poll().then(() => { window.LIVE_READY = true; }); setInterval(poll, 30000); } else window.LIVE_READY = true;
+setInterval(pump, 1000); setInterval(liveUI, 20000);
+if (STILL) { frame(0); } else requestAnimationFrame(loop);
+window.READY = true;
+</script>
+</body></html>
