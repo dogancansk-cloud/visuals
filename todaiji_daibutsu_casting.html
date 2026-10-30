@@ -53,7 +53,7 @@ h1 .jp{font-weight:400;color:var(--muted);font-size:.75em;white-space:nowrap}
 .bar i{display:block;height:100%;width:0;background:var(--bronze)}
 .sub{font-size:11.5px;color:#4a453e;line-height:1.3}
 .tag{display:inline-block;font-size:10px;font-weight:700;line-height:1;padding:2px 4px;border-radius:4px;border:1px solid currentColor;vertical-align:2px;margin-left:3px;font-style:normal;letter-spacing:.02em}
-.tag.est{color:#9a4b12}.tag.trad{color:#6b4f1d}.tag.calc{color:#4b5d33}
+.tag.est{color:#9a4b12}.tag.trad{color:#6b4f1d}.tag.calc{color:#4b5d33}.tag.unv{color:#a11d1d}
 .sources{margin-top:22px}
 .sources h2{font-size:17px;margin:0 0 6px}
 .sources table{width:100%;border-collapse:collapse;font-size:13px;background:#fbf8f1}
@@ -129,10 +129,15 @@ function buildModel(){
     tdj_kids:{name:"Tōdai-ji KIDS (official): How the Great Buddha was made", url:"https://www.todaiji.or.jp/kids/kids2-2.html"},
     tdj_pam:{name:"Tōdai-ji (official) pamphlet PDF", url:"https://www.todaiji.or.jp/pdf/panflet.pdf"},
     ndl:{name:"National Diet Library reference entry (quotes Tōdaiji Yōroku; Katori 1981; Kamitsukasa 1974)", url:"https://crd.ndl.go.jp/reference/entry/index.php?id=1000159706&page=ref_view"},
-    ishino:{name:"Ishino Tōru (2000), 'Casting technique of the Great Buddha at Nara', Imono / J. JFS 72(3)", url:"https://www.jstage.jst.go.jp/article/jfes/72/3/72_197/_pdf"},
+    ishino:{name:"Ishino Tōru (2000), 'Casting technique of the Great Buddha at Nara', Imono / J. JFS 72(3), Table 2 (chronology from Tōdaiji Yōroku)", url:"https://www.jstage.jst.go.jp/article/jfes/72/3/72_197/_pdf"},
     kawahata:{name:"Kawahata et al. (2014), Progress in Earth and Planetary Science 1:15 (citing Konishi 2002)", url:"https://link.springer.com/article/10.1186/2197-4284-1-15"},
     jjrs:{name:"Japanese Journal of Religious Studies 19/2-3 (1992): excavations at Tōdai-ji (Katori's theory via Piggott)", url:"https://doi.org/10.18874/jjrs.19.2-3.1992.245-254"},
-    jawiki:{name:"Japanese Wikipedia: 東大寺盧舎那仏像 (citing Daibutsuden-hibun, Shoku Nihongi, Shōsōin documents)", url:"https://ja.wikipedia.org/wiki/%E5%A5%88%E8%89%AF%E5%A4%A7%E4%BB%8F"},
+    hibun_dnbz:{name:"Daibutsuden engi hibun (東大寺大仏堂縁起碑文), Dai Nihon Bukkyō Zensho 121 (1922) pp. 4–6, collated with Tōdaiji Yōroku, Chōya gunsai, Gunsho ruijū, Fusō ryakki — NDL Digital",url:"https://dl.ndl.go.jp/pid/952825/1/9"},
+    hibun_yamato:{name:"Yamato shiryō vol. 1 (Nara-ken Kyōikukai 1914) pp. 228–233: Tōdaiji Yōroku and full Daibutsuden hibun text — NDL Digital",url:"https://dl.ndl.go.jp/pid/950813/1/132"},
+    daibutsuki_gr:{name:"Tōdaiji daibutsu-ki (東大寺大仏記), Gunsho ruijū vol. 435, ff. 34–35 — NDL Digital",url:"https://dl.ndl.go.jp/pid/2559236/1/103"},
+    shoku:{name:"Shoku Nihongi (続日本紀), Kokushi taikei 2 (1897) p. 268 (Tenpyō 18/10) and p. 299 (Tenpyō-shōhō 4/4) — NDL Digital",url:"https://dl.ndl.go.jp/pid/991092/1/155"},
+    yobunsho:{name:"Sōshō, Nihon kōsōden yōmonshō 3 (日本高僧伝要文抄), Dai Nihon Bukkyō Zensho 101 (1922) — NDL Digital",url:"https://dl.ndl.go.jp/pid/952805/1/40"},
+    naoj:{name:"National Astronomical Observatory of Japan, Calendar database (和暦→西暦, Julian setting)",url:"https://eco.mtk.nao.ac.jp/cgi-bin/koyomi/caldb.cgi"},
     heritage:{name:"Agency for Cultural Affairs, Japan Heritage: Koganeyama gold site", url:"https://japan-heritage.bunka.go.jp/ja/culturalproperties/result/4126/"},
     grokian:{name:"Grokian's Tōdai-ji briefing (/workspace/briefings/todaiji.md; Nara Women's Univ.)", url:"https://www.nara-wu.ac.jp/grad-GP-life/bunkashi_hp/hist_todaiji/hist_todaiji.html"}
   };
@@ -140,28 +145,28 @@ function buildModel(){
   const N = {
     edict:{v:743, tag:"off", src:["tdj_hist","tdj_hall"], label:{tr:"Büyük Buda fermanı (Shigaraki)",en:"Great Buddha edict (Shigaraki)"}},
     restart:{v:745, tag:"off", src:["tdj_hist"], label:{tr:"Nara'da işe yeniden başlama",en:"Work restarts at Nara"}},
-    restartDate:{v:"745-09-23", tag:"trad", src:["jawiki"], label:{tr:"Başlangıç (745/8/23 ay takvimi)",en:"Start (lunar 745/8/23)"}},
-    coreDone:{v:"746-11-23", tag:"est", src:["jawiki"], label:{tr:"Kil model bitti (746 kandil töreni; yorum)",en:"Clay model done (746 lamp rite; interpretation)"}},
-    castStart:{v:747, tag:"trad", src:["jawiki"], label:{tr:"Döküm başlar (747/9/29)",en:"Casting begins (747/9/29)"}},
-    castStartDate:{v:"747-11-06", tag:"trad", src:["jawiki"]},
+    restartDate:{v:"745-09-23", tag:"trad", src:["hibun_dnbz","hibun_yamato","naoj"], note:{tr:"bazı nüshalarda 8/22 (745-09-22): Gunsho ruijū, Tōdaiji daibutsu-ki",en:"some witnesses read 8/22 (745-09-22): Gunsho ruijū, Tōdaiji daibutsu-ki"}, label:{tr:"Başlangıç (745/8/23 ay takvimi)",en:"Start (lunar 745/8/23)"}},
+    coreDone:{v:"746-11-23", tag:"est", src:["shoku","ishino","naoj"], note:{tr:"Shoku Nihongi yalnız kandil törenini kaydeder; 'kil model bitti' Ishino'nun yorumu",en:"Shoku Nihongi records only the lamp rite; 'model done' is Ishino's reading"}, label:{tr:"Kil model bitti (746 kandil töreni; yorum)",en:"Clay model done (746 lamp rite; interpretation)"}},
+    castStart:{v:747, tag:"trad", src:["hibun_dnbz","hibun_yamato"], label:{tr:"Döküm başlar (747/9/29)",en:"Casting begins (747/9/29)"}},
+    castStartDate:{v:"747-11-06", tag:"trad", src:["hibun_dnbz","hibun_yamato","naoj"]},
     castEnd:{v:749, tag:"off", src:["tdj_hall","tdj_hist"], label:{tr:"Gövde dökümü biter (749, 10. ay)",en:"Body casting ends (749, 10th month)"}},
-    castEndDate:{v:"749-12-08", tag:"trad", src:["jawiki"]},
+    castEndDate:{v:"749-12-08", tag:"trad", src:["hibun_dnbz","hibun_yamato","naoj"]},
     pours:{v:8, tag:"off", src:["tdj_hall","tdj_kids","tdj_pam"], label:{tr:"Döküm sayısı (aşağıdan yukarı)",en:"Number of pours (bottom to top)"}},
     castYearsTrad:{v:3, tag:"trad", src:["tdj_hall"], label:{tr:"Kayıtta döküm süresi ('3 yıl, 8 kez')",en:"Recorded casting span ('3 years, 8 times')"}},
-    castMonths:{v:25, tag:"est", src:["ishino","jawiki"], label:{tr:"Gerçek döküm süresi (ay)",en:"Actual casting span (months)"}},
+    castMonths:{v:25, tag:"est", src:["ishino"], label:{tr:"Gerçek döküm süresi (ay)",en:"Actual casting span (months)"}},
     tierH:{v:2, tag:"est", src:["ishino"], label:{tr:"Dış kalıp parçası yüksekliği (≈ halka yüksekliği)",en:"Outer-mould piece height (≈ ring height)"}},
     moldPiece:{v:[2,1,0.6], tag:"est", src:["ishino"], label:{tr:"Dış kalıp parçası (m)",en:"Outer-mould piece (m)"}},
     wall:{v:5.5, tag:"est", src:["ishino"], label:{tr:"Bronz duvar kalınlığı (cm)",en:"Bronze wall thickness (cm)"}},
-    chaplets:{v:3350, tag:"trad", src:["jawiki"], label:{tr:"Metal kalıp tutucu (Shōsōin belgeleri)",en:"Metal chaplets (Shōsōin documents)"}},
+    chaplets:{v:3350, tag:"unv", src:[], note:{tr:"sayı için resmî/bilimsel kaynak bulunamadı",en:"no official/scholarly source found for the count"}, label:{tr:"Metal kalıp tutucu (Shōsōin belgeleri)",en:"Metal chaplets (Shōsōin documents)"}},
     tier1t:{v:100, tag:"est", src:["ishino"], label:{tr:"En alt dökümde aynı anda dökülen bronz (t)",en:"Bronze poured at once in lowest ring (t)"}},
     furnaceT:{v:1, tag:"est", src:["ishino"], label:{tr:"Bir fırının kapasitesi (t)",en:"Capacity of one furnace (t)"}},
     furnacesIshino:{v:100, tag:"est", src:["ishino"], label:{tr:"Tepedeki fırın sayısı (Ishino: 100'den fazla)",en:"Furnaces on the mound (Ishino: 100+)"}},
     furnacesKatori:{v:[20,30], tag:"est", src:["jjrs"], label:{tr:"Tepedeki fırın sayısı (Katori/Piggott)",en:"Furnaces on the mound (Katori/Piggott)"}},
-    copperKin:{v:739560, tag:"trad", src:["jawiki","ndl"], note:{tr:"bazı baskılarda 739.561",en:"some editions: 739,561"}, label:{tr:"Arıtılmış bakır (kin)",en:"Refined copper (kin)"}},
-    tinKin:{v:12618, tag:"trad", src:["ndl","jawiki"], label:{tr:"Kalay (kin)",en:"Tin (kin)"}},
-    goldRyo:{v:10436, tag:"trad", src:["ndl"], note:{tr:"bir başka okuma 10.446",en:"another reading: 10,446"}, label:{tr:"Altın (ryō)",en:"Gold (ryō)"}},
-    mercRyo:{v:58620, tag:"trad", src:["ndl","jawiki"], label:{tr:"Cıva (ryō)",en:"Mercury (ryō)"}},
-    charcoal:{v:16656, tag:"trad", src:["ndl"], note:{tr:"bir başka okuma 18.656",en:"another reading: 18,656"}, label:{tr:"Odun kömürü (koku)",en:"Charcoal (koku)"}},
+    copperKin:{v:739560, tag:"trad", src:["hibun_dnbz","hibun_yamato","daibutsuki_gr"], note:{tr:"bir nüshada 759.560 (七十五萬); 739.561 yalnız modern bir aktarımda geçer [doğrulanmadı]",en:"one witness reads 759,560 (七十五萬); 739,561 appears only in a modern quotation [doğrulanmadı]"}, label:{tr:"Arıtılmış bakır (kin)",en:"Refined copper (kin)"}},
+    tinKin:{v:12618, tag:"trad", src:["hibun_dnbz","hibun_yamato","daibutsuki_gr"], note:{tr:"kaynakta 白鑞 (beyaz kalay)",en:"source: 白鑞 (white tin)"}, label:{tr:"Kalay (kin)",en:"Tin (kin)"}},
+    goldRyo:{v:10436, tag:"trad", src:["hibun_yamato","daibutsuki_gr"], note:{tr:"Gunsho ruijū (Tōdaiji daibutsu-ki) okuması 10.446",en:"Gunsho ruijū (Tōdaiji daibutsu-ki) reads 10,446"}, label:{tr:"Altın (ryō)",en:"Gold (ryō)"}},
+    mercRyo:{v:58620, tag:"trad", src:["hibun_yamato","hibun_dnbz"], note:{tr:"Tōdaiji Yōroku okuması; Tōdaiji daibutsu-ki (Gunsho ruijū) 58.600",en:"Tōdaiji Yōroku reading; Tōdaiji daibutsu-ki (Gunsho ruijū) reads 58,600"}, label:{tr:"Cıva (ryō)",en:"Mercury (ryō)"}},
+    charcoal:{v:16656, tag:"trad", src:["hibun_yamato","hibun_dnbz","daibutsuki_gr"], note:{tr:"Tōdaiji Yōroku okuması; kitabenin ana metni (DNBZ, Gunsho ruijū) 16.356; Fusō ryakki 18.656",en:"Tōdaiji Yōroku reading; the inscription base text (DNBZ, Gunsho ruijū) reads 16,356; Fusō ryakki 18,656"}, label:{tr:"Odun kömürü (koku)",en:"Charcoal (koku)"}},
     copperT:{v:499, tag:"est", src:["kawahata"], label:{tr:"Bakır, bugünkü birimle (t)",en:"Copper in modern units (t)"}},
     tinT:{v:8.5, tag:"est", src:["kawahata"], label:{tr:"Kalay, bugünkü birimle (t)",en:"Tin in modern units (t)"}},
     goldKg:{v:146, tag:"est", src:["kawahata"], note:{tr:"başka tahminler daha yüksek",en:"other estimates are higher"}, label:{tr:"Altın, bugünkü birimle (kg)",en:"Gold in modern units (kg)"}},
@@ -173,16 +178,16 @@ function buildModel(){
     mutsuGold:{v:900, tag:"off", src:["heritage"], label:{tr:"749'da Mutsu'dan gelen ilk Japon altını (ryō)",en:"Japan's first gold from Mutsu, 749 (ryō)"}},
     mutsuKg:{v:13.5, tag:"est", src:["heritage"], label:{tr:"…bugünkü birimle (kg)",en:"…in modern units (kg)"}},
     finishYears:{v:5, tag:"est", src:["ishino"], label:{tr:"Onarım döküm ve rötuş süresi (yıl)",en:"Repair-casting & finishing (years)"}},
-    finishStart:{v:750, tag:"trad", src:["jawiki"], label:{tr:"Rötuş başlar",en:"Finishing begins"}},
+    finishStart:{v:750, tag:"trad", src:["yobunsho","ishino"], label:{tr:"Rötuş başlar",en:"Finishing begins"}},
     gildYears:{v:5, tag:"est", src:["ishino"], label:{tr:"Yaldızlama süresi (yıl)",en:"Gilding (years)"}},
-    gildStart:{v:752, tag:"trad", src:["jawiki"], label:{tr:"Yaldızlama başlar (752/3/14)",en:"Gilding begins (752/3/14)"}},
-    hallStart:{v:747, tag:"trad", src:["jawiki"], label:{tr:"Salon inşaatı başlar",en:"Hall construction begins"}},
+    gildStart:{v:752, tag:"trad", src:["hibun_dnbz","hibun_yamato","daibutsuki_gr"], label:{tr:"Yaldızlama başlar (752/3/14)",en:"Gilding begins (752/3/14)"}},
+    hallStart:{v:747, tag:"est", src:["ishino","hibun_yamato","tdj_hall"], note:{tr:"747'de yalnız hazırlık; salon 751'de tamam (Tōdaiji Yōroku, Tōdai-ji) — Ishino: 752",en:"only preparations in 747; hall completed 751 (Tōdaiji Yōroku, Tōdai-ji) — Ishino: 752"}, label:{tr:"Salon inşaatı hazırlığı başlar (747; Ishino)",en:"Hall construction preparations begin (747; Ishino)"}},
     hallDone:{v:751, tag:"off", src:["tdj_hall"], label:{tr:"İlk Daibutsuden tamam",en:"First Daibutsuden completed"}},
     hallBays:{v:11, tag:"off", src:["tdj_hall"], label:{tr:"İlk salonun genişliği (açıklık)",en:"Original hall width (bays)"}},
     hallW0:{v:88, tag:"off", src:["tdj_hall"], label:{tr:"İlk salonun genişliği ≈ (m)",en:"Original hall width ≈ (m)"}},
     hallBaysEdo:{v:7, tag:"off", src:["tdj_hall"], label:{tr:"Edo salonu (açıklık)",en:"Edo hall (bays)"}},
     hallW:{v:57.012, tag:"off", src:["tdj_hall"], label:{tr:"Bugünkü salon genişliği, doğu–batı (m)",en:"Today's hall width, east–west (m)"}},
-    eyeDate:{v:"752-05-26", tag:"trad", src:["jawiki"]},
+    eyeDate:{v:"752-05-26", tag:"trad", src:["shoku","hibun_dnbz","naoj"]},
     eyeOpening:{v:752, tag:"off", src:["tdj_hist","tdj_hall"], label:{tr:"Göz açma töreni (752/4/9)",en:"Eye-opening ceremony (752/4/9)"}},
     hOrig:{v:16, tag:"est", src:["ishino","jjrs"], label:{tr:"İlk heykelin yüksekliği ≈ (m, '16 m'den fazla')",en:"Original statue height ≈ (m, '16 m+')"}},
     hToday:{v:14.98, tag:"off", src:["tdj_hall"], label:{tr:"Bugünkü heykel yüksekliği (m)",en:"Statue height today (m)"}},
@@ -220,7 +225,7 @@ function buildModel(){
      hint:{tr:"Toprak tepe ve kalıplar kaldırılır. Sürpriz: içinden bronz Buda çıkar!",en:"The hill and moulds are taken away. Surprise: a bronze Buddha comes out!"}},
     {id:7, dur:7,  name:{tr:"Rötuş",en:"Finishing"}, y0:N.finishStart.v, y1:N.finishStart.v+N.finishYears.v, yTag:"est", real:N.finishYears.v*365.25*DAY, realTag:"est",
      hint:{tr:"Delikler yamalanır, ekler düzeltilir, yüzey parlatılır, lotus yapraklarına resim kazınır.",en:"Holes are patched, joins smoothed, the surface polished, pictures carved on the lotus petals."}},
-    {id:8, dur:7,  name:{tr:"Daibutsuden",en:"Daibutsuden"}, y0:N.hallStart.v, y1:N.hallDone.v, yTag:"trad", real:(N.hallDone.v-N.hallStart.v)*365.25*DAY, realTag:"trad", parallel:true,
+    {id:8, dur:7,  name:{tr:"Daibutsuden",en:"Daibutsuden"}, y0:N.hallStart.v, y1:N.hallDone.v, yTag:"est", real:(N.hallDone.v-N.hallStart.v)*365.25*DAY, realTag:"trad", parallel:true,
      hint:{tr:"Buda'nın üstüne dev bir ahşap salon kurulur. (Bu iş dökümle aynı yıllarda yürüdü.)",en:"A giant wooden hall is built over the Buddha. (This ran in the same years as the casting.)"}},
     {id:9, dur:7,  name:{tr:"Altın kaplama",en:"Gilding"}, y0:N.gildStart.v, y1:N.gildStart.v+N.gildYears.v, yTag:"est", real:N.gildYears.v*365.25*DAY, realTag:"est", parallel:true,
      hint:{tr:"Altın cıvada eritilir, Buda'ya boyanır, ısıtılır. Cıva uçar, altın kalır!",en:"Gold is dissolved in mercury, painted on and heated. The mercury flies off, the gold stays!"}},
@@ -486,7 +491,7 @@ const UI={
  pouring:{tr:'dökülüyor',en:'pouring'},noReal:{tr:'gerçek süre kaydı yok',en:'real duration not recorded'},
  sec:{tr:'1 sn ≈',en:'1 s ≈'},day:{tr:'gün',en:'days'},yr:{tr:'yıl',en:'years'},hr:{tr:'saat',en:'hours'},speedK:{tr:'hız',en:'speed'},
  src:{tr:'Kaynaklar: ekrandaki her sayı',en:'Sources: every number on screen'},
- legend:{tr:'Etiketler: <i class="tag trad">trad.</i> geleneksel kayıt (eski birim / ay takvimi) · <i class="tag est">est.</i> bilimsel tahmin veya yorum · etiketsiz = Tōdai-ji / resmî kaynak.',en:'Tags: <i class="tag trad">trad.</i> traditional record (old units / lunar calendar) · <i class="tag est">est.</i> scholarly estimate or interpretation · no tag = Tōdai-ji / official source.'},
+ legend:{tr:'Etiketler: <i class="tag trad">trad.</i> geleneksel kayıt (eski birim / ay takvimi) · <i class="tag est">est.</i> bilimsel tahmin veya yorum · <i class="tag unv">[doğrulanmadı]</i> kaynakla doğrulanamadı · etiketsiz = Tōdai-ji / resmî kaynak. Batı tarihleri Jülyen takvimine göredir (Japonya Ulusal Astronomi Gözlemevi takvim veritabanı); Gregoryen karşılığı 4 gün sonradır (ör. 745-09-23 → 745-09-27).',en:'Tags: <i class="tag trad">trad.</i> traditional record (old units / lunar calendar) · <i class="tag est">est.</i> scholarly estimate or interpretation · <i class="tag unv">[doğrulanmadı]</i> not confirmed by a source · no tag = Tōdai-ji / official source. Western dates are Julian-calendar conversions (National Astronomical Observatory of Japan calendar database); the Gregorian equivalent is 4 days later (e.g. 745-09-23 → 745-09-27).'},
  head:{tr:['Ne','Değer','Durum','Kaynak'],en:['What','Value','Status','Source']},
  foot:{tr:'Çizim ölçekli değildir (heykel ≈ ölçekli; salon ve fırınlar şematik). Halkaların yılları, döküm süresinin {pours} eşit parçaya bölünmesiyle hesaplanmıştır (tahmin).',en:'Drawing not to scale (statue roughly to scale; hall and furnaces schematic). Ring years assume the casting span split into {pours} equal parts (estimate).'},
  noneYet:{tr:'henüz yok',en:'none yet'}
@@ -494,7 +499,7 @@ const UI={
 let LANG = localStorage.getItem('tdj-lang')||'tr', MODE = localStorage.getItem('tdj-mode')||'manual';
 const L = o=>o[LANG];
 const nf = (v,d)=>new Intl.NumberFormat(LANG==='tr'?'tr-TR':'en-GB',{maximumFractionDigits:d??2}).format(v);
-const TAGTXT={est:'est.',trad:'trad.',calc:'calc.'};
+const TAGTXT={est:'est.',trad:'trad.',calc:'calc.',unv:'[doğrulanmadı]'};
 function nv(key,d){const n=M.N[key];const v=Array.isArray(n.v)?n.v.map(x=>nf(x,d)).join(n.v.length==2?'–':' × '):(typeof n.v==='number'&&n.v>=1000&&n.v<3000&&Number.isInteger(n.v)&&/^(edict|restart|castStart|castEnd|finishStart|gildStart|hallStart|hallDone|eyeOpening|quake|fire1|recast1|hall2|fire2|recast2|hall3)$/.test(key)?String(n.v):nf(n.v,d));return v;}
 const tg = key=>{const t=M.N[key].tag;return TAGTXT[t]?`<i class="tag ${t}">${TAGTXT[t]}</i>`:'';};
 const HT = (key,d)=>nv(key,d)+tg(key);              // HTML number + tag
@@ -781,7 +786,7 @@ function renderLens(s){
   const state={core:coreOn, gap:shaved>0.02&&fill<0.5, chap:chapOn&&shaved>0.5&&p6===0, mould:mouldOn, soil:covered};
   lz.labels.forEach(o=>{let key=o.k, on=state[o.k], sub='';
     if(o.k==='gap'){ if(fill>=0.5){key='bronze';on=true;} if(g>0.05&&darkU<0.5){} sub=`≈ ${nv('wall',1)} cm${M.N.wall.tag==='est'?' (est.)':''}`; if(!(shaved>0.02))on=false;}
-    if(o.k==='chap'){sub=`× ${nv('chaplets')} (trad.)`;}
+    if(o.k==='chap'){sub=`× ${nv('chaplets')} (${TAGTXT[M.N.chaplets.tag]})`;}
     if(o.k==='mould'){sub=`${nv('moldPiece',1).replace(/ /g,'')} m (est.)`;}
     if(o.k==='soil' && !on && g>0.05 && darkU<0.5){key='gold';on=true;sub=`1:${nv('amalgam')} (est.)`;}
     o.g.setAttribute('opacity',on?1:0); if(!on)return;
@@ -865,13 +870,13 @@ function buildSources(){
   document.getElementById('srcTitle').textContent=L(UI.src); document.getElementById('srcLegend').innerHTML=L(UI.legend);
   document.getElementById('srcHead').innerHTML=L(UI.head).map(h=>`<th>${h}</th>`).join('');
   const rows=Object.entries(M.N).filter(([k,n])=>n.label).map(([k,n])=>{
-    const tagTxt={off:LANG==='tr'?'resmî/kayıt':'official/record',trad:'trad.',est:'est.',calc:'calc.'}[n.tag];
+    const tagTxt={unv:'[doğrulanmadı]',off:LANG==='tr'?'resmî/kayıt':'official/record',trad:'trad.',est:'est.',calc:'calc.'}[n.tag];
     const note=n.note?` <span style="font-weight:400;color:#6b6257">(${L(n.note)})</span>`:'';
     return `<tr><td>${L(n.label)}</td><td class="v">${nv(k,3)}${note}</td><td>${n.tag==='off'?tagTxt:`<i class="tag ${n.tag}">${tagTxt}</i>`}</td><td>${n.src.map(s=>`<a href="${M.S[s].url}" target="_blank" rel="noopener">${M.S[s].name}</a>`).join('<br>')}</td></tr>`;});
-  const calc=[[LANG==='tr'?'Döküm süresi (gün), 747-11-06 → 749-12-08':'Casting span (days), 747-11-06 → 749-12-08', nf(M.castDays,0),'calc.','jawiki'],
-              [LANG==='tr'?'Kil model süresi (gün), 745-09-23 → 746-11-23':'Clay-model span (days), 745-09-23 → 746-11-23', nf(M.coreDays,0),'calc.','jawiki'],
-              [LANG==='tr'?'Hız rozeti = gerçek süre ÷ animasyon süresi':'Speed badge = real duration ÷ animation duration','—','calc.','jawiki']];
-  calc.forEach(r=>rows.push(`<tr><td>${r[0]}</td><td class="v">${r[1]}</td><td><i class="tag calc">calc.</i></td><td><a href="${M.S[r[3]].url}" target="_blank" rel="noopener">${M.S[r[3]].name}</a></td></tr>`));
+  const calc=[[LANG==='tr'?'Döküm süresi (gün), 747-11-06 → 749-12-08':'Casting span (days), 747-11-06 → 749-12-08', nf(M.castDays,0),'calc.',['hibun_dnbz','shoku','naoj']],
+              [LANG==='tr'?'Kil model süresi (gün), 745-09-23 → 746-11-23':'Clay-model span (days), 745-09-23 → 746-11-23', nf(M.coreDays,0),'calc.',['hibun_dnbz','shoku','naoj']],
+              [LANG==='tr'?'Hız rozeti = gerçek süre ÷ animasyon süresi':'Speed badge = real duration ÷ animation duration','—','calc.',['hibun_dnbz','shoku','naoj']]];
+  calc.forEach(r=>rows.push(`<tr><td>${r[0]}</td><td class="v">${r[1]}</td><td><i class="tag calc">calc.</i></td><td>${[].concat(r[3]).map(s=>`<a href="${M.S[s].url}" target="_blank" rel="noopener">${M.S[s].name}</a>`).join('<br>')}</td></tr>`));
   document.getElementById('srcBody').innerHTML=rows.join('');
   document.getElementById('foot').textContent=L(UI.foot).replace('{pours}',nv('pours'));
 }
@@ -900,5 +905,6 @@ setLang(LANG); setMode(RENDER?'manual':MODE); if(RENDER){playing=false;}
 requestAnimationFrame(frame);
 
 </script>
+<style>.credits{max-width:820px;margin:30px auto 24px;padding:14px 18px 0;border-top:1.5px solid #D9D9D6;font-size:12px;line-height:1.5;color:#555;overflow-wrap:anywhere;font-family:var(--font)}.credits h2{font-size:13px;margin:0 0 6px;color:#111}.credits p{margin:0 0 6px}</style><footer class="credits"><h2>Lisans ve krediler · Licence &amp; credits</h2><p>Görseller, sahneler ve metinler · Visuals, scenes and text: © 2026 dogancansk-cloud. Tüm hakları saklıdır · All rights reserved.</p><p>Bu sayfa yalnızca cihazın kendi yazı tiplerini kullanır; yazı tipi dosyası gömülmez veya indirilmez · This page uses the device's own system fonts only; no font files are embedded or downloaded.</p><p>Üçüncü taraf kütüphane kullanılmaz · No third-party libraries.</p></footer>
 </body>
 </html>
