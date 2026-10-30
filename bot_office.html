@@ -1530,7 +1530,7 @@ const BOARD_PTS = (() => { const P = [], w = 900, h = 520, n = 8; for (let i = 0
 HOOK.groky = (b, t, m) => { DYN.groky.update(t, m);
   if (!OBJ.gyString) OBJ.gyString = stringBetween(uvW(OBJ.gyBoard, 3.6, 2.08, 0.5, 0.5, 0.09), uvW(OBJ.gyBoard, 3.6, 2.08, BOARD_PTS[0][0], BOARD_PTS[0][1], 0.09));
   const s = OBJ.gyString;
-  if (m === 'working') { const c = cyc(t, 9), k = Math.floor(t / 9) % 8; if (s.userData.k !== k) { s.userData.k = k; s.userData.b.copy(uvW(OBJ.gyBoard, 3.6, 2.08, BOARD_PTS[k][0], BOARD_PTS[k][1] - 0.06, 0.09)); }
+  if (m === 'working') { const c = cyc(t, 9), k = (((Math.floor(t / 9) % 8) + 8) % 8) || 0; if (s.userData.k !== k) { s.userData.k = k; s.userData.b.copy(uvW(OBJ.gyBoard, 3.6, 2.08, BOARD_PTS[k][0], BOARD_PTS[k][1] - 0.06, 0.09)); }
     setString(s, Math.min(1, c / 2.5)); b.headYaw = c < 3 ? -1.4 : null; b.act = c < 3 ? 'hover' : null; }
   else { setString(s, 0); if (!b.busy && cyc(t, 34, 6) < 0.1) runSeq(b, m, [{go: 'groky.jar'}, {act: 'reach', dur: 1.6, fx: (tt, k) => { const nn = hold(b, 'note', mkCard('#FBE27A')); nn.visible = k < 0.7; }}, {home: true}, {act: 'hover', dur: 4, fx: () => { b.headYaw = -1.4; }}]);
     if (!b.seq) showHeld(b, []); } };
