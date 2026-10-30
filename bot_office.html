@@ -88,6 +88,12 @@ body.scrOpen #card{opacity:0;pointer-events:none}
 #toast{position:fixed;z-index:6;left:50%;bottom:calc(max(12px,env(safe-area-inset-bottom)) + 98px);transform:translate(-50%,10px);opacity:0;transition:opacity .4s,transform .4s;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:650;white-space:nowrap;max-width:92vw;overflow:hidden;display:flex;gap:6px;align-items:center;pointer-events:none}
 #toast.on{opacity:1;transform:translate(-50%,0)}#toast i{width:9px;height:9px;border-radius:50%;flex:none}#toast span{color:var(--ink2);margin-left:4px;overflow:hidden;text-overflow:ellipsis}
 body.focus #toast{bottom:auto;top:calc(max(14px,env(safe-area-inset-top)) + 54px)}
+
+#decisions{position:fixed;z-index:6;right:max(14px,env(safe-area-inset-right));top:calc(max(14px,env(safe-area-inset-top)) + 58px);border-radius:14px;padding:5px 10px;font-size:11.5px;font-weight:750;color:var(--ink);text-decoration:none;display:none;white-space:nowrap;line-height:1.2;max-width:46vw}
+#decisions.on{display:inline-flex;align-items:center;gap:6px}
+#decisions::before{content:'';width:7px;height:7px;border-radius:50%;background:#e3a33b;flex:none}
+#decisions:hover{filter:brightness(1.05)}
+@media (max-width:760px){#decisions{top:calc(max(10px,env(safe-area-inset-top)) + 52px);padding:4px 8px;font-size:10.5px;border-radius:12px;max-width:54vw}}
 body.nointro #intro{display:none!important}
 @media (max-height:720px){#intro{display:none!important}}
 @media (max-width:760px){#live{max-width:54vw;padding:6px 10px 6px 9px;gap:7px}#live b{font-size:11px}#live span{font-size:10px}
@@ -1288,7 +1294,7 @@ function margins(focus) {
   if (!RENDER && !focus) { // fit between the real header (badge / intro) and the hint bar + chips, measured from the DOM
     const bot = id => { const e = document.getElementById(id); if (!e || e.hidden || getComputedStyle(e).display === 'none') return 0; const r = e.getBoundingClientRect(); return r.height ? r.bottom : 0; };
     const top = id => { const e = document.getElementById(id); if (!e || getComputedStyle(e).display === 'none') return VH; const r = e.getBoundingClientRect(); return r.height ? r.top : VH; };
-    m.t = Math.max(m.t * 0.5, bot('top'), bot('live'), bot('intro')) + 8; m.b = Math.max(16, VH - Math.min(top('hint'), top('chips'))) + 8; }
+    m.t = Math.max(m.t * 0.5, bot('top'), bot('live'), bot('decisions'), bot('intro')) + 8; m.b = Math.max(16, VH - Math.min(top('hint'), top('chips'))) + 8; }
   if (focus) { const card = document.getElementById('card'); if (phone) { m.t = 60; m.b = Math.min(card.offsetHeight || VH * 0.5, VH * 0.55) + 14; } else { m.r = 380 + 40; m.t = 40; m.b = 40; } }
   return m;
 }
@@ -1651,11 +1657,16 @@ async function poll() { if (LIVE.demo) { liveUI(); return; }
 async function livePrices() { if (!LIVE.on || LIVE.demo || RENDER) return; try { const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22%5D', {cache: 'no-store'}); if (!r.ok) return; const j = await r.json();
   j.forEach(x => { const c = x.symbol.replace('USDT', ''); if (TRADE && TRADE.prices) TRADE.prices[c] = {price: +(+x.price).toFixed(2), src: 'live', at: istHM(nowS())}; }); ['gkBoard', 'gkWall', 'gorkTicker'].forEach(k => DYN[k].last = -1); } catch (e) { /* keep the paper price */ } }
 /* badge, labels, hint, card rows, toast */
+
+const DECISIONS_URL = 'https://cursor.com/canvas/store-d2a5bd30-485d-4bb4-956e-eb7c5905348c/99c4b77d-f794-46ac-a719-a07813acc4cb';
+const dbadge = document.createElement('a'); dbadge.id = 'decisions'; dbadge.className = 'glass'; dbadge.href = DECISIONS_URL; dbadge.target = '_blank'; dbadge.rel = 'noopener'; dbadge.setAttribute('aria-label', 'Karar bekleyenler'); document.body.appendChild(dbadge);
+function decisionsUI(st) { const n = st && st.decisions_pending; const show = Number.isFinite(+n) && +n > 0; dbadge.classList.toggle('on', !!show); if (show) dbadge.textContent = Math.floor(+n) + ' karar bekliyor'; }
 const lbadge = document.createElement('div'); lbadge.id = 'live'; lbadge.className = 'glass'; lbadge.innerHTML = '<i></i><div><b id="lvA"></b><span id="lvB"></span><span id="lvC"></span></div>'; document.body.appendChild(lbadge);
 labels.forEach(l => { const e = document.createElement('em'); l.el.appendChild(e); l.st = e; });
 function liveUI() { const u = LUI[LANG]; const A = $('lvA'), Bb = $('lvB');
   if (LIVE.on) { const age = nowS() - LIVE.gen; const stale = age > 30 * 60; lbadge.className = 'glass ' + (stale ? 'stale' : 'ok'); A.textContent = stale ? u.paused : u.live; Bb.textContent = `${u.upd}: ${ago(LIVE.gen)}`; $('lvC').textContent = `${istHM(LIVE.gen)} · ${u.tz}`; }
   else { lbadge.className = 'glass demo'; A.textContent = u.demo; Bb.textContent = u.nodata; $('lvC').textContent = ''; }
+  decisionsUI(LIVE.status);
   let nw = 0; labels.forEach(l => { const id = l.b.id, s = LIVE.on ? (l.b && BOTS[id].baseState === 'working' ? 'working' : 'idle') : null; l.el.classList.toggle('work', s === 'working'); l.st.textContent = !s ? '' : id === 'gronk' ? (s === 'working' ? u.sess : '') : (s === 'working' ? '· ' + u.working.toLowerCase() : ''); if (s === 'working' && id !== 'gronk') nw++; });
   if (LIVE.on) $('hint').textContent = (nw ? u.nWork(nw) : u.allIdle) + ' · ' + UI[LANG].hint; else $('hint').textContent = UI[LANG].hint;
   $('scrT').textContent = u.scrT; $('scrS').textContent = u.scrS; }

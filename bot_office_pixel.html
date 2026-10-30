@@ -14,6 +14,11 @@ canvas#c{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;imag
 #live i{width:8px;height:8px;background:#3ecf6e;margin-top:3px;flex:none;animation:bl 1.6s steps(2) infinite}
 #live.demo i{background:#e3a33b;animation:none}#live.stale i{background:#999;animation:none}
 #live b{display:block;font-size:10.5px}#live span{display:block;font-size:9.5px;color:#a9b0c0}
+#decisions{position:fixed;right:8px;top:calc(56px + env(safe-area-inset-top));z-index:5;padding:4px 8px;font-size:10.5px;font-weight:700;color:#f2efe6;text-decoration:none;display:none;white-space:nowrap;line-height:1.2;max-width:52vw}
+#decisions.on{display:inline-flex;align-items:center;gap:5px}
+#decisions::before{content:'';width:6px;height:6px;background:#f2c14e;flex:none;border:1px solid #0e1118}
+#decisions:hover{filter:brightness(1.08)}
+
 @keyframes bl{50%{opacity:.25}}
 #hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(8px + env(safe-area-inset-bottom));padding:5px 10px;font-size:10.5px;color:#d9dce5;z-index:4;white-space:nowrap;max-width:calc(100vw - 16px);overflow:hidden;text-overflow:ellipsis}#hint.msg{color:#f2c14e}
 #card{position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom));max-height:46vh;max-height:46dvh;overflow:auto;padding:10px 12px;z-index:6;display:none}
@@ -42,6 +47,7 @@ canvas#c{position:fixed;left:0;top:0;width:100vw;height:100vh;height:100dvh;imag
 </style></head><body>
 <canvas id="c"></canvas>
 <div id="top" class="px"><div><b id="ttl">Ofis · piksel</b><br><small id="sub">Doğancan'ın 9 botu</small></div><div id="lang"><button data-l="tr" class="on">TR</button><button data-l="en">EN</button></div></div>
+<a id="decisions" class="px" href="https://cursor.com/canvas/store-d2a5bd30-485d-4bb4-956e-eb7c5905348c/99c4b77d-f794-46ac-a719-a07813acc4cb" target="_blank" rel="noopener" aria-label="Karar bekleyenler"></a>
 <div id="live" class="px demo"><i></i><div><b id="lvA">…</b><span id="lvB"></span><span id="lvC"></span></div></div>
 <div id="hint" class="px">…</div>
 <div id="card" class="px"><button id="x">✕</button><div id="cardIn"></div></div>
@@ -465,7 +471,7 @@ addEventListener('resize', resize); if (window.visualViewport) visualViewport.ad
 function present() { const V = vp(); if (Math.abs(parseFloat(cv.style.width) - V.w) > 1 || Math.abs(parseFloat(cv.style.height) - V.h) > 1) resize(); const dpr = cv.width / V.w;
   const phone = V.w < 900;
   // fit between the header cards and the hint bar (or the card when a room is open), using the real visible viewport
-  const hdr = Math.max($('top').getBoundingClientRect().bottom, $('live').getBoundingClientRect().bottom) + 6;
+  const hdr = Math.max($('top').getBoundingClientRect().bottom, $('live').getBoundingClientRect().bottom, ($('decisions')&&$('decisions').classList.contains('on')?$('decisions').getBoundingClientRect().bottom:0)) + 6;
   const card = $('card'), cardOn = card.classList.contains('on');
   const bottomEdge = (FOCUS && phone && cardOn) ? card.getBoundingClientRect().top - 6 : $('hint').getBoundingClientRect().top - 6;
   const side = (FOCUS && !phone) ? 380 : 0;
@@ -503,8 +509,11 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&': '&am
 function ago(s) { const d = Math.max(0, Date.now() / 1000 - s); if (d < 60) return LANG === 'tr' ? 'az önce' : 'just now'; if (d < 3600) { const m = Math.round(d / 60); return LANG === 'tr' ? `${m} dk önce` : `${m} min ago`; } const hh = Math.round(d / 3600); return LANG === 'tr' ? `${hh} sa önce` : `${hh} h ago`; }
 function setLang(l) { LANG = l; document.documentElement.lang = l; document.querySelectorAll('#lang button').forEach(b => b.classList.toggle('on', b.dataset.l === l)); $('ttl').textContent = u().ttl; $('sub').textContent = u().sub; liveUI(); if (FOCUS) fillCard(FOCUS); if ($('scr').classList.contains('on')) fillScreen(); }
 document.querySelectorAll('#lang button').forEach(b => b.onclick = (e) => { e.stopPropagation(); setLang(b.dataset.l); });
+
+function decisionsUI(st){const el=$('decisions');if(!el)return;const n=st&&st.decisions_pending;const show=Number.isFinite(+n)&&+n>0;el.classList.toggle('on',!!show);if(show)el.textContent=Math.floor(+n)+' karar bekliyor';}
 function liveUI() { const U = u(), el = $('live'); if (LIVE.on) { const stale = Date.now() / 1000 - LIVE.gen > 30 * 60; el.className = 'px' + (stale ? ' stale' : ''); $('lvA').textContent = U.live; $('lvB').textContent = `${U.upd}: ${ago(LIVE.gen)}`; $('lvC').textContent = `${istHM(LIVE.gen)} · ${U.tz}`; }
   else { el.className = 'px demo'; $('lvA').textContent = U.demo; $('lvB').textContent = U.nodata; $('lvC').textContent = ''; }
+  decisionsUI(LIVE.status);
   const n = IDS.filter(id => STATE[id] === 'working' && id !== 'gronk').length; if ($('hint').classList.contains('msg')) return; $('hint').textContent = FOCUS ? U.hint : (n ? U.nWork(n) : U.allIdle) + ' · ' + U.tap; }
 function fillCard(id) { const b = BD[id], U = u(), r = LIVE.status && LIVE.status.bots && LIVE.status.bots[id]; const s = STATE[id];
   let now; if (id === 'gronk') now = s === 'working' ? U.sess : U.free;
