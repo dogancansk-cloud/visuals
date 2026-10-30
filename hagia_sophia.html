@@ -172,14 +172,35 @@ function buildModel(){
     metro:{name:"Metro İstanbul: Kabataş–Bağcılar Tram Line (T1)", url:"https://www.metro.istanbul/en/Hatlarimiz/HatDetay?hat=T1"},
     phaidra:{name:"Univ. Wien PHAIDRA o:250461: Aya Sofya, Kuppel (survey notes)", url:"https://phaidra.univie.ac.at/detail/o:250461"},
     ktsv:{name:"Klasik Türk Sanatları Vakfı: 'Ayasofya levhaları' (2008)", url:"https://www.ktsv.com.tr/guncel/ayasoyfa-levhalari"},
-    wikiT1:{name:"Wikipedia (EN): T1 (Istanbul Tram) — secondary, tram model only", url:"https://en.wikipedia.org/wiki/T1_(Istanbul_Tram)"},
+    rg2011:{name:"Railway Gazette International, 10 Feb 2011: first 14 Citadis enter service on T1 (3 Feb 2011)", url:"https://www.railwaygazette.com/urban/2011/02/10/low-floor-trams-in-service-as-istanbul-extension-testing-begins/"},
+    alstom2009:{name:"Alstom press release, 4 Sep 2009: first Citadis delivered to Istanbul", url:"https://www.alstom.com/press-releases-news/2009/9/Alstom-delivers-the-first-Citadis-tram-to-Istanbul-Turkey-20090904"},
     taylor:{name:"R. Taylor, 'A Literary and Structural Analysis of the First Dome on Justinian's Hagia Sophia', JSAH 55.1 (1996) 66–78", url:"https://doi.org/10.2307/991056"},
     cakmak:{name:"A. Ş. Çakmak, R. M. Taylor, E. Durukal, 'The structural configuration of the first dome of Justinian's Hagia Sophia (A.D. 537–558)', Soil Dyn. & Earthq. Eng. 29 (2009) 693–698", url:"https://avesis.bogazici.edu.tr/yayin/ce871eb2-b29d-448b-a2ea-9fdad628357c/the-structural-configuration-of-the-first-dome-of-justinians-hagia-sophia-a-d-537-558-an-investigation-based-on-structural-and-literary-analysis"},
     mainstone:{name:"R. J. Mainstone, 'Justinian's Church of St Sophia, Istanbul: Recent Studies of Its Construction and First Partial Reconstruction', Architectural History 12 (1969); Hagia Sophia (1988), as summarised by Taylor 1996", url:"https://doi.org/10.2307/1568335"},
     ehw:{name:"J. Kostenec, 'Hagia Sophia', Encyclopaedia of the Hellenic World: Constantinople (2007)", url:"http://constantinople.ehw.gr/forms/filePage.aspx?lemmaId=10894"},
     archnet:{name:"Archnet: Hagia Sophia (site record)", url:"https://www.archnet.org/sites/1989"},
-    wikiHS:{name:"Wikipedia (EN): Hagia Sophia — secondary, only for 20 Byzantine ft ≈ 6.25 m", url:"https://en.wikipedia.org/wiki/Hagia_Sophia"},
-    tp:{name:"TransPhoto: Alstom Citadis 304 #828 on T1 between Gülhane and Sultanahmet (2020)", url:"https://transphoto.org/photo/1385229/"}
+    schilbach:{name:"E. Schilbach, Byzantinische Metrologie (Handbuch der Altertumswissenschaft XII.4), Beck 1970: Byzantine pous ≈ 0.312 m", url:"https://doi.org/10.1017/s0009840x00998172"},
+    tp:{name:"TransPhoto: Alstom Citadis 304 #828 on T1 between Gülhane and Sultanahmet (2020)", url:"https://transphoto.org/photo/1385229/"},
+    /* türbe pack (Grokian, 30 Oct 2026): S-numbers as in turbeler_sources.md */
+    S1:{name:"[S1] Z. H. Kurtbil, 'SELİM II TÜRBESİ', TDV İslâm Ansiklopedisi 36 (2009) 418–420", url:"https://islamansiklopedisi.org.tr/selim-ii-turbesi"},
+    S2:{name:"[S2] İ. Orman, 'MURAD III TÜRBESİ', TDV İslâm Ansiklopedisi 31, 176–177", url:"https://islamansiklopedisi.org.tr/murad-iii-turbesi"},
+    S3:{name:"[S3] A. V. Çobanoğlu, 'MEHMED III TÜRBESİ', TDV İslâm Ansiklopedisi 28 (2003) 413–414", url:"https://islamansiklopedisi.org.tr/mehmed-iii-turbesi"},
+    S4:{name:"[S4] 'DALGIÇ AHMED AĞA', TDV İslâm Ansiklopedisi 8 (1993) 431–432 (+ 'DÂVUD AĞA')", url:"https://islamansiklopedisi.org.tr/dalgic-ahmed-aga"},
+    S4b:{name:"[S4] 'DÂVUD AĞA', TDV İslâm Ansiklopedisi", url:"https://islamansiklopedisi.org.tr/davud-aga"},
+    S5:{name:"[S5] S. Eyice, 'İBRÂHİM TÜRBESİ', TDV İslâm Ansiklopedisi 21 (2000) 357–358", url:"https://islamansiklopedisi.org.tr/ibrahim-turbesi"},
+    S6:{name:"[S6] S. Eyice, 'AYASOFYA', TDV İslâm Ansiklopedisi 4 (1991)", url:"https://islamansiklopedisi.org.tr/ayasofya"},
+    S7:{name:"[S7] F. Dirimtekin, 'Ayasofya Baptisteri', Türk Arkeoloji Dergisi XII/2 (1963)", url:"https://dergipark.org.tr/en/download/article-file/2162412"},
+    S7b:{name:"[S7] S. Eyice, 'Ayasofya Vaftizhanesi: Sultan I. Mustafa ve Sultan İbrahim'in Türbesi Olan Yapı', Eyice Külliyatı I (TTK 2015)", url:"https://isamveri.org/pdfdrg/D245733/2005/2005_EYICE16.pdf"},
+    S8:{name:"[S8] A. Kuran, 'Mimar Sinan'ın Türbeleri', Mimarbaşı Koca Sinan (VGM 1988)", url:"https://acikerisim.fsm.edu.tr/server/api/core/bitstreams/7a70f4f3-6f74-4c61-89dd-58278bfa7563/content"},
+    S9:{name:"[S9] A. F. Baysal, R. Ak, A. Z. Sayın, 'Ayasofya Haziresindeki … Türbelerin Kalemişleri' (Diyanet 2021)", url:"https://isamveri.org/pdfdrg/G01213/2021/2021_BAYSALAF_AK_SAYIN.pdf"},
+    S10:{name:"[S10] Z. Arol, 'Ayasofya Cami Haziresi'nde Bulunan Padişah Türbeleri'ndeki Çini Panolar', ASOS 9/120 (2021)", url:"https://asosjournal.com/api/articles/1f0b653a-0d92-4d9d-9eb5-c07c5a3c0ae2/pdf?download=1"},
+    S12:{name:"[S12] C. Gurlitt, Die Baukunst Konstantinopels I (1912), Taf. 8a 'Die Aja Sofia und ihre Umgebung' (Internet Archive / Getty, public domain)", url:"https://archive.org/details/gri_33125014992479"},
+    S13:{name:"[S13] C. Gurlitt, Die Baukunst Konstantinopels II, text (1912)", url:"https://archive.org/details/gri_33125014992461"},
+    S14:{name:"[S14] F. Emecen, 'SELİM II', TDV İslâm Ansiklopedisi", url:"https://islamansiklopedisi.org.tr/selim-ii"},
+    S15:{name:"[S15] B. Kütükoğlu, 'MURAD III', TDV İslâm Ansiklopedisi", url:"https://islamansiklopedisi.org.tr/murad-iii"},
+    S16:{name:"[S16] F. Emecen, 'MEHMED III', TDV İslâm Ansiklopedisi", url:"https://islamansiklopedisi.org.tr/mehmed-iii"},
+    S17:{name:"[S17] 'MUSTAFA I', TDV İslâm Ansiklopedisi 31 (2020): 15 Ramazan 1048 = 20 Ocak 1639", url:"https://islamansiklopedisi.org.tr/mustafa-i"},
+    S18:{name:"[S18] Salt Research, Ali Saim Ülgen Archive, TASUDOCM0238: Ayasofya Şehzadeler Türbesi plan, kesit ve görünüşü (Open Access)", url:"https://archives.saltresearch.org/handle/123456789/72601"}
   };
   // tag: off = official (Ministry / Diyanet / Metro İstanbul / UNESCO) · est = scholarly or approximate
   //      trad = ancient/medieval account · unc = tradition, unconfirmed · calc = computed here
@@ -214,7 +235,7 @@ function buildModel(){
     Win:{v:69.87, tag:"est", u:"m", src:["dogan"], label:{tr:"İç genişlik",en:"Interior width"}},
     quakes:{v:[553,557], tag:"est", yr:true, src:["angi","mango"], label:{tr:"Depremler kubbeyi çatlatır",en:"Earthquakes crack the dome"}},
     collapse:{v:558, tag:"trad", yr:true, src:["mango","malalas","paul"], note:{tr:"7 Mayıs 558",en:"7 May 558"}, label:{tr:"İlk kubbenin doğu kısmı çöker (onarım sırasında); kalanı sökülür",en:"East part of the first dome collapses (during repairs); the rest is taken down"}},
-    raise:{v:6.25, tag:"est", u:"m", approx:true, src:["mango","angi","wikiHS"], note:{tr:"Theophanes: '20 ayaktan fazla'; 20 Bizans ayağı ≈ 6,25 m",en:"Theophanes: 'more than 20 feet'; 20 Byzantine ft ≈ 6.25 m"}, alt:[["30 ayak / 30 ft ≈ 9,4 m (Malalas)","mango"],["≈ 6 m","ehw"],["ilk kubbe 28, bugünkü 48 Bizans ayağı derinlikte (öneri; yalnızca arama özeti) / first dome 28 vs today's 48 Byzantine ft deep (proposal; search summary only)","cakmak"]], label:{tr:"Yeni kubbe ne kadar yüksek",en:"How much higher the new dome is"}},
+    raise:{v:6.25, tag:"est", u:"m", approx:true, src:["mango","angi","schilbach"], note:{tr:"Theophanes: '20 ayaktan fazla'; Schilbach pous ≈ 0,312 m → 20 ayak ≈ 6,25 m",en:"Theophanes: 'more than 20 feet'; Schilbach pous ≈ 0.312 m → 20 ft ≈ 6.25 m"}, alt:[["30 ayak / 30 ft ≈ 9,4 m (Malalas)","mango"],["≈ 6 m","ehw"],["ilk kubbe 28, bugünkü 48 Bizans ayağı derinlikte (öneri; yalnızca arama özeti) / first dome 28 vs today's 48 Byzantine ft deep (proposal; search summary only)","cakmak"]], label:{tr:"Yeni kubbe ne kadar yüksek",en:"How much higher the new dome is"}},
     reconsec:{v:562, tag:"est", yr:true, src:["mango","paul","dogan"], note:{tr:"24 Aralık 562",en:"24 Dec 562"}, alt:[["24 Aralık 563 / 24 Dec 563","eiao"]], label:{tr:"Yeni kubbeyle yeniden açılış",en:"Rededicated with the new dome"}},
     q989:{v:989, tag:"est", yr:true, src:["engberg","angi","dogan"], note:{tr:"26 Ekim 989",en:"26 Oct 989"}, label:{tr:"Deprem: batı kemeri ve kubbenin bir kısmı çöker",en:"Earthquake: western arch and part of the dome fall"}},
     trdat:{v:994, tag:"est", yr:true, approx:true, src:["dogan","engberg"], label:{tr:"Mimar Trdat'ın onarımı biter (yaklaşık)",en:"Architect Trdat's repair finished (approx.)"}},
@@ -229,6 +250,25 @@ function buildModel(){
     selim2:{v:[1566,1574], tag:"est", yr:true, src:["dogan"], label:{tr:"II. Selim'in saltanatı",en:"Reign of Selim II"}},
     sinan:{v:[1572,1574], tag:"est", yr:true, src:["dogan","angi","aym"], label:{tr:"Mimar Sinan payandaları güçlendirir (küfeki taşı)",en:"Sinan strengthens the buttresses (küfeki stone)"}},
     murad3:{v:[1574,1595], tag:"est", yr:true, src:["dogan"], label:{tr:"III. Murad: Sinan'ın 2 batı minaresi tamamlanır",en:"Murad III: Sinan's 2 western minarets completed"}},
+    baptB:{v:"Bizans (tarih tartışmalı) / Byzantine (date debated)", tag:"deb", txt:true, src:["S5","S7","S12","S13"], note:{tr:"Gurlitt: ana kiliseden 'pek eski değil'. Modelde 532–537 yapımıyla birlikte belirir (zamanlama şematik)",en:"Gurlitt: 'not much older than the main church'. In the model it appears with the 532–537 build (timing schematic)"}, label:{tr:"Vaftizhane (kilisenin güneybatı köşesinde)",en:"Baptistery (at the church's south-west corner)"}},
+    oilStore:{v:[1453,1639], tag:"deb", yr:true, src:["S5","S6","S7"], note:{tr:"Eyice ve DİA: kandil yağı deposu (yağhane); Dirimtekin (1963): boş bırakıldı",en:"Eyice and DİA: lamp-oil store (yağhane); Dirimtekin (1963): left empty"}, label:{tr:"Vaftizhane yağhane olarak kullanılır",en:"Baptistery used as an oil store"}},
+    selimDeath:{v:1574, tag:"est", yr:true, src:["S1","S14"], note:{tr:"13 Aralık 1574 (28 Şaban 982); türbe yerine kurulan otağa gömülür",en:"13 Dec 1574 (28 Şaban 982); buried in a tent (otağ) on the tomb site"}, label:{tr:"II. Selim ölür",en:"Selim II dies"}},
+    turbeSelim:{v:[1573,1577], tag:"est", yr:true, src:["S1","S8","S9"], note:{tr:"981 H (1573–74) başlar; kapı kitabesi 984 H (1576–77, Kuran); Baysal vd.: 1577",en:"Begun 981 H (1573–74); door inscription 984 H (1576–77, Kuran); Baysal et al.: 1577"}, label:{tr:"II. Selim Türbesi (Mimar Sinan)",en:"Tomb of Selim II (Sinan)"}},
+    selimDome:{v:10.6, tag:"est", u:"m", src:["S8"], label:{tr:"II. Selim Türbesi iç kubbe çapı (çift kubbe)",en:"Selim II tomb, inner dome diameter (double dome)"}},
+    turbeSehz:{v:1580, tag:"est", yr:true, approx:true, src:["S8","S10"], note:{tr:"Kitabe yok. Kuran: 1570'lerin sonu – 1580'lerin başı; Arol: 1580",en:"No inscription. Kuran: late 1570s – early 1580s; Arol: 1580"}, label:{tr:"Şehzadeler Türbesi (Sinan'a atfedilir)",en:"Şehzadeler Türbesi (attributed to Sinan)"}},
+    sehzDome:{v:4.3, tag:"est", u:"m", src:["S8"], label:{tr:"Şehzadeler Türbesi iç kubbe çapı",en:"Şehzadeler Türbesi, inner dome diameter"}},
+    sehzBur:{v:5, tag:"est", src:["S8"], label:{tr:"Şehzadeler'de sanduka: III. Murad'ın 4 oğlu + 1 kızı",en:"Cenotaphs in the Şehzadeler: Murad III's 4 sons + 1 daughter"}},
+    murad3Death:{v:1595, tag:"est", yr:true, src:["S2","S15"], note:{tr:"17 Ocak 1595 (6 Cemâziyelevvel 1003)",en:"17 Jan 1595 (6 Cemâziyelevvel 1003)"}, label:{tr:"III. Murad ölür",en:"Murad III dies"}},
+    turbeMurad:{v:[1595,1599], tag:"est", yr:true, src:["S2","S4","S4b","S9"], note:{tr:"Davud Ağa başlar (ö. 1598), Dalgıç Ahmed Ağa bitirir (kapıda imzası). Baysal vd.: 1599–1600",en:"Begun by Davud Ağa (d. 1598), finished by Dalgıç Ahmed Ağa (signed on the door). Baysal et al.: 1599–1600"}, label:{tr:"III. Murad Türbesi (altıgen)",en:"Tomb of Murad III (hexagonal)"}},
+    muradCeno:{v:50, tag:"est", src:["S2"], label:{tr:"III. Murad Türbesi'nde bugünkü sanduka",en:"Cenotaphs in Murad III's tomb today"}},
+    turbeMehmed:{v:[1604,1609], tag:"est", yr:true, src:["S3","S4"], note:{tr:"Ferman 2 Eylül 1604 (7 Rebîülâhir 1013): Dalgıç Ahmed; bitiş 1017 H (1608–09): Sedefkâr Mehmed Ağa",en:"Order 2 Sep 1604 (7 Rebîülâhir 1013): Dalgıç Ahmed; finished 1017 H (1608–09): Sedefkâr Mehmed Ağa"}, label:{tr:"III. Mehmed Türbesi (sekizgen)",en:"Tomb of Mehmed III (octagonal)"}},
+    mehmedCeno:{v:14, tag:"est", src:["S3"], label:{tr:"III. Mehmed Türbesi'nde iç sanduka (+3 revakta)",en:"Cenotaphs inside Mehmed III's tomb (+3 in the porch)"}},
+    mustafa1:{v:1639, tag:"est", yr:true, src:["S5","S7","S17"], note:{tr:"I. Mustafa ölür (20 Ocak 1639 / 15 Ramazan 1048); vaftizhane türbeye çevrilir",en:"Mustafa I dies (20 Jan 1639 / 15 Ramazan 1048); the baptistery becomes a tomb"}, label:{tr:"Vaftizhane → I. Mustafa Türbesi",en:"Baptistery → tomb of Mustafa I"}},
+    ibrahimB:{v:1648, tag:"est", yr:true, src:["S5","S7"], note:{tr:"18 Ağustos 1648 (28 Receb 1058)",en:"18 Aug 1648 (28 Receb 1058)"}, label:{tr:"Sultan İbrahim aynı yapıya gömülür",en:"Sultan İbrahim buried in the same building"}},
+    baptL:{v:20, tag:"est", u:"m", src:["S7"], alt:[["22,70 × 16,20 m (Antoniades) / 21,80 × 16,20 m (Swift)","S7"]], label:{tr:"Vaftizhane dış uzunluğu (Dirimtekin; nartheks dahil)",en:"Baptistery outside length (Dirimtekin; incl. narthex)"}},
+    baptW:{v:15.52, tag:"est", u:"m", src:["S7"], label:{tr:"Vaftizhane dış genişliği (Dirimtekin)",en:"Baptistery outside width (Dirimtekin)"}},
+    baptH:{v:16.6, tag:"est", u:"m", src:["S7"], alt:[["17,40 m (Antoniades); 17,10 m (Dirimtekin dipnotu / footnote)","S7"]], label:{tr:"Vaftizhane kubbe yüksekliği, dıştan (içten 16,05 m)",en:"Baptistery dome height, outside (inside 16.05 m)"}},
+    lastTomb:{v:1714, tag:"est", yr:true, src:["S5"], label:{tr:"Vaftizhane türbesinde son defin (Şehzade İbrâhim)",en:"Last burial in the baptistery tomb (Şehzade İbrâhim)"}},
     woodGone:{v:1574, tag:"off", yr:true, src:["aym"], label:{tr:"Fatih'in ahşap minaresi kaldırılır",en:"Mehmed II's wooden minaret removed"}},
     minarets:{v:4, tag:"off", src:["aym","mufti"], label:{tr:"Minare (bugün)",en:"Minarets (today)"}},
     fossati:{v:[1847,1849], tag:"est", yr:true, src:["usi","dogan"], note:{tr:"Mayıs 1847 – Temmuz 1849",en:"May 1847 – July 1849"}, label:{tr:"Fossati kardeşlerin onarımı (Abdülmecid)",en:"Fossati brothers' restoration (Abdülmecid)"}},
@@ -243,7 +283,7 @@ function buildModel(){
     t1full:{v:1992, tag:"off", yr:true, src:["metroTR"], note:{tr:"29 Aralık 1992: Topkapı–Sirkeci",en:"29 Dec 1992: Topkapı–Sirkeci"}, label:{tr:"Topkapı–Sirkeci tamamlanır",en:"Topkapı–Sirkeci completed"}},
     t1len:{v:19.3, tag:"off", u:"km", src:["metro"], label:{tr:"T1 Kabataş–Bağcılar uzunluğu",en:"T1 Kabataş–Bağcılar length"}},
     t1st:{v:31, tag:"off", src:["metro"], label:{tr:"T1 istasyon sayısı",en:"T1 stations"}},
-    citadis:{v:2011, tag:"est", yr:true, src:["wikiT1","tp"], label:{tr:"Alstom Citadis tramvaylar T1'de",en:"Alstom Citadis trams on T1"}},
+    citadis:{v:2011, tag:"off", yr:true, src:["rg2011","alstom2009","tp"], note:{tr:"3 Şubat 2011: ilk 14 Citadis hizmete girdi (Railway Gazette); teslimat 2009–2010 (Alstom)",en:"3 Feb 2011: first 14 Citadis enter service (Railway Gazette); deliveries 2009–2010 (Alstom)"}, label:{tr:"Alstom Citadis tramvaylar T1'de",en:"Alstom Citadis trams on T1"}},
     mosque2020:{v:2020, tag:"off", yr:true, src:["aym"], note:{tr:"Danıştay kararı 2 Temmuz, ilan + Karar 2729: 10 Temmuz 2020",en:"Council of State decision 2 July, announced + Decree 2729: 10 July 2020"}, label:{tr:"Yeniden cami",en:"A mosque again"}},
     prayer2020:{v:2020, tag:"off", yr:true, src:["mufti"], note:{tr:"24 Temmuz 2020: ilk cuma namazı",en:"24 July 2020: first Friday prayer"}, label:{tr:"86 yıl sonra ilk cuma namazı",en:"First Friday prayer in 86 years"}},
     route2024:{v:2024, tag:"off", yr:true, src:["ktbpress"], note:{tr:"15 Ocak 2024",en:"15 Jan 2024"}, label:{tr:"Turistler galeri katından gezer",en:"Tourists visit via the upper gallery"}}
@@ -304,23 +344,38 @@ function buildModel(){
    13:{name:{tr:'Minareler ve Sinan',en:'Minarets & Sinan'},
       hint:{tr:'Bir minare, iki, üç, dört! Mimar Sinan kalın payandalar ekler; yapı bir daha çökmez.',en:'One minaret, two, three, four! Sinan the architect adds thick buttresses; the building never falls again.'},
       fact:{tr:'Tuğla minare: II. Bayezid {bayezid} (yeri tartışmalı). Sinan {sinan}; ahşap minare {woodGone}\'te kalkar; 2 batı minaresi III. Murad döneminde {murad3}.',en:'Brick minaret: Bayezid II {bayezid} (position disputed). Sinan {sinan}; the wooden minaret goes in {woodGone}; 2 western minarets under Murad III {murad3}.'}},
-   14:{name:{tr:'Parçalarına ayır',en:'Take it apart'},
+   14:{name:{tr:'1577: II. Selim Türbesi',en:'1577: Tomb of Selim II'},
+      hint:{tr:'Güney avluda ilk sultan türbesi: Mimar Sinan, II. Selim için kare planlı, köşeleri pahlı, çift kubbeli bir türbe kurar. Selim 1574\'te ölür; türbe bitene dek yerine kurulan otağda yatar.',en:'The first sultan\'s tomb in the south courtyard: Sinan builds Selim II a square, corner-chamfered, double-domed tomb. Selim dies in 1574 and lies in a tent on the site until it is ready.'},
+      fact:{tr:'Başlangıç 981 H, bitiş kitabeye göre 984 H: {turbeSelim}; Selim ölür {selimDeath:plain} (13 Aralık). Mimar Sinan. İç kubbe {selimDome}. Kaynak: [S1] [S8] [S14]',en:'Begun 981 H, finished per the inscription 984 H: {turbeSelim}; Selim dies {selimDeath:plain} (13 Dec). Architect Sinan. Inner dome {selimDome}. Sources: [S1] [S8] [S14]'}},
+   15:{name:{tr:'≈1580: Şehzadeler Türbesi',en:'c. 1580: Şehzadeler Türbesi'},
+      hint:{tr:'Küçük, sekizgen bir türbe: III. Murad\'ın çocukları için. Dışı sekizgen, içi haç planlı; kitabesi yok.',en:'A small octagonal tomb for Murad III\'s children. Octagonal outside, cross-shaped inside; it has no inscription.'},
+      fact:{tr:'{turbeSehz}: Sinan\'a atfedilir<i class="tag est">est.</i> {sehzBur:plain} sanduka (4 oğul + 1 kız){tag:sehzBur}. İç kubbe {sehzDome}. Kaynak: [S8] [S10]',en:'{turbeSehz}: attributed to Sinan<i class="tag est">est.</i> {sehzBur:plain} cenotaphs (4 sons + 1 daughter){tag:sehzBur}. Inner dome {sehzDome}. Sources: [S8] [S10]'}},
+   16:{name:{tr:'1599: III. Murad Türbesi',en:'1599: Tomb of Murad III'},
+      hint:{tr:'III. Murad 1595\'te ölür. Davud Ağa altıgen, çift kubbeli türbeye başlar; 1598\'de ölünce Dalgıç Ahmed Ağa bitirir. Bir duvarı Şehzadeler Türbesi\'ne dayanır.',en:'Murad III dies in 1595. Davud Ağa begins a hexagonal, double-domed tomb; when he dies in 1598, Dalgıç Ahmed Ağa finishes it. One wall stands hard against the Şehzadeler Türbesi.'},
+      fact:{tr:'Ölüm {murad3Death:plain} (17 Ocak); türbe {turbeMurad}. Mimarlar: Davud Ağa → Dalgıç Ahmed Ağa. Bugün {muradCeno} sanduka. Kaynak: [S2] [S4] [S9] [S15]',en:'Death {murad3Death:plain} (17 Jan); tomb {turbeMurad}. Architects: Davud Ağa → Dalgıç Ahmed Ağa. {muradCeno} cenotaphs today. Sources: [S2] [S4] [S9] [S15]'}},
+   17:{name:{tr:'1609: III. Mehmed Türbesi',en:'1609: Tomb of Mehmed III'},
+      hint:{tr:'Avlunun köşesine (1912 planında II. Selim\'in doğusu; DİA: güneyi) sekizgen, çift kubbeli son sultan türbesi: III. Mehmed için. Ayasofya\'da yapılan son padişah türbesi.',en:'On the courtyard corner (east of Selim II on the 1912 plan; DİA says south) rises the last one: an octagonal, double-domed tomb for Mehmed III. It is the last sultan\'s tomb built at Hagia Sophia.'},
+      fact:{tr:'Ferman 1604 (2 Eylül): Dalgıç Ahmed Ağa başlar; Sedefkâr Mehmed Ağa bitirir: {turbeMehmed}. İçeride {mehmedCeno} sanduka. Kaynak: [S3] [S4] [S16]',en:'Order 1604 (2 Sep): Dalgıç Ahmed Ağa begins; Sedefkâr Mehmed Ağa finishes: {turbeMehmed}. {mehmedCeno} cenotaphs inside. Sources: [S3] [S4] [S16]'}},
+   18:{name:{tr:'1639–1648: vaftizhane türbe olur',en:'1639–1648: the baptistery becomes a tomb'},
+      hint:{tr:'Güneybatı köşedeki Bizans vaftizhanesi 1453\'ten sonra büyük olasılıkla yağhane olarak kullanılır (Dirimtekin: boş kalır). I. Mustafa 1639\'da ölünce türbeye çevrilir; Sultan İbrahim de 1648\'de buraya gömülür.',en:'The Byzantine baptistery at the south-west corner has probably served as an oil store since 1453 (Dirimtekin: left empty). When Mustafa I dies in 1639 it becomes his tomb; Sultan İbrahim is buried here too in 1648.'},
+      fact:{tr:'Yağhane {oilStore:plain}{tag:oilStore}. Türbe {mustafa1} (20 Ocak); İbrahim {ibrahimB} (18 Ağustos). Dış ölçü {baptL:plain} × {baptW}, kubbe {baptH}. Dönüşümün mimarı belgesiz. Kaynak: [S5] [S7] [S17]',en:'Oil store {oilStore:plain}{tag:oilStore}. Tomb {mustafa1} (20 Jan); İbrahim {ibrahimB} (18 Aug). Outside {baptL:plain} × {baptW}, dome {baptH}. The conversion\'s architect is undocumented. Sources: [S5] [S7] [S17]'}},
+   19:{name:{tr:'Parçalarına ayır',en:'Take it apart'},
       hint:{tr:'Katman katman kaldıralım: kubbe, pencereli etek, pandantifler, kemerler, payeler.',en:'Let\'s lift it apart, layer by layer: dome, window ring, pendentives, arches, piers.'},
       fact:{tr:'Modelde {C.parts}{CALC} parça, {C.layerCount} katman: {windows:plain} pencere + {ribs:plain} kaburga dahil.',en:'{C.parts}{CALC} parts in {C.layerCount} layers in this model, incl. {windows:plain} windows + {ribs:plain} ribs.'}},
-   15:{name:{tr:'Geri birleştir',en:'Put it back'},
+   20:{name:{tr:'Geri birleştir',en:'Put it back'},
       hint:{tr:'Her parça yerine oturur: tok! Kare yine yuvarlağı taşıyor.',en:'Every part clicks back: clunk! The square carries the circle again.'},
       fact:{tr:'Kubbe tepesi, çapının ≈ {C.ratio}{CALC} katı yükseklikte: {domeH:plain} ÷ {domeD:plain} m.',en:'The crown is ≈ {C.ratio}{CALC} times as high as the dome is wide: {domeH:plain} ÷ {domeD:plain} m.'}},
-   16:{name:{tr:'Fossati ve levhalar',en:'Fossati & the roundels'},
+   21:{name:{tr:'Fossati ve levhalar',en:'Fossati & the roundels'},
       hint:{tr:'Fossati kardeşler yapıyı onarır, eğik sütunları doğrultur. İçeri dev yeşil-altın levhalar asılır.',en:'The Fossati brothers repair the building and straighten leaning columns. Giant green-and-gold roundels go up inside.'},
       fact:{tr:'Onarım {fossati} (Mayıs 1847 – Temmuz 1849). {straight} sütun doğrultulur. {medallions} levha, her biri {medD} çapında.',en:'Restoration {fossati} (May 1847 – July 1849). {straight} columns straightened. {medallions} roundels, each {medD} across.'}},
-   17:{name:{tr:'Müze ve tramvay',en:'Museum & tram'},
+   22:{name:{tr:'Müze ve tramvay',en:'Museum & tram'},
       hint:{tr:'Ayasofya müze olur, herkes gezer. Sonra yanına raylar döşenir: tramvay geliyor!',en:'Hagia Sophia becomes a museum for everyone. Later rails are laid beside it: here comes the tram!'},
       fact:{tr:'Müze kararı {museumDecree} (24 Kasım), açılış {museumOpen} (1 Şubat). Batı bahçede 415 kilisesinin parçaları: {dig1935:plain} kazısı{tag:dig1935}. Tramvay Sultanahmet\'e {t1sult} (10 Temmuz).',en:'Museum decree {museumDecree} (24 November), opened {museumOpen} (1 February). In the west garden: pieces of the 415 church, found in the {dig1935:plain} dig{tag:dig1935}. The tram reached Sultanahmet in {t1sult} (10 July).'}},
-   18:{name:{tr:'2020: yine cami',en:'2020: a mosque again'},
+   23:{name:{tr:'2020: yine cami',en:'2020: a mosque again'},
       hint:{tr:'Ayasofya yeniden cami olur. Yanından T1 tramvayı geçer: çın çın!',en:'Hagia Sophia is a mosque again. The T1 tram glides past outside: ding ding!'},
       fact:{tr:'Yeniden cami {mosque2020} (10 Temmuz); ilk cuma namazı 24 Temmuz. T1: {t1len}, {t1st} istasyon; Gülhane → Sultanahmet → Çemberlitaş.',en:'A mosque again {mosque2020} (10 July); first Friday prayer 24 July. T1: {t1len}, {t1st} stations; Gülhane → Sultanahmet → Çemberlitaş.'}}
   };
-  const DUR = {1:5.6,2:6.4,3:5.6,4:5.9,5:5.0,6:5.3,7:7.8,8:7.0,9:6.2,10:6.2,11:5.9,12:5.3,13:7.8,14:5.9,15:4.8,16:6.4,17:7.8,18:11.2};
+  const DUR = {1:5.6,2:6.4,3:5.6,4:5.9,5:5.0,6:5.3,7:7.8,8:7.0,9:6.2,10:6.2,11:5.9,12:5.3,13:7.8,14:7.4,15:5.6,16:7.0,17:6.4,18:8.4,19:5.9,20:4.8,21:6.4,22:7.8,23:11.2};
   const steps = Object.keys(HIST).map(k=>+k).map(id=>({id, dur:DUR[id], name:HIST[id].name, hint:HIST[id].hint, fact:HIST[id].fact}));
   let t=0; steps.forEach(s=>{s.t0=t; t+=s.dur; s.t1=t;});
   return {S,N,C,layers,steps,total:t,HIST,
@@ -336,7 +391,7 @@ if (typeof module!=='undefined') module.exports={buildModel};
  [{tr:'Kubbe dört kemere, kemerler dört payeye oturur; köşelerdeki "dört üçgen" (pandantifler) kareyi halkaya çevirir',en:'The dome rests on four arches on four piers; the "four triangles" (pendentives) turn the square into a ring'},['proc'],'trad'],
  [{tr:'40 pencere: sayıyı ilk veren Paul\'dur (562/63) ve 562\'de yeniden kurulan kubbeyi anlatır; bugünkü kubbede de 40 pencere ve 40 kaburga var. İlk (537) kubbe için Prokopios ışık açıklıklarından söz eder ama sayı vermez. Bu açıklıkların bir kasnakta mı (Taylor 1996; Çakmak–Taylor–Durukal 2009) yoksa doğrudan pandantif halkasına oturan basık kubbenin eteğinde mi (Mainstone) olduğu tartışmalı. "İlk kubbede pencere yoktu" diyen bir kaynak bulunamadı. Kaynaklar 4,5 yıllık yeniden yapımı pencerelere bağlamaz; Agathias kuzey ve güney kemerlerinin genişletilmesini ve kubbenin baştan kurulmasını anlatır',en:'40 windows: the number is first given by Paul (562/63) and describes the dome rebuilt in 562; today\'s dome also has 40 windows and 40 ribs. For the first (537) dome Procopius mentions light openings but gives no number. Whether they sat in a drum (Taylor 1996; Çakmak–Taylor–Durukal 2009) or at the foot of a shallow dome rising straight from the pendentive ring (Mainstone) is debated. No source was found saying the first dome had no windows. The sources do not tie the 4.5-year rebuild to the windows; Agathias describes widening the north and south arches and building the dome anew'},['proc','paul','taylor','cakmak','mainstone','mango'],'deb'],
  [{tr:'İkinci kubbe birinciden "daha dar ve daha dik", ama "çok daha sağlam" (Agathias)',en:'The second dome was "narrower and steeper" but "far more securely set up" (Agathias)'},['mango'],'trad'],
- [{tr:'Yükseklik farkı: Theophanes "20 ayaktan fazla", Malalas "30 ayak" der. 20 Bizans ayağı ≈ 6,25 m; Kostenec "yaklaşık 6 m" der. Çakmak–Taylor–Durukal\'ın ilk kubbe için 28, bugünkü için 48 ayak derinlik önerdiği yalnızca bir arama özetinde görüldü: gösterilmedi',en:'Height difference: Theophanes says "more than 20 feet", Malalas "30 feet". 20 Byzantine ft ≈ 6.25 m; Kostenec says "about 6 m". That Çakmak–Taylor–Durukal propose 28 ft of depth for the first dome vs 48 ft today was seen only in a search summary: not shown'},['mango','ehw','wikiHS','cakmak'],'est'],
+ [{tr:'Yükseklik farkı: Theophanes "20 ayaktan fazla", Malalas "30 ayak" der. 20 Bizans ayağı ≈ 6,25 m; Kostenec "yaklaşık 6 m" der. Çakmak–Taylor–Durukal\'ın ilk kubbe için 28, bugünkü için 48 ayak derinlik önerdiği yalnızca bir arama özetinde görüldü: gösterilmedi',en:'Height difference: Theophanes says "more than 20 feet", Malalas "30 feet". 20 Byzantine ft ≈ 6.25 m; Kostenec says "about 6 m". That Çakmak–Taylor–Durukal propose 28 ft of depth for the first dome vs 48 ft today was seen only in a search summary: not shown'},['mango','ehw','schilbach','cakmak'],'est'],
  [{tr:'558 çöküşü: Theophanes ve Malalas yorumu çöküşü depremden sonraki onarım sırasına koyar; Angı "7 Mayıs 558 depremi" der',en:'558 collapse: Theophanes/Malalas place it during repairs after the 557 quakes; Angı calls it "the earthquake of 7 May 558"'},['mango','malalas','angi'],'est'],
  [{tr:'Yeniden açılış 24 Aralık 562 (Mango); bir kaynak 563 der; Paul\'un şiiri 563 başında okunur',en:'Rededication 24 Dec 562 (Mango); one source says 563; Paul\'s poem recited early 563'},['mango','paul','eiao'],'est'],
  [{tr:'Kubbe oval: çap ölçümü 30,8–32,8 m arasında değişir; yükseklik 54,9–56,2 m (ölçüm ve referans noktasına göre)',en:'The dome is oval: diameters range 30.8–32.8 m; height 54.9–56.2 m depending on survey and reference point'},['dogan','ktb','maa','phaidra'],'est'],
@@ -350,11 +405,18 @@ if (typeof module!=='undefined') module.exports={buildModel};
  [{tr:'Danıştay kararı 2 Temmuz 2020 tarihli; 10 Temmuz 2020\'de açıklanıp 2729 sayılı Cumhurbaşkanı Kararı yayımlandı',en:'Council of State decision dated 2 July 2020; announced with Presidential Decree 2729 on 10 July 2020'},['aym'],'off'],
  [{tr:'Tramvay: Beyazıt–Sirkeci kısmı (Sultanahmet dahil) 10 Temmuz 1992; Topkapı–Sirkeci 29 Aralık 1992. Metro İstanbul ilk etabı bir sayfada "Yusufpaşa–Beyazıt", diğerinde "Aksaray–Beyazıt" der (komşu duraklar)',en:'Tram: Beyazıt–Sirkeci (incl. Sultanahmet) 10 July 1992; Topkapı–Sirkeci 29 Dec 1992. Metro İstanbul calls the first stage "Yusufpaşa–Beyazıt" on one page and "Aksaray–Beyazıt" on another (adjacent stops)'},['metroTR','metro'],'off'],
  [{tr:'Resmî durak sırası: Gülhane → Sultanahmet → Çemberlitaş. Hattın hangi sokaklardan geçtiği resmî bir kaynakta bulunamadı: gösterilmedi',en:'Official stop order: Gülhane → Sultanahmet → Çemberlitaş. Which streets the line uses could not be found in an official source: not shown'},['metro'],'ss'],
- [{tr:'Çizilen tramvay Alstom Citadis tarzı (beyaz, kırmızı/lacivert, çok modüllü, pantograf). T1\'de Citadis ve Bombardier Flexity tramvaylar çalışır (ikincil kaynak)',en:'The tram is drawn in Alstom Citadis style (white, red/navy, multi-section, pantograph). T1 runs Citadis and Bombardier Flexity trams (secondary source)'},['wikiT1','tp'],'est']
+ [{tr:'Çizilen tramvay Alstom Citadis tarzı (beyaz, kırmızı/lacivert, çok modüllü, pantograf). T1\'de Citadis ve Bombardier Flexity tramvaylar çalışır (ikincil kaynak)',en:'The tram is drawn in Alstom Citadis style (white, red/navy, multi-section, pantograph). T1 has run Citadis since 2011 (Railway Gazette / Alstom); Bombardier Flexity also appear (TransPhoto)'},['rg2011','alstom2009','tp'],'est']
+ ,[{tr:'Türbe konumları ve taban izleri Gurlitt 1912 Lev. 8a vaziyet planından ölçüldü (≈9 piksel/m). Bu ölçümler ve Grokian\'ın kilise duvarına uzaklık tahminleri yaklaşıktır (≈ ±%15) ve 1912 durumunu gösterir; modern bir rölöveyle karşılaştırılmadı',en:'Tomb positions and footprints were measured off Gurlitt\'s 1912 site plan, plate 8a (≈9 px/m). These measurements and Grokian\'s distance estimates from the church wall are approximate (≈ ±15%) and show the 1912 layout; not checked against a modern survey'},['S12'],'est'],
+ [{tr:'Türbe yükseklikleri açık bir kaynakta bulunamadı: II. Selim, Şehzadeler, III. Murad ve III. Mehmed türbelerinin duvar, kasnak ve kubbe yükseklikleri tahmindir. II. Selim Türbesi\'nin kesit çizimi (Gurlitt Lev. 22c) bulunamadı. Şehzadeler için Ali Saim Ülgen kesiti var (SALT TASUDOCM0238), yalnız ölçek çubuklu; yükseklikler ondan ölçeklenirse tahmindir. Yalnızca vaftizhanenin yüksekliği ölçüdür (Dirimtekin)',en:'Tomb heights were not found in any open source: wall, drum and dome heights of the Selim II, Şehzadeler, Murad III and Mehmed III tombs are estimates. No section drawing of Selim II\'s tomb (Gurlitt pl. 22c) was found. An Ali Saim Ülgen section of the Şehzadeler exists (SALT TASUDOCM0238), with scale bars only; heights scaled from it are estimates. Only the baptistery\'s height is a measurement (Dirimtekin)'},['S12','S7','S18'],'uncf'],
+ [{tr:'III. Mehmed Türbesi\'nin yeri ve revakı: DİA "II. Selim türbesinin güneyinde, köşede" ve "revak doğu cephesinde" der; Gurlitt 1912 planında türbe II. Selim\'in doğusunda, revakı kiliseye (kuzeye) bakar. Model planı izler',en:'Mehmed III tomb position and porch: DİA says "south of the Selim II tomb, on the corner" and "porch on the east side"; on Gurlitt\'s 1912 plan it lies east of Selim II with its porch facing the church (north). The model follows the plan'},['S3','S12'],'deb'],
+ [{tr:'Baysal vd. III. Mehmed Türbesi\'ni "1604\'te Davud Ağa başlattı" der; Davud Ağa 1598\'de öldüğü için bu olamaz (DİA: Dalgıç Ahmed)',en:'Baysal et al. say Mehmed III\'s tomb was "begun by Davud Ağa in 1604"; that cannot be, since Davud Ağa died in 1598 (DİA: Dalgıç Ahmed)'},['S9','S4','S3'],'est'],
+ [{tr:'Şehzadeler Türbesi\'nin Nurbânu Sultan için yapılıp vebadan ölen şehzadelere verildiği anlatısı doğrulanmadı; Nurbânu II. Selim Türbesi\'nde yatar (Kuran)',en:'The story that the Şehzadeler Türbesi was built for Nurbânu Sultan and then given to princes who died of plague is unconfirmed; Nurbânu lies in Selim II\'s tomb (Kuran)'},['S8'],'uncf'],
+ [{tr:'Vaftizhane 1453–1639: Eyice ve DİA yağhane der, Dirimtekin boş bırakıldığını yazar. 1639 dönüşümünün mimarı belgesiz; Koca Kasım Ağa yalnızca Eyice\'nin olasılık önerisidir. Gurlitt I. Mustafa\'nın ölümünü yanlışlıkla "1618" verir',en:'Baptistery 1453–1639: Eyice and DİA say oil store, Dirimtekin says it was left empty. The 1639 conversion\'s architect is undocumented; Koca Kasım Ağa is only Eyice\'s suggestion. Gurlitt wrongly gives Mustafa I\'s death as "1618"'},['S5','S7','S13'],'deb'],
+ [{tr:'Çizilmeyenler: vaftizhanenin 18. yy barok revakı ve türbedar odası (≈1980\'de kaldırıldı); II. Selim Türbesi köşelerindeki çeyrek kubbeler (eksedralar); komşu yapılar (kütüphane 1739, şadırvan 1740–41, sıbyan mektebi ≈1742, muvakkithane 1853), çünkü v4 modeli bunları içermiyordu',en:'Not drawn: the baptistery\'s 18th-c. baroque porch and keeper\'s room (removed c. 1980); the quarter-domes (exedrae) at Selim II\'s corners; the neighbouring buildings (library 1739, şadırvan 1740–41, sıbyan mektebi c. 1742, muvakkithane 1853), because the v4 model did not include them'},['S5','S6','S1'],'est']
 ];
-const UIC={src:{tr:'Kaynaklar: ekrandaki her sayı',en:'Sources: every number on screen'},claims:{tr:'Sayı olmayan iddialar ve çelişkiler',en:'Non-numeric claims and disagreements'}, legend:{tr:'Etiketler: <i class="tag off">resmî</i> Bakanlık / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> akademik veya yaklaşık · <i class="tag trad">trad.</i> antik/ortaçağ anlatısı · <i class="tag unc">trad./doğrulanmadı</i> efsane, doğrulanmamış · <i class="tag deb">tartışmalı</i> akademisyenler farklı yorumlar · <i class="tag calc">calc.</i> burada hesaplandı · <i class="tag ss">yalnızca arama özeti</i> kaynağı açılamadı, olgu olarak gösterilmez. Kaynaklar farklıysa seçilen değer kalın, diğerleri altında.',          en:'Tags: <i class="tag off">official</i> Ministry / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> scholarly or approximate · <i class="tag trad">trad.</i> ancient/medieval account · <i class="tag unc">trad./unconfirmed</i> legend, unconfirmed · <i class="tag deb">debated</i> scholars disagree · <i class="tag calc">calc.</i> computed here · <i class="tag ss">search summary only</i> source page not readable, not shown as fact. Where sources differ, the chosen value is bold and alternatives sit below it.'}, head:{tr:['Ne','Değer','Durum','Kaynak'],en:['What','Value','Status','Source']}, foot:{tr:'Ölçekli (1 birim = 1 m): kubbe çapı ve yüksekliği, iç uzunluk ve genişlik, nartheks derinlikleri, levha çapı. Şematik: kemerlerin başlama yüksekliği, galeri ve duvar yükseklikleri, payandaların ve minarelerin biçimi/yeri, eski kiliseler, tramvay ve rayların yeri. Tramvay burada yapının batısından düz bir hatla geçer; gerçek güzergâhın sokak adları resmî bir kaynakta doğrulanamadı (yalnızca arama özeti). Tramvay Alstom Citadis tarzında çizildi (beyaz, kırmızı/lacivert, 5 modül, pantograf); ölçü iddiası yoktur. Levhalar yazısız, sade disk olarak çizildi. İlk (537) kubbedeki açıklıkların sayısı ve biçimi bilinmediği için şematiktir (çizilen sayı bir iddia değildir); 562 kubbesinde 40 pencere ve 40 kaburga gerçek sayıdır. Kuzey ve güney dış payandalar, köşelerdeki küçük yarım kubbeler (eksedralar) ve çatı yükseklikleri şematiktir.',        en:'To scale (1 unit = 1 m): dome diameter and height, interior length and width, narthex depths, roundel diameter. Schematic: arch springing height, gallery and wall heights, the shape/position of buttresses and minarets, the old churches, the tram and its tracks. Here the tram runs straight past the west side; the real street names of the route could not be confirmed from an official source (search summary only). The tram is drawn in Alstom Citadis style (white, red/navy, 5 modules, pantograph); no dimensions are claimed. The roundels are drawn as plain discs, without script. The openings on the first (537) dome are schematic because their number and form are unknown (the number drawn is not a claim); on the 562 dome the 40 windows and 40 ribs are the real count. The north and south buttress piers, the small corner half-domes (exedrae) and the roof heights are schematic.'}};
+const UIC={src:{tr:'Kaynaklar: ekrandaki her sayı',en:'Sources: every number on screen'},claims:{tr:'Sayı olmayan iddialar ve çelişkiler',en:'Non-numeric claims and disagreements'}, legend:{tr:'Etiketler: <i class="tag off">resmî</i> Bakanlık / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> akademik veya yaklaşık · <i class="tag trad">trad.</i> antik/ortaçağ anlatısı · <i class="tag unc">trad./doğrulanmadı</i> efsane, doğrulanmamış · <i class="tag deb">tartışmalı</i> akademisyenler farklı yorumlar · <i class="tag calc">calc.</i> burada hesaplandı · <i class="tag ss">yalnızca arama özeti</i> kaynağı açılamadı, olgu olarak gösterilmez. Kaynaklar farklıysa seçilen değer kalın, diğerleri altında.',          en:'Tags: <i class="tag off">official</i> Ministry / Diyanet / Metro İstanbul / UNESCO · <i class="tag est">est.</i> scholarly or approximate · <i class="tag trad">trad.</i> ancient/medieval account · <i class="tag unc">trad./unconfirmed</i> legend, unconfirmed · <i class="tag deb">debated</i> scholars disagree · <i class="tag calc">calc.</i> computed here · <i class="tag ss">search summary only</i> source page not readable, not shown as fact. Where sources differ, the chosen value is bold and alternatives sit below it.'}, head:{tr:['Ne','Değer','Durum','Kaynak'],en:['What','Value','Status','Source']}, foot:{tr:'Ölçekli (1 birim = 1 m): kubbe çapı ve yüksekliği, iç uzunluk ve genişlik, nartheks derinlikleri, levha çapı. Şematik: kemerlerin başlama yüksekliği, galeri ve duvar yükseklikleri, payandaların ve minarelerin biçimi/yeri, eski kiliseler, tramvay ve rayların yeri. Tramvay burada yapının batısından düz bir hatla geçer; gerçek güzergâhın sokak adları resmî bir kaynakta doğrulanamadı (yalnızca arama özeti). Tramvay Alstom Citadis tarzında çizildi (beyaz, kırmızı/lacivert, 5 modül, pantograf); ölçü iddiası yoktur. Levhalar yazısız, sade disk olarak çizildi. İlk (537) kubbedeki açıklıkların sayısı ve biçimi bilinmediği için şematiktir (çizilen sayı bir iddia değildir); 562 kubbesinde 40 pencere ve 40 kaburga gerçek sayıdır. Kuzey ve güney dış payandalar, köşelerdeki küçük yarım kubbeler (eksedralar) ve çatı yükseklikleri şematiktir. Türbeler: yer ve taban izi Gurlitt 1912 planından ölçüldü (yaklaşık, ≈ ±%15); vaftizhane ölçüleri Dirimtekin\'den; türbe yükseklikleri tahmindir (II. Selim kesiti bulunamadı; Şehzadeler kesitinde yalnız ölçek çubuğu var).',        en:'To scale (1 unit = 1 m): dome diameter and height, interior length and width, narthex depths, roundel diameter. Schematic: arch springing height, gallery and wall heights, the shape/position of buttresses and minarets, the old churches, the tram and its tracks. Here the tram runs straight past the west side; the real street names of the route could not be confirmed from an official source (search summary only). The tram is drawn in Alstom Citadis style (white, red/navy, 5 modules, pantograph); no dimensions are claimed. The roundels are drawn as plain discs, without script. The openings on the first (537) dome are schematic because their number and form are unknown (the number drawn is not a claim); on the 562 dome the 40 windows and 40 ribs are the real count. The north and south buttress piers, the small corner half-domes (exedrae) and the roof heights are schematic. Tombs: positions and footprints measured off Gurlitt\'s 1912 plan (approximate, ≈ ±15%); baptistery dimensions from Dirimtekin; tomb heights are estimates (no Selim II section found; the Şehzadeler section has only scale bars).'}};
 </script>
-<script>/* ===== Hagia Sophia v4 — bright daylight clay diorama (Three.js r147) ===== */
+<script>/* ===== Hagia Sophia v5 — v4 daylight clay diorama + Ottoman tombs (türbeler) in the south courtyard (Three.js r147) ===== */
 const M=buildModel(), N=M.N, ST=M.steps, C=M.C, TOTAL=M.total;
 const $=id=>document.getElementById(id);
 const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)), remap=(v,a,b)=>clamp((v-a)/(b-a)), sm=v=>v*v*(3-2*v), lerp=(a,b,u)=>a+(b-a)*u;
@@ -393,7 +455,7 @@ const UI={
 const A=C.R, YS=23.1, YR=YS+A, DRUM=3.0, YD=YR+DRUM, B1=1.4; /* YS: pier/arch springing ≈ 23.1 m (Taylor 1996) */
 const XI=N.Lin.v/2, ZI=N.Win.v/2, WT=1.6, NAR1=9.55, NAR2=5.75, XW=-XI-WT-NAR1-NAR2;
 const YG=20, RB=A+0.6;
-const PLX=-14, PLR=104, TRAM_X=-73;
+const PLX=-10, PLZ=14, PLR=116, TRAM_X=-73; /* v5: plate grown + shifted south so the tomb garden fits */
 const at=(i,f)=>ST[i-1].t0+f*ST[i-1].dur;
 
 /* ---------- renderer ---------- */
@@ -414,7 +476,7 @@ const SUNDIR=new THREE.Vector3(0.62,1.0,0.78).normalize();
 const sun=new THREE.DirectionalLight(0xfff3e2,1.75); sun.castShadow=true;
 sun.shadow.mapSize.set(2048,2048);{const s=sun.shadow.camera;s.left=-135;s.right=135;s.top=135;s.bottom=-135;s.near=20;s.far=700;}
 sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.35; sun.shadow.radius=3;
-scene.add(sun); scene.add(sun.target); sun.target.position.set(PLX,0,0); sun.position.set(PLX,0,0).addScaledVector(SUNDIR,320);
+scene.add(sun); scene.add(sun.target); sun.target.position.set(PLX,0,PLZ); sun.position.set(PLX,0,PLZ).addScaledVector(SUNDIR,320);
 const fillL=new THREE.DirectionalLight(0xdbe8ff,0.32); fillL.position.set(-200,120,-160); scene.add(fillL);
 
 /* ---------- clipping (cut-away) ---------- */
@@ -487,24 +549,25 @@ const NOCLIP={clip:false};
   for(let i=0;i<=8;i++){const a=-Math.PI/2+i/8*Math.PI/2;pr.push(new THREE.Vector2(R-rr+Math.cos(a)*rr,yb+rr+Math.sin(a)*rr));}
   for(let i=0;i<=8;i++){const a=i/8*Math.PI/2;pr.push(new THREE.Vector2(R-rr+Math.cos(a)*rr,yt-rr+Math.sin(a)*rr));}
   pr.push(new THREE.Vector2(R-rr*1.6,yt));
-  const base=new THREE.Mesh(new THREE.LatheGeometry(pr,96),mat('ground','#D9A57A',{clip:false,ao:false}));base.position.x=PLX;base.receiveShadow=true;scene.add(base);
-  const water=new THREE.Mesh(new THREE.CircleGeometry(R-1.2,96),mat('water','#93CFEA',{clip:false,ao:false,r:0.42}));water.rotation.x=-Math.PI/2;water.position.set(PLX,-2.2,0);water.receiveShadow=true;scene.add(water);
+  const base=new THREE.Mesh(new THREE.LatheGeometry(pr,96),mat('ground','#D9A57A',{clip:false,ao:false}));base.position.set(PLX,0,PLZ);base.receiveShadow=true;scene.add(base);
+  const water=new THREE.Mesh(new THREE.CircleGeometry(R-1.2,96),mat('water','#93CFEA',{clip:false,ao:false,r:0.42}));water.rotation.x=-Math.PI/2;water.position.set(PLX,-2.2,PLZ);water.receiveShadow=true;scene.add(water);
   // land blob with a sea crescent to the north-east (Bosphorus hint)
   const sh=new THREE.Shape();const NS=160;
   for(let i=0;i<=NS;i++){const th=i/NS*Math.PI*2;const r=PLR-6-30*Math.pow(Math.max(0,Math.cos(th-Math.PI/4)),3);const x=r*Math.cos(th),y=r*Math.sin(th);i?sh.lineTo(x,y):sh.moveTo(x,y);}
   const lg=new THREE.ExtrudeGeometry(sh,{depth:2.2,bevelEnabled:true,bevelThickness:0.8,bevelSize:1.2,bevelSegments:4,curveSegments:8});
-  lg.rotateX(-Math.PI/2);lg.translate(PLX,-3.0,0);
+  lg.rotateX(-Math.PI/2);lg.translate(PLX,-3.0,PLZ);
   const land=new THREE.Mesh(lg,mat('land','#EBD5AE',{clip:false,ao:false}));land.receiveShadow=true;scene.add(land);
   // plaza under the building
   const pl=new THREE.Mesh(rbox(124,0.6,104,0.3,1),mat('plaza','#F4E7D2',{clip:false,ao:false}));pl.position.set(-6,0.0,0);pl.receiveShadow=true;scene.add(pl);
+  const hz=new THREE.Mesh(rbox(92,0.5,52,2.5,2),mat('hazire','#E9E2C6',{clip:false,ao:false}));hz.position.set(5,0.02,76);hz.receiveShadow=true;scene.add(hz);
   // soft drop shadow under the plate
   const cv=document.createElement('canvas');cv.width=cv.height=128;const cx=cv.getContext('2d');const gr=cx.createRadialGradient(64,64,10,64,64,64);
   gr.addColorStop(0,'rgba(40,70,110,0.55)');gr.addColorStop(0.6,'rgba(40,70,110,0.18)');gr.addColorStop(1,'rgba(40,70,110,0)');cx.fillStyle=gr;cx.fillRect(0,0,128,128);
   const ds=new THREE.Mesh(new THREE.PlaneGeometry(PLR*2.9,PLR*2.9),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),transparent:true,depthWrite:false,toneMapped:false}));
-  ds.rotation.x=-Math.PI/2;ds.position.set(PLX+8,-26,10);ds.renderOrder=-1;scene.add(ds);
+  ds.rotation.x=-Math.PI/2;ds.position.set(PLX+8,-26,PLZ+10);ds.renderOrder=-1;scene.add(ds);
 }
 /* trees */
-{const TREES=[[-96,-34,1],[-104,8,0],[-92,46,1],[-64,74,0],[-34,82,1],[0,78,0],[30,72,1],[58,50,0],[-46,-76,0],[-10,-74,1],[-84,-64,1],[-112,-18,0],[74,22,1],[-58,-66,1],[16,-66,0]];
+{const TREES=[[-96,-34,1],[-104,8,0],[-92,46,1],[-64,74,0],[-36,84,1],[58,50,0],[-46,-76,0],[-10,-74,1],[-84,-64,1],[-112,-18,0],[74,22,1],[-58,-66,1],[16,-66,0],[22,98,1],[-24,100,1],[56,70,1],[30,58,1]];
  const tr=mat('trunk','#A87655',NOCLIP), lv=[mat('leaf','#8DBF6E',NOCLIP),mat('leaf','#74AE5E',NOCLIP),mat('leaf','#A6CB7C',NOCLIP)], cy=mat('leaf','#5F9E5A',NOCLIP);
  TREES.forEach(([x,z,k],i)=>{const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);const s=0.9+((i*37)%10)/25;
    if(k){cyl(g,tr,0.55,0.75,3*s,0,0,0,10);const c=sph(g,cy,2.6*s,0,3*s+5.2*s,0,20,14);c.scale.set(1,2.3,1);}
@@ -672,6 +735,58 @@ const TRAM=part('tram',-1,TRAM_X,0.62,0,4);{const wh=mat('tram','#F7F6F2',{clip:
   bx(TRAM.g,gl,2.2,1.3,0.4,0,1.7,-Lt/2-0.02,0.4,1);bx(TRAM.g,gl,2.2,1.3,0.4,0,1.7,Lt/2+0.02,0.4,1);
   const pm=mat('tram','#6B7280',{clip:false});const p1=bx(TRAM.g,pm,0.15,1.8,0.15,0,3.3,-1,0.05,1);p1.rotation.x=0.6;const p2=bx(TRAM.g,pm,1.6,0.12,0.3,0,4.6,-0.2,0.05,1);}
 
+
+/* ================= OTTOMAN TOMBS (türbeler), south courtyard =================
+   Positions + footprints: measured off Gurlitt 1912, Taf. 8a [S12] (≈9 px/m; plan px → model: x = (1505 − py)/9, z = (px − 12)/9).
+   Approximate (≈ ±15%). Heights: estimates (no open source; no Selim II section), except the baptistery (Dirimtekin [S7]). */
+const TB={"_note": "Model metres: x = east, z = south, origin = dome centre. Measured on Gurlitt 1912 Taf. 8a right half (gurlitt1912_taf8a_aja_sofia_umgebung_right.jpg, 1986x3000): px = 12 + 9*z, py = 1505 - 9*x. Approximate (±15%). Heights are estimates except bapt (Dirimtekin S7).", "plan": {"px0": 12, "py0": 1505, "k": 9}, "tombs": {"selim": {"tag": "tSelim", "wall": "#F3E3C9", "c": [14.8, 74.8], "shape": "chsq", "s": 18.6, "ch": 3.6, "H": 11.5, "drum": {"r": 7.0, "h": 3.0, "win": 16}, "dome": {"r": 7.4, "h": 5.6}, "porch": {"c": [15.3, 62.8], "w": 9.4, "d": 5.4, "h": 6.2, "bays": 3}}, "sehz": {"tag": "tSehz", "wall": "#F3E3C9", "c": [-13.3, 82.2], "shape": "oct", "af": 7.6, "H": 6.6, "rows": [[2.2, 1.8]], "dome": {"r": 3.6, "h": 3.0}, "porch": {"c": [-13.3, 77.0], "w": 5.4, "d": 2.6, "h": 4.4, "bays": 1}}, "murad": {"tag": "tMurad", "wall": "#F3E3C9", "c": [-3.6, 92.2], "shape": "hex", "R": 10.5, "H": 11.5, "drum": {"r": 7.6, "h": 3.2, "win": 12}, "dome": {"r": 8.0, "h": 5.8}, "porch": {"c": [-3.6, 80.4], "w": 10.6, "d": 5.2, "h": 6.2, "bays": 3}}, "mehmed": {"tag": "tMehmed", "wall": "#F3E3C9", "c": [38.2, 82.6], "shape": "oct", "af": 19.8, "H": 12.5, "rows": [[2.6, 2.3], [6.4, 2.1], [10.0, 1.6]], "dome": {"r": 8.8, "h": 6.6}, "porch": {"c": [37.8, 70.9], "w": 7.8, "d": 3.6, "h": 6.0, "bays": 3}}, "bapt": {"tag": "bapt", "wall": "#E9A27E", "c": [-26.8, 57.7], "shape": "rect", "lx": 16.85, "lz": 15.52, "H": 12.6, "rows": [[3.0, 2.6], [8.0, 2.4]], "dome": {"r": 7.4, "h": 4.0}, "alem": false, "narthex": {"c": [-36.8, 57.7], "lx": 3.15, "lz": 13.9, "h": 7.0}}}};
+function polyPts(def){const [cx,cz]=[0,0];const pts=[];
+  if(def.shape==='oct'){const Rr=def.af/2/Math.cos(Math.PI/8);for(let i=0;i<8;i++){const a=Math.PI/8+i*Math.PI/4;pts.push([Rr*Math.cos(a),Rr*Math.sin(a)]);}}
+  else if(def.shape==='hex'){for(let i=0;i<6;i++){const a=i*Math.PI/3;pts.push([def.R*Math.cos(a),def.R*Math.sin(a)]);}}
+  else if(def.shape==='chsq'){const h=def.s/2,c=def.ch;[[h,-h+c],[h,h-c],[h-c,h],[-h+c,h],[-h,h-c],[-h,-h+c],[-h+c,-h],[h-c,-h]].forEach(q=>pts.push(q));}
+  else if(def.shape==='rect'){const a=def.lx/2,b=def.lz/2;pts.push([a,-b],[a,b],[-a,b],[-a,-b]);}
+  return pts;} /* [x,z] relative to centre */
+function prismGeo(pts,h,inset=0){const sh=new THREE.Shape();pts.forEach(([x,z],i)=>{const k=1-inset;i?sh.lineTo(x*k,-z*k):sh.moveTo(x*k,-z*k);});sh.closePath();
+  const g=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:true,bevelThickness:0.25,bevelSize:0.25,bevelSegments:2});g.rotateX(-Math.PI/2);return g;}
+const TURB={};
+function turbe(key,def){const tag=def.tag,mw=mat(tag,def.wall,{clip:false}),mt=mat(tag,COL.trim,{clip:false}),ml=mat(tag,COL.lead,{clip:false,r:0.68}),mw2=mat(tag,COL.win,{clip:false}),mc=mat(tag,COL.marble,{clip:false});
+  const [cx,cz]=def.c, pts=polyPts(def), H=def.H, o={key,def};
+  // body: plinth + prism + cornice + windows on every facet
+  o.body=part(key+'_body',-1,cx,0,cz,H);const g=o.body.g;
+  mesh(prismGeo(pts,0.6,-0.04),mt,0,0,0,g);mesh(prismGeo(pts,H-0.6),mw,0,0.6,0,g);mesh(prismGeo(pts,0.7,-0.03),mt,0,H-0.7,0,g);
+  const rows=def.rows||[[2.6,2.3],[H*0.58,2.0]];
+  for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length],L=Math.hypot(b[0]-a[0],b[1]-a[1]);const nx=(a[1]+b[1])/2,nz=(a[0]+b[0])/2;
+    const mx=(a[0]+b[0])/2,mz=(a[1]+b[1])/2,nl=Math.hypot(mx,mz),ux=mx/nl,uz=mz/nl,tx=(b[0]-a[0])/L,tz=(b[1]-a[1])/L;
+    const k=L>7.5?2:L>2.6?1:0;if(!k)continue;
+    rows.forEach(([y,wh])=>{for(let j=0;j<k;j++){const off=k===2?(j?1:-1)*L*0.2:0;
+      const w=bx(g,mw2,1.25,wh,0.5,mx+tx*off+ux*0.06,y,mz+tz*off+uz*0.06,0.35,1);w.rotation.y=Math.atan2(ux,uz);}});}
+  // drum (optional), dome, finial
+  let y=H;if(def.drum){o.drum=part(key+'_drum',-1,cx,H,cz,def.drum.h);cyl(o.drum.g,mw,def.drum.r,def.drum.r+0.2,def.drum.h,0,0,0,32);
+    const t=new THREE.Mesh(new THREE.TorusGeometry(def.drum.r+0.15,0.3,8,40),mt);t.rotation.x=Math.PI/2;t.position.y=def.drum.h;o.drum.g.add(t);
+    const nw=def.drum.win||12;for(let i=0;i<nw;i++){const a=(i+0.5)/nw*Math.PI*2;const w=bx(o.drum.g,mw2,0.9,1.4,0.4,Math.sin(a)*(def.drum.r+0.12),0.7,Math.cos(a)*(def.drum.r+0.12),0.3,1);w.rotation.y=a;}
+    y+=def.drum.h;}
+  o.dome=part(key+'_dome',-1,cx,y,cz,def.dome.h);{const g2=new THREE.LatheGeometry(capProfile(def.dome.r,def.dome.h,24),36);mesh(g2,ml,0,0,0,o.dome.g);}
+  o.top=y+def.dome.h;
+  if(def.alem!==false){o.alem=part(key+'_alem',-1,cx,o.top,cz,2);const gd=mat('alem',COL.gold,{r:0.45,clip:false});cyl(o.alem.g,gd,0.12,0.12,1.4,0,-0.2,0,8);sph(o.alem.g,gd,0.38,0,1.1,0,10,8);sph(o.alem.g,gd,0.26,0,1.75,0,10,8);}
+  // porch (revak) on the north side, facing the church [S12]
+  if(def.porch){const P_=def.porch,ph=P_.h||5.6;o.porch=part(key+'_porch',-1,P_.c[0],0,P_.c[1],ph);const gp=o.porch.g,w=P_.w,d=P_.d;
+    bx(gp,mt,w+0.4,0.5,d+0.4,0,0,0,0.2,1);
+    const nc=(P_.bays||3)+1;for(let i=0;i<nc;i++){const xx=-w/2+0.5+i*(w-1)/(nc-1);cyl(gp,mc,0.32,0.36,ph-1.1,xx,0.5,-d/2+0.5,12);}
+    bx(gp,mw,w,1.0,d,0,ph-0.6,0,0.25,1);bx(gp,mt,w+0.9,0.35,d+0.9,0,ph+0.35,0,0.15,1);
+    for(let i=0;i<(P_.bays||3);i++){const xx=-w/2+w*(i+0.5)/(P_.bays||3);const c=new THREE.Mesh(new THREE.LatheGeometry(capProfile(Math.min(w/(P_.bays||3),d)*0.42,1.1,12),20),ml);c.position.set(xx,ph+0.7,0);c.castShadow=true;gp.add(c);}}
+  // baptistery narthex (west, 3 cross-vaulted bays) [S7]
+  if(def.narthex){const Nx=def.narthex;o.nar=part(key+'_nar',-1,Nx.c[0],0,Nx.c[1],Nx.h);bx(o.nar.g,mw,Nx.lx,Nx.h,Nx.lz,0,0,0,0.4);bx(o.nar.g,ml,Nx.lx+0.6,0.6,Nx.lz+0.6,0,Nx.h,0,0.25,1);
+    for(let i=0;i<3;i++)bx(o.nar.g,mw2,0.5,2.6,1.8,-Nx.lx/2-0.13,1.8,-Nx.lz/2+Nx.lz*(i+0.5)/3,0.35,1);}
+  TURB[key]=o;return o;}
+Object.keys(TB.tombs).forEach(k=>turbe(k,TB.tombs[k]));
+// Selim II lay in a tent (otağ) on the site until his tomb was finished [S1][S14]
+const OTAG=part('otag',-1,TB.tombs.selim.c[0],0,TB.tombs.selim.c[1],6);{const m=mat('otag','#E0705E',{clip:false}),w=mat('otag','#F7EFE3',{clip:false});
+  cyl(OTAG.g,w,4.2,4.2,3.2,0,0,0,24);cyl(OTAG.g,m,0.05,4.9,3.0,0,3.2,0,24);bx(OTAG.g,mat('otag','#7E5D5C',{clip:false}),1.6,2.4,0.4,0,0,4.25,0.3,1);cyl(OTAG.g,mat('alem',COL.gold,{r:0.45,clip:false}),0.1,0.1,1.2,0,6.1,0,6);}
+function tombParts(k){const o=TURB[k];return ['body','drum','dome','alem','porch','nar'].map(n=>o[n]).filter(Boolean);}
+function buildTomb(k,step,a,b,t){const o=TURB[k],u=v=>pr(step,lerp(a,b,v[0]),lerp(a,b,v[1]),t);
+  showP(o.body,u([0,0.42]),'rise');if(o.nar)showP(o.nar,u([0.25,0.5]),'rise');if(o.drum)showP(o.drum,u([0.4,0.58]),'grow');
+  showP(o.dome,u([0.52,0.78]),'drop');if(o.porch)showP(o.porch,u([0.62,0.88]),'rise');if(o.alem)showP(o.alem,u([0.84,1]),'pop');}
+
 /* load-path (cut-away step) */
 const LOAD=[];{const mL=new THREE.MeshBasicMaterial({color:'#FFB000',toneMapped:false}), mB=new THREE.MeshBasicMaterial({color:'#FFF1C2',toneMapped:false});
   [[-1,-1],[1,-1]].forEach(([sx,sz])=>{const pts=[],h=C.H1-YB1,Rs=(RB*RB+h*h)/(2*h),cy=h-Rs,a0=Math.asin(RB/Rs),dx=sx*Math.SQRT1_2,dz=sz*Math.SQRT1_2;
@@ -700,8 +815,10 @@ function setAll(arr,u,how,stag=0){arr.forEach((p,i)=>showP(p,clamp((u*(1+stag*(a
 const FOCUS=[[1,['church1'],0.05,0.6],[2,['church2','prop'],0.05,0.58],[3,['piers'],0.1],[4,['walls','gallery','pbut'],0.05],[5,['arches','archE','tymp'],0.05],
  [6,['pend','ring'],0.05],[7,['win1','dome1','dome1e'],0.05,0.6],[7,['halfdome','exedra'],0.64],[8,['pend','piers','ring'],0.25],
  [9,['dome1e','archE'],0.25],[10,['archE'],0.04,0.3],[10,['windows','nubs','drum'],0.38,0.74],[10,['dome2'],0.6],[11,['andr'],0.3],[12,['woodmin'],0.1],[12,['alem'],0.55],
- [13,['minSE'],0.03,0.25],[13,['minNE'],0.18,0.4],[13,['sinanB'],0.36,0.62],[13,['minW'],0.64],[15,['pend','ring'],0.5],[16,['roundel'],0.28],
- [17,['frag'],0.1,0.55],[17,['rails'],0.52],[18,['tram'],0.05]];
+ [13,['minSE'],0.03,0.25],[13,['minNE'],0.18,0.4],[13,['sinanB'],0.36,0.62],[13,['minW'],0.64],
+ [4,['bapt'],0.62,0.98],[12,['bapt'],0.4,0.95],[14,['otag'],0.04,0.5],[14,['tSelim'],0.3],[15,['tSehz'],0.05],[16,['tMurad'],0.05],[17,['tMehmed'],0.05],[18,['bapt'],0.06,0.62],[18,['bapt'],0.66],
+ [20,['pend','ring'],0.5],[21,['roundel'],0.28],
+ [22,['frag'],0.1,0.55],[22,['rails'],0.52],[23,['tram'],0.05]];
 let SHAKE=0;
 function state(t){
   for(const p of PARTS){p.vis=0;p.dx=p.dy=p.dz=0;p.s=p.sy=1;p.rx=p.ry=p.rz=0;}
@@ -748,23 +865,31 @@ function state(t){
     SINB.forEach((p,i)=>showP(p,pr(13,0.36+i*0.04,0.56+i*0.04,t),'rise'));
     {const th=pr(13,0.38,0.6,t);ANDR.forEach(p=>{p.s*=1+0.12*Math.sin(th*Math.PI);});}
     MIN_W.forEach((p,i)=>showP(p,pr(13,0.66+i*0.1,0.86+i*0.08,t),'grow'));
-    ROUND.forEach((p,i)=>showP(p,pr(16,0.3+i*0.05,0.45+i*0.05,t),'pop'));
-    showP(FRAG,pr(17,0.12,0.4,t),'rise');
+    ROUND.forEach((p,i)=>showP(p,pr(21,0.3+i*0.05,0.45+i*0.05,t),'pop'));
+    showP(FRAG,pr(22,0.12,0.4,t),'rise');
+    // ---- v5: tombs. Baptistery = Byzantine, rises with the 532–537 build; only its use changes in 1639 / 1648
+    buildTomb('bapt',4,0.6,0.92,t);
+    {const b=pr(18,0.1,0.3,t);if(b>0&&b<1){tombParts('bapt').forEach(p=>{p.s*=1+0.05*Math.sin(b*Math.PI);});}
+     const b2=pr(18,0.6,0.78,t);if(b2>0&&b2<1){tombParts('bapt').forEach(p=>{p.s*=1+0.04*Math.sin(b2*Math.PI);});}}
+    showP(OTAG,pr(14,0.05,0.2,t),'grow');sinkP(OTAG,pr(14,0.5,0.62,t));
+    buildTomb('selim',14,0.3,0.95,t);
+    buildTomb('sehz',15,0.08,0.85,t);
+    buildTomb('murad',16,0.12,0.95,t);
+    buildTomb('mehmed',17,0.08,0.88,t);
   }
   // dust
   {const f=pr(9,0.55,1,t);DUST.forEach((d,i)=>{const u=clamp(f*1.2-i*0.015);d.visible=u>0&&u<1;if(d.visible){const s=Math.sin(u*Math.PI)*(3+(i%3));d.scale.setScalar(Math.max(0.01,s));d.position.y=YS-8+(i%4)*3+u*6;}});}
   // rails + tram
-  {const u=pr(17,0.52,0.86,t);if(u>0){RAILS.vis=1;RAILS.g.scale.z=Math.max(0.002,eOut(u));}else RAILS.g.scale.z=1;
-   const v=pr(18,0.03,0.12,t),m=pr(18,0.1,0.86,t);if(v>0){showP(TRAM,v,'drop');TRAM.dz=lerp(-58,58,sm(m));}}
+  {const u=pr(22,0.52,0.86,t);if(u>0){RAILS.vis=1;RAILS.g.scale.z=Math.max(0.002,eOut(u));}else RAILS.g.scale.z=1;
+   const v=pr(23,0.03,0.12,t),m=pr(23,0.1,0.86,t);if(v>0){showP(TRAM,v,'drop');TRAM.dz=lerp(-58,58,sm(m));}}
   // take apart / put back
-  const ex=LAYERS.map((l,k)=>clamp(pr(14,0.06+k*0.08,0.42+k*0.08,t)-pr(15,0.05+(5-k)*0.06,0.36+(5-k)*0.06,t)));
+  const ex=LAYERS.map((l,k)=>clamp(pr(19,0.06+k*0.08,0.42+k*0.08,t)-pr(20,0.05+(5-k)*0.06,0.36+(5-k)*0.06,t)));
   for(const p of PARTS){if(p.layer===-1||!p.layer)continue;const k=LAYERS.indexOf(p.layer),e=k>=4?eOut(ex[k]):sm(ex[k]);
     if(k<5)p.dy+=LAYER_OFF[k]*(k===4?1:1)*eOut(ex[k]);else{const L=Math.hypot(p.bx,p.bz)||1;p.dx+=p.bx/L*TOWER_OUT*eOut(ex[k]);p.dz+=p.bz/L*TOWER_OUT*eOut(ex[k]);}}
   // highlight weights
   const HL={};FOCUS.forEach(([s,tags,a,b])=>{const t1=b==null?ST[s-1].t1:at(s,b);const up=sm(remap(t,at(s,a),at(s,a)+0.5)),dn=1-sm(remap(t,t1,t1+0.55));const w=up*dn;tags.forEach(k=>HL[k]=Math.max(HL[k]||0,w));});
-  if(t>=at(14,0)&&t<at(15,0)){const k=Math.floor(pr(14,0.06,0.9,t)*6);['piers','walls','arches','archE','tymp','pend','halfdome','ring','windows','nubs','drum','dome2','minSE','minNE','minW','andr','sinanB'].forEach(()=>{});}
   // cut-away
-  const cut=Math.max(sm(pr(8,0.04,0.3,t))*(1-sm(pr(8,0.88,1,t))),sm(pr(16,0.04,0.28,t))*(1-sm(pr(16,0.86,1,t))));
+  const cut=Math.max(sm(pr(8,0.04,0.3,t))*(1-sm(pr(8,0.88,1,t))),sm(pr(21,0.04,0.28,t))*(1-sm(pr(21,0.86,1,t))));
   // load path
   const lp=pr(8,0.3,0.7,t),lfade=1-pr(8,0.86,0.95,t);
   return {HL,cut,lp,lfade,b1:CH1.burn||0,b2:CH2.burn||0};
@@ -773,12 +898,13 @@ function state(t){
 /* ================= CAMERA ================= */
 const V={1:[-34,22,65,-8,10,0],2:[-48,21,70,-14,9,0],3:[-36,30,60,0,9,0],4:[-38,27,83,-8,11,0],5:[-32,27,78,-4,19,0],6:[-28,42,65,0,25,0],
  7:[-36,24,83,-4,25,0],8:[-42,27,68,-4,22,0],9:[38,30,78,4,27,0],10:[14,19,78,0,32,0],11:[132,25,99,4,22,0],12:[-58,20,91,-18,22,8],
- 13:[-32,22,94,-6,26,0],14:[-36,14,124,-4,66,0],15:[-40,24,94,-4,26,0],16:[-42,29,78,-2,21,0],17:[-80,24,76,-50,8,0],18:[-78,17,74,-48,10,4]};
+ 13:[-32,22,94,-6,26,0],14:[-16,30,64,10,8,64],15:[-8,31,64,2,8,68],16:[2,32,68,2,8,70],17:[14,32,70,10,8,68],18:[-30,30,70,-10,8,58],
+ 19:[-36,14,124,-4,66,0],20:[-40,24,94,-4,26,0],21:[-42,29,78,-2,21,0],22:[-76,24,88,-40,8,10],23:[-72,19,90,-36,10,16]}; /* v5: wider than v4 so the tomb garden stays in frame */
 const ang=d=>d*Math.PI/180;
 function camPreset(t){let i=ST.findIndex(s=>t<s.t1);if(i<0)i=ST.length-1;const s=ST[i],a=V[i?i:1],b=V[i+1];
   const u=sm(remap(t,s.t0,s.t0+Math.min(2.6,s.dur*0.45)));let da=b[0]-a[0];if(da>180)da-=360;if(da<-180)da+=360;
   const o=[a[0]+da*u,...[1,2,3,4,5].map(k=>lerp(a[k],b[k],u))];
-  const drift=(t-s.t0)*(i===17?2.6:0.9);o[0]+=drift; if(i===0&&t<s.t0+0.01)o[0]+=0;
+  const drift=(t-s.t0)*(i===22?2.6:0.9);o[0]+=drift; if(i===0&&t<s.t0+0.01)o[0]+=0;
   return o;}
 let UAZ=0,UEL=0,UZ=1, CUR=null, EXTRA=0;
 let VW=innerWidth,VH=innerHeight;
@@ -788,13 +914,13 @@ function freeRect(){const W=VW,H=VH,phone=W<760,cd=$('card').getBoundingClientRe
 /* portrait-phone fit: point sets that must stay fully on screen (between the card and the dock) */
 const FITPTS={};
 {const site=[],bld=[],ex=[];const ring=(arr,cx,cz,r,y,n)=>{for(let i=0;i<n;i++){const a=i/n*Math.PI*2;arr.push([cx+r*Math.cos(a),y,cz+r*Math.sin(a)]);}};
- ring(site,PLX,0,PLR,-2.4,48);ring(site,PLX,0,PLR,-10,24);site.push([-51,64,42],[-51,64,-42],[0,C.H2+4,0],[TRAM_X,6,0]);
+ ring(site,PLX,PLZ,PLR,-2.4,48);ring(site,PLX,PLZ,PLR,-10,24);site.push([-51,64,42],[-51,64,-42],[0,C.H2+4,0],[TRAM_X,6,0]);
  const x0=XW-1,x1=XI+WT+9,z1=ZI+WT+7;[[x0,-z1],[x0,z1],[x1,-z1],[x1,z1]].forEach(([x,z])=>{bld.push([x,0,z],[x,24,z]);});
  ring(bld,0,0,RB+1,C.H2+3,12);ring(bld,0,0,6,C.H2+4,4);bld.push([x0,0,0],[x1,0,0],[0,0,z1],[0,0,-z1]);
  ring(ex,0,0,48,0,16);ring(ex,0,0,RB+6,YD+86+C.H2-YD+4,12);[[-75,42],[-75,-42],[57,44],[57,-44]].forEach(([x,z])=>ex.push([x,0,z],[x,70,z]));
  FITPTS.site=site;FITPTS.bld=bld;FITPTS.ex=ex;}
 FITPTS.ex=FITPTS.ex.concat(FITPTS.site);
-const FITSTEP={14:'ex'}; /* every other step: the whole diorama plate */
+const FITSTEP={19:'ex'}; /* every other step: the whole diorama plate */
 const _f=new THREE.Vector3(),_r=new THREE.Vector3(),_u=new THREE.Vector3(),_tv=new THREE.Vector3(),UPV=new THREE.Vector3(0,1,0);
 function fitCam(pts,az,el,R){/* returns {d,tx,ty,tz,bx,by}: distance and pixel offset of the bbox centre */
   let cx=0,cy=0,cz=0;pts.forEach(p=>{cx+=p[0];cy+=p[1];cz+=p[2];});cx/=pts.length;cy/=pts.length;cz/=pts.length;
@@ -835,19 +961,31 @@ const LBL=[
  {a:[12,0.3],b:[12,1.05],p:()=>[-40,34,43],txt:{tr:'ahşap minare',en:'wooden minaret'}},
  {a:[13,0.42],b:[13,0.66],p:()=>[28,22,ZI+WT+5],txt:{tr:'Sinan: payandalar',en:'Sinan: buttresses'}},
  {a:[13,0.86],b:[13,1.05],p:()=>[-51,61,42],txt:()=>N.minarets.v+(LANG==='tr'?' minare':' minarets')},
- {a:[16,0.45],b:[16,0.92],p:()=>[A+3.2,YS-2,-(A-1.1)],txt:()=>N.medallions.v+(LANG==='tr'?' levha':' roundels')},
- {a:[17,0.2],b:[17,0.56],p:()=>[-64,4,-4],txt:()=>(LANG==='tr'?nv('dig1935')+' kazısı: 415 kilisesinden parçalar':'Found in the '+nv('dig1935')+' dig: pieces of the 415 church')},
- {a:[17,0.62],b:[17,1.05],p:()=>[TRAM_X,1,44],txt:{tr:'T1 rayları',en:'T1 tracks'}},
- {a:[18,0.14],b:[18,1.05],p:()=>[TRAM_X,5,TRAM.g.position.z],txt:{tr:'T1 tramvayı',en:'T1 tram'}}
+ {a:[21,0.45],b:[21,0.92],p:()=>[A+3.2,YS-2,-(A-1.1)],txt:()=>N.medallions.v+(LANG==='tr'?' levha':' roundels')},
+ {a:[22,0.2],b:[22,0.56],p:()=>[-64,4,-4],txt:()=>(LANG==='tr'?nv('dig1935')+' kazısı: 415 kilisesinden parçalar':'Found in the '+nv('dig1935')+' dig: pieces of the 415 church')},
+ {a:[22,0.62],b:[22,1.05],p:()=>[TRAM_X,1,44],txt:{tr:'T1 rayları',en:'T1 tracks'}},
+ {a:[23,0.14],b:[23,1.05],p:()=>[TRAM_X,5,TRAM.g.position.z],txt:{tr:'T1 tramvayı',en:'T1 tram'}},
+ /* v5 tombs */
+ {a:[4,0.8],b:[4,1.05],p:()=>tAt('bapt'),txt:{tr:'vaftizhane (Bizans)',en:'baptistery (Byzantine)'}},
+ {a:[12,0.4],b:[12,1.05],p:()=>tAt('bapt'),txt:{tr:'vaftizhane → yağhane',en:'baptistery → oil store'}},
+ {a:[14,0.08],b:[14,0.5],p:()=>[TB.tombs.selim.c[0],8,TB.tombs.selim.c[1]],txt:{tr:'otağ: II. Selim, 1574',en:'tent: Selim II, 1574'}},
+ {a:[14,0.7],b:[14,1.05],p:()=>tAt('selim'),txt:{tr:'II. Selim · Sinan · 1577',en:'Selim II · Sinan · 1577'}},
+ {a:[15,0.6],b:[15,1.05],p:()=>tAt('sehz'),txt:{tr:'Şehzadeler · ≈1580',en:'Şehzadeler · c. 1580'}},
+ {a:[16,0.2],b:[16,0.6],p:()=>[TB.tombs.murad.c[0],10,TB.tombs.murad.c[1]],txt:{tr:'Davud Ağa başlar · 1595 sonrası',en:'Davud Ağa begins · after 1595'}},
+ {a:[16,0.66],b:[16,1.05],p:()=>tAt('murad'),txt:{tr:'III. Murad · Dalgıç Ahmed · 1599',en:'Murad III · Dalgıç Ahmed · 1599'}},
+ {a:[17,0.66],b:[17,1.05],p:()=>tAt('mehmed'),txt:{tr:'III. Mehmed · 1604–09',en:'Mehmed III · 1604–09'}},
+ {a:[18,0.12],b:[18,0.58],p:()=>tAt('bapt'),txt:{tr:'I. Mustafa Türbesi · 1639',en:'Tomb of Mustafa I · 1639'}},
+ {a:[18,0.62],b:[18,1.05],p:()=>tAt('bapt'),txt:{tr:'+ Sultan İbrahim · 1648',en:'+ Sultan İbrahim · 1648'}}
 ];
+function tAt(k){const o=TURB[k];return [o.def.c[0],o.top+2.5,o.def.c[1]];}
 // explode-step layer labels
-LAYERS.forEach((l,k)=>{const nm=M.layers.find(x=>x.k===l).name;LBL.push({a:[14,0.5],b:[14,1.02],layer:k,p:()=>layerAnchor(k),txt:()=>Lx(nm)});});
+LAYERS.forEach((l,k)=>{const nm=M.layers.find(x=>x.k===l).name;LBL.push({a:[19,0.5],b:[19,1.02],layer:k,p:()=>layerAnchor(k),txt:()=>Lx(nm)});});
 function layerAnchor(k){const ys=[10,YS+18+8,YS+40+10,YR+62+1.5,YD+86+9,0],a=ang(CUR?CUR[0]+UAZ:0),rx=Math.cos(a),rz=-Math.sin(a);
   if(k===5)return[-51-24*0.7,60,42+24*0.7];const R=k===0?48:k===4?RB+6:A+14;return[rx*R,ys[k],rz*R];}
 const lblEls=LBL.map(()=>{const e=document.createElement('div');e.className='lbl';e.style.opacity=0;$('labels').appendChild(e);return e;});
 const _v=new THREE.Vector3();
 function updLabels(t,R){LBL.forEach((L,i)=>{const e=lblEls[i];const a=at(L.a[0],L.a[1]),b=Math.min(at(L.b[0],Math.min(1,L.b[1]))+(L.b[1]>1?0.6:0),TOTAL+1);
-  let on=t>=a&&t<=b; if(L.b[1]>1&&t>=at(L.b[0],1)-0.01&&t<at(L.b[0]+1>18?18:L.b[0]+1,0)+0.0)on=on;
+  let on=t>=a&&t<=b; if(L.b[1]>1&&t>=at(L.b[0],1)-0.01&&t<at(L.b[0]+1>23?23:L.b[0]+1,0)+0.0)on=on;
   if(!on){e.style.opacity=0;return;}
   _v.set(...L.p()).project(cam);const x=(_v.x*0.5+0.5)*R.W,y=(-_v.y*0.5+0.5)*R.H;
   const txt=typeof L.txt==='function'?L.txt():Lx(L.txt);if(e._t!==txt){e.textContent=txt;e._t=txt;}
@@ -893,7 +1031,8 @@ let DT=0.016,JUMPCAM=false,JUMPFIT=true;
 /* ================= UI ================= */
 let t=0, playing=!RENDER, playTo=TOTAL, auto=true, curStep=-1, stepAt=0;
 const YR_={1:['church1','fire404'],2:['church2','nika'],3:['build0'],4:['build'],5:['build'],6:['build'],7:['consec'],8:['consec'],9:['quakes0','collapse'],10:['reconsec'],
- 11:['q989','r1354_1'],12:['conquest'],13:['bayezid0','murad3_1'],14:null,15:null,16:['fossati'],17:['museumDecree','t1sult'],18:['mosque2020']};
+ 11:['q989','r1354_1'],12:['conquest'],13:['bayezid0','murad3_1'],14:['turbeSelim'],15:['turbeSehz'],16:['turbeMurad'],17:['turbeMehmed'],18:['mustafa1','ibrahimB'],
+ 19:null,20:null,21:['fossati'],22:['museumDecree','t1sult'],23:['mosque2020']};
 function yv(k){const m=k.match(/^(\w+?)(?:_?(\d))?$/);let key=k,ix=null;if(/\d$/.test(k)&&!N[k]){key=k.replace(/_?\d$/,'');ix=+k.slice(-1);}const n=N[key];return Array.isArray(n.v)?(ix==null?n.v:[n.v[ix]]):[n.v];}
 function yearsOf(i){const y=YR_[i];if(!y)return null;let a=[];y.forEach(k=>a.push(...yv(k)));return [a[0],a[a.length-1]];}
 function yearHTML(i,lt){const y=yearsOf(i);if(!y)return Lx(UI.model);let y0=y[0];
@@ -912,7 +1051,7 @@ function buildDots(){if(!dots.children.length){ST.forEach((s,i)=>{const d=docume
     d.onclick=e=>{e.stopPropagation();goStep(i);};dots.appendChild(d);});}
   [...dots.children].forEach((d,i)=>{d.className='dot'+(i<curStep?' done':'')+(i===curStep?' cur':'');d.title=(i+1)+'. '+Lx(ST[i].name);});
   [...ticks.children].forEach(e=>e.classList.toggle('cur',+e.dataset.i===curStep));}
-function buildTicks(){ticks.innerHTML='';const W=$('tl').clientWidth;let last=-1e9;const pri=[0,2,8,11,15,17,1,6,10,12,16,9,3];const placed=[],seen=new Set();
+function buildTicks(){ticks.innerHTML='';const W=$('tl').clientWidth;let last=-1e9;const pri=[0,2,8,11,20,22,13,17,1,6,10,12,15,21,9,3];const placed=[],seen=new Set();
   pri.forEach(i=>{const y=yearsOf(i+1);if(!y)return;const x=W*ST[i].t0/TOTAL;const w=30;if(placed.some(p=>Math.abs(p-x)<w+6)||seen.has(y[0]))return;placed.push(x);seen.add(y[0]);
     const e=document.createElement('span');e.className='tick';e.dataset.i=i;e.style.left=Math.max(14,Math.min(W-14,x))+'px';e.textContent=y[0];ticks.appendChild(e);});}
 function goStep(i){i=clamp(i,0,ST.length-1);t=ST[i].t0+0.001;playing=true;playTo=auto?TOTAL:ST[i].t1-0.002;updButtons();}
@@ -950,7 +1089,7 @@ function buildSources(){
   const tagCell=x=>`<i class="tag ${x}">${TAGTXT[x]()}</i>`, link=s=>`<a href="${M.S[s].url}" target="_blank" rel="noopener">${M.S[s].name}</a>`;
   const rows=Object.entries(N).map(([k,n])=>{const alt=n.alt?`<div class="alt">${LANG=='tr'?'Diğer kaynaklar':'Other sources'}: ${n.alt.map(([v,s])=>`${v} (<a href="${M.S[s].url}" target="_blank" rel="noopener">${M.S[s].name.split(':')[0].split(',')[0]}</a>)`).join('; ')}</div>`:'';
     const note=n.note?`<div class="alt">${Lx(n.note)}</div>`:'';return `<tr><td>${Lx(n.label)}</td><td class="v">${nvu(k,2)}${note}${alt}</td><td>${tagCell(n.tag)}</td><td>${n.src.map(link).join('<br>')}</td></tr>`;});
-  const calc=[[LANG=='tr'?'İlk kubbenin tepesi ≈ bugünkü tepe − 6,25 m (20 Bizans ayağı); modelde ilk kubbe bu yüksekliğe göre çizildi':'First dome crown ≈ today\'s crown − 6.25 m (20 Byzantine ft); the model draws the first dome to this height',`≈ ${nf(C.H1,1)} m`,['dogan','mango','wikiHS']],
+  const calc=[[LANG=='tr'?'İlk kubbenin tepesi ≈ bugünkü tepe − 6,25 m (20 Bizans ayağı); modelde ilk kubbe bu yüksekliğe göre çizildi':'First dome crown ≈ today\'s crown − 6.25 m (20 Byzantine ft); the model draws the first dome to this height',`≈ ${nf(C.H1,1)} m`,['dogan','mango','schilbach']],
    [LANG=='tr'?'Yeniden yapım: çöküş 7 Mayıs 558 → yeniden açılış 24 Aralık 562':'Rebuild: collapse 7 May 558 → rededication 24 Dec 562',`≈ ${nf(C.rebuildY,1)} ${LANG=='tr'?'yıl':'years'}`,['mango']],
    [LANG=='tr'?'Kubbe tepesi ÷ çap':'Dome crown ÷ diameter',`≈ ${nf(C.ratio,1)}`,['dogan']],
    [LANG=='tr'?'Kilise olarak yıl = 1453 − 537 (Kültür Portalı ve Angı da 916 der)':'Years as a church = 1453 − 537 (Kültür Portalı and Angı also say 916)',nf(C.churchYears),['kp','angi']],
