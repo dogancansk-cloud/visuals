@@ -176,6 +176,8 @@ function buildModel(){
     alstom2009:{name:"Alstom press release, 4 Sep 2009: first Citadis delivered to Istanbul", url:"https://www.alstom.com/press-releases-news/2009/9/Alstom-delivers-the-first-Citadis-tram-to-Istanbul-Turkey-20090904"},
     taylor:{name:"R. Taylor, 'A Literary and Structural Analysis of the First Dome on Justinian's Hagia Sophia', JSAH 55.1 (1996) 66–78", url:"https://doi.org/10.2307/991056"},
     cakmak:{name:"A. Ş. Çakmak, R. M. Taylor, E. Durukal, 'The structural configuration of the first dome of Justinian's Hagia Sophia (A.D. 537–558)', Soil Dyn. & Earthq. Eng. 29 (2009) 693–698", url:"https://avesis.bogazici.edu.tr/yayin/ce871eb2-b29d-448b-a2ea-9fdad628357c/the-structural-configuration-of-the-first-dome-of-justinians-hagia-sophia-a-d-537-558-an-investigation-based-on-structural-and-literary-analysis"},
+    necip:{name:"G. Necipoğlu, 'The Life of an Imperial Monument: Hagia Sophia after Byzantium', in R. Mark & A. Ş. Çakmak (eds.), Hagia Sophia from the Age of Justinian to the Present, Cambridge UP 1992 (author's copy, Harvard, via Internet Archive)", url:"https://web.archive.org/web/20251020103450id_/https://scholar.harvard.edu/files/gnecipoglu/files/hagia_sophia.pdf"},
+    kizil:{name:"S. Kızılelma, Ayasofya-i Kebir Cami-i Şerifi Sempozyumu (2–4 Oct 2020), Diyanet İşleri Başkanlığı 2021", url:"https://isamveri.org/pdfdrg/G01213/2021/2021_KIZILELMAS.pdf"},
     mainstone:{name:"R. J. Mainstone, 'Justinian's Church of St Sophia, Istanbul: Recent Studies of Its Construction and First Partial Reconstruction', Architectural History 12 (1969); Hagia Sophia (1988), as summarised by Taylor 1996", url:"https://doi.org/10.2307/1568335"},
     ehw:{name:"J. Kostenec, 'Hagia Sophia', Encyclopaedia of the Hellenic World: Constantinople (2007)", url:"http://constantinople.ehw.gr/forms/filePage.aspx?lemmaId=10894"},
     archnet:{name:"Archnet: Hagia Sophia (site record)", url:"https://www.archnet.org/sites/1989"},
@@ -239,6 +241,8 @@ function buildModel(){
     reconsec:{v:562, tag:"est", yr:true, src:["mango","paul","dogan"], note:{tr:"24 Aralık 562",en:"24 Dec 562"}, alt:[["24 Aralık 563 / 24 Dec 563","eiao"]], label:{tr:"Yeni kubbeyle yeniden açılış",en:"Rededicated with the new dome"}},
     q989:{v:989, tag:"est", yr:true, src:["engberg","angi","dogan"], note:{tr:"26 Ekim 989",en:"26 Oct 989"}, label:{tr:"Deprem: batı kemeri ve kubbenin bir kısmı çöker",en:"Earthquake: western arch and part of the dome fall"}},
     trdat:{v:994, tag:"est", yr:true, approx:true, src:["dogan","engberg"], label:{tr:"Mimar Trdat'ın onarımı biter (yaklaşık)",en:"Architect Trdat's repair finished (approx.)"}},
+    ramps:{v:4, tag:"trad", src:["mango"], label:{tr:"558–562 sonrası: dışarıda, iç payelerin karşısına sarmal rampalar (Kedrenos; modelde batıdaki 2 çizili)",en:"After 558–562: spiral ramps outside, opposite the inner piers (Kedrenos; the 2 western ones are drawn)"}},
+    basil:{v:[867,886], tag:"est", yr:true, src:["dogan"], label:{tr:"I. Basileios: batıda, atriumda dış narteks önüne 4 payanda",en:"Basil I: 4 buttresses on the west, in the atrium in front of the outer narthex"}},
     by1317:{v:1317, tag:"est", yr:true, src:["angi","dogan"], label:{tr:"II. Andronikos: kuzey ve doğuya büyük payandalar",en:"Andronikos II: big buttresses on the north and east"}},
     c1346:{v:1346, tag:"est", yr:true, src:["dogan","angi","aym"], note:{tr:"19 Mayıs 1346",en:"19 May 1346"}, label:{tr:"Doğu kemeri ve kubbenin ≈⅓'ü çöker",en:"Eastern arch and ≈⅓ of the dome fall"}},
     r1354:{v:[1353,1354], tag:"est", yr:true, src:["dogan"], label:{tr:"Astras ve Peralta kubbeyi onarır",en:"Astras and Peralta repair the dome"}},
@@ -246,10 +250,12 @@ function buildModel(){
     qibla:{v:10, tag:"est", u:"°", approx:true, src:["dogan"], label:{tr:"Mihrap ekseni güneye döner",en:"Mihrab axis turned south"}},
     churchYears:{v:916, tag:"calc", src:["kp","angi"], label:{tr:"Kilise olarak yıl (537–1453)",en:"Years as a church (537–1453)"}},
     mosqueYears:{v:481, tag:"off", src:["aym"], label:{tr:"Cami olarak yıl (1453–1934)",en:"Years as a mosque (1453–1934)"}},
-    bayezid:{v:[1481,1512], tag:"off", yr:true, src:["aym","dogan"], label:{tr:"II. Bayezid: tuğla minare (yeri tartışmalı)",en:"Bayezid II: brick minaret (position disputed)"}},
+    bayezid:{v:[1453,1512], tag:"deb", yr:true, src:["necip","S6","aym","dogan"], label:{tr:"Güneydoğu tuğla minare: Fatih dönemi (Necipoğlu) ya da en geç II. Bayezid (DİA); banisi tartışmalı",en:"SE brick minaret: Mehmed II (Necipoğlu) or at the latest Bayezid II (DİA); founder disputed"}},
+    minNE:{v:[1573,1574], tag:"est", yr:true, src:["S6","necip"], label:{tr:"Kuzeydoğu ince taş minare: II. Selim, Mimar Sinan (banisi tartışmalı)",en:"NE slender stone minaret: Selim II, architect Sinan (founder disputed)"}},
+    fossB:{v:4, tag:"est", src:["dogan"], label:{tr:"Fossati kubbenin kuzey ve güneyindeki payandaları söker (2 + 2)",en:"Fossati removes the buttresses north and south of the dome (2 + 2)"}},
     selim2:{v:[1566,1574], tag:"est", yr:true, src:["dogan"], label:{tr:"II. Selim'in saltanatı",en:"Reign of Selim II"}},
     sinan:{v:[1572,1574], tag:"est", yr:true, src:["dogan","angi","aym"], label:{tr:"Mimar Sinan payandaları güçlendirir (küfeki taşı)",en:"Sinan strengthens the buttresses (küfeki stone)"}},
-    murad3:{v:[1574,1595], tag:"est", yr:true, src:["dogan"], label:{tr:"III. Murad: Sinan'ın 2 batı minaresi tamamlanır",en:"Murad III: Sinan's 2 western minarets completed"}},
+    murad3:{v:[1574,1595], tag:"est", yr:true, src:["dogan","necip","S6","kizil"], label:{tr:"III. Murad: Sinan'ın 2 batı minaresi tamamlanır",en:"Murad III: Sinan's 2 western minarets completed"}},
     baptB:{v:"Bizans (tarih tartışmalı) / Byzantine (date debated)", tag:"deb", txt:true, src:["S5","S7","S12","S13"], note:{tr:"Gurlitt: ana kiliseden 'pek eski değil'. Modelde 532–537 yapımıyla birlikte belirir (zamanlama şematik)",en:"Gurlitt: 'not much older than the main church'. In the model it appears with the 532–537 build (timing schematic)"}, label:{tr:"Vaftizhane (kilisenin güneybatı köşesinde)",en:"Baptistery (at the church's south-west corner)"}},
     oilStore:{v:[1453,1639], tag:"deb", yr:true, src:["S5","S6","S7"], note:{tr:"Eyice ve DİA: kandil yağı deposu (yağhane); Dirimtekin (1963): boş bırakıldı",en:"Eyice and DİA: lamp-oil store (yağhane); Dirimtekin (1963): left empty"}, label:{tr:"Vaftizhane yağhane olarak kullanılır",en:"Baptistery used as an oil store"}},
     selimDeath:{v:1574, tag:"est", yr:true, src:["S1","S14"], note:{tr:"13 Aralık 1574 (28 Şaban 982); türbe yerine kurulan otağa gömülür",en:"13 Dec 1574 (28 Şaban 982); buried in a tent (otağ) on the tomb site"}, label:{tr:"II. Selim ölür",en:"Selim II dies"}},
@@ -334,22 +340,22 @@ function buildModel(){
       fact:{tr:'Depremler {quakes}. Çöküş {collapse} (7 Mayıs, Theophanes): kubbenin doğu kısmı ve doğu kemeri. Agathias: mimarlar eski tasarımı inceler, kuzey ve güney kemerlerini içe doğru genişletir.',en:'Earthquakes {quakes}. Collapse {collapse} (7 May, Theophanes): the east part of the dome and the eastern arch. Agathias: the engineers study the old design and widen the north and south arches inward.'}},
    10:{name:{tr:'562: dik kubbe, 40 pencere',en:'562: steeper dome, 40 windows'},
       hint:{tr:'Genç İsidoros kubbeyi baştan kurar: daha dik ve daha yüksek. Eteğinde 40 kaburga arasında 40 pencere. Artık yana daha az iter.',en:'Isidore the Younger rebuilds the dome from scratch: steeper and taller. Round its base, 40 windows between 40 ribs. Now it pushes outward less.'},
-      fact:{tr:'Yeni kubbe {raise} daha yüksek (Theophanes "20 ayaktan fazla", Malalas "30 ayak"). Eteğinde {windows} pencere (Paul, 562/63). Yeniden açılış {reconsec} (24 Aralık), çöküşten ≈ {C.rebuildY}{CALC} yıl sonra.',en:'The new dome is {raise} higher (Theophanes "more than 20 ft", Malalas "30 ft"). {windows} windows round its base (Paul, 562/63). Rededicated {reconsec} (24 December), ≈ {C.rebuildY}{CALC} years after the collapse.'}},
+      fact:{tr:'Yeni kubbe {raise} daha yüksek (Theophanes "20 ayaktan fazla", Malalas "30 ayak"). Eteğinde {windows} pencere (Paul, 562/63). Yeniden açılış {reconsec} (24 Aralık), çöküşten ≈ {C.rebuildY}{CALC} yıl sonra. Dışarıda, iç payelerin karşısına {ramps} sarmal rampa.',en:'The new dome is {raise} higher (Theophanes "more than 20 ft", Malalas "30 ft"). {windows} windows round its base (Paul, 562/63). Rededicated {reconsec} (24 December), ≈ {C.rebuildY}{CALC} years after the collapse. Outside, opposite the inner piers: {ramps} spiral ramps.'}},
    11:{name:{tr:'Hasarlar, payandalar',en:'Damage & buttresses'},
-      hint:{tr:'Depremler yine vurur, kemerler ve kubbe parçaları düşer, onarılır. Dışarıdan kalın payandalar yapıyı iter: "Dur bakalım!"',en:'More earthquakes: arches and parts of the dome fall and get repaired. Thick buttresses push back from outside: "Stay put!"'},
-      fact:{tr:'{q989}: batı kemeri (Trdat onarır, ≈{trdat:plain}). {by1317}: kuzey ve doğuya payandalar. {c1346}: kubbenin ≈⅓\'ü; onarım {r1354}.',en:'{q989}: western arch (Trdat repairs, c. {trdat:plain}). {by1317}: buttresses on the north and east. {c1346}: ≈⅓ of the dome; repaired {r1354}.'}},
+      hint:{tr:'Önce batıya, atriuma payandalar eklenir. Depremler yine vurur, kemerler ve kubbe parçaları düşer, onarılır. Sonra kuzey ve doğuya kalın payandalar yapıyı iter: "Dur bakalım!"',en:'First, buttresses go up on the west, in the atrium. More earthquakes: arches and parts of the dome fall and get repaired. Then thick buttresses push back on the north and east: "Stay put!"'},
+      fact:{tr:'I. Basileios {basil}: batıya 4 payanda. {q989}: batı kemeri (Trdat onarır, {trdat:plain}). {by1317}: kuzey ve doğuya payandalar. {c1346}: kubbenin ≈⅓\'ü; onarım {r1354}.',en:'Basil I {basil}: 4 buttresses on the west. {q989}: western arch (Trdat repairs, {trdat:plain}). {by1317}: buttresses on the north and east. {c1346}: ≈⅓ of the dome; repaired {r1354}.'}},
    12:{name:{tr:'1453: cami',en:'1453: a mosque'},
-      hint:{tr:'Fatih Sultan Mehmed Ayasofya\'yı camiye çevirir. Güneybatıya ahşap bir minare yapılır.',en:'Mehmed II turns Hagia Sophia into a mosque. A wooden minaret goes up on the south-west.'},
-      fact:{tr:'Fetih {conquest} (29 Mayıs). Mihrap ekseni ≈{qibla:plain}°{tag:qibla} güneye döner. {C.churchYears}{CALC} yıl kilise, {mosqueYears} yıl cami.',en:'Conquest {conquest} (29 May). The mihrab axis turns ≈{qibla:plain}°{tag:qibla} south. {C.churchYears}{CALC} years a church, {mosqueYears} years a mosque.'}},
+      hint:{tr:'Fatih Sultan Mehmed Ayasofya\'yı camiye çevirir. Güneybatıya ahşap bir minare yapılır, güneydoğuya da tuğla bir minare.',en:'Mehmed II turns Hagia Sophia into a mosque. A wooden minaret goes up on the south-west, and a brick one on the south-east.'},
+      fact:{tr:'Fetih {conquest} (29 Mayıs). Mihrap ekseni {qibla:plain}°{tag:qibla} güneye döner. {C.churchYears}{CALC} yıl kilise, {mosqueYears} yıl cami. Güneydoğu tuğla minare {bayezid}.',en:'Conquest {conquest} (29 May). The mihrab axis turns {qibla:plain}°{tag:qibla} south. {C.churchYears}{CALC} years a church, {mosqueYears} years a mosque. SE brick minaret {bayezid}.'}},
    13:{name:{tr:'Minareler ve Sinan',en:'Minarets & Sinan'},
-      hint:{tr:'Bir minare, iki, üç, dört! Mimar Sinan kalın payandalar ekler; yapı bir daha çökmez.',en:'One minaret, two, three, four! Sinan the architect adds thick buttresses; the building never falls again.'},
-      fact:{tr:'Tuğla minare: II. Bayezid {bayezid} (yeri tartışmalı). Sinan {sinan}; ahşap minare {woodGone}\'te kalkar; 2 batı minaresi III. Murad döneminde {murad3}.',en:'Brick minaret: Bayezid II {bayezid} (position disputed). Sinan {sinan}; the wooden minaret goes in {woodGone}; 2 western minarets under Murad III {murad3}.'}},
+      hint:{tr:'Mimar Sinan dört bir yana kalın payandalar ekler; yapı bir daha çökmez. Sonra kuzeydoğuya ince bir taş minare yükselir, ahşap minare kalkar: yine iki minare.',en:'Sinan the architect adds thick buttresses on every side; the building never falls again. Then a slender stone minaret rises on the north-east and the wooden one goes: two minarets again.'},
+      fact:{tr:'Sinan {sinan}. Kuzeydoğu minaresi {minNE}. Ahşap minare {woodGone}\'te kalkar; Aralık 1574 Freshfield çiziminde 2 minare var.',en:'Sinan {sinan}. NE minaret {minNE}. The wooden minaret goes in {woodGone}; the Freshfield drawing of Dec 1574 shows 2 minarets.'}},
    14:{name:{tr:'1577: II. Selim Türbesi',en:'1577: Tomb of Selim II'},
       hint:{tr:'Güney avluda ilk sultan türbesi: Mimar Sinan, II. Selim için kare planlı, köşeleri pahlı, çift kubbeli bir türbe kurar. Selim 1574\'te ölür; türbe bitene dek yerine kurulan otağda yatar.',en:'The first sultan\'s tomb in the south courtyard: Sinan builds Selim II a square, corner-chamfered, double-domed tomb. Selim dies in 1574 and lies in a tent on the site until it is ready.'},
       fact:{tr:'Başlangıç 981 H, bitiş kitabeye göre 984 H: {turbeSelim}; Selim ölür {selimDeath:plain} (13 Aralık). Mimar Sinan. İç kubbe {selimDome}. Kaynak: [S1] [S8] [S14]',en:'Begun 981 H, finished per the inscription 984 H: {turbeSelim}; Selim dies {selimDeath:plain} (13 Dec). Architect Sinan. Inner dome {selimDome}. Sources: [S1] [S8] [S14]'}},
    15:{name:{tr:'≈1580: Şehzadeler Türbesi',en:'c. 1580: Şehzadeler Türbesi'},
       hint:{tr:'Küçük, sekizgen bir türbe: III. Murad\'ın çocukları için. Dışı sekizgen, içi haç planlı; kitabesi yok.',en:'A small octagonal tomb for Murad III\'s children. Octagonal outside, cross-shaped inside; it has no inscription.'},
-      fact:{tr:'{turbeSehz}: Sinan\'a atfedilir<i class="tag est">est.</i> {sehzBur:plain} sanduka (4 oğul + 1 kız){tag:sehzBur}. İç kubbe {sehzDome}. Kaynak: [S8] [S10]',en:'{turbeSehz}: attributed to Sinan<i class="tag est">est.</i> {sehzBur:plain} cenotaphs (4 sons + 1 daughter){tag:sehzBur}. Inner dome {sehzDome}. Sources: [S8] [S10]'}},
+      fact:{tr:'{turbeSehz}: Sinan\'a atfedilir<i class="tag est">est.</i> {sehzBur:plain} sanduka (4 oğul + 1 kız){tag:sehzBur}. İç kubbe {sehzDome}. Batıdaki 2 minare bu yıllarda tamamlanır: III. Murad {murad3}. Kaynak: [S8] [S10]',en:'{turbeSehz}: attributed to Sinan<i class="tag est">est.</i> {sehzBur:plain} cenotaphs (4 sons + 1 daughter){tag:sehzBur}. Inner dome {sehzDome}. The 2 western minarets are finished in these years: Murad III {murad3}. Sources: [S8] [S10]'}},
    16:{name:{tr:'1599: III. Murad Türbesi',en:'1599: Tomb of Murad III'},
       hint:{tr:'III. Murad 1595\'te ölür. Davud Ağa altıgen, çift kubbeli türbeye başlar; 1598\'de ölünce Dalgıç Ahmed Ağa bitirir. Bir duvarı Şehzadeler Türbesi\'ne dayanır.',en:'Murad III dies in 1595. Davud Ağa begins a hexagonal, double-domed tomb; when he dies in 1598, Dalgıç Ahmed Ağa finishes it. One wall stands hard against the Şehzadeler Türbesi.'},
       fact:{tr:'Ölüm {murad3Death:plain} (17 Ocak); türbe {turbeMurad}. Mimarlar: Davud Ağa → Dalgıç Ahmed Ağa. Bugün {muradCeno} sanduka. Kaynak: [S2] [S4] [S9] [S15]',en:'Death {murad3Death:plain} (17 Jan); tomb {turbeMurad}. Architects: Davud Ağa → Dalgıç Ahmed Ağa. {muradCeno} cenotaphs today. Sources: [S2] [S4] [S9] [S15]'}},
@@ -367,7 +373,7 @@ function buildModel(){
       fact:{tr:'Kubbe tepesi, çapının ≈ {C.ratio}{CALC} katı yükseklikte: {domeH:plain} ÷ {domeD:plain} m.',en:'The crown is ≈ {C.ratio}{CALC} times as high as the dome is wide: {domeH:plain} ÷ {domeD:plain} m.'}},
    21:{name:{tr:'Fossati ve levhalar',en:'Fossati & the roundels'},
       hint:{tr:'Fossati kardeşler yapıyı onarır, eğik sütunları doğrultur. İçeri dev yeşil-altın levhalar asılır.',en:'The Fossati brothers repair the building and straighten leaning columns. Giant green-and-gold roundels go up inside.'},
-      fact:{tr:'Onarım {fossati} (Mayıs 1847 – Temmuz 1849). {straight} sütun doğrultulur. {medallions} levha, her biri {medD} çapında.',en:'Restoration {fossati} (May 1847 – July 1849). {straight} columns straightened. {medallions} roundels, each {medD} across.'}},
+      fact:{tr:'Onarım {fossati} (Mayıs 1847 – Temmuz 1849). {straight} sütun doğrultulur. {medallions} levha, her biri {medD} çapında. Kubbenin kuzey ve güneyindeki {fossB} payanda sökülür, tuğla minare yükseltilir.',en:'Restoration {fossati} (May 1847 – July 1849). {straight} columns straightened. {medallions} roundels, each {medD} across. {fossB} buttresses north and south of the dome are taken down and the brick minaret is raised.'}},
    22:{name:{tr:'Müze ve tramvay',en:'Museum & tram'},
       hint:{tr:'Ayasofya müze olur, herkes gezer. Sonra yanına raylar döşenir: tramvay geliyor!',en:'Hagia Sophia becomes a museum for everyone. Later rails are laid beside it: here comes the tram!'},
       fact:{tr:'Müze kararı {museumDecree} (24 Kasım), açılış {museumOpen} (1 Şubat). Batı bahçede 415 kilisesinin parçaları: {dig1935:plain} kazısı{tag:dig1935}. Tramvay Sultanahmet\'e {t1sult} (10 Temmuz).',en:'Museum decree {museumDecree} (24 November), opened {museumOpen} (1 February). In the west garden: pieces of the 415 church, found in the {dig1935:plain} dig{tag:dig1935}. The tram reached Sultanahmet in {t1sult} (10 July).'}},
@@ -398,8 +404,8 @@ if (typeof module!=='undefined') module.exports={buildModel};
  [{tr:'Yapım başlangıcı "23 Şubat 532" (Kedrenos\'a dayandırılır): gösterilmedi',en:'Start date "23 Feb 532" (traced to Kedrenos): not shown'},['angi'],'ss'],
  [{tr:'"10.000 işçi, 100 usta" ve "Süleyman, seni geçtim!" sözü: geç dönem Narratio/Patria efsanesi',en:'"10,000 workers under 100 masters" and "Solomon, I have surpassed thee!": late Narratio/Patria legend'},['narr','kp'],'unc'],
  [{tr:'Porfir sütunlar Mısır\'dan (Paul, jeoloji); "Roma\'dan getirildi" efsanedir. Yeşil sütunlar Teselya; "Efes Artemis Tapınağı" geleneği doğrulanmadı',en:'Porphyry columns from Egypt (Paul, geology); "brought from Rome" is legend. Green columns Thessalian; "Temple of Artemis at Ephesus" is unconfirmed tradition'},['paul','angi'],'unc'],
- [{tr:'Minareler: Fatih\'in ahşap minaresi güneybatıda, 1574\'te kaldırılır. II. Bayezid\'in tuğla minaresinin yeri tartışmalı (kuzeydoğu / güney); güneydoğudaki tuğla minareyi bazı rehberler Fatih\'e verir',en:'Minarets: Mehmed II\'s wooden minaret on the SW, removed 1574. Position of Bayezid II\'s brick minaret disputed (NE / south); some guides credit the SE brick minaret to Mehmed II'},['aym','dogan','ktbpress'],'est'],
- [{tr:'Modelde: güneydoğuda tuğla minare (Fatih veya II. Bayezid, tartışmalı), kuzeydoğuda II. Bayezid (Doğan), batıda Sinan\'ın 2 minaresi (III. Murad döneminde biter)',en:'In this model: SE brick minaret (Mehmed II or Bayezid II, disputed), NE Bayezid II (Doğan), Sinan\'s 2 western minarets (finished under Murad III)'},['dogan'],'est'],
+ [{tr:'Minareler: Fatih\'in ahşap minaresi güneybatıda, 1574\'te kaldırılır. Güneydoğu tuğla minare GD payandanın yanında (Doğan); DİA bir yerde "güneybatı" der, büyük olasılıkla yazım hatası. Banisi: Fatih (Necipoğlu, Mehmed Âşık, Ayvansarâyî) ya da II. Bayezid (DİA, Diyanet)',en:'Minarets: Mehmed II\'s wooden minaret on the SW, removed 1574. The SE brick minaret stands at the SE buttress (Doğan); DİA once says "south-west", probably a slip. Founder: Mehmed II (Necipoğlu, Mehmed Âşık, Ayvansarâyî) or Bayezid II (DİA, Diyanet)'},['aym','dogan','S6','necip','ktbpress'],'deb'],
+ [{tr:'Modelde önce payandalar, sonra minareler: 562 sonrası rampalar, I. Basileios\'un batı payandaları (867–886), II. Andronikos\'un kuzey ve doğu payandaları (1317); 1453\'te ahşap minare ve GD tuğla minare; 1573\'te Sinan\'ın payandaları, ardından KD minaresi (II. Selim; Doğan ve Ayvansarâyî II. Bayezid der); batıdaki 2 minare III. Murad döneminde, 1574 sonrası. 989/994 onarımı, 1353–54 uçan payandaları ve Ali Neccâr payandaları (Evliya Çelebi, efsane) çizilmedi',en:'In this model the buttresses come before the minarets: ramps after 562, Basil I\'s west buttresses (867–886), Andronikos II\'s north and east buttresses (1317); in 1453 the wooden minaret and the SE brick minaret; in 1573 Sinan\'s buttresses, then the NE minaret (Selim II; Doğan and Ayvansarâyî say Bayezid II); the 2 western minarets under Murad III, after 1574. The 989/994 repair, the 1353–54 flying buttresses and Ali Neccâr\'s buttresses (Evliya Çelebi, legend) are not drawn'},['mango','dogan','S6','necip','kizil'],'est'],
  [{tr:'Fossati kubbenin kuzey ve güneyindeki 4 payandayı kaldırdı; güneydoğu tuğla minareyi diğerleriyle aynı boya yükseltti',en:'Fossati removed 4 buttresses north and south of the dome and raised the SE brick minaret to match the others'},['dogan'],'est'],
  [{tr:'Müze kararının numarası: 2/1589 (resmî karar metni); bir makale 7/1589 der',en:'Museum decree number: 2/1589 (official decree text); one paper says 7/1589'},['aym','angi'],'off'],
  [{tr:'Danıştay kararı 2 Temmuz 2020 tarihli; 10 Temmuz 2020\'de açıklanıp 2729 sayılı Cumhurbaşkanı Kararı yayımlandı',en:'Council of State decision dated 2 July 2020; announced with Presidential Decree 2729 on 10 July 2020'},['aym'],'off'],
@@ -543,6 +549,7 @@ const LAYERS=['base','arch','pend','drum','dome','tower'];
 const LAYER_OFF=[0,18,40,62,86], TOWER_OUT=24;
 
 /* ================= GROUND DIORAMA ================= */
+const SEA_K=20; /* v6.2: shallower sea crescent (was 30), more land in the NE */ function landR(x,z){const th=Math.atan2(-(z-PLZ),x-PLX);return PLR-6-SEA_K*Math.pow(Math.max(0,Math.cos(th-Math.PI/4)),3);}
 const NOCLIP={clip:false};
 { // base disk (lathe with rounded edge)
   const pr=[],R=PLR,yb=-10,yt=-2.4,rr=2.2;pr.push(new THREE.Vector2(0.01,yb));
@@ -550,16 +557,22 @@ const NOCLIP={clip:false};
   for(let i=0;i<=8;i++){const a=i/8*Math.PI/2;pr.push(new THREE.Vector2(R-rr+Math.cos(a)*rr,yt-rr+Math.sin(a)*rr));}
   pr.push(new THREE.Vector2(R-rr*1.6,yt));
   const base=new THREE.Mesh(new THREE.LatheGeometry(pr,96),mat('ground','#D9A57A',{clip:false,ao:false}));base.position.set(PLX,0,PLZ);base.receiveShadow=true;scene.add(base);
-  const water=new THREE.Mesh(new THREE.CircleGeometry(R-1.2,96),mat('water','#93CFEA',{clip:false,ao:false,r:0.42}));water.rotation.x=-Math.PI/2;water.position.set(PLX,-2.2,PLZ);water.receiveShadow=true;scene.add(water);
+  const water=new THREE.Mesh(new THREE.CircleGeometry(R-1.2,96),mat('water','#5FA9D6',{clip:false,ao:false,r:0.42}));water.rotation.x=-Math.PI/2;water.position.set(PLX,-1.1,PLZ); /* v6.2: deeper sea blue, higher */water.receiveShadow=true;scene.add(water);
   // land blob with a sea crescent to the north-east (Bosphorus hint)
   const sh=new THREE.Shape();const NS=160;
-  for(let i=0;i<=NS;i++){const th=i/NS*Math.PI*2;const r=PLR-6-30*Math.pow(Math.max(0,Math.cos(th-Math.PI/4)),3);const x=r*Math.cos(th),y=r*Math.sin(th);i?sh.lineTo(x,y):sh.moveTo(x,y);}
+  for(let i=0;i<=NS;i++){const th=i/NS*Math.PI*2;const r=PLR-6-SEA_K*Math.pow(Math.max(0,Math.cos(th-Math.PI/4)),3);const x=r*Math.cos(th),y=r*Math.sin(th);i?sh.lineTo(x,y):sh.moveTo(x,y);}
   const lg=new THREE.ExtrudeGeometry(sh,{depth:2.2,bevelEnabled:true,bevelThickness:0.8,bevelSize:1.2,bevelSegments:4,curveSegments:8});
   lg.rotateX(-Math.PI/2);lg.translate(PLX,-3.0,PLZ);
   const land=new THREE.Mesh(lg,mat('land','#EBD5AE',{clip:false,ao:false}));land.receiveShadow=true;scene.add(land);
   // plaza under the building
-  const pl=new THREE.Mesh(rbox(124,0.6,104,0.3,1),mat('plaza','#F4E7D2',{clip:false,ao:false}));pl.position.set(-6,0.0,0);pl.receiveShadow=true;scene.add(pl);
-  const hz=new THREE.Mesh(rbox(92,0.5,52,2.5,2),mat('hazire','#E9E2C6',{clip:false,ao:false}));hz.position.set(5,0.02,76);hz.receiveShadow=true;scene.add(hz);
+  /* v6.2 (Doğancan t191u: 'sağ üstte kare alan boşlukta kalmış'): the plaza rectangle stuck 13 m past the NE coast into the sea crescent.
+     Plaza and tomb garden are now the same rectangles clipped radially to the coastline minus a 4 m margin. */
+  const clipSlab=(cx,cz,w,d,h,m)=>{const sh=new THREE.Shape(),P=[[-1,-1],[1,-1],[1,1],[-1,1]],NS=48;let first=true;
+    for(let e=0;e<4;e++){const a=P[e],b=P[(e+1)%4];for(let k=0;k<NS;k++){const u=k/NS;let x=cx+(a[0]+(b[0]-a[0])*u)*w/2,z=cz+(a[1]+(b[1]-a[1])*u)*d/2;
+      const dx=x-PLX,dz=z-PLZ,L=Math.hypot(dx,dz),Rm=landR(x,z)-m;if(L>Rm){x=PLX+dx*Rm/L;z=PLZ+dz*Rm/L;}first?sh.moveTo(x-cx,-(z-cz)):sh.lineTo(x-cx,-(z-cz));first=false;}}
+    const g=new THREE.ExtrudeGeometry(sh,{depth:h,bevelEnabled:false});g.rotateX(-Math.PI/2);return g;};
+  const pl=new THREE.Mesh(clipSlab(-6,0,124,104,0.6,4),mat('plaza','#F4E7D2',{clip:false,ao:false}));pl.position.set(-6,-0.3,0);pl.receiveShadow=true;scene.add(pl);
+  const hz=new THREE.Mesh(clipSlab(5,76,92,52,0.5,4),mat('hazire','#E9E2C6',{clip:false,ao:false}));hz.position.set(5,-0.23,76);hz.receiveShadow=true;scene.add(hz);
   // soft drop shadow under the plate
   const cv=document.createElement('canvas');cv.width=cv.height=128;const cx=cv.getContext('2d');const gr=cx.createRadialGradient(64,64,10,64,64,64);
   gr.addColorStop(0,'rgba(40,70,110,0.55)');gr.addColorStop(0.6,'rgba(40,70,110,0.18)');gr.addColorStop(1,'rgba(40,70,110,0)');cx.fillStyle=gr;cx.fillRect(0,0,128,128);
@@ -567,7 +580,7 @@ const NOCLIP={clip:false};
   ds.rotation.x=-Math.PI/2;ds.position.set(PLX+8,-26,PLZ+10);ds.renderOrder=-1;scene.add(ds);
 }
 /* trees */
-{const TREES=[[-96,-34,1],[-104,8,0],[-92,46,1],[-64,74,0],[-36,84,1],[58,50,0],[-46,-76,0],[-10,-74,1],[-84,-64,1],[-112,-18,0],[74,22,1],[-58,-66,1],[16,-66,0],[22,98,1],[-24,100,1],[56,70,1],[30,58,1]];
+{const TREES=[[-90,-46,1],[-84,58,0],[-92,46,1],[-64,74,0],[-36,84,1],[58,50,0],[-46,-76,0],[-10,-74,1],[-84,-64,1],[-112,-18,0],[70,44,1],[-58,-66,1],[12,-77,0],[22,98,1],[-24,100,1],[56,70,1],[30,58,1]];
  const tr=mat('trunk','#A87655',NOCLIP), lv=[mat('leaf','#8DBF6E',NOCLIP),mat('leaf','#74AE5E',NOCLIP),mat('leaf','#A6CB7C',NOCLIP)], cy=mat('leaf','#5F9E5A',NOCLIP);
  TREES.forEach(([x,z,k],i)=>{const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);const s=0.9+((i*37)%10)/25;
    if(k){cyl(g,tr,0.55,0.75,3*s,0,0,0,10);const c=sph(g,cy,2.6*s,0,3*s+5.2*s,0,20,14);c.scale.set(1,2.3,1);}
@@ -740,15 +753,24 @@ function buttress(name,tag,col,x,z,ox,oz,len,w,h){const p=part(name,'tower',x,0,
   [h*0.44,h*0.76].forEach((y,i)=>{const u=i?L*0.75:L*0.93;bx(G,md,u+0.9,0.5,W+0.5,u/2-0.15,y-0.25,0,0.1,1);});   // ledge courses
   return p;}
 const WF=ZI+WT, EF=XI+WT;
-const ANDR=[buttress('an0','andr',COL.stone,-28,-WF,0,-1,10,6.5,22),buttress('an1','andr',COL.stone,28,-WF,0,-1,10,6.5,22),
+/* v6.2: N corner buttresses at x=±26 (was ±28) and a little narrower: an0 stood 2 m inside the NW ramp tower. */
+const ANDR=[buttress('an0','andr',COL.stone,-26,-WF,0,-1,10,6,22),buttress('an1','andr',COL.stone,26,-WF,0,-1,10,6,22),
   buttress('an2','andr',COL.stone,EF,-24,1,0,9,6,19),buttress('an3','andr',COL.stone,EF,24,1,0,9,6,19)];
+/* v6.2 chronology (Grokian table, P8; Doğan 2009): the buttresses north and south of the dome that Fossati removed in 1847–49 (2 N + 2 S).
+   N pair with Andronikos II (1317, north), S pair with Sinan (1573). Which buttresses exactly [doğrulanmadı]. */
+const BZN=[buttress('bzN0','andr',COL.stone,-6.5,-WF,0,-1,7,4.5,17),buttress('bzN1','andr',COL.stone,6.5,-WF,0,-1,7,4.5,17)];ANDR.push(...BZN);
 /* middle-Byzantine buttresses (EHW 'Hagia Sophia' §5, after Mainstone 1988 pp. 102–105): flying buttresses on the west façade,
    one in the middle of each long side and the south-west one; sb0 (south-west) belongs to this group. Sizes [doğrulanmadı]. */
-const SB0=buttress('sb0','byzB',COL.stone,-28,WF,0,1,12,7,24);
-const BYZB=[SB0,buttress('bzN','byzB',COL.stone,0,-WF,0,-1,7,6,17),buttress('bzS','byzB',COL.stone,0,WF,0,1,7,6,17),
-  buttress('bzW0','byzB',COL.stone,-XI-WT,-(ZI-10),-1,0,NAR1+NAR2,4.5,30),buttress('bzW1','byzB',COL.stone,-XI-WT,ZI-10,-1,0,NAR1+NAR2,4.5,30)];
-const SINB=[buttress('sb1','sinanB',COL.stone,28,WF,0,1,12,7,24),
-  buttress('sb2','sinanB',COL.stone,EF,-13.5,1,0,9,5.5,18),buttress('sb3','sinanB',COL.stone,EF,13.5,1,0,9,5.5,18)];
+/* v6.2 chronology (Grokian table P2; Doğan 2009 after Müller-Wiener): Basil I (867–886) adds 4 buttresses on the WEST, in the atrium in front of
+   the outer narthex; drawn as 4 flying masses from the atrium over both narthexes. bzW0/1 moved in to z=±21.5 (they cut the atrium porticoes). */
+const BYZB=[buttress('bzW0','byzB',COL.stone,-XI-WT,-21.5,-1,0,NAR1+NAR2,4.5,30),buttress('bzW1','byzB',COL.stone,-XI-WT,21.5,-1,0,NAR1+NAR2,4.5,30),
+  buttress('bzW2','byzB',COL.stone,-XI-WT,-8,-1,0,NAR1+NAR2,4,26),buttress('bzW3','byzB',COL.stone,-XI-WT,8,-1,0,NAR1+NAR2,4,26)];
+/* Sinan 1572–74 (P7: on all sides): S corner pair (sb0 was 'middle Byzantine' in v6.1; shortened, it cut the baptistery), E pair, S dome pair. */
+const SB0=buttress('sb0','sinanB',COL.stone,-26,WF,0,1,9.5,6,24);
+const BZS=[buttress('bzS0','sinanB',COL.stone,-6.5,WF,0,1,7,4.5,17),buttress('bzS1','sinanB',COL.stone,6.5,WF,0,1,7,4.5,17)];
+const SINB=[SB0,buttress('sb1','sinanB',COL.stone,26,WF,0,1,9.5,6,24),
+  buttress('sb2','sinanB',COL.stone,EF,-13.5,1,0,9,5.5,18),buttress('sb3','sinanB',COL.stone,EF,13.5,1,0,9,5.5,18),...BZS];
+const FOSSB=[...BZN,...BZS];   /* removed by Fossati 1847–49 */
 
 /* Byzantine atrium west of the outer narthex (≈42 m deep; porticoes on 3 sides, central phiale), shown 537 → early Ottoman period.
    Width = outer narthex [doğrulanmadı]; heights from the Byzantium 1200 reconstruction (reference only) [doğrulanmadı]. */
@@ -787,16 +809,21 @@ function minaret(name,tag,col,capCol,x,z,S){const p=part(name,'tower',x,0,z,S.H)
   const pr_=new THREE.Mesh(new THREE.CylinderGeometry(R+0.95,R+0.95,0.9,S.seg,1,true),tr);pr_.position.set(0,y+1.25+0.45,0);pr_.castShadow=true;p.g.add(pr_);y+=1.25;
   // petek (upper shaft), slimmer
   cyl(p.g,m,R*0.84,R*0.84,S.petek,0,y,0,S.seg);y+=S.petek;cyl(p.g,tr,R*0.98,R*0.84,0.45,0,y,0,S.seg);y+=0.45;
+  let T=p.g;if(S.raise){/* v6.2: Fossati frieze (1847–49, Doğan 2009); height 2.2 m, cone shortened so today's 44.96 m total holds [doğrulanmadı] */const fg=new THREE.CylinderGeometry(R*0.9,R*0.9,S.raise,S.seg);fg.translate(0,S.raise/2,0);
+    p.frz=mesh(fg,mat(tag,COL.trim),0,y,0,p.g);p.top=T=new THREE.Group();p.g.add(T);y+=S.raise;}
   // külah (lead cone) + alem
-  cyl(p.g,c,0.06,R*0.98,S.kulah,0,y,0,S.seg);y+=S.kulah;cyl(p.g,gd,0.1,0.1,S.H-y+0.1,0,y-0.3,0,6);sph(p.g,gd,0.32,0,S.H-0.25,0,10,8);return p;}
+  cyl(T,c,0.06,R*0.98,S.kulah,0,y,0,S.seg);y+=S.kulah;cyl(T,gd,0.1,0.1,S.H-y+0.1,0,y-0.3,0,6);sph(T,gd,0.32,0,S.H-0.25,0,10,8);return p;}
 const MS={
-  SE:{H:44.96,ped:5.5,pedW:5.2,shaft:28.1,D:3.3,petek:2.9,kulah:6.4,seg:12,pedCol:COL.stone},   // brick, Mehmed II; stone pedestal block (his SW photo)
-  NE:{H:63.2,ped:8.5,pedW:4.4,shaft:39.7,D:3.1,petek:3.6,kulah:9.1,seg:16},                       // slender stone, Bayezid II
+  SE:{H:44.96,ped:5.5,pedW:5.2,shaft:28.1,D:3.3,petek:2.9,kulah:4.2,raise:2.2,seg:12,pedCol:COL.stone},   // brick, Mehmed II or at the latest Bayezid II (disputed); stone pedestal block (his SW photo)
+  NE:{H:63.2,ped:8.5,pedW:4.4,shaft:39.7,D:3.1,petek:3.6,kulah:9.1,seg:16},                       // slender stone, Selim II / Sinan 1573–74 (DİA; Doğan: Bayezid II)
   W:{H:66.55,ped:12,pedW:6.8,shaft:37.9,D:4.7,petek:4.4,kulah:9.9,seg:16}};                      // Sinan pair, broad square bases
-const MIN_SE=minaret('minSE','minSE',COL.brick,COL.minCap,33,44,MS.SE);
-const MIN_NE=minaret('minNE','minNE',COL.min,COL.minCap,33,-44,MS.NE);
+/* v6.2 (Doğancan t191u: 'kırmızı minare payandanın içinde gibi'): both E minarets stood inside the S/N corner buttresses (sb1 / an1).
+   Now each stands free on its own stone pedestal just off the SE / NE corner, beside the corner buttresses (top-down photo12 + turbosquid mass
+   layout; Doğan 2009: SE brick minaret at the SE buttress). Exact offsets [doğrulanmadı]. */
+const MIN_SE=minaret('minSE','minSE',COL.brick,COL.minCap,42.6,40.6,MS.SE);
+const MIN_NE=minaret('minNE','minNE',COL.min,COL.minCap,42.4,-40.4,MS.NE);
 const MIN_W=[minaret('minSW','minW',COL.min,COL.minCap,-51,42,MS.W),minaret('minNW','minW',COL.min,COL.minCap,-51,-42,MS.W)];
-const WOODM=part('woodmin',-1,-40,0,43,32);{const m=mat('woodmin',COL.wood),c=mat('woodmin',COL.woodCap);bx(WOODM.g,m,4,22,4,0,0,0,0.5);
+const WOODM=part('woodmin',-1,-45,0,43,32); /* v6.2: moved 5 m west, it stood half inside the SW ramp tower */{const m=mat('woodmin',COL.wood),c=mat('woodmin',COL.woodCap);bx(WOODM.g,m,4,22,4,0,0,0,0.5);
   bx(WOODM.g,c,5.6,1,5.6,0,22,0,0.4);bx(WOODM.g,m,3,4,3,0,23,0,0.4);cyl(WOODM.g,c,0.05,2.6,6,0,27,0,4).rotation.y=Math.PI/4;}
 
 /* 8 roundels (Fossati 1847–49), on the inner faces high up */
@@ -811,8 +838,8 @@ const FRAG=part('frag',-1,-64,0,-4,4);{const m=mat('frag',COL.marble);bx(FRAG.g,
   bx(FRAG.g,m,2.4,1.4,5,-1.6,0.5,10.2,0.35);}
 
 /* tram line + T1 tram */
-const RAILS=part('rails',-1,TRAM_X,0,PLZ,1);{bx(RAILS.g,mat('rails','#DCD6CD',NOCLIP),5,0.35,118,0,0,0,0.15,1);
-  [-0.72,0.72].forEach(x=>bx(RAILS.g,mat('rails','#98A0AA',{clip:false,r:0.5}),0.26,0.28,118,x,0.35,0,0.1,1));}
+const RAILS=part('rails',-1,TRAM_X,0,PLZ,1);{bx(RAILS.g,mat('rails','#DCD6CD',NOCLIP),5,0.35,100,0,0,0,0.15,1);
+  [-0.72,0.72].forEach(x=>bx(RAILS.g,mat('rails','#98A0AA',{clip:false,r:0.5}),0.26,0.28,100,x,0.35,0,0.1,1));}
 const TRAM=part('tram',-1,TRAM_X,0.62,0,4);{const wh=mat('tram','#F7F6F2',{clip:false,r:0.55}),rd=mat('tram','#E0483D',{clip:false}),nv_=mat('tram','#33416F',{clip:false}),gl=mat('tram','#5E7C9A',{clip:false,r:0.35});
   const n=5,ml=6.2,gap=0.25,Lt=n*ml+(n-1)*gap;for(let i=0;i<n;i++){const z=-Lt/2+ml/2+i*(ml+gap),end=(i===0||i===n-1);
     bx(TRAM.g,wh,2.65,3.1,ml,0,0.2,z,end?1.0:0.5);bx(TRAM.g,gl,2.72,1.05,ml-1.2,0,1.75,z,0.4,1);bx(TRAM.g,rd,2.71,0.45,ml-0.4,0,0.75,z,0.2,1);bx(TRAM.g,nv_,2.71,0.18,ml-0.4,0,1.38,z,0.08,1);}
@@ -898,11 +925,12 @@ function setAll(arr,u,how,stag=0){arr.forEach((p,i)=>showP(p,clamp((u*(1+stag*(a
 /* step → focus tags for the saffron highlight */
 const FOCUS=[[1,['church1'],0.05,0.6],[2,['church2','prop'],0.05,0.58],[3,['piers'],0.1],[4,['walls','gallery','pbut'],0.05],[5,['arches','archE','tymp'],0.05],
  [6,['pend','ring'],0.05],[7,['win1','dome1','dome1e'],0.05,0.6],[7,['halfdome','exedra'],0.64],[8,['pend','piers','ring'],0.25],
- [9,['dome1e','archE'],0.25],[10,['archE'],0.04,0.3],[10,['windows','nubs','drum'],0.38,0.74],[10,['dome2'],0.6],[11,['byzB'],0.08,0.32],[11,['andr'],0.3],[12,['woodmin'],0.1],[12,['alem'],0.55],
- [13,['minSE'],0.03,0.25],[13,['minNE'],0.18,0.4],[13,['sinanB'],0.36,0.62],[13,['minW'],0.64],
+ [9,['dome1e','archE'],0.25],[10,['archE'],0.04,0.3],[10,['windows','nubs','drum'],0.38,0.74],[10,['dome2'],0.6],[11,['byzB'],0.02,0.24],[11,['andr'],0.42],[12,['woodmin'],0.1,0.52],[12,['alem'],0.55],[12,['minSE'],0.6],
+ [13,['sinanB'],0.04,0.44],[13,['minNE'],0.46,0.7],[15,['minW'],0.5],[21,['minSE'],0.24,0.5],
  [4,['bapt'],0.62,0.98],[12,['bapt'],0.4,0.95],[14,['otag'],0.04,0.5],[14,['tSelim'],0.3],[15,['tSehz'],0.05],[16,['tMurad'],0.05],[17,['tMehmed'],0.05],[18,['bapt'],0.06,0.62],[18,['bapt'],0.66],
  [20,['pend','ring'],0.5],[21,['roundel'],0.28],
  [22,['frag'],0.1,0.55],[22,['rails'],0.52],[23,['tram'],0.05]];
+function outK(p,L){let s_=TOWER_OUT;while(s_>0){const x=p.bx+p.bx/L*s_,z=p.bz+p.bz/L*s_;if(Math.hypot(x-PLX,z-PLZ)<landR(x,z)-13)break;s_-=1;}return s_;}   /* v6.2 */
 let SHAKE=0;
 function state(t){
   for(const p of PARTS){p.vis=0;p.dx=p.dy=p.dz=0;p.s=p.sy=1;p.rx=p.ry=p.rz=0;}
@@ -920,11 +948,11 @@ function state(t){
     PBUT.forEach((p,i)=>showP(p,pr(4,0.3+i*0.04,0.55+i*0.04,t),'rise'));
     NARS.forEach((p,i)=>showP(p,pr(4,0.48+i*0.08,0.72+i*0.08,t),'rise'));
     showP(APSE,pr(4,0.55,0.78,t),'rise');
-    RAMPS.forEach((p,i)=>showP(p,pr(4,0.6+i*0.06,0.82+i*0.06,t),'rise'));
+    RAMPS.forEach((p,i)=>showP(p,pr(10,0.78+i*0.06,0.92+i*0.05,t),'rise'));   /* v6.2: P1 ramps after 558–562 (Kedrenos) */
     showP(ATR,pr(4,0.62,0.9,t),'rise');sinkP(ATR,pr(13,0.0,0.14,t));if(t>=at(13,0.14))ATR.vis=0;
     showP(PATR,pr(4,0.66,0.9,t),'rise');sinkP(PATR,pr(13,0.0,0.14,t));if(t>=at(13,0.14))PATR.vis=0;
     if(t>=at(13,0.1)&&t<at(22,0)){ATRC.vis=1;}
-    BYZB.forEach((p,i)=>showP(p,pr(11,0.08+i*0.03,0.24+i*0.03,t),'rise'));
+    BYZB.forEach((p,i)=>showP(p,pr(11,0.02+i*0.025,0.14+i*0.025,t),'rise'));
     showP(ROOF,pr(4,0.7,0.92,t),'drop');
     ['N','S','W','E'].forEach((k,i)=>showP(ARCH[k],pr(5,0.05+i*0.12,0.38+i*0.12,t),'drop'));
     TYMP.forEach((p,i)=>showP(p,pr(5,0.6+i*0.1,0.85+i*0.08,t),'drop'));
@@ -944,16 +972,19 @@ function state(t){
      const r=pr(10,0.04,0.3,t);if(t>=at(10,0)){p.vis=0;p.dy=0;p.rz=0;p.s=1;showP(p,r,'drop');}}
     DOME2.forEach((p,i)=>showP(p,pr(10,0.56+i*0.03,0.76+i*0.03,t),'drop'));
     // 989 / 1346 quakes: west arch knocked + repaired, a dome slice jolts
-    {const q=pr(11,0.06,0.3,t);if(q>0&&q<1){const p=ARCH.W;p.dy-=Math.sin(q*Math.PI)*3;p.rx+=Math.sin(q*Math.PI)*0.12;}
+    {const q=pr(11,0.22,0.42,t);if(q>0&&q<1){const p=ARCH.W;p.dy-=Math.sin(q*Math.PI)*3;p.rx+=Math.sin(q*Math.PI)*0.12;}
      const q2=pr(11,0.68,0.88,t);if(q2>0&&q2<1){const p=DOME2[2];p.dy+=Math.sin(q2*Math.PI)*4;p.rz+=Math.sin(q2*Math.PI)*0.15;}
-     SHAKE=Math.max(Math.sin(pr(11,0.04,0.22,t)*Math.PI),Math.sin(pr(11,0.66,0.8,t)*Math.PI),Math.sin(pr(9,0.05,0.38,t)*Math.PI)*1.2);}
-    ANDR.forEach((p,i)=>showP(p,pr(11,0.34+i*0.07,0.56+i*0.07,t),'rise'));
-    showP(WOODM,pr(12,0.12,0.5,t),'grow'); sinkP(WOODM,pr(13,0.56,0.68,t)); if(t>=at(13,0.68))WOODM.vis=0;
+     SHAKE=Math.max(Math.sin(pr(11,0.2,0.36,t)*Math.PI),Math.sin(pr(11,0.66,0.8,t)*Math.PI),Math.sin(pr(9,0.05,0.38,t)*Math.PI)*1.2);}
+    ANDR.forEach((p,i)=>showP(p,pr(11,0.42+i*0.035,0.58+i*0.035,t),'rise'));
+    showP(WOODM,pr(12,0.12,0.5,t),'grow'); sinkP(WOODM,pr(13,0.68,0.8,t)); if(t>=at(13,0.8))WOODM.vis=0;
     showP(ALEM,pr(12,0.55,0.75,t),'pop');
-    showP(MIN_SE,pr(13,0.03,0.22,t),'grow');showP(MIN_NE,pr(13,0.18,0.37,t),'grow');
-    SINB.forEach((p,i)=>showP(p,pr(13,0.36+i*0.04,0.56+i*0.04,t),'rise'));
-    {const th=pr(13,0.38,0.6,t);ANDR.forEach(p=>{p.s*=1+0.12*Math.sin(th*Math.PI);});}
-    MIN_W.forEach((p,i)=>showP(p,pr(13,0.66+i*0.1,0.86+i*0.08,t),'grow'));
+    showP(MIN_SE,pr(12,0.6,0.86,t),'grow');
+    SINB.forEach((p,i)=>showP(p,pr(13,0.04+i*0.04,0.2+i*0.04,t),'rise'));
+    {const th=pr(13,0.06,0.42,t);ANDR.forEach(p=>{p.s*=1+0.12*Math.sin(th*Math.PI);});}
+    if(t>=at(21,0)){FOSSB.forEach(p=>sinkP(p,pr(21,0.06,0.22,t)));}   /* v6.2 P8: Fossati takes down 2 N + 2 S buttresses */
+    showP(MIN_NE,pr(13,0.46,0.64,t),'grow');
+    MIN_W.forEach((p,i)=>showP(p,pr(15,0.5+i*0.1,0.72+i*0.08,t),'grow'));   /* v6.2: W pair completed under Murad III, after the 2-minaret Freshfield view of Dec 1574 */
+    {const r=sm(pr(21,0.26,0.42,t));MIN_SE.top.position.y=-MS.SE.raise*(1-r);MIN_SE.frz.visible=r>0.01;MIN_SE.frz.scale.y=Math.max(0.01,r);}   /* Fossati raises the SE minaret */
     ROUND.forEach((p,i)=>showP(p,pr(21,0.3+i*0.05,0.45+i*0.05,t),'pop'));
     showP(FRAG,pr(22,0.12,0.4,t),'rise');
     // ---- v5: tombs. Baptistery = Byzantine, rises with the 532–537 build; only its use changes in 1639 / 1648
@@ -970,11 +1001,11 @@ function state(t){
   {const f=pr(9,0.55,1,t);DUST.forEach((d,i)=>{const u=clamp(f*1.2-i*0.015);d.visible=u>0&&u<1;if(d.visible){const s=Math.sin(u*Math.PI)*(3+(i%3));d.scale.setScalar(Math.max(0.01,s));d.position.y=YS-8+(i%4)*3+u*6;}});}
   // rails + tram
   {const u=pr(22,0.52,0.86,t);if(u>0){RAILS.vis=1;RAILS.g.scale.z=Math.max(0.002,eOut(u));}else RAILS.g.scale.z=1;
-   const v=pr(23,0.03,0.12,t),m=pr(23,0.1,0.86,t);if(v>0){showP(TRAM,v,'drop');TRAM.dz=lerp(PLZ-46,PLZ+46,sm(m));}}
+   const v=pr(23,0.03,0.12,t),m=pr(23,0.1,0.86,t);if(v>0){showP(TRAM,v,'drop');TRAM.dz=lerp(PLZ-33,PLZ+33,sm(m));}}
   // take apart / put back
   const ex=LAYERS.map((l,k)=>clamp(pr(19,0.06+k*0.08,0.42+k*0.08,t)-pr(20,0.05+(5-k)*0.06,0.36+(5-k)*0.06,t)));
   for(const p of PARTS){if(p.layer===-1||!p.layer)continue;const k=LAYERS.indexOf(p.layer),e=k>=4?eOut(ex[k]):sm(ex[k]);
-    if(k<5)p.dy+=LAYER_OFF[k]*(k===4?1:1)*eOut(ex[k]);else{const L=Math.hypot(p.bx,p.bz)||1;p.dx+=p.bx/L*TOWER_OUT*eOut(ex[k]);p.dz+=p.bz/L*TOWER_OUT*eOut(ex[k]);}}
+    if(k<5)p.dy+=LAYER_OFF[k]*(k===4?1:1)*eOut(ex[k]);else{const L=Math.hypot(p.bx,p.bz)||1,TO=p.oK??(p.oK=outK(p,L));p.dx+=p.bx/L*TO*eOut(ex[k]);p.dz+=p.bz/L*TO*eOut(ex[k]);}}
   // highlight weights
   const HL={};FOCUS.forEach(([s,tags,a,b])=>{const t1=b==null?ST[s-1].t1:at(s,b);const up=sm(remap(t,at(s,a),at(s,a)+0.5)),dn=1-sm(remap(t,t1,t1+0.55));const w=up*dn;tags.forEach(k=>HL[k]=Math.max(HL[k]||0,w));});
   // cut-away
@@ -1047,9 +1078,13 @@ const LBL=[
  {a:[10,0.44],b:[10,0.62],p:()=>[-RB*0.72,YR+4,RB*0.72],txt:()=>N.windows.v+(LANG==='tr'?' pencere + ':' windows + ')+N.ribs.v+(LANG==='tr'?' kaburga':' ribs')},
  {a:[10,0.8],b:[10,1.05],p:()=>[0,C.H2+3,0],txt:()=>(LANG==='tr'?nv('raise')+' m daha yüksek':nv('raise')+' m higher')},
  {a:[11,0.45],b:[11,1.05],p:()=>[XI+WT+4,20,-24],txt:{tr:'payandalar',en:'buttresses'}},
- {a:[12,0.3],b:[12,1.05],p:()=>[-40,34,43],txt:{tr:'ahşap minare',en:'wooden minaret'}},
- {a:[13,0.42],b:[13,0.66],p:()=>[28,22,ZI+WT+5],txt:{tr:'Sinan: payandalar',en:'Sinan: buttresses'}},
- {a:[13,0.86],b:[13,1.05],p:()=>[-51,61,42],txt:()=>N.minarets.v+(LANG==='tr'?' minare':' minarets')},
+ {a:[12,0.3],b:[12,1.05],p:()=>[-45,34,43],txt:{tr:'ahşap minare',en:'wooden minaret'}},
+ {a:[12,0.72],b:[12,1.05],p:()=>[42.6,47,40.6],txt:{tr:'tuğla minare · 1453–1512',en:'brick minaret · 1453–1512'}},
+ {a:[13,0.16],b:[13,0.46],p:()=>[26,22,ZI+WT+5],txt:{tr:'Sinan: payandalar',en:'Sinan: buttresses'}},
+ {a:[13,0.6],b:[13,1.05],p:()=>[42.4,64,-40.4],txt:{tr:'kuzeydoğu minaresi · 1573–74',en:'north-east minaret · 1573–74'}},
+ {a:[15,0.8],b:[15,1.05],p:()=>[-51,61,42],txt:()=>N.minarets.v+(LANG==='tr'?' minare':' minarets')},
+ {a:[21,0.08],b:[21,0.3],p:()=>[0,16,ZI+WT+6],txt:{tr:'Fossati: 4 payanda sökülür',en:'Fossati: 4 buttresses removed'}},
+ {a:[21,0.3],b:[21,0.5],p:()=>[42.6,47,40.6],txt:{tr:'tuğla minare yükseltilir',en:'brick minaret raised'}},
  {a:[21,0.45],b:[21,0.92],p:()=>[A+3.2,YS-2,-(A-1.1)],txt:()=>N.medallions.v+(LANG==='tr'?' levha':' roundels')},
  {a:[22,0.2],b:[22,0.56],p:()=>[-64,4,-4],txt:()=>(LANG==='tr'?nv('dig1935')+' kazısı: 415 kilisesinden parçalar':'Found in the '+nv('dig1935')+' dig: pieces of the 415 church')},
  {a:[22,0.62],b:[22,1.05],p:()=>[TRAM_X,1,44],txt:{tr:'T1 rayları',en:'T1 tracks'}},
@@ -1087,7 +1122,7 @@ const SKY=[[0,'#93C9EE','#C6E4F6','#FDE6CB','#FFE4C0',1.45],[0.45,'#86C2F0','#C2
 function skyAt(u){let i=u<SKY[1][0]?0:1;const a=SKY[i],b=SKY[i+1],k=sm(remap(u,a[0],b[0]));const L=j=>'#'+_c.set(a[j]).lerp(new THREE.Color(b[j]),k).getHexString();
   return{s0:L(1),s1:L(2),s2:L(3),sun:L(4),I:lerp(a[5],b[5],k)};}
 let lastSky='';
-const GREYC=new THREE.Color(COL.grey), GREYT=new Set(['walls','pbut','piers','tymp','arches','archE','halfdome','exedra','drum','nubs','ring','pend']);
+const GREYC=new THREE.Color(COL.grey), GREYT=new Set(['walls','pbut','piers','tymp','arches','archE','halfdome','exedra','drum','nubs','ring','pend','bapt']);
 function apply(t,ex=0){
   const S=state(t); const GREYK=t<at(3,0)?0:1-sm(pr(12,0.3,0.8,t));
   for(const p of PARTS){const g=p.g;g.visible=!!p.vis;if(!p.vis)continue;g.position.set(p.bx+p.dx,p.by+p.dy,p.bz+p.dz);
@@ -1121,7 +1156,7 @@ let DT=0.016,JUMPCAM=false,JUMPFIT=true;
 /* ================= UI ================= */
 let t=0, playing=!RENDER, playTo=TOTAL, auto=true, curStep=-1, stepAt=0;
 const YR_={1:['church1','fire404'],2:['church2','nika'],3:['build0'],4:['build'],5:['build'],6:['build'],7:['consec'],8:['consec'],9:['quakes0','collapse'],10:['reconsec'],
- 11:['q989','r1354_1'],12:['conquest'],13:['bayezid0','murad3_1'],14:['turbeSelim'],15:['turbeSehz'],16:['turbeMurad'],17:['turbeMehmed'],18:['mustafa1','ibrahimB'],
+ 11:['basil0','r1354_1'],12:['conquest'],13:['sinan0','woodGone'],14:['turbeSelim'],15:['turbeSehz'],16:['turbeMurad'],17:['turbeMehmed'],18:['mustafa1','ibrahimB'],
  19:null,20:null,21:['fossati'],22:['museumDecree','t1sult'],23:['mosque2020']};
 function yv(k){const m=k.match(/^(\w+?)(?:_?(\d))?$/);let key=k,ix=null;if(/\d$/.test(k)&&!N[k]){key=k.replace(/_?\d$/,'');ix=+k.slice(-1);}const n=N[key];return Array.isArray(n.v)?(ix==null?n.v:[n.v[ix]]):[n.v];}
 function yearsOf(i){const y=YR_[i];if(!y)return null;let a=[];y.forEach(k=>a.push(...yv(k)));return [a[0],a[a.length-1]];}
