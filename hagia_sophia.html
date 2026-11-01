@@ -455,7 +455,7 @@ const UI={
 const A=C.R, YS=23.1, YR=YS+A, DRUM=3.0, YD=YR+DRUM, B1=1.4; /* YS: pier/arch springing ≈ 23.1 m (Taylor 1996) */
 const XI=N.Lin.v/2, ZI=N.Win.v/2, WT=1.6, NAR1=9.55, NAR2=5.75, XW=-XI-WT-NAR1-NAR2;
 const YG=20, RB=A+0.6;
-const PLX=-10, PLZ=14, PLR=116, TRAM_X=-73; /* v5: plate grown + shifted south so the tomb garden fits */
+const PLX=-10, PLZ=14, PLR=116, TRAM_X=-102; /* v6.1: T1 moved toward the plate edge (Doğancan: 'Hattı biraz daha sınıra doğru uzaklaştır. Daha kısa gözüksün'), still on the W (Alemdar Cd.) side */ /* v5: plate grown + shifted south so the tomb garden fits */
 const at=(i,f)=>ST[i-1].t0+f*ST[i-1].dur;
 
 /* ---------- renderer ---------- */
@@ -607,67 +607,101 @@ const PROP=part('prop',-1,-41,0,0,12);{const m=mat('prop','#F3E3C8');for(let i=0
   const pg=new THREE.ExtrudeGeometry(ps,{depth:3,bevelEnabled:true,bevelThickness:0.25,bevelSize:0.25,bevelSegments:2});pg.translate(0,0,-1.5);pg.rotateY(Math.PI/2);mesh(pg,mat('prop',COL.tile),0,10.8,0,PROP.g);
   bx(PROP.g,m,6,0.6,37,0,0,0,0.3);}
 
-/* ================= THE BUILDING (532–537 and after) ================= */
+/* ================= THE BUILDING (v6: structure rebuilt after Doğancan's references, 1 Nov 2026) =================
+   Massing follows the plan + section logic: dome square on 4 piers; the piers continue N and S as 4 tall buttress towers
+   that rise above the aisle roofs to the dome base; tympanum walls with window groups between them; E/W semi-domes with
+   4 exedrae; lead lean-to roofs over the aisles/galleries; inner + outer narthex; west ramp towers; Byzantine atrium
+   (until the Ottoman period); stepped, sloped stone buttresses (1317 Andronikos II, 1572–74 Sinan).
+   Plan figures: EHW 'Hagia Sophia' (Kostenec 2007): church ≈135 m incl. atrium, dome 31.87 m / 55.60 m, aisles N+S, two narthexes,
+   four ramps at the corners; atrium ≈42 m west of the outer narthex (Charles Univ. Hagia Sophia Project). Heights of towers, roofs,
+   atrium and ramps are read from the references [doğrulanmadı]. */
+COL.stone='#CFC3AE'; COL.grey='#E2DED6';   // grey = light marble/plaster tone used before the Ottoman period (EHW §5: 537 façades faced with white Proconnesian marble) [later tones doğrulanmadı]
 const mWall=mat('walls',COL.wall), mWin=mat('walls',COL.win), mRoof=mat('roof',COL.roof), mTrim=mat('walls',COL.trim);
 // floor
 const FLOOR=part('floor','base',0,0,0,1);bx(FLOOR.g,mat('floor',COL.floor,{clip:false}),2*XI+2*WT,0.6,2*ZI+2*WT,0,0,0,0.25,1);
-// 4 piers
+// 4 piers (interior)
 const PIERS=[];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz],i)=>{const i0=A-0.8,o=A+6,zo=A+8;
   const p=part('pier'+i,'base',sx*(i0+o)/2,0,sz*(i0+zo)/2,YS);bx(p.g,mat('piers',COL.pier),o-i0,YS,zo-i0,0,0,0,0.8);
   bx(p.g,mat('piers',COL.trim),o-i0+0.8,0.9,zo-i0+0.8,0,YS-0.9,0,0.35);PIERS.push(p);});
-// outer walls with arched window rows
+// outer walls: aisle + gallery storeys, arched window rows; shallow pilaster strips (secondary piers in the plan)
 const WALLS=[];
 function wallWins(g,len,axis,face,h,rows){rows.forEach(([y,n,w,hh])=>{for(let i=0;i<n;i++){const u=-len/2+len*(i+0.5)/n;
   if(axis==='x')bx(g,mWin,w,hh,0.5,u,y,face*(WT/2+0.12),0.35,1);else bx(g,mWin,0.5,hh,w,face*(WT/2+0.12),y,u,0.35,1);}});}
 [[-1],[1]].forEach(([sz],i)=>{const p=part('wallNS'+i,'base',0,0,sz*(ZI+WT/2),YG);bx(p.g,mWall,2*XI+2*WT,YG,WT,0,0,0,0.6);
-  bx(p.g,mTrim,2*XI+2*WT+0.6,0.8,WT+0.6,0,YG-0.8,0,0.3);wallWins(p.g,2*XI-4,'x',sz,YG,[[3.5,12,1.6,3.6],[12.5,12,1.6,4.2]]);WALLS.push(p);});
+  bx(p.g,mTrim,2*XI+2*WT+0.6,0.8,WT+0.6,0,YG-0.8,0,0.3);bx(p.g,mTrim,2*XI+2*WT+0.3,0.5,WT+0.4,0,10.4,0,0.2,1);
+  wallWins(p.g,2*XI-4,'x',sz,YG,[[3.5,12,1.6,3.6],[12.5,12,1.8,4.6]]);
+  for(let k=0;k<7;k++)bx(p.g,mWall,1.6,YG-1,0.8,-XI+6+k*(2*XI-12)/6,0,sz*(WT/2+0.3),0.3,1);WALLS.push(p);});
 [[-1],[1]].forEach(([sx],i)=>{const p=part('wallEW'+i,'base',sx*(XI+WT/2),0,0,YG);bx(p.g,mWall,WT,YG,2*ZI+2*WT,0,0,0,0.6);
-  bx(p.g,mTrim,WT+0.6,0.8,2*ZI+2*WT+0.6,0,YG-0.8,0,0.3);wallWins(p.g,2*ZI-4,'z',sx,YG,[[3.5,10,1.6,3.6],[12.5,10,1.6,4.2]]);WALLS.push(p);});
-// roof slab with a stadium-shaped opening (central square + half-dome bays)
+  bx(p.g,mTrim,WT+0.6,0.8,2*ZI+2*WT+0.6,0,YG-0.8,0,0.3);wallWins(p.g,2*ZI-4,'z',sx,YG,[[3.5,10,1.6,3.6],[12.5,10,1.8,4.6]]);WALLS.push(p);});
+// roof deck with the stadium opening + lead lean-to roofs over the N/S aisles and galleries
+function shedGeo(L,zIn,zOut,yIn,yOut){const s=new THREE.Shape();s.moveTo(-zIn,0);s.lineTo(-zOut,0);s.lineTo(-zOut,yOut);s.lineTo(-zIn,yIn);s.closePath();
+  const g=new THREE.ExtrudeGeometry(s,{depth:L,bevelEnabled:false});g.translate(0,0,-L/2);g.rotateY(Math.PI/2);return g;}
 const ROOF=part('roof','base',0,YG,0,2);{const W2=XI+WT+0.4,D2=ZI+WT+0.4,r=A+1.2;const s=new THREE.Shape();s.moveTo(-W2,-D2);s.lineTo(W2,-D2);s.lineTo(W2,D2);s.lineTo(-W2,D2);s.closePath();
   const h=new THREE.Path();h.moveTo(-A,-r);h.lineTo(A,-r);h.absarc(A,0,r,-Math.PI/2,Math.PI/2,false);h.lineTo(-A,r);h.absarc(-A,0,r,Math.PI/2,Math.PI*1.5,false);s.holes.push(h);
-  const g=new THREE.ExtrudeGeometry(s,{depth:0.8,bevelEnabled:true,bevelThickness:0.35,bevelSize:0.35,bevelSegments:2,curveSegments:36});g.rotateX(-Math.PI/2);mesh(g,mRoof,0,0.0,0,ROOF.g);}
+  const g=new THREE.ExtrudeGeometry(s,{depth:0.8,bevelEnabled:true,bevelThickness:0.35,bevelSize:0.35,bevelSegments:2,curveSegments:36});g.rotateX(-Math.PI/2);mesh(g,mRoof,0,0.0,0,ROOF.g);
+  [-1,1].forEach(sz=>{const m=mesh(shedGeo(2*XI+2*WT+0.6,A+1.7,ZI+WT+0.5,3.4,0.9),mRoof,0,0.6,0,ROOF.g);if(sz<0)m.scale.z=-1;});
+  // small lead domes over the corner gallery bays (seen in the 07sketches + Byzantium 1200 views) [doğrulanmadı count]
+  [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz])=>{const d=new THREE.Mesh(new THREE.SphereGeometry(4.2,20,8,0,Math.PI*2,0,Math.PI/2),mat('roof',COL.lead,{r:0.7}));
+    d.position.set(sx*(XI-7),2.2,sz*(ZI-8));d.scale.y=0.55;d.castShadow=d.receiveShadow=true;ROOF.g.add(d);cyl(ROOF.g,mTrim,4.3,4.3,1.6,sx*(XI-7),0.7,sz*(ZI-8),24);});}
 // galleries: arcades of columns under a gallery floor (seen in the cut-aways)
 const GALL=part('gall','base',0,0,0,12);{const mc=mat('gallery',COL.marble), mf=mat('gallery',COL.trim);
   [-1,1].forEach(sz=>{for(let i=0;i<5;i++){cyl(GALL.g,mc,0.75,0.85,10,-11+i*5.5,0,sz*(A+2.2),14);cyl(GALL.g,mc,0.55,0.6,8.5,-11+i*5.5,11,sz*(A+2.2),12);}
     bx(GALL.g,mf,2*XI-2,0.8,ZI-A-1.8,0,10.2,sz*((ZI+A+2.2)/2+0.4),0.3,1);});}
-// narthexes
+// narthexes: inner (two storeys: narthex + west gallery) and outer, lead lean-to roofs
 const NARS=[];{const x1=-XI-WT,x2=x1-NAR1,x3=x2-NAR2;
-  const a=part('nar1','base',(x1+x2)/2,0,0,17);bx(a.g,mWall,NAR1,16,2*ZI+2*WT,0,0,0,0.6);bx(a.g,mRoof,NAR1+1,1,2*ZI+2*WT+1,0,16,0,0.4);
-  for(let i=0;i<9;i++)bx(a.g,mWin,0.5,4.2,1.8,-NAR1/2-0.13,10.2,-ZI+6+i*(2*ZI-12)/8,0.35,1);NARS.push(a);
-  const b=part('nar2','base',(x2+x3)/2,0,0,10);bx(b.g,mWall,NAR2,9,2*ZI-6,0,0,0,0.6);bx(b.g,mRoof,NAR2+1,1,2*ZI-5,0,9,0,0.4);
+  const a=part('nar1','base',(x1+x2)/2,0,0,17);bx(a.g,mWall,NAR1,16,2*ZI+2*WT,0,0,0,0.6);
+  {const m=mesh(shedGeo(2*ZI+2*WT+1,0,NAR1+0.5,0.9,3.0),mRoof,0,16,0,a.g);m.rotation.y=Math.PI/2;m.position.x=-NAR1/2-0.25;}
+  for(let i=0;i<9;i++){bx(a.g,mWin,0.5,4.2,1.8,-NAR1/2-0.13,10.2,-ZI+6+i*(2*ZI-12)/8,0.35,1);}NARS.push(a);
+  const b=part('nar2','base',(x2+x3)/2,0,0,10);bx(b.g,mWall,NAR2,9,2*ZI-6,0,0,0,0.6);
+  {const m=mesh(shedGeo(2*ZI-5,0,NAR2+0.5,0.6,2.2),mRoof,0,9,0,b.g);m.rotation.y=Math.PI/2;m.position.x=-NAR2/2-0.25;}
   for(let i=0;i<7;i++)bx(b.g,mWin,0.5,4.6,2.2,-NAR2/2-0.13,1.2,-ZI+8+i*(2*ZI-16)/6,0.5,1);NARS.push(b);}
+// west ramp towers (NW + SW; EHW: four ramps at the corners — the two east ones sit under the E minarets/buttresses, not drawn)
+const RAMPS=[];[-1,1].forEach((sz,i)=>{const p=part('ramp'+i,'base',-XI+1.5,0,sz*(ZI+WT+4.2),19);const m=mat('walls',COL.wall);
+  bx(p.g,m,8.4,18,8.4,0,0,0,0.6);bx(p.g,mTrim,9,0.7,9,0,17.3,0,0.3);
+  const c=new THREE.Mesh(new THREE.ConeGeometry(6.2,2.6,4,1).rotateY(Math.PI/4),mRoof);c.position.set(0,19.3,0);c.castShadow=true;p.g.add(c);
+  for(let k=0;k<3;k++)bx(p.g,mWin,1.2,2.2,0.5,0,3+k*5,sz*4.33,0.3,1);RAMPS.push(p);});
 // apse (east)
 const APSE=part('apse','base',XI+WT,0,0,16);{const m=mWall;cyl(APSE.g,m,7.5,7.5,15,0,0,0,32,false,0,Math.PI);
   const c=new THREE.Mesh(new THREE.SphereGeometry(7.6,28,12,0,Math.PI,0,Math.PI/2),mRoof);c.position.set(0,15,0);c.castShadow=true;APSE.g.add(c);
   for(let i=0;i<3;i++){const a=(i+1)/4*Math.PI;const w=bx(APSE.g,mWin,1.6,4.4,0.5,Math.sin(a)*7.62,7,Math.cos(a)*7.62,0.4,1);w.rotation.y=a;}}
-// pier buttresses (N + S, Justinianic)
-const PBH=35, PBZ0=ZI-10, PBZ1=ZI+WT+5.5;
-const PBUT=[];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz],i)=>{const L=PBZ1-PBZ0,p=part('pbut'+i,'base',sx*(A+2.6),0,sz*(PBZ0+L/2),PBH);const m=mat('pbut',COL.pier);
-  bx(p.g,m,7.6,PBH,L,0,0,0,0.8);bx(p.g,m,8.4,PBH*0.5,L-6,0,0,sz*3.2,0.8); /* stepped foot */
-  const rs=new THREE.Shape();rs.moveTo(-L/2-0.4,0);rs.lineTo(L/2+0.4,0);rs.lineTo(L/2+0.4,0.6);rs.lineTo(-L/2+3,3.2);rs.lineTo(-L/2-0.4,3.2);rs.closePath();
-  const rg=new THREE.ExtrudeGeometry(rs,{depth:8.2,bevelEnabled:true,bevelThickness:0.2,bevelSize:0.2,bevelSegments:2});rg.translate(0,0,-4.1);rg.rotateY(-Math.PI/2);if(sz<0)rg.rotateY(Math.PI);
-  mesh(rg,mRoof,0,PBH,0,p.g);
-  for(let k=0;k<2;k++)bx(p.g,mWin,1.6,3.4,0.5,0,PBH*0.5+3+k*7,sz*(L/2+0.13),0.35,1);
+// 4 buttress towers (N + S continuation of the main piers, Justinianic): rise above the aisle roofs to the dome base
+/* v6.1 (Doğancan's markup 1 Nov 2026: 'bu kısımlar çok büyük duruyor'): the 4 N/S pier buttress towers are lower, narrower and stepped.
+   Lower step full depth just above the aisle roof; upper tower only over the inner part, top ~4 m below the dome springing (YR),
+   low lead pyramid cap. Proportions read from his photos, @07sketches and aerials [doğrulanmadı: not measured]. */
+const PBH=YS+9, PBZ0=A+2.2, PBZ1=ZI+WT+1.2, PBW=6.0, PBLO=YG+5, PBU=13;
+const PBUT=[];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz],i)=>{const L=PBZ1-PBZ0,p=part('pbut'+i,'base',sx*(A+2.4),0,sz*(PBZ0+L/2),PBH);const m=mat('pbut',COL.pier),tr=mat('pbut',COL.trim);
+  bx(p.g,m,PBW+0.8,YG*0.55,L+0.8,0,0,sz*0.4,0.6); /* battered foot */
+  bx(p.g,m,PBW,PBLO,L,0,0,0,0.6);   /* lower step, full depth */
+  {const s=new THREE.Shape();s.moveTo(0,0);s.lineTo(L-PBU,0);s.lineTo(0,2.2);s.closePath();const g=new THREE.ExtrudeGeometry(s,{depth:PBW+0.3,bevelEnabled:false});g.translate(0,0,-(PBW+0.3)/2);
+   const w=mesh(g,mRoof,0,PBLO,0,p.g);w.rotation.y=sz>0?-Math.PI/2:Math.PI/2;w.position.z=sz*(L/2-(L-PBU));}   /* sloped lead roof on the lower step */
+  const zc=-sz*(L/2-PBU/2);   /* upper tower over the inner part */
+  bx(p.g,m,PBW,PBH,PBU,0,0,zc,0.6);bx(p.g,tr,PBW+0.5,0.6,PBU+0.5,0,PBH-0.6,zc,0.25);
+  {const c=new THREE.Mesh(new THREE.CylinderGeometry(0.35,1,1,4,1).rotateY(Math.PI/4),mRoof);c.scale.set(PBW*0.74,2.4,PBU*0.74);c.position.set(0,PBH+1.2,zc);c.castShadow=true;p.g.add(c);}
+  [-1,1].forEach(e=>bx(p.g,mWin,0.5,2.8,1.4,e*(PBW/2+0.03),PBLO+2.2,zc+sz*2.5,0.3,1));
+  bx(p.g,mWin,1.4,2.8,0.5,0,PBLO+2.2,zc+sz*(PBU/2+0.03),0.3,1);
+  bx(p.g,mWin,1.4,2.6,0.5,0,YG+0.9,sz*(L/2+0.03),0.3,1);
   PBUT.push(p);});
 
 // 4 great arches (N,S at z=±A; E,W at x=±A)
 const ARCH={};{const rI=A-0.8,rO=A+1.4,g=archGeo(rI,rO,3.2);
   [['N',0,-A,0],['S',0,A,0],['E',A,0,1],['W',-A,0,1]].forEach(([k,x,z,rot])=>{const p=part('arch'+k,'arch',x,YS,z,20);
     const m=mesh(g,mat(k==='E'?'archE':'arches',COL.arch),0,0,0,p.g);if(rot)m.rotation.y=Math.PI/2;ARCH[k]=p;});}
-// 2 tympanum walls with windows (under N and S arches)
+// 2 tympanum walls (under N and S arches, on the outer face) with the big window groups: 7 below, 5 above + 3 in the lunette
 const TYMP=[];[-1,1].forEach((sz,i)=>{const rI=A-0.8,p=part('tymp'+i,'arch',0,YS,sz*(A+1.0),18);mesh(tympGeo(rI,YG-YS,1.1),mat('tymp',COL.tymp),0,0,0,p.g);
-  for(let k=0;k<7;k++)bx(p.g,mWin,1.4,3.2,0.4,-9+k*3,-1.5+0.3,sz*0.78,0.35,1);for(let k=0;k<5;k++)bx(p.g,mWin,1.4,3.4,0.4,-6+k*3,4.8,sz*0.78,0.35,1);TYMP.push(p);});
+  for(let k=0;k<7;k++)bx(p.g,mWin,1.5,3.6,0.4,-9+k*3,0.6,sz*0.78,0.35,1);for(let k=0;k<5;k++)bx(p.g,mWin,1.6,3.8,0.4,-6+k*3,5.6,sz*0.78,0.35,1);
+  for(let k=0;k<3;k++)bx(p.g,mWin,1.5,2.6,0.4,-3+k*3,10.4,sz*0.78,0.35,1);TYMP.push(p);});
 // 4 pendentives + 2 half-domes + ring
 const PEND=[];[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz],i)=>{const p=part('pend'+i,'pend',0,YS,0,16);mesh(pendGeo(sx,sz),mat('pend',COL.pend),0,0,0,p.g);PEND.push(p);});
 const HALF=[];[[1,0],[-1,Math.PI]].forEach(([sx,t0],i)=>{const p=part('half'+i,'pend',sx*A,0,0,YS);
   cyl(p.g,mat('halfdome',COL.wall),A+0.6,A+0.6,YS-YG+2,0,YG-2,0,40,true,t0,Math.PI);
+  for(let k=0;k<5;k++){const a=t0+(k+0.5)/5*Math.PI;const w=bx(p.g,mWin,1.4,2.2,0.5,Math.sin(a)*(A+0.7),YS-3.4,Math.cos(a)*(A+0.7),0.3,1);w.rotation.y=a;}
   const d=new THREE.Mesh(new THREE.SphereGeometry(A+1.0,40,14,t0===0?Math.PI/2:-Math.PI/2,Math.PI,0,Math.PI/2),mat('halfdome',COL.lead,{r:0.7}));
   d.position.set(0,YS,0);d.castShadow=d.receiveShadow=true;p.g.add(d);HALF.push(p);});
-// 4 exedrae: small half-domes stepping down beside the big half-domes (schematic size)
+// 4 exedrae: small half-domes stepping down beside the big half-domes, each over a drum with windows
 const EXED=[];{const RE=6.4;[[1,-1],[1,1],[-1,-1],[-1,1]].forEach(([sx,sz],i)=>{const cx=sx*(A+A*Math.SQRT1_2),cz=sz*A*Math.SQRT1_2,p=part('exed'+i,'pend',cx,0,cz,YG);
   const face=Math.atan2(sx*Math.SQRT1_2,sz*Math.SQRT1_2); /* outward direction */
   cyl(p.g,mat('exedra',COL.wall),RE,RE,4.2,0,YG-2,0,28,true,face-Math.PI/2,Math.PI);
+  for(let k=0;k<3;k++){const a=face-Math.PI/2+(k+0.5)/3*Math.PI;const w=bx(p.g,mWin,1.2,1.8,0.5,Math.sin(a)*(RE+0.1),YG,Math.cos(a)*(RE+0.1),0.3,1);w.rotation.y=a;}
   const d=new THREE.Mesh(new THREE.SphereGeometry(RE+0.3,28,10,face,Math.PI,0,Math.PI/2),mat('exedra',COL.lead,{r:0.7}));d.position.set(0,YG+2.2,0);d.castShadow=d.receiveShadow=true;p.g.add(d);EXED.push(p);});}
 const RING=part('ring','pend',0,YR,0,2);{const t=new THREE.Mesh(new THREE.TorusGeometry(A+0.7,0.95,14,72),mat('ring',COL.trim));t.rotation.x=Math.PI/2;t.scale.z=0.7;t.castShadow=t.receiveShadow=true;RING.g.add(t);}
 // drum: wall + 40 windows + 40 rib-buttresses
@@ -691,27 +725,77 @@ const ALEM=part('alem','dome',0,C.H2,0,3);{const g=mat('alem',COL.gold,{r:0.45})
 // dust puffs (collapse)
 const DUST=[];{const m=mat('dust','#F2E8D9',NOCLIP);for(let i=0;i<14;i++){const a=(i/14-0.5)*Math.PI*0.9+Math.PI/2;const s=sph(scene,m,1,Math.sin(a)*(6+(i%3)*4),YS-6+(i%4)*3,Math.cos(a)*(6+(i%3)*4),14,10);s.castShadow=false;s.visible=false;DUST.push(s);}}
 
-/* buttresses: 1317 (Andronikos II, N + E) and Sinan (1572–74) */
-function buttress(name,tag,col,x,z,ax,az,len,w,h){const p=part(name,'tower',x,0,z,h);const m=mat(tag,col);
-  // stepped mass leaning on the wall: 3 rounded blocks
-  for(let i=0;i<3;i++){const f=1-i*0.28;const L=len*f,H=h*(0.55+0.45*(1-i/3)),off=(len-L)/2;
-    const b=bx(p.g,m,ax?L:w,H*(i?0.75:1),ax?w:L,ax*(off-len/2+L/2),0,az*(off-len/2+L/2),0.7);}
-  bx(p.g,mRoof,ax?len*0.42:w+0.8,1,ax?w+0.8:len*0.42,ax*(len/2-len*0.21-len/2+len*0.21),h*0.98,0,0.4);
+/* buttresses (v6): massive stepped, sloped stone masses leaning on the outer walls — 1317 (Andronikos II, N + E) and Sinan (1572–74, S + E).
+   Form after Doğancan's photo (hs_payanda) and the 07sketches / aerial references; exact sizes [doğrulanmadı]. */
+/* v6.1: heavy ashlar buttress masses (Doğancan's photo hs_payanda_dogancan_2026-10-31.jpg; @07sketches massing): darker grey-beige,
+   battered face, one set-back ledge, sloped cap, chamfered plinth; ~1.45x thicker, ~1.15x deeper than v6 [doğrulanmadı]. */
+COL.butt='#B3AA94'; COL.buttD='#9F967F';
+function buttress(name,tag,col,x,z,ox,oz,len,w,h){const p=part(name,'tower',x,0,z,h);const m=mat(tag,COL.butt),md=mat(tag,COL.buttD);
+  const G=new THREE.Group();G.rotation.y=ox>0?0:ox<0?Math.PI:oz>0?-Math.PI/2:Math.PI/2;p.g.add(G);
+  const L=len*1.15, W=w*1.45;
+  const s=new THREE.Shape();s.moveTo(-0.6,0);s.lineTo(L,0);s.lineTo(L*0.93,h*0.44);s.lineTo(L*0.8,h*0.47);s.lineTo(L*0.75,h*0.76);s.lineTo(L*0.5,h*0.8);s.lineTo(-0.6,h);s.closePath();
+  const g=new THREE.ExtrudeGeometry(s,{depth:W,bevelEnabled:true,bevelThickness:0.2,bevelSize:0.2,bevelSegments:1});g.translate(0,0,-W/2);mesh(g,m,0,0,0,G);
+  const s2=new THREE.Shape();s2.moveTo(-0.3,0);s2.lineTo(L+1.5,0);s2.lineTo(L+1.5,1.8);s2.lineTo(L+0.4,2.9);s2.lineTo(-0.3,2.9);s2.closePath();   // chamfered plinth / battered foot
+  const g2=new THREE.ExtrudeGeometry(s2,{depth:W+1.6,bevelEnabled:false});g2.translate(0,0,-(W+1.6)/2);mesh(g2,md,0,0,0,G);
+  [h*0.44,h*0.76].forEach((y,i)=>{const u=i?L*0.75:L*0.93;bx(G,md,u+0.9,0.5,W+0.5,u/2-0.15,y-0.25,0,0.1,1);});   // ledge courses
   return p;}
-const ANDR=[buttress('an0','andr',COL.pier,-28,-(ZI+WT+3.5),0,-1,7,6,20),buttress('an1','andr',COL.pier,28,-(ZI+WT+3.5),0,-1,7,6,20),
-  buttress('an2','andr',COL.pier,XI+WT+3.5,-24,1,0,7,6,19),buttress('an3','andr',COL.pier,XI+WT+3.5,24,1,0,7,6,19)];
-const SINB=[buttress('sb0','sinanB',COL.kufeki,-28,ZI+WT+4,0,1,8,6.5,21),buttress('sb1','sinanB',COL.kufeki,28,ZI+WT+4,0,1,8,6.5,21),
-  buttress('sb2','sinanB',COL.kufeki,XI+WT+4,-13.5,1,0,8,5.5,17),buttress('sb3','sinanB',COL.kufeki,XI+WT+4,13.5,1,0,8,5.5,17)];
+const WF=ZI+WT, EF=XI+WT;
+const ANDR=[buttress('an0','andr',COL.stone,-28,-WF,0,-1,10,6.5,22),buttress('an1','andr',COL.stone,28,-WF,0,-1,10,6.5,22),
+  buttress('an2','andr',COL.stone,EF,-24,1,0,9,6,19),buttress('an3','andr',COL.stone,EF,24,1,0,9,6,19)];
+/* middle-Byzantine buttresses (EHW 'Hagia Sophia' §5, after Mainstone 1988 pp. 102–105): flying buttresses on the west façade,
+   one in the middle of each long side and the south-west one; sb0 (south-west) belongs to this group. Sizes [doğrulanmadı]. */
+const SB0=buttress('sb0','byzB',COL.stone,-28,WF,0,1,12,7,24);
+const BYZB=[SB0,buttress('bzN','byzB',COL.stone,0,-WF,0,-1,7,6,17),buttress('bzS','byzB',COL.stone,0,WF,0,1,7,6,17),
+  buttress('bzW0','byzB',COL.stone,-XI-WT,-(ZI-10),-1,0,NAR1+NAR2,4.5,30),buttress('bzW1','byzB',COL.stone,-XI-WT,ZI-10,-1,0,NAR1+NAR2,4.5,30)];
+const SINB=[buttress('sb1','sinanB',COL.stone,28,WF,0,1,12,7,24),
+  buttress('sb2','sinanB',COL.stone,EF,-13.5,1,0,9,5.5,18),buttress('sb3','sinanB',COL.stone,EF,13.5,1,0,9,5.5,18)];
 
+/* Byzantine atrium west of the outer narthex (≈42 m deep; porticoes on 3 sides, central phiale), shown 537 → early Ottoman period.
+   Width = outer narthex [doğrulanmadı]; heights from the Byzantium 1200 reconstruction (reference only) [doğrulanmadı]. */
+const ATL=42, ATW=2*ZI-6;   // EHW §5 (Schneider 1941): atrium ≈42 m west of the outer narthex, 3 sides open through pairs of columns alternating with piers, marble fountain in the centre
+const ATR=part('atrium',-1,XW-ATL/2,0,0,9);{const m=mat('atrium',COL.grey),mr=mat('atrium',COL.roof),mc=mat('atrium',COL.marble),mw=mat('atrium',COL.win),H=7.2,D=6.4;
+  [-1,1].forEach(sz=>{bx(ATR.g,m,ATL,H+1,1.2,0,0,sz*(ATW/2-0.6),0.4);const r=mesh(shedGeo(ATL,ATW/2-D,ATW/2,0.5,1.9),mr,0,H,0,ATR.g);if(sz<0)r.scale.z=-1;
+    for(let k=0;k<6;k++)bx(ATR.g,mw,2,3.2,0.4,-ATL/2+5+k*(ATL-10)/5,0,sz*(ATW/2+0.05),0.3,1);
+    for(let k=0;k<9;k++)cyl(ATR.g,mc,0.42,0.48,H,-ATL/2+D+2+k*(ATL-D-4)/8,0,sz*(ATW/2-D+0.5),10);});
+  bx(ATR.g,m,1.2,H+1,ATW,-ATL/2+0.6,0,0,0.4);{const r=mesh(shedGeo(ATW-2*D+0.2,ATL/2-D,ATL/2,0.5,1.9),mr,0,H,0,ATR.g);r.rotation.y=-Math.PI/2;}
+  bx(ATR.g,mw,0.4,4.5,4,-ATL/2-0.05,0,0,0.3,1);
+  for(let k=0;k<12;k++)cyl(ATR.g,mc,0.42,0.48,H,-ATL/2+D-0.5,0,-(ATW/2-D)+3+k*(ATW-2*D-6)/11,10);
+  bx(ATR.g,mat('atrium','#E4DFD6',{clip:false}),ATL-2*D,0.25,ATW-2*D,D/2,0,0,0.1,1);
+  cyl(ATR.g,mc,2.6,2.8,0.9,2,0,0,20);for(let k=0;k<6;k++){const a=k/6*Math.PI*2;cyl(ATR.g,mc,0.18,0.18,2.6,2+Math.cos(a)*2.3,0.9,Math.sin(a)*2.3,8);}
+  const d=new THREE.Mesh(new THREE.SphereGeometry(2.7,16,6,0,Math.PI*2,0,Math.PI/2),mr);d.position.set(2,3.5,0);d.castShadow=true;ATR.g.add(d);}
+
+/* Patriarchate (EHW §4; Dark & Kostenec 2006): long, possibly two-storied vaulted hall at the south-west corner, on the south side of the atrium.
+   Drawn as a plain block [doğrulanmadı: size, height, roof]. Shown 537 → early Ottoman period. */
+const PATR=part('patr',-1,XW-ATL/2+4,0,ATW/2+8.5,15);{const m=mat('atrium',COL.grey),mr=mat('atrium',COL.roof),mw=mat('atrium',COL.win);
+  bx(PATR.g,m,34,13,13,0,0,0,0.5);{const r=mesh(shedGeo(34.6,0,7,2.4,0.6),mr,0,13,0,PATR.g);const r2=mesh(shedGeo(34.6,0,7,2.4,0.6),mr,0,13,0,PATR.g);r2.scale.z=-1;}
+  for(let k=0;k<7;k++){bx(PATR.g,mw,1.8,3.4,0.4,-14+k*4.67,7.5,6.55,0.3,1);bx(PATR.g,mw,1.8,3,0.4,-14+k*4.67,2,6.55,0.3,1);}}
+/* atrium remnants: the last columns and piers stood until the 1870s (EHW §5) — a few on the west and north sides [which ones doğrulanmadı] */
+const ATRC=part('atrcol',-1,XW-ATL/2,0,0,8);{const mc=mat('atrium',COL.marble),m=mat('atrium',COL.grey);
+  for(let k=0;k<5;k++)cyl(ATRC.g,mc,0.42,0.48,7.2,-ATL/2+5.9,0,-(ATW/2-6.4)+3+k*4.6,10);for(let k=0;k<3;k++)bx(ATRC.g,m,1.6,7.2,1.6,-ATL/2+5.9,0,-(ATW/2-6.4)+3+k*9.2+2.3,0.3);}
 /* minarets */
-function minaret(name,tag,col,capCol,x,z,h,bal){const p=part(name,'tower',x,0,z,h);const m=mat(tag,col),c=mat(tag,capCol,{r:0.65}),gd=mat('alem',COL.gold,{r:0.45});
-  bx(p.g,m,5.2,6,5.2,0,0,0,0.6);cyl(p.g,m,1.75,1.95,h*0.62,0,6,0,24);
-  const y1=6+h*0.62;cyl(p.g,mat(tag,COL.trim),2.6,1.9,1.1,0,y1,0,24);cyl(p.g,m,1.5,1.6,h*0.2,0,y1+1.1,0,24);
-  let y2=y1+1.1+h*0.2;if(bal>1){cyl(p.g,mat(tag,COL.trim),2.3,1.7,0.9,0,y2,0,24);cyl(p.g,m,1.3,1.4,h*0.08,0,y2+0.9,0,24);y2+=0.9+h*0.08;}
-  cyl(p.g,c,0.05,1.75,h*0.17,0,y2,0,24);cyl(p.g,gd,0.12,0.12,2,0,y2+h*0.17-0.2,0,6);sph(p.g,gd,0.35,0,y2+h*0.17+1.4,0,10,8);return p;}
-const MIN_SE=minaret('minSE','minSE',COL.brick,COL.minCap,33,44,50,1);
-const MIN_NE=minaret('minNE','minNE',COL.min,COL.minCap,33,-44,50,1);
-const MIN_W=[minaret('minSW','minW',COL.min,COL.minCap,-51,42,58,2),minaret('minNW','minW',COL.min,COL.minCap,-51,-42,58,2)];
+/* v6.1 (Doğancan: 'minareler çok ince uzun gözüküyor'): each minaret gets its own form. Total height, shaft height, shaft diameter
+   and 1 şerefe each from Çarhoğlu–Usta–Korkmaz 2013 (SDU Int. Technologic Science 5/1, Table 1, after Oliveira et al. 2011):
+   W pair (Sinan, 1570s) 66.55 / 37.90 / 4.70 m; stone NE 63.20 / 39.70 / 3.10 m; brick SE 44.96 / 33.60 / 3.30 m.
+   Pedestal, şerefe, upper shaft (petek) and külah split of the remaining height scaled from photos [doğrulanmadı]. */
+function minaret(name,tag,col,capCol,x,z,S){const p=part(name,'tower',x,0,z,S.H);const m=mat(tag,col),c=mat(tag,capCol,{r:0.65}),gd=mat('alem',COL.gold,{r:0.45}),
+    st=mat(tag,S.pedCol||COL.min),tr=mat(tag,COL.trim);const R=S.D/2;let y=0;
+  // pedestal (kürsü): square/polygonal stone block, chamfered top (pabuç)
+  bx(p.g,st,S.pedW,S.ped,S.pedW,0,0,0,0.4);y=S.ped;cyl(p.g,st,R+0.15,S.pedW*0.62,1.6,0,y,0,S.seg);y+=1.6;
+  cyl(p.g,m,R,R+0.06,S.shaft-1.6,0,y,0,S.seg);y+=S.shaft-1.6;
+  // şerefe: corbelled (mukarnas) ring + balcony slab + parapet
+  cyl(p.g,tr,R+0.95,R,1.0,0,y,0,S.seg);cyl(p.g,tr,R+1.0,R+1.0,0.25,0,y+1.0,0,S.seg);
+  const pr_=new THREE.Mesh(new THREE.CylinderGeometry(R+0.95,R+0.95,0.9,S.seg,1,true),tr);pr_.position.set(0,y+1.25+0.45,0);pr_.castShadow=true;p.g.add(pr_);y+=1.25;
+  // petek (upper shaft), slimmer
+  cyl(p.g,m,R*0.84,R*0.84,S.petek,0,y,0,S.seg);y+=S.petek;cyl(p.g,tr,R*0.98,R*0.84,0.45,0,y,0,S.seg);y+=0.45;
+  // külah (lead cone) + alem
+  cyl(p.g,c,0.06,R*0.98,S.kulah,0,y,0,S.seg);y+=S.kulah;cyl(p.g,gd,0.1,0.1,S.H-y+0.1,0,y-0.3,0,6);sph(p.g,gd,0.32,0,S.H-0.25,0,10,8);return p;}
+const MS={
+  SE:{H:44.96,ped:5.5,pedW:5.2,shaft:28.1,D:3.3,petek:2.9,kulah:6.4,seg:12,pedCol:COL.stone},   // brick, Mehmed II; stone pedestal block (his SW photo)
+  NE:{H:63.2,ped:8.5,pedW:4.4,shaft:39.7,D:3.1,petek:3.6,kulah:9.1,seg:16},                       // slender stone, Bayezid II
+  W:{H:66.55,ped:12,pedW:6.8,shaft:37.9,D:4.7,petek:4.4,kulah:9.9,seg:16}};                      // Sinan pair, broad square bases
+const MIN_SE=minaret('minSE','minSE',COL.brick,COL.minCap,33,44,MS.SE);
+const MIN_NE=minaret('minNE','minNE',COL.min,COL.minCap,33,-44,MS.NE);
+const MIN_W=[minaret('minSW','minW',COL.min,COL.minCap,-51,42,MS.W),minaret('minNW','minW',COL.min,COL.minCap,-51,-42,MS.W)];
 const WOODM=part('woodmin',-1,-40,0,43,32);{const m=mat('woodmin',COL.wood),c=mat('woodmin',COL.woodCap);bx(WOODM.g,m,4,22,4,0,0,0,0.5);
   bx(WOODM.g,c,5.6,1,5.6,0,22,0,0.4);bx(WOODM.g,m,3,4,3,0,23,0,0.4);cyl(WOODM.g,c,0.05,2.6,6,0,27,0,4).rotation.y=Math.PI/4;}
 
@@ -727,8 +811,8 @@ const FRAG=part('frag',-1,-64,0,-4,4);{const m=mat('frag',COL.marble);bx(FRAG.g,
   bx(FRAG.g,m,2.4,1.4,5,-1.6,0.5,10.2,0.35);}
 
 /* tram line + T1 tram */
-const RAILS=part('rails',-1,TRAM_X,0,0,1);{bx(RAILS.g,mat('rails','#DCD6CD',NOCLIP),5,0.35,156,0,0,0,0.15,1);
-  [-0.72,0.72].forEach(x=>bx(RAILS.g,mat('rails','#98A0AA',{clip:false,r:0.5}),0.26,0.28,156,x,0.35,0,0.1,1));}
+const RAILS=part('rails',-1,TRAM_X,0,PLZ,1);{bx(RAILS.g,mat('rails','#DCD6CD',NOCLIP),5,0.35,118,0,0,0,0.15,1);
+  [-0.72,0.72].forEach(x=>bx(RAILS.g,mat('rails','#98A0AA',{clip:false,r:0.5}),0.26,0.28,118,x,0.35,0,0.1,1));}
 const TRAM=part('tram',-1,TRAM_X,0.62,0,4);{const wh=mat('tram','#F7F6F2',{clip:false,r:0.55}),rd=mat('tram','#E0483D',{clip:false}),nv_=mat('tram','#33416F',{clip:false}),gl=mat('tram','#5E7C9A',{clip:false,r:0.35});
   const n=5,ml=6.2,gap=0.25,Lt=n*ml+(n-1)*gap;for(let i=0;i<n;i++){const z=-Lt/2+ml/2+i*(ml+gap),end=(i===0||i===n-1);
     bx(TRAM.g,wh,2.65,3.1,ml,0,0.2,z,end?1.0:0.5);bx(TRAM.g,gl,2.72,1.05,ml-1.2,0,1.75,z,0.4,1);bx(TRAM.g,rd,2.71,0.45,ml-0.4,0,0.75,z,0.2,1);bx(TRAM.g,nv_,2.71,0.18,ml-0.4,0,1.38,z,0.08,1);}
@@ -814,7 +898,7 @@ function setAll(arr,u,how,stag=0){arr.forEach((p,i)=>showP(p,clamp((u*(1+stag*(a
 /* step → focus tags for the saffron highlight */
 const FOCUS=[[1,['church1'],0.05,0.6],[2,['church2','prop'],0.05,0.58],[3,['piers'],0.1],[4,['walls','gallery','pbut'],0.05],[5,['arches','archE','tymp'],0.05],
  [6,['pend','ring'],0.05],[7,['win1','dome1','dome1e'],0.05,0.6],[7,['halfdome','exedra'],0.64],[8,['pend','piers','ring'],0.25],
- [9,['dome1e','archE'],0.25],[10,['archE'],0.04,0.3],[10,['windows','nubs','drum'],0.38,0.74],[10,['dome2'],0.6],[11,['andr'],0.3],[12,['woodmin'],0.1],[12,['alem'],0.55],
+ [9,['dome1e','archE'],0.25],[10,['archE'],0.04,0.3],[10,['windows','nubs','drum'],0.38,0.74],[10,['dome2'],0.6],[11,['byzB'],0.08,0.32],[11,['andr'],0.3],[12,['woodmin'],0.1],[12,['alem'],0.55],
  [13,['minSE'],0.03,0.25],[13,['minNE'],0.18,0.4],[13,['sinanB'],0.36,0.62],[13,['minW'],0.64],
  [4,['bapt'],0.62,0.98],[12,['bapt'],0.4,0.95],[14,['otag'],0.04,0.5],[14,['tSelim'],0.3],[15,['tSehz'],0.05],[16,['tMurad'],0.05],[17,['tMehmed'],0.05],[18,['bapt'],0.06,0.62],[18,['bapt'],0.66],
  [20,['pend','ring'],0.5],[21,['roundel'],0.28],
@@ -836,6 +920,11 @@ function state(t){
     PBUT.forEach((p,i)=>showP(p,pr(4,0.3+i*0.04,0.55+i*0.04,t),'rise'));
     NARS.forEach((p,i)=>showP(p,pr(4,0.48+i*0.08,0.72+i*0.08,t),'rise'));
     showP(APSE,pr(4,0.55,0.78,t),'rise');
+    RAMPS.forEach((p,i)=>showP(p,pr(4,0.6+i*0.06,0.82+i*0.06,t),'rise'));
+    showP(ATR,pr(4,0.62,0.9,t),'rise');sinkP(ATR,pr(13,0.0,0.14,t));if(t>=at(13,0.14))ATR.vis=0;
+    showP(PATR,pr(4,0.66,0.9,t),'rise');sinkP(PATR,pr(13,0.0,0.14,t));if(t>=at(13,0.14))PATR.vis=0;
+    if(t>=at(13,0.1)&&t<at(22,0)){ATRC.vis=1;}
+    BYZB.forEach((p,i)=>showP(p,pr(11,0.08+i*0.03,0.24+i*0.03,t),'rise'));
     showP(ROOF,pr(4,0.7,0.92,t),'drop');
     ['N','S','W','E'].forEach((k,i)=>showP(ARCH[k],pr(5,0.05+i*0.12,0.38+i*0.12,t),'drop'));
     TYMP.forEach((p,i)=>showP(p,pr(5,0.6+i*0.1,0.85+i*0.08,t),'drop'));
@@ -881,7 +970,7 @@ function state(t){
   {const f=pr(9,0.55,1,t);DUST.forEach((d,i)=>{const u=clamp(f*1.2-i*0.015);d.visible=u>0&&u<1;if(d.visible){const s=Math.sin(u*Math.PI)*(3+(i%3));d.scale.setScalar(Math.max(0.01,s));d.position.y=YS-8+(i%4)*3+u*6;}});}
   // rails + tram
   {const u=pr(22,0.52,0.86,t);if(u>0){RAILS.vis=1;RAILS.g.scale.z=Math.max(0.002,eOut(u));}else RAILS.g.scale.z=1;
-   const v=pr(23,0.03,0.12,t),m=pr(23,0.1,0.86,t);if(v>0){showP(TRAM,v,'drop');TRAM.dz=lerp(-58,58,sm(m));}}
+   const v=pr(23,0.03,0.12,t),m=pr(23,0.1,0.86,t);if(v>0){showP(TRAM,v,'drop');TRAM.dz=lerp(PLZ-46,PLZ+46,sm(m));}}
   // take apart / put back
   const ex=LAYERS.map((l,k)=>clamp(pr(19,0.06+k*0.08,0.42+k*0.08,t)-pr(20,0.05+(5-k)*0.06,0.36+(5-k)*0.06,t)));
   for(const p of PARTS){if(p.layer===-1||!p.layer)continue;const k=LAYERS.indexOf(p.layer),e=k>=4?eOut(ex[k]):sm(ex[k]);
@@ -998,8 +1087,9 @@ const SKY=[[0,'#93C9EE','#C6E4F6','#FDE6CB','#FFE4C0',1.45],[0.45,'#86C2F0','#C2
 function skyAt(u){let i=u<SKY[1][0]?0:1;const a=SKY[i],b=SKY[i+1],k=sm(remap(u,a[0],b[0]));const L=j=>'#'+_c.set(a[j]).lerp(new THREE.Color(b[j]),k).getHexString();
   return{s0:L(1),s1:L(2),s2:L(3),sun:L(4),I:lerp(a[5],b[5],k)};}
 let lastSky='';
+const GREYC=new THREE.Color(COL.grey), GREYT=new Set(['walls','pbut','piers','tymp','arches','archE','halfdome','exedra','drum','nubs','ring','pend']);
 function apply(t,ex=0){
-  const S=state(t);
+  const S=state(t); const GREYK=t<at(3,0)?0:1-sm(pr(12,0.3,0.8,t));
   for(const p of PARTS){const g=p.g;g.visible=!!p.vis;if(!p.vis)continue;g.position.set(p.bx+p.dx,p.by+p.dy,p.bz+p.dz);
     g.rotation.set(p.rx,p.ry0+p.ry,p.rz);g.scale.set(p.s,p.s*p.sy,p.s);}
   // flames / smoke
@@ -1007,8 +1097,8 @@ function apply(t,ex=0){
     F.pu.forEach((s,i)=>{const u=clamp(b*1.3-i*0.06);s.visible=u>0.02&&i%2===0;if(s.visible){s.scale.setScalar(1+u*2.2);s.position.y=F.hN+7+u*9+((CLOCK*1.5+i)%3);}});});
   // materials: highlight + burn
   const pulse=0.5+0.5*Math.sin(CLOCK*3.6);
-  for(const m of MATLIST){const u=m.userData;if(!u.base)continue;const h=S.HL[u.tag]||0;const burn=u.tag==='church1'?S.b1:u.tag==='church2'||u.tag==='prop'?S.b2:0;
-    m.color.copy(u.base);if(burn>0)m.color.lerp(ASH,burn*0.85);if(h>0){m.color.lerp(SAF2,(u.tag==='tram'?0.12:0.36)*h);}
+  for(const m of MATLIST){const u=m.userData;if(!u.base)continue;const h=window.__NOHL?0:(S.HL[u.tag]||0);const burn=u.tag==='church1'?S.b1:u.tag==='church2'||u.tag==='prop'?S.b2:0;
+    m.color.copy(u.base);if(GREYK>0&&GREYT.has(u.tag)&&u.base.r>u.base.b+0.12)m.color.lerp(GREYC,GREYK*0.85);if(burn>0)m.color.lerp(ASH,burn*0.85);if(h>0){m.color.lerp(SAF2,(u.tag==='tram'?0.12:0.36)*h);}
     if(u.tag!=='flame'){if(h>0){m.emissive.copy(SAF);m.emissiveIntensity=h*(0.12+0.14*pulse);}else m.emissiveIntensity=0;}}
   // cut planes
   CUT2.constant=S.cut>0.001?lerp(130,-0.5,S.cut):1e4;
@@ -1020,7 +1110,7 @@ function apply(t,ex=0){
   const sk=skyAt(t/TOTAL),key=sk.s0+sk.s1+sk.s2;if(key!==lastSky){const r=document.documentElement.style;r.setProperty('--sky0',sk.s0);r.setProperty('--sky1',sk.s1);r.setProperty('--sky2',sk.s2);lastSky=key;}
   sun.color.set(sk.sun);sun.intensity=sk.I;
   // camera
-  const R=freeRect();let o=camPreset(t);o[0]+=ex*4;
+  const R=freeRect();let o=window.__CAMO?window.__CAMO.slice():camPreset(t);o[0]+=ex*4;
   if(!RENDER&&CUR&&!JUMPCAM){const k=1-Math.exp(-DT*3.2);let da=o[0]-CUR[0];if(da>180)da-=360;if(da<-180)da+=360;CUR=[CUR[0]+da*k,...[1,2,3,4,5].map(j=>lerp(CUR[j],o[j],k))];}else CUR=o.slice();
   applyCam(CUR,R);JUMPCAM=false;JUMPFIT=false;
   renderer.render(scene,cam);
