@@ -574,16 +574,26 @@ const MED_PED_H=(()=>{const W=256,c=cnv(W,W),x=c.getContext('2d');x.fillStyle='r
       else{x.moveTo(cx-rx,cy+ry);x.quadraticCurveTo(cx-rx*0.2,cy-ry*1.4,cx+rx,cy-ry*0.2);x.quadraticCurveTo(cx,cy+ry*0.1,cx-rx,cy+ry);x.fill();
         x.strokeStyle='rgb(170,170,170)';x.lineWidth=4;x.beginPath();x.arc(cx+rx*0.55,cy+ry*0.45,ry*0.35,0,Math.PI*1.6);x.stroke();}}});
   return blurCopy(c,1);})();
-function medusaFaceGeo(){const g=new THREE.PlaneGeometry(1.5,1.5,56,56),p=g.attributes.position;
+function medusaFaceGeo(){ /* v2.6: finer, deeper modelled face (the east head has no scan): almond eyes with lids and pupils, brows, nose with nostril wings,
+     parted lips, chin, cheeks, and snake-like hair locks round the oval. Relief schematic, after photos of the real head (not a scan) [doğrulanmadı] */
+  const g=new THREE.PlaneGeometry(1.5,1.5,140,140),p=g.attributes.position;
   const bump=(x,y,cx,cy,rx,ry,h)=>{const d=((x-cx)/rx)**2+((y-cy)/ry)**2;return d<1?h*(1-d)*(1-d):0;};
-  for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i);
-    const e=(x/0.5)**2+((y+0.03)/0.59)**2;let z=e<1?0.22*Math.sqrt(1-e):0;
-    z+=bump(x,y,0,-0.12,0.09,0.26,0.15);                                  // nose ridge
-    z+=bump(x,y,-0.24,0.2,0.2,0.07,0.06)+bump(x,y,0.24,0.2,0.2,0.07,0.06); // brows
-    z-=bump(x,y,-0.24,0.09,0.14,0.08,0.06)+bump(x,y,0.24,0.09,0.14,0.08,0.06); // eye sockets
-    z+=bump(x,y,0,-0.43,0.2,0.07,0.06);                                   // lips
-    z+=bump(x,y,-0.3,-0.17,0.15,0.15,0.05)+bump(x,y,0.3,-0.17,0.15,0.15,0.05); // cheeks
-    const hr=Math.hypot(x/0.62,(y+0.03)/0.72);if(hr>0.78&&hr<1.05)z+=0.05*Math.sin((hr-0.78)/0.27*Math.PI);   // hair roll round the face
+  for(let i=0;i<p.count;i++){const x=p.getX(i),y=p.getY(i),ax=Math.abs(x);
+    const e=(x/0.5)**2+((y+0.03)/0.6)**2;let z=e<1?0.24*Math.sqrt(1-e):0;
+    z+=bump(x,y,0,0.32,0.36,0.14,0.03);                                    // forehead
+    z+=bump(ax,y,0.2,0.2,0.17,0.055,0.07);                                 // brows
+    z-=bump(ax,y,0.2,0.105,0.15,0.085,0.085);                              // eye sockets
+    z+=bump(ax,y,0.2,0.1,0.105,0.05,0.07);                                 // eyeballs (almond)
+    z+=bump(ax,y,0.2,0.135,0.11,0.022,0.02);                               // upper lids
+    z-=bump(ax,y,0.2,0.098,0.022,0.022,0.025);                             // pupils (drilled)
+    z+=bump(x,y,0,-0.06,0.07,0.24,0.14)+bump(x,y,0,-0.22,0.1,0.07,0.04);   // nose ridge + tip
+    z+=bump(ax,y,0.075,-0.24,0.055,0.045,0.04);z-=bump(ax,y,0.045,-0.27,0.022,0.018,0.03); // nostril wings + nostrils
+    z+=bump(ax,y,0.27,-0.15,0.17,0.17,0.06);                               // cheeks
+    z+=bump(x,y,0,-0.375,0.15,0.035,0.05)+bump(x,y,0,-0.445,0.13,0.04,0.055); // upper + lower lip
+    z-=bump(x,y,0,-0.41,0.13,0.012,0.04);                                  // mouth line
+    z+=bump(x,y,0,-0.54,0.13,0.07,0.04);                                   // chin
+    const hr=Math.hypot(x/0.62,(y+0.03)/0.72),an=Math.atan2(y+0.03,x);
+    if(hr>0.76&&hr<1.12){const env=Math.sin((hr-0.76)/0.36*Math.PI);z+=env*(0.07+0.045*Math.sin(an*22+hr*9));}   // snake-like locks
     p.setZ(i,z);}
   g.computeVertexNormals();return g;}
 const MEDFACE=medusaFaceGeo();
@@ -609,7 +619,7 @@ function scanGeo25(S){const b64=(t,T)=>{const b=atob(t),u=new Uint8Array(b.lengt
 const MED_FACE_DIR=0; /* faces turned to the NE, towards the open part of the cistern (the walled zone lies to their SE/SW) [doğrulanmadı] */
 function stoneMat(tag,hc,lo,hi,nstr,seed){const m=new THREE.MeshStandardMaterial({map:hColor(hc,MEDSTONE,lo,hi,seed),normalMap:hNormal(hc,nstr),roughness:0.85,side:THREE.FrontSide});
   m.onBeforeCompile=aoHook;m.userData={tag,base:new THREE.Color('#FFFFFF')};MATLIST.push(m);return m;}
-const MED=[];{const mFace=stoneMat('medface',MED_FACE_H,0.78,1.1,3.2,3),mHair=stoneMat('medusa',MED_HAIR_H,0.8,1.08,3.0,5),mPed=stoneMat('medusa',MED_PED_H,0.74,1.1,4.0,9),mS=mat('medusa',MEDSTONE);
+const MED=[];{const mFace=stoneMat('medusa',MED_FACE_H,0.78,1.1,3.2,3),mHair=stoneMat('medusa',MED_HAIR_H,0.8,1.08,3.0,5),mPed=stoneMat('medusa',MED_PED_H,0.74,1.1,4.0,9),mS=mat('medusa',MEDSTONE);
   [['west',Math.PI],['east',Math.PI/2]].forEach(([k,rz])=>{const [c,r]=code(MEDUSA[k]);const p=part('med'+k,colX(c),0,rowZ(r),MED_SHAFT0);
     if(k==='west'&&MEDSCAN){ /* v2.5 (Doğancan t203u "Netlik artamaz mı?"): full-resolution scan (145k tris, no decimation), his scan's own photo texture
          (original 4096×1472 JPEG, untouched), smooth welded normals, max anisotropy; the never-captured back/top is a clay core coloured from the scan */
@@ -624,9 +634,9 @@ const MED=[];{const mFace=stoneMat('medface',MED_FACE_H,0.78,1.1,3.2,3),mHair=st
       const mc=new THREE.MeshStandardMaterial({color:'#FFFFFF',vertexColors:true,roughness:0.9,side:THREE.DoubleSide});mc.polygonOffset=true;mc.polygonOffsetFactor=4;mc.polygonOffsetUnits=8; /* the fill stays behind the captured surface */mc.onBeforeCompile=aoHook;
       mc.userData={tag:'medusa',base:new THREE.Color('#FFFFFF')};MATLIST.push(mc);mesh(g.core,mc,0,0,0,p.g);
       MED.push(p);return;}
-    bx(p.g,mHair,MEDD,MEDH,MEDW,0,0,0,0.18,2);                                   // the head block (hair locks on its sides)
+    bx(p.g,mHair,MEDD,MEDH,MEDW,0,0,0,0.07,2);                                   // the head block (hair locks on its sides)
     const fy=new THREE.Group();fy.rotation.y=MED_FACE_DIR;p.g.add(fy);
-    const f=new THREE.Group();f.position.set(0,MEDH/2,MEDD/2+0.01);f.rotation.z=rz;f.scale.setScalar(0.72);fy.add(f);mesh(MEDFACE,mFace,0,0,0,f).castShadow=false;   // the face, on one side (sideways)
+    const f=new THREE.Group();f.position.set(0,MEDH/2,MEDW/2-0.012);f.rotation.z=rz;f.scale.set((MEDH-0.16)/1.5,(MEDD-0.16)/1.5,1.2);  /* v2.6: on the block's outer side (was buried inside it), sideways, filling the side */fy.add(f);mesh(MEDFACE,mFace,0,0,0,f).castShadow=false;   // the face, on one side (sideways)
     bx(p.g,mPed,PEDW,PEDH,PEDW,0,MEDH,0,0.04,1);                                  // carved square pedestal
     bx(p.g,mS,PEDW+0.16,PEDCAP,PEDW+0.16,0,MEDH+PEDH,0,0.05,1);                   // moulded cap
     const to=new THREE.Mesh(new THREE.TorusGeometry(0.38,0.06,8,24),mS);to.rotation.x=Math.PI/2;to.position.y=MEDH+PEDH+PEDCAP+0.06;to.castShadow=true;p.g.add(to);
@@ -666,7 +676,9 @@ const TEAR=(()=>{const [c,r]=code(TEARC);const p=part('tearcol',colX(c),0,rowZ(r
   const ring=new THREE.Mesh(rg,rm);ring.position.y=0.62;p.g.add(ring);p.ring=ring;return p;})();
 /* mud layer (rubble 1968–70, removed 1985–87) and the later concrete floor layer (removed 2016–22) */
 const MUD=part('mud',0,0,0,1);{const s=chamRect(LIN-0.1,WIN-0.1,CHAM);const g=new THREE.ExtrudeGeometry(s,{depth:1.1,bevelEnabled:false});g.rotateX(-Math.PI/2);mesh(g,mat('mud',COL.mud),0,0,0,MUD.g);}
-const CFL=part('cfloor',0,0,0,1);{const s=chamRect(LIN-0.1,WIN-0.1,CHAM);const g=new THREE.ExtrudeGeometry(s,{depth:0.5,bevelEnabled:false});g.rotateX(-Math.PI/2);mesh(g,mat('cfloor',COL.conc),0,0,0,CFL.g);}
+const CFL=part('cfloor',0,0,0,1);{const s=chamRect(LIN-0.1,WIN-0.1,CHAM);
+  /* v2.6: the 1985–87 floor layer is drawn open round the two Medusa heads, so they stand free on the old floor as visitors saw them; outline schematic [doğrulanmadı] */
+  {const h=new THREE.Path(),x0=colX(27.45),x1=LIN-0.12,z0=rowZ(2.45),z1=rowZ(4.6);h.moveTo(x0,-z0);h.lineTo(x0,-z1);h.lineTo(x1,-z1);h.lineTo(x1,-z0);h.closePath();s.holes.push(h);}const g=new THREE.ExtrudeGeometry(s,{depth:0.5,bevelEnabled:false});g.rotateX(-Math.PI/2);mesh(g,mat('cfloor',COL.conc),0,0,0,CFL.g);}
 /* water: a translucent sheet. Historical levels illustrative; today's ≈0.55 m follows Doğancan Işık's on-site observation (S11, 2026). Shallow water is clearer so plinths and paving show through */
 /* v2.4 (Doğancan, 03.11.2026: "Mavi su gözüksün"): the sheet now reads as blue water at every step: teal tint that deepens with depth and toward
    the middle of the hall, lighter over the submerged plinths (≈0.1 m below the surface today), sky sheen at grazing angles, soft sun glints on a faint
@@ -866,7 +878,10 @@ const O=(az,el,dr=0.9)=>({k:'o',az,el,dr});
 const I=(eye,look,fov=52,walk,hw,wt=1)=>({k:'i',eye,look,fov,walk,hw,wt});
 const V={1:[[0,O(-22,42)]],2:[[0,O(-30,48)]],3:[[0,O(-18,46)]],4:[[0,O(-10,50)]],5:[[0,O(-26,42)]],6:[[0,O(-34,54)]],7:[[0,O(-4,52)]],
  8:[[0,O(-20,52)],[0.22,I([-12*P,4.2,1*P],[2*P,3.6,-1.4*P],54,[2.5*P,0,0])]],9:[[0,O(-38,60)]],10:[[0,O(-6,60)]],11:[[0,O(-34,62)]],
- 12:[[0,O(-14,56)],[0.3,I([10.0*P,3.8,1.9*P],[13.5*P,0.9,-1.9*P],38,[2.3*P,-0.5,-1.35*P],0,0)]],13:[[0,O(-30,52)]],14:[[0,O(-20,54)]],
+ 12:[[0,O(-14,56)],  /* v2.6: inside, the pair first, then each face close and frontal (faces look +z, NE), clear of the card and the columns */
+   [0.3,Object.assign(I([13.5*P-4.6,3.2,(-1.5*P)+7.2],[13.5*P-0.1,0.9,((-1.5*P)+(-2.5*P))/2+0.6],46,[0.4,-0.3,-0.6],0,0),{dk:0.66})],
+   [0.5,Object.assign(I([13.5*P-0.9,1.2,(-1.5*P)+4.3],[13.5*P,0.75,(-1.5*P)],50,[0.25,0,-0.25],0,1),{dk:0.8})],
+   [0.72,Object.assign(I([13.5*P-0.5,1.05,(-2.5*P)+4.4],[13.5*P,0.75,(-2.5*P)],50,[0.2,0,-0.25],0,1),{dk:0.8})]],13:[[0,O(-30,52)]],14:[[0,O(-20,54)]],
  15:[[0,O(-26,48)],[0.3,I([-2.2*P,2.0,0.75*P],[3.5*P,3.2,1.5*P],50,[4.2*P,0,0.15*P],0,0)],[0.82,O(-12,46,0.6)]]};
 const KEYS=[];Object.keys(V).forEach(s=>V[s].forEach(([f,p])=>KEYS.push({t:at(+s,f),p,s:+s})));KEYS.sort((a,b)=>a.t-b.t);
 KEYS.forEach((k,i)=>{k.t1=i<KEYS.length-1?KEYS[i+1].t:TOTAL;});
@@ -893,6 +908,7 @@ function evalP(p,R,tt,k){if(p.k==='o'){const az=p.az+(tt-k.t)*p.dr+UAZ,el=clamp(
   if(p.hw){const hf=2*Math.atan(Math.tan(ang(p.fov/2))*innerWidth/innerHeight),dh=Math.hypot(eye.x-tgt.x,eye.z-tgt.z),need=p.hw/Math.tan(hf/2);
     if(need>dh){const k=need/dh;eye.x=tgt.x+(eye.x-tgt.x)*k;eye.z=tgt.z+(eye.z-tgt.z)*k;}}
   if(UAZ){const d=tgt.clone().sub(eye).applyAxisAngle(UPV,ang(-UAZ*0.5));tgt.copy(eye).add(d);}
+  if(p.dk&&innerWidth>=760){const dv=eye.clone().sub(tgt).multiplyScalar(p.dk);eye.copy(tgt).add(dv);} /* v2.6: closer desktop framing for the Medusa views */
   return{eye,tgt,fov:p.fov,bx:0,by:0};}
 let CAMS=null;
 function camAt(tt,R){let i=KEYS.findIndex(k=>tt<k.t1);if(i<0)i=KEYS.length-1;const k=KEYS[i],kp=KEYS[Math.max(0,i-1)];
@@ -972,7 +988,7 @@ function apply(t,ex=0){
   const pulse=0.5+0.5*Math.sin(CLOCK*3.6);
   for(const m of MATLIST){const u=m.userData;if(!u.base)continue;const h=S.HL[u.tag]||0;m.color.copy(u.base);
     if(u.tag==='stoa'&&S.burn>0)m.color.lerp(new THREE.Color('#A79D95'),S.burn*0.6);
-    if(h>0){m.color.lerp(SAF2,0.4*h);}if(u.tag!=='flame'){if(h>0){m.emissive.copy(SAF);m.emissiveIntensity=h*(0.14+0.16*pulse);}else m.emissiveIntensity=0;}}
+    if(h>0){m.color.lerp(SAF2,(u.tag==='medusa'?0.14:0.4)*h);}if(u.tag!=='flame'){if(h>0){m.emissive.copy(SAF);m.emissiveIntensity=h*(u.tag==='medusa'?0.04+0.05*pulse:0.14+0.16*pulse);}else m.emissiveIntensity=0;}}
   const sk=skyAt(t/TOTAL),key=sk.s0+sk.s1+sk.s2;if(key!==lastSky){const r=document.documentElement.style;r.setProperty('--sky0',sk.s0);r.setProperty('--sky1',sk.s1);r.setProperty('--sky2',sk.s2);lastSky=key;}
   sun.color.set(sk.sun);sun.intensity=sk.I;
   const R=freeRect();const c=camAt(t+ex*0,R);if(ex>0&&!c.walk){/* hold: slow drift */}
