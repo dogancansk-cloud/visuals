@@ -1,0 +1,97 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "sultanahmet",
+ "name": "Sultanahmet Camii",
+ "name_en": "Sultan Ahmed Mosque (Blue Mosque)",
+ "source": "Built for the Istanbul 3D map (Groker, 4 Nov 2026) from the OSM outline r18055570 and building:parts (© OpenStreetMap contributors, ODbL); figures from landmarks_sources.md §2/§16 ([B1] DİA, [B2] Kültür Portalı, [B3] MCID, [B4]); present-day state; toy style. Shape references: Doğancan's photos (never textures).",
+ "model": "sultanahmet.glb",
+ "model_web": "sultanahmet.web.glb",
+ "anchor": {
+  "lat": 41.0052529,
+  "lon": 28.9768787,
+  "what": "model origin = main dome centre (OSM w400562088 centroid), ground level"
+ },
+ "rotation_deg": 90.0,
+ "rotation_meaning": "compass bearing of the model +X axis (model is in map axes: +X east, +Z south)",
+ "three_rotation_y_rad": 0.0,
+ "scale_m": 1.0,
+ "qibla_axis_bearing_deg": 133.2,
+ "up": "+Y",
+ "ground": "y = 0 (flat); the map adds terrain height at the anchor only",
+ "heights_m": {
+  "hall walls": "21.0 m (yaklaşık) [doğrulanmadı]",
+  "main dome": "outer r 12.4 m (23.5 m [B2,B3] + shell), crown 44 m [§16 estimate: 43 m inside + ~1 m]; alem to ~48.5 m",
+  "footprint": "OSM outline r18055570 (hall ≈ 52 × 58 m between the corner minarets; DİA/KP 64 × 72 m incl. galleries)",
+  "half-domes": "r 12.2 m, crown ≈ 36.8 m; exedrae r 5 m, crown ≈ 27.8 m (yaklaşık)",
+  "pier turrets": "octagonal, to 37 m + small dome ≈ 39.6 m (OSM parts 30-39 m)",
+  "corner domes": "r 5.4 m, crown 27 m (yaklaşık)",
+  "minarets": "hall corners 64 m [B3], 3 şerefe [B1]; courtyard pair 54 m (OSM) [doğrulanmadı], 2 şerefe [B1]; şerefe heights [doğrulanmadı]",
+  "courtyard": "walls 8.0 m (OSM 8 m), 30 portico domes from OSM parts (front ones larger), hexagonal şadırvan 6.3 m (yaklaşık)"
+ },
+ "parts": [
+  "hall (walls, 3 window rows, balustrade)",
+  "main dome + drum (28 windows, 8 buttress turrets)",
+  "4 half-domes + 12 exedrae",
+  "4 elephant-foot pier turrets",
+  "4 corner domes",
+  "side-gallery domes",
+  "6 minarets (3/3/3/3/2/2 şerefe)",
+  "courtyard (30 portico domes from OSM, şadırvan, gate)"
+ ],
+ "footprint_map_xz": [
+  [
+   [
+    -260.69,
+    1984.66
+   ],
+   [
+    -220.74,
+    2022.49
+   ],
+   [
+    -179.93,
+    2062.02
+   ],
+   [
+    -178.45,
+    2063.3
+   ],
+   [
+    -177.11,
+    2061.93
+   ],
+   [
+    -135.32,
+    2016.84
+   ],
+   [
+    -134.11,
+    2015.47
+   ],
+   [
+    -175.79,
+    1975.75
+   ],
+   [
+    -181.73,
+    1970.13
+   ],
+   [
+    -215.65,
+    1938.02
+   ],
+   [
+    -236.01,
+    1959.09
+   ]
+  ]
+ ],
+ "footprint_note": "map metres; map buildings under it are dropped",
+ "map_projection": {
+  "lat0": 41.0235,
+  "lon0": 28.979,
+  "kx_m_per_deg": 83984.30895496714,
+  "kz_m_per_deg": 110574.0
+ },
+ "licence": "model: Doğancan Işık project; no third-party models or textures; outline © OpenStreetMap contributors (ODbL)"
+}

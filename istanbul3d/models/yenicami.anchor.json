@@ -1,0 +1,185 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "yenicami",
+ "name": "Yeni Cami",
+ "name_en": "New Mosque (Yeni Valide Camii)",
+ "source": "Built for the Istanbul 3D map (Groker, 4 Nov 2026) from the OSM outline r7574356 (+ w939052267 as the Hünkâr Kasrı [doğrulanmadı]) (© OpenStreetMap contributors, ODbL); figures from landmarks_sources.md §3 ([C1] DİA, [C2] MCID, [C3] Tekindağ, [C4] AGS 2012 rölöve); present-day state; toy style. Shape references: Doğancan's photo and memory note (never textures).",
+ "model": "yenicami.glb",
+ "model_web": "yenicami.web.glb",
+ "anchor": {
+  "lat": 41.0168266,
+  "lon": 28.9722177,
+  "what": "model origin = main dome centre (hall centre on the court axis), ground level (harim floor ±0 [C4])"
+ },
+ "rotation_deg": 90.0,
+ "rotation_meaning": "compass bearing of the model +X axis (model is in map axes: +X east, +Z south)",
+ "three_rotation_y_rad": 0.0,
+ "scale_m": 1.0,
+ "up": "+Y",
+ "ground": "y = 0 (flat); the map adds terrain height at the anchor only",
+ "heights_m": {
+  "hall walls": "17.0 m (yaklaşık) [doğrulanmadı]; side galleries 9 m",
+  "plan": "court from the OSM outline r7574356; hall drawn to [C4] harim 39.40 × 46.30 m + ≈4.5 m side galleries (checked against Doğancan's Apple Maps top view, 4 Nov); court 39.40 × 37.40 m [C4]",
+  "main dome": "outer r 9.1 m; cornice +31.13 m [C4]; inner crown +39.36 m [C4] -> outer crown ≈ 40.3 m (yaklaşık); 24 drum windows",
+  "half-domes": "4 × r 8.2 m, crown ≈ 27 m [C4]; 8 exedrae r 3.3 m, crown ≈ 20.7 m (yaklaşık)",
+  "pier turrets / corner domes": "turrets to 30.4 m + small dome ≈ 32 m; corner domes r 4.2 m, crown ≈ 21.6 m (yaklaşık)",
+  "minarets": "2 × 63.50 m, şerefe floors +31.00 / +37.00 / +44.00 m, base cornice +8.33 m [C4]",
+  "courtyard": "walls 9.0 m (yaklaşık), 19 portico domes (row at the hall larger), octagonal şadırvan ≈ 10.6 m with dome (yaklaşık)",
+  "Hünkâr Kasrı": "arcaded base 7 m + upper floor to 12 m + hip roof; stepped ramp 5.6 → 2.4 m (simple form, yaklaşık) [doğrulanmadı]",
+  "Hatice Turhan Sultan Türbesi": "≈15 m square body, walls 11.5 m, octagonal drum to 14.0 m, dome Ø≈13 m, crown ≈19.7 m + alem; porch 15 m wide (≈6.4 m deep here; sources: 15 × 15 m) to 7 m with a central dome (yaklaşık) [doğrulanmadı]",
+  "Yeni Cami Meydanı": "paved (OSM w822870615), flush with the street"
+ },
+ "parts": [
+  "hall (3 window rows, balustrade) + side galleries with small domes",
+  "main dome on a 24-window drum, 8 buttresses",
+  "4 half-domes + 8 exedrae",
+  "4 pier turrets",
+  "4 corner domes",
+  "Hatice Turhan Sultan Türbesi (domed, porch) on OSM w110009548",
+  "paved Yeni Cami Meydanı (OSM w822870615)",
+  "2 minarets × 3 şerefe (16-sided)",
+  "courtyard: domed portico, pale marble paving, octagonal marble şadırvan",
+  "Hünkâr Kasrı + stepped ramp (simple)"
+ ],
+ "footprint_map_xz": [
+  [
+   [
+    -614.99,
+    725.74
+   ],
+   [
+    -609.57,
+    732.11
+   ],
+   [
+    -604.5,
+    737.87
+   ],
+   [
+    -603.08,
+    736.61
+   ],
+   [
+    -572.39,
+    771.27
+   ],
+   [
+    -536.15,
+    739.19
+   ],
+   [
+    -566.84,
+    704.53
+   ],
+   [
+    -565.8,
+    703.6
+   ],
+   [
+    -569.27,
+    699.65
+   ],
+   [
+    -574.3,
+    703.95
+   ],
+   [
+    -576.57,
+    701.56
+   ],
+   [
+    -595.04,
+    680.53
+   ],
+   [
+    -610.52,
+    693.91
+   ],
+   [
+    -625.38,
+    706.76
+   ],
+   [
+    -611.44,
+    722.67
+   ]
+  ],
+  [
+   [
+    -546.39,
+    740.87
+   ],
+   [
+    -536.29,
+    749.89
+   ],
+   [
+    -531.08,
+    746.37
+   ],
+   [
+    -527.23,
+    743.78
+   ],
+   [
+    -516.86,
+    737.51
+   ],
+   [
+    -510.67,
+    733.32
+   ],
+   [
+    -517.12,
+    720.68
+   ],
+   [
+    -535.53,
+    731.29
+   ],
+   [
+    -536.91,
+    732.15
+   ]
+  ],
+  [
+   [
+    -560.98,
+    774.65
+   ],
+   [
+    -562.68,
+    780.92
+   ],
+   [
+    -548.21,
+    784.85
+   ],
+   [
+    -546.5,
+    778.58
+   ],
+   [
+    -542.6,
+    764.2
+   ],
+   [
+    -557.07,
+    760.27
+   ],
+   [
+    -560.98,
+    774.65
+   ]
+  ]
+ ],
+ "footprint_note": "map metres; map buildings under it are dropped",
+ "map_projection": {
+  "lat0": 41.0235,
+  "lon0": 28.979,
+  "kx_m_per_deg": 83984.30895496714,
+  "kz_m_per_deg": 110574.0
+ },
+ "licence": "model: Doğancan Işık project; no third-party models or textures; outline © OpenStreetMap contributors (ODbL)",
+ "qibla_axis_bearing_deg": 138.5
+}

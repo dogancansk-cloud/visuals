@@ -1,0 +1,107 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "rustempasa",
+ "name": "Rüstem Paşa Camii",
+ "name_en": "Rüstem Pasha Mosque",
+ "source": "Built for the Istanbul 3D map (Groker, 4 Nov 2026) from the OSM outline w175518494 (© OpenStreetMap contributors, ODbL); all heights yaklaşık [doğrulanmadı] (not in landmarks_sources.md yet); toy style. Shape reference: Doğancan's photo (never a texture).",
+ "model": "rustempasa.glb",
+ "model_web": "rustempasa.web.glb",
+ "anchor": {
+  "lat": 41.0176122,
+  "lon": 28.9688167,
+  "what": "model origin = main dome centre, street level (podium included in the model)"
+ },
+ "rotation_deg": 90.0,
+ "rotation_meaning": "compass bearing of the model +X axis (model is in map axes: +X east, +Z south)",
+ "three_rotation_y_rad": 0.0,
+ "scale_m": 1.0,
+ "up": "+Y",
+ "ground": "y = 0 (flat); the map adds terrain height at the anchor only",
+ "heights_m": {
+  "main dome": "r 7.6 m (Ø ≈ 15 m), drum 15.5-19.1 m with 16 lattice windows, crown ≈ 25.3 m above the street (yaklaşık) [doğrulanmadı]",
+  "podium": "5.5 m vaulted shop base with arched openings [doğrulanmadı]",
+  "hall": "walls to 15.5 m above the street (yaklaşık)",
+  "minaret": "38 m above the street, 1 şerefe at 26 m [doğrulanmadı]"
+ },
+ "parts": [
+  "vaulted shop podium with arched openings",
+  "hall with 2 window rows",
+  "ribbed lead dome on a ring of 16 lattice windows",
+  "4 corner semi-domes + 4 small domes",
+  "double portico with 5 small domes",
+  "1 minaret, 1 şerefe"
+ ],
+ "footprint_map_xz": [
+  [
+   [
+    -890.05,
+    648.37
+   ],
+   [
+    -884.35,
+    654.18
+   ],
+   [
+    -883.3,
+    653.17
+   ],
+   [
+    -877.02,
+    659.56
+   ],
+   [
+    -878.06,
+    660.57
+   ],
+   [
+    -872.14,
+    666.6
+   ],
+   [
+    -868.79,
+    663.34
+   ],
+   [
+    -866.52,
+    661.13
+   ],
+   [
+    -856.86,
+    670.94
+   ],
+   [
+    -837.03,
+    651.7
+   ],
+   [
+    -846.6,
+    641.98
+   ],
+   [
+    -840.96,
+    636.86
+   ],
+   [
+    -853.52,
+    625.56
+   ],
+   [
+    -850.54,
+    622.66
+   ],
+   [
+    -856.9,
+    616.21
+   ]
+  ]
+ ],
+ "footprint_note": "map metres; map buildings under it are dropped",
+ "map_projection": {
+  "lat0": 41.0235,
+  "lon0": 28.979,
+  "kx_m_per_deg": 83984.30895496714,
+  "kz_m_per_deg": 110574.0
+ },
+ "licence": "model: Doğancan Işık project; no third-party models or textures; outline © OpenStreetMap contributors (ODbL)",
+ "qibla_axis_bearing_deg": 135.9
+}

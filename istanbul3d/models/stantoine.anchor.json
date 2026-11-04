@@ -1,0 +1,120 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "stantoine",
+ "name": "Sent Antuan Kilisesi",
+ "name_en": "Church of St. Anthony of Padua",
+ "source": "Built for the Istanbul 3D map (Grok Bot, 4 Nov 2026) on the OSM outline w112619334 (© OpenStreetMap contributors, ODbL). Figures and sources: data_pipeline/stantoine/README.md; unpublished heights pixel-measured from reference photos (yaklaşık). Present-day state; toy style. Shape references never used as textures.",
+ "model": "stantoine.glb",
+ "model_web": "stantoine.web.glb",
+ "anchor": {
+  "lat": 41.0322881,
+  "lon": 28.9771507,
+  "what": "model origin = OSM outline centroid, courtyard level"
+ },
+ "rotation_deg": 90.0,
+ "rotation_meaning": "compass bearing of the model +X axis (model is in map axes: +X east, +Z south)",
+ "three_rotation_y_rad": 0.0,
+ "scale_m": 1.0,
+ "up": "+Y",
+ "ground": "y = 0 (flat); the map adds terrain height at the anchor only",
+ "heights_m": {
+  "plan": "Latin cross pixel-measured from the top-down photo at 5.32 px/m (front->head 266 px = 50 m, sentantuan.com): nave+aisles ≈21 m wide (aisles ≈4.7 m inside, source 4.70 m), nave roof ≈10.3 m, transept 29.20 × ≈12.8 m (length per sentantuan.com; photo gave ≈31.2), head ≈10.7 × 12.6 m with chamfered end (yaklaşık)",
+  "walls": "nave/transept/head walls 19.5 m, aisle walls 13.0 m (inside height 23 m per sentantuan.com; walls yaklaşık)",
+  "roofs": "terracotta tile hipped roofs, ridge ≈24.0 m, crossing as a hip/valley intersection (no dome); aisle roofs to ≈14.3 m; white stone eave trims (photos)",
+  "front": "central gable with the cross at ≈26 m (sentantuan.com: 26 m), aisle fronts ≈15.5 m, pinnacles to ≈25.7 m (pixel, yaklaşık)",
+  "bell_tower": "≈5.5 m square (top-down, perspective-corrected, yaklaşık) at the rear corner of the head and the right transept arm; shaft to 25.0 m, belfry with arches + clock to 31.0 m, spire tip ≈42.0 m (oblique + axial photos, yaklaşık) [doğrulanmadı]",
+  "forecourt": "≈33 m deep paved forecourt between the two Sent Antuan apartment blocks (OSM map buildings, ≈16.6 m), gated three-arch arcade at İstiklal (yaklaşık)",
+  "site": "the ground falls steeply to the east (apse floor 26 m above the street below); the map ground is flat here"
+ },
+ "parts": [
+  "Latin-cross red-brick body: nave with two aisles, transept, chamfered head",
+  "terracotta tile hipped roofs with white eave trims, crossing as hip/valley intersection",
+  "neo-Gothic west front: gables, pinnacles, stone stripes, turquoise frieze, three rose windows, porch, steps",
+  "bell tower at the rear corner of head and right transept arm: belfry, clock, pointed tile spire",
+  "paved forecourt with gated arcade at İstiklal"
+ ],
+ "footprint_map_xz": [
+  [
+   [
+    -152.85,
+    -981.98
+   ],
+   [
+    -176.53,
+    -990.0
+   ],
+   [
+    -178.24,
+    -984.93
+   ],
+   [
+    -181.54,
+    -975.18
+   ],
+   [
+    -183.26,
+    -970.11
+   ],
+   [
+    -159.58,
+    -962.09
+   ],
+   [
+    -160.89,
+    -958.21
+   ],
+   [
+    -148.77,
+    -954.11
+   ],
+   [
+    -147.52,
+    -957.8
+   ],
+   [
+    -142.31,
+    -956.04
+   ],
+   [
+    -140.54,
+    -961.25
+   ],
+   [
+    -136.28,
+    -959.8
+   ],
+   [
+    -132.99,
+    -961.43
+   ],
+   [
+    -131.32,
+    -966.36
+   ],
+   [
+    -132.95,
+    -969.65
+   ],
+   [
+    -142.42,
+    -972.86
+   ],
+   [
+    -139.41,
+    -981.76
+   ],
+   [
+    -151.53,
+    -985.87
+   ]
+  ]
+ ],
+ "footprint_note": "map metres; map buildings under it are dropped",
+ "map_projection": {
+  "lat0": 41.0235,
+  "lon0": 28.979,
+  "kx_m_per_deg": 83984.30895496714,
+  "kz_m_per_deg": 110574.0
+ },
+ "licence": "model: Doğancan Işık project; no third-party models or textures; outline © OpenStreetMap contributors (ODbL)"
+}

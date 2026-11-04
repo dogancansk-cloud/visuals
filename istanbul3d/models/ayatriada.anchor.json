@@ -1,0 +1,101 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "ayatriada",
+ "name": "Aya Triada Kilisesi",
+ "name_en": "Hagia Triada Greek Orthodox Church",
+ "source": "Built for the Istanbul 3D map (Grok Bot, 4 Nov 2026) on the OSM outline w206855035 (© OpenStreetMap contributors, ODbL). Figures and sources: data_pipeline/ayatriada/README.md; unpublished heights pixel-measured from reference photos (yaklaşık). Present-day state; toy style. Shape references never used as textures.",
+ "model": "ayatriada.glb",
+ "model_web": "ayatriada.web.glb",
+ "anchor": {
+  "lat": 41.0355591,
+  "lon": 28.9842484,
+  "what": "model origin = central dome, ground level"
+ },
+ "rotation_deg": 90.0,
+ "rotation_meaning": "compass bearing of the model +X axis (model is in map axes: +X east, +Z south)",
+ "three_rotation_y_rad": 0.0,
+ "scale_m": 1.0,
+ "up": "+Y",
+ "ground": "y = 0 (flat); the map adds terrain height at the anchor only",
+ "heights_m": {
+  "walls": "body walls to 12.0 m (pixel-measured, yaklaşık) [doğrulanmadı]",
+  "arms": "4 lead barrel-vaulted arms with rounded gables to ≈15.6 m; 4 small corner domes (yaklaşık)",
+  "drum_dome": "square base 12.0-17.0 m, drum Ø≈11.2 m 17.0-23.0 m with 12 windows, dome crown ≈27.8 m, lantern + cross to ≈31 m (pixel-measured, yaklaşık) [doğrulanmadı]",
+  "bell_towers": "2 four-storey towers ≈4.8 m square to 23.5 m, small domes, crosses to ≈30 m (pixel-measured, yaklaşık) [doğrulanmadı]",
+  "front": "west narthex: two tiers of 5 arches, pediment with rose window (shape from sources; sizes yaklaşık)"
+ },
+ "parts": [
+  "cross-in-square body",
+  "4 lead barrel-vaulted arms with rounded gables",
+  "4 small corner domes",
+  "square base + drum with 12 windows + lead dome + lantern and cross",
+  "east apse",
+  "west narthex with 2-tier 5-arch portico and rose window",
+  "2 four-storey bell towers with small domes",
+  "garden wall"
+ ],
+ "footprint_map_xz": [
+  [
+   [
+    418.96,
+    -1322.72
+   ],
+   [
+    428.09,
+    -1321.2
+   ],
+   [
+    428.67,
+    -1324.62
+   ],
+   [
+    450.45,
+    -1320.99
+   ],
+   [
+    451.16,
+    -1325.2
+   ],
+   [
+    456.06,
+    -1324.38
+   ],
+   [
+    457.97,
+    -1335.72
+   ],
+   [
+    458.28,
+    -1337.54
+   ],
+   [
+    453.52,
+    -1338.33
+   ],
+   [
+    454.15,
+    -1342.09
+   ],
+   [
+    431.92,
+    -1345.8
+   ],
+   [
+    432.46,
+    -1348.98
+   ],
+   [
+    423.63,
+    -1350.45
+   ]
+  ]
+ ],
+ "footprint_note": "map metres; map buildings under it are dropped",
+ "map_projection": {
+  "lat0": 41.0235,
+  "lon0": 28.979,
+  "kx_m_per_deg": 83984.30895496714,
+  "kz_m_per_deg": 110574.0
+ },
+ "licence": "model: Doğancan Işık project; no third-party models or textures; outline © OpenStreetMap contributors (ODbL)"
+}

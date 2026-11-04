@@ -1,0 +1,227 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "nusretiye",
+ "name": "Nusretiye Camii",
+ "name_en": "Nusretiye Mosque",
+ "source": "Built for the Istanbul 3D map (Grok Bot, 4 Nov 2026) on the OSM outline w498861882 (© OpenStreetMap contributors, ODbL). Figures and sources: data_pipeline/nusretiye/README.md; unpublished heights pixel-measured from reference photos (yaklaşık). Present-day state; toy style. Shape references never used as textures.",
+ "model": "nusretiye.glb",
+ "model_web": "nusretiye.web.glb",
+ "anchor": {
+  "lat": 41.0273977,
+  "lon": 28.9831597,
+  "what": "model origin = main dome centre, ground level"
+ },
+ "rotation_deg": 90.0,
+ "rotation_meaning": "compass bearing of the model +X axis (model is in map axes: +X east, +Z south)",
+ "three_rotation_y_rad": 0.0,
+ "scale_m": 1.0,
+ "up": "+Y",
+ "ground": "y = 0 (flat); the map adds terrain height at the anchor only",
+ "heights_m": {
+  "base": "stone base (subasman) to 3.2 m above the street (yaklaşık)",
+  "harim": "harim block ≈20.6 m square (≈15.5 m inside), walls to 18.2 m, great-arch tympana to 21.4 m (yaklaşık)",
+  "drum": "drum r 8.3 m (Ø≈16.6 m outside for the Ø≈15 m dome) 21.4-27.6 m, 16 windows (pixel-measured, yaklaşık)",
+  "dome": "crown ≈32.8 m above the street (sources: ≈33 m from the ground), alem above (yaklaşık)",
+  "minarets": "2 fluted minarets ≈50 m above the street, şerefe at ≈27.5 and ≈35.5 m, shaft Ø≈1.9 m (pixel-measured from refs_nusretiye/nusretiye_01.jpg, yaklaşık) [doğrulanmadı]",
+  "turrets": "4 weight turrets to ≈28 m incl. finials (yaklaşık)",
+  "wings": "side wings / sultan pavilion to 12.2 m (yaklaşık)"
+ },
+ "parts": [
+  "stone base",
+  "harim block with four great arches",
+  "tall drum with 16 windows",
+  "shallow lead dome",
+  "4 weight turrets",
+  "qibla apse with half dome",
+  "side wings / sultan pavilion with colonnade",
+  "2 thin fluted minarets with 2 şerefe each"
+ ],
+ "footprint_map_xz": [
+  [
+   [
+    322.49,
+    -420.24
+   ],
+   [
+    327.29,
+    -413.04
+   ],
+   [
+    339.53,
+    -421.09
+   ],
+   [
+    343.55,
+    -415.05
+   ],
+   [
+    347.49,
+    -417.63
+   ],
+   [
+    348.94,
+    -415.5
+   ],
+   [
+    349.61,
+    -414.61
+   ],
+   [
+    350.4,
+    -413.8
+   ],
+   [
+    351.27,
+    -413.09
+   ],
+   [
+    352.23,
+    -412.51
+   ],
+   [
+    353.26,
+    -412.05
+   ],
+   [
+    354.34,
+    -411.72
+   ],
+   [
+    355.45,
+    -411.52
+   ],
+   [
+    356.57,
+    -411.48
+   ],
+   [
+    357.7,
+    -411.57
+   ],
+   [
+    358.8,
+    -411.79
+   ],
+   [
+    359.86,
+    -412.15
+   ],
+   [
+    360.88,
+    -412.65
+   ],
+   [
+    361.82,
+    -413.27
+   ],
+   [
+    362.67,
+    -414.0
+   ],
+   [
+    363.43,
+    -414.83
+   ],
+   [
+    364.07,
+    -415.75
+   ],
+   [
+    364.59,
+    -416.74
+   ],
+   [
+    364.99,
+    -417.79
+   ],
+   [
+    365.24,
+    -418.89
+   ],
+   [
+    365.36,
+    -419.99
+   ],
+   [
+    365.33,
+    -421.12
+   ],
+   [
+    365.16,
+    -422.23
+   ],
+   [
+    364.85,
+    -423.3
+   ],
+   [
+    364.42,
+    -424.33
+   ],
+   [
+    363.85,
+    -425.3
+   ],
+   [
+    362.45,
+    -427.47
+   ],
+   [
+    366.38,
+    -430.04
+   ],
+   [
+    362.36,
+    -436.08
+   ],
+   [
+    366.3,
+    -438.67
+   ],
+   [
+    358.8,
+    -449.93
+   ],
+   [
+    354.86,
+    -447.34
+   ],
+   [
+    352.25,
+    -451.26
+   ],
+   [
+    345.64,
+    -446.93
+   ],
+   [
+    348.48,
+    -442.67
+   ],
+   [
+    337.58,
+    -435.51
+   ],
+   [
+    334.75,
+    -439.76
+   ],
+   [
+    329.42,
+    -436.27
+   ],
+   [
+    334.74,
+    -428.29
+   ]
+  ]
+ ],
+ "footprint_note": "map metres; map buildings under it are dropped",
+ "map_projection": {
+  "lat0": 41.0235,
+  "lon0": 28.979,
+  "kx_m_per_deg": 83984.30895496714,
+  "kz_m_per_deg": 110574.0
+ },
+ "licence": "model: Doğancan Işık project; no third-party models or textures; outline © OpenStreetMap contributors (ODbL)"
+}
