@@ -1,0 +1,47 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "dikilitas",
+ "name": "Dikilitaş (Theodosius Obelisk)",
+ "source": "Built with Grokisual's LandmarkKit (1786 Istanbul project, istanbul_1786_3d.html, builders + spec copied unchanged; today state: fill 0); spec sources: İBB Tarihi Eserler, \"Obelisk of Theodosius\" (19.59 m shaft; marble pedestal; base buried in the Ottoman era by the rising ground; dug out to the bottom by C. T. Newton, April 1857) | G. Polat et al., Yerbilimleri 41(2) 2020, 169–182, after Saygılı 2019 (19.46 m incl. the 2.67 m pyramidion, pyramidion base 1.67 × 1.64 m; 24.77 m with the pedestal and masonry; four bronze cubes on a marble pedestal) | Diyalektolog 2023 article on the obelisk base (doi 10.29228/diyalektolog.45999; snippet: two-step substructure 7.05 × 7.10 m, two blocks of different size) | OpenStreetMap way 1120852417 (position and orientation of the shaft)",
+ "model": "dikilitas.glb",
+ "model_web": "dikilitas.web.glb",
+ "anchor": {
+  "lat": 41.0059276,
+  "lon": 28.9754001,
+  "what": "model origin = monument centre, today ground level"
+ },
+ "rotation_deg": 90,
+ "rotation_meaning": "model is in map axes (+X east, +Z south)",
+ "three_rotation_y_rad": 0,
+ "scale_m": 1,
+ "up": "+Y",
+ "ground": "y = 0 = local ground; the map sits it on the terrain at the anchor (flattened pad)",
+ "footprint_map_xz": [
+  [
+   [
+    -306.33511380678016,
+    1939.0505575998698
+   ],
+   [
+    -298.33511380678016,
+    1939.0505575998698
+   ],
+   [
+    -298.33511380678016,
+    1947.0505575998698
+   ],
+   [
+    -306.33511380678016,
+    1947.0505575998698
+   ]
+  ]
+ ],
+ "map_xz": [
+  -302.34,
+  1943.05
+ ],
+ "heights_m": {
+  "top": 24.76,
+  "note": "from the 1786 spec (see its unverified list)"
+ }
+}

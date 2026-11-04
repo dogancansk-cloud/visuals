@@ -1,0 +1,46 @@
+{
+ "format": "landmark-anchor/0.1 (draft, to agree with Grokisual)",
+ "id": "almancesmesi",
+ "name": "Alman Çeşmesi",
+ "source": "Placeholder built for this project (1901 neo-Byzantine fountain: octagon on 8 porphyry columns, green-bronze dome; ≈10.8 m, sizes and position yaklaşık)",
+ "model": "almancesmesi.glb",
+ "model_web": "almancesmesi.web.glb",
+ "anchor": {
+  "lat": 41.00737,
+  "lon": 28.9759,
+  "what": "model origin = monument centre, today ground level"
+ },
+ "rotation_deg": 90,
+ "rotation_meaning": "model is in map axes (+X east, +Z south)",
+ "three_rotation_y_rad": 0,
+ "scale_m": 1,
+ "up": "+Y",
+ "ground": "y = 0 = local ground; the map sits it on the terrain at the anchor (flattened pad)",
+ "footprint_map_xz": [
+  [
+   [
+    -264.3513577603881,
+    1779.5586199996537
+   ],
+   [
+    -256.3513577603881,
+    1779.5586199996537
+   ],
+   [
+    -256.3513577603881,
+    1787.5586199996537
+   ],
+   [
+    -264.3513577603881,
+    1787.5586199996537
+   ]
+  ]
+ ],
+ "map_xz": [
+  -260.35,
+  1783.56
+ ],
+ "heights_m": {
+  "top": 10.9
+ }
+}
