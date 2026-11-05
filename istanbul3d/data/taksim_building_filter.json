@@ -1,0 +1,22 @@
+{
+  "note": "wm9: OSM buildings wrongly sitting in the open Taksim plaza (t130u). Trees NOT filtered. scene.json unchanged.",
+  "centroids": [
+    [
+      602.14,
+      -1487.54
+    ],
+    [
+      557.94,
+      -1555.2
+    ],
+    [
+      563.4,
+      -1564.03
+    ]
+  ],
+  "osm_ids": [
+    "w1312257732",
+    "w1312257731",
+    "w837863672"
+  ]
+}
