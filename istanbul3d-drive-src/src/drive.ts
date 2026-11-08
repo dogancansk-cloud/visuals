@@ -60,6 +60,11 @@ function makeCar(): THREE.Group {
   cab.position.set(0, 1.15, 0.15);
   cab.castShadow = true;
   g.add(body, cab);
+  const shade = new THREE.Mesh(new THREE.CircleGeometry(1.55, 18), new THREE.MeshBasicMaterial({ color: '#1a140f', transparent: true, opacity: 0.35, depthWrite: false }));
+  shade.rotation.x = -Math.PI / 2;
+  shade.position.y = 0.22;
+  shade.renderOrder = 6;
+  g.add(shade);
   const wheel = new THREE.BoxGeometry(0.28, 0.42, 0.42);
   const rubber = new THREE.MeshLambertMaterial({ color: '#242424' });
   for (const [x, z] of [[0.86, 1.25], [-0.86, 1.25], [0.86, -1.2], [-0.86, -1.2]] as [number, number][]) {
@@ -127,20 +132,33 @@ export async function attachDrive(opts: {
     }
   } catch (e) { console.warn('drive bridges skipped', e); }
 
+  const insetRing = (ring: Ring, dist: number) => {
+    let sx = 0, sz = 0, n = 0;
+    for (let i = 0; i < ring.length; i += 2) { sx += ring[i]; sz += ring[i + 1]; n++; }
+    if (!n) return ring;
+    const cx = sx / n, cz = sz / n;
+    const out: number[] = [];
+    for (let i = 0; i < ring.length; i += 2) {
+      const dx = ring[i] - cx, dz = ring[i + 1] - cz, L = Math.hypot(dx, dz) || 1;
+      const k = Math.max(0.15, (L - dist) / L);
+      out.push(cx + dx * k, cz + dz * k);
+    }
+    return out;
+  };
   for (const b of buildings) {
-    if (!b.h || b.h < 1.6 || !b.p) continue;
-    for (const poly of b.p) if (poly?.[0]) paint(poly[0], (i, j) => { block[id(i, j)] = 1; });
+    if (!b.h || b.h < 2.2 || !b.p) continue;
+    for (const poly of b.p) if (poly?.[0] && poly[0].length >= 6) paint(insetRing(poly[0], 3.2), (i, j) => { block[id(i, j)] = 1; });
   }
   for (const poly of water) fillPoly(poly, (i, j) => { block[id(i, j)] = 2; }, (i, j) => { if (block[id(i, j)] === 2) block[id(i, j)] = 0; });
 
   for (let k = 0; k < road.length; k++) if (road[k] && block[k] && !deck.has(k)) road[k] = 0;
 
-  // Close one-cell cracks between road samples (intersections the raster splits) without widening into buildings or water.
+  // One cell of slack so the curb is not an invisible wall. Buildings and water stay closed.
   const before = road.slice();
   for (let j = 1; j < nz - 1; j++) for (let i = 1; i < nx - 1; i++) {
     const k = id(i, j);
     if (before[k] || block[k]) continue;
-    if ((before[k - 1] && before[k + 1]) || (before[k - nx] && before[k + nx])) road[k] = 1;
+    if (before[k - 1] || before[k + 1] || before[k - nx] || before[k + nx]) road[k] = 1;
   }
 
   const cellAt = (x: number, z: number) => {
@@ -194,6 +212,7 @@ export async function attachDrive(opts: {
   scene.add(car);
   let x = sx, z = sz, y = surface(sx, sz), speed = 0, homeX = sx, homeZ = sz, homeYaw = yaw;
   let lastBlock: unknown = null;
+  let grace = 0, blockedFor = 0, shown = 0;
   car.position.set(x, y, z);
   car.rotation.y = yaw;
 
@@ -249,7 +268,12 @@ export async function attachDrive(opts: {
     steerEl.addEventListener('pointerup', up);
     steerEl.addEventListener('pointercancel', up);
   }
-  document.getElementById('reset')?.addEventListener('click', () => reset());
+  const resetEl = document.getElementById('reset');
+  resetEl?.addEventListener('pointerdown', (e) => { e.preventDefault(); reset(); });
+  const labelsEl = document.getElementById('labels');
+  if (labelsEl) labelsEl.style.display = 'none';
+  const knob = document.createElement('i');
+  steerEl?.appendChild(knob);
 
   const speedEl = document.getElementById('speed');
   const cam = new THREE.Vector3();
@@ -268,67 +292,130 @@ export async function attachDrive(opts: {
     return { throttle, steer };
   };
 
-  const fits = (nx: number, nz: number, facing: number) => {
-    const fx = Math.sin(facing), fz = Math.cos(facing);
-    // Center and nose stay on the road grid. Side overhang is small; buildings are already cut out of the grid.
-    return !!cellAt(nx, nz) && !!cellAt(nx + fx * 1.1, nz + fz * 1.1);
+  const openRun = (px: number, pz: number, t: number) => {
+    let run = 0;
+    for (let s = 2; s <= 22; s += 2) {
+      if (!cellAt(px + Math.sin(t) * s, pz + Math.cos(t) * s)) break;
+      run = s;
+    }
+    return run;
   };
 
   function reset() {
+    gasIds.clear(); brakeIds.clear(); steerPtr.clear();
+    touchThrottle = 0; touchSteer = 0; scriptThrottle = 0; scriptSteer = 0;
     x = homeX; z = homeZ; yaw = homeYaw; speed = 0;
     y = surface(x, z);
     car.position.set(x, y, z);
     car.rotation.y = yaw;
     snapped = false;
+    grace = 0.35;
+    blockedFor = 0;
   }
 
+  const asphalt = new THREE.Mesh(
+    new THREE.BufferGeometry(),
+    new THREE.MeshBasicMaterial({ vertexColors: true, depthWrite: false, fog: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -3, polygonOffsetUnits: -3 }),
+  );
+  asphalt.renderOrder = 4;
+  asphalt.frustumCulled = false;
+  asphalt.name = 'drive-road';
+  scene.add(asphalt);
+  let ribbonAt = new THREE.Vector2(1e9, 1e9);
+  const paintRibbon = () => {
+    const reach = 42;
+    const i0 = Math.max(0, Math.floor((x - reach - x0) / STEP));
+    const i1 = Math.min(nx - 1, Math.floor((x + reach - x0) / STEP));
+    const j0 = Math.max(0, Math.floor((z - reach - z0) / STEP));
+    const j1 = Math.min(nz - 1, Math.floor((z + reach - z0) / STEP));
+    const pos: number[] = [], col: number[] = [];
+    const dark = [0.16, 0.15, 0.14], dash = [0.92, 0.78, 0.22], edge = [0.72, 0.68, 0.6];
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const v = road[id(i, j)];
+      if (!v) continue;
+      const ax = x0 + i * STEP, az = z0 + j * STEP;
+      const yy = surface(ax + STEP * 0.5, az + STEP * 0.5) + 0.12;
+      const stripe = v === 1 && (i + j) % 5 === 0;
+      const curb = !road[id(Math.max(0, i - 1), j)] || !road[id(Math.min(nx - 1, i + 1), j)] || !road[id(i, Math.max(0, j - 1))] || !road[id(i, Math.min(nz - 1, j + 1))];
+      const c = stripe ? dash : curb ? edge : dark;
+      pos.push(ax, yy, az, ax + STEP, yy, az, ax + STEP, yy, az + STEP, ax, yy, az, ax + STEP, yy, az + STEP, ax, yy, az + STEP);
+      for (let k = 0; k < 6; k++) col.push(c[0], c[1], c[2]);
+    }
+    const g = asphalt.geometry;
+    g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+    g.computeBoundingSphere();
+    ribbonAt.set(x, z);
+  };
+
   function update(dt: number) {
-    dt = Math.min(0.05, Math.max(0, dt));
-    const { throttle, steer } = readInput();
-    const maxF = 14, maxR = 6;
+    dt = Math.min(0.08, Math.max(0, dt));
+    let { throttle, steer } = readInput();
+    if (grace > 0) { grace = Math.max(0, grace - dt); throttle = 0; steer = 0; speed = 0; }
+    const maxF = 11, maxR = 5;
     if (throttle > 0) {
       if (speed < 0) speed = Math.min(0, speed + 18 * dt);
-      else speed = Math.min(maxF, speed + 8 * dt);
+      else speed = Math.min(maxF, speed + 9 * dt);
     } else if (throttle < 0) {
-      if (speed > 0.3) speed = Math.max(0, speed - 16 * dt);
-      else speed = Math.max(-maxR, speed - 6 * dt);
+      if (speed > 0.3) speed = Math.max(0, speed - 18 * dt);
+      else speed = Math.max(-maxR, speed - 7 * dt);
     } else {
-      const d = 3.5 * dt;
+      const d = 4 * dt;
       if (Math.abs(speed) <= d) speed = 0;
       else speed -= Math.sign(speed) * d;
     }
     const steerSign = speed < -0.2 ? -1 : 1;
-    yaw += steer * steerSign * (1.55 / (1 + Math.abs(speed) / 12)) * dt;
-    if (dt > 0 && Math.abs(speed) > 0.02) {
+    yaw += steer * steerSign * (2.1 / (1 + Math.abs(speed) / 16)) * dt;
+    const px0 = x, pz0 = z;
+    let moved = false;
+    if (dt > 0 && Math.abs(speed) > 0.04) {
       const step = speed * dt;
-      const nx = x + Math.sin(yaw) * step, nz = z + Math.cos(yaw) * step;
-      if (fits(nx, nz, yaw)) { x = nx; z = nz; }
-      else {
-        const hx = x + Math.sin(yaw) * step * 0.45, hz = z + Math.cos(yaw) * step * 0.45;
-        if (fits(hx, hz, yaw)) { x = hx; z = hz; speed *= 0.85; }
-        else {
-          speed *= 0.5;
-          lastBlock = { x, z, nx, nz, yaw, c: cellAt(nx, nz), n: cellAt(nx + Math.sin(yaw) * 1.1, nz + Math.cos(yaw) * 1.1), step };
+      const fx = Math.sin(yaw) * step, fz = Math.cos(yaw) * step;
+      const slide = (ox: number, oz: number) => {
+        if (!cellAt(x + ox, z + oz)) return false;
+        x += ox; z += oz; return true;
+      };
+      moved = slide(fx, fz) || slide(fx, 0) || slide(0, fz);
+      if (!moved) {
+        speed = 0;
+        blockedFor += dt;
+        lastBlock = { x, z, yaw };
+        if (Math.abs(throttle) > 0.2 && blockedFor > 0.2) {
+          let best = -1, ang = yaw;
+          for (let k = -5; k <= 5; k++) {
+            const t = yaw + k * 0.45;
+            const run = openRun(x, z, t);
+            if (run > best) { best = run; ang = t; }
+          }
+          let diff = ang - yaw;
+          while (diff > Math.PI) diff -= Math.PI * 2;
+          while (diff < -Math.PI) diff += Math.PI * 2;
+          yaw += Math.max(-1.2, Math.min(1.2, diff)) * Math.min(1, dt * 3);
         }
-      }
+      } else blockedFor = 0;
     }
+    const travelled = Math.hypot(x - px0, z - pz0);
+    const instant = dt > 0 ? travelled / dt : 0;
+    shown += (instant - shown) * Math.min(1, dt * 8);
     const ty = surface(x, z);
-    y = snapped ? y + (ty - y) * Math.min(1, dt * 8) : ty;
+    y = snapped ? y + (ty - y) * Math.min(1, dt * 10) : ty;
     car.position.set(x, y, z);
     car.rotation.y = yaw;
-    const back = narrow ? 11.5 : 10;
-    const up = narrow ? 4.8 : 4.0;
-    const tx = x - Math.sin(yaw) * back, tz = z - Math.cos(yaw) * back;
-    const desired = new THREE.Vector3(tx, y + up, tz);
+    if (knob) knob.style.transform = `translate(calc(-50% + ${touchSteer * 28}px), -50%)`;
+    if (ribbonAt.distanceToSquared(new THREE.Vector2(x, z)) > 36) paintRibbon();
+    let back = narrow ? 7.2 : 8.2;
+    const up = narrow ? 2.7 : 3.1;
+    const camX = x - Math.sin(yaw) * back, camZ = z - Math.cos(yaw) * back;
+    if (!cellAt(camX, camZ)) back *= 0.55;
+    const desired = new THREE.Vector3(x - Math.sin(yaw) * back, y + up, z - Math.cos(yaw) * back);
     if (!snapped) { cam.copy(desired); snapped = true; }
-    else cam.lerp(desired, 1 - Math.exp(-dt * 4.5));
-    if (!cellAt(cam.x, cam.z)) cam.lerp(new THREE.Vector3(x, y + up * 0.85, z), 0.45);
+    else cam.lerp(desired, 1 - Math.exp(-dt * 6));
     camera.position.copy(cam);
-    look.set(x + Math.sin(yaw) * 6, y + 1.25, z + Math.cos(yaw) * 6);
+    look.set(x + Math.sin(yaw) * 4.5, y + 0.9, z + Math.cos(yaw) * 4.5);
     camera.lookAt(look);
-    focus.set(x, y + 1, z);
+    focus.set(x, y + 0.8, z);
     controls.target.copy(focus);
-    if (speedEl) speedEl.textContent = `${Math.round(Math.abs(speed) * 3.6)} km/sa`;
+    if (speedEl) speedEl.textContent = `${Math.round(shown * 3.6)} km/sa`;
   }
 
   update(0);

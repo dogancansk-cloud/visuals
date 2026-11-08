@@ -1428,7 +1428,7 @@ function frame(now?: number) {
   const s = THREE.MathUtils.clamp(drive ? 180 : de * 0.75, 80, 900);
   const sc = sun.shadow.camera; if (sc.right !== s) { sc.left = -s; sc.right = s; sc.top = s; sc.bottom = -s; sc.updateProjectionMatrix(); }
   if (LOOK && scene.fog instanceof THREE.Fog) {
-    if (drive) { scene.fog.near = narrow ? 70 : 120; scene.fog.far = narrow ? 900 : 1600; }
+    if (drive) { scene.fog.near = narrow ? 28 : 55; scene.fog.far = narrow ? 420 : 780; }
     else if (COL) { scene.fog.near = d * 0.95; scene.fog.far = d + de * 1.3 + 5000; }
     else if (WALLS) { scene.fog.near = d * 0.8; scene.fog.far = d + de * 0.6 + 3500; }
     else { scene.fog.near = d * 2.2; scene.fog.far = d * 9 + 6000; }
