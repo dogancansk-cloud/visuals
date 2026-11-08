@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<link rel="icon" href="data:," />
+<title>İstanbul 3D — Araba (taslak)</title>
+  <script type="module" crossorigin src="./assets/index-C8hU8IqN.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Bw2HWgKc.css">
+</head>
+<body>
+<div id="app"></div>
+<div id="labels"></div>
+<div id="badge">yükseklikler yaklaşık / heights approximate</div>
+<div id="hud">
+  <p id="hint">Gaz <b>W</b> veya <b>↑</b> · fren / geri <b>S</b> veya <b>↓</b> · yön <b>A D</b> veya oklar. Telefonda sol direksiyon, sağ gaz ve fren. Yoldan çıkılmaz.</p>
+  <div id="speed" aria-live="polite">0 km/sa</div>
+  <button id="reset" type="button">Sıfırla</button>
+</div>
+<div id="touch">
+  <div id="steer" aria-label="Direksiyon"></div>
+  <div id="pedals">
+    <button id="gas" type="button">Gaz</button>
+    <button id="brake" type="button">Fren</button>
+  </div>
+</div>
+<div id="tod" hidden><label for="hour">☀︎ <span id="hourtxt">15:30</span></label><input id="hour" type="range" min="6.5" max="22" step="0.25" value="15.5" aria-label="Saat / time of day" /></div>
+<div id="loading">Yükleniyor… / Loading…</div>
+<footer id="credit"><span>© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a> (ODbL)</span> · <span>Textures: FreeStylized.com (custom CC0)</span> · <span id="cr-dem">Kıyı/coast: Copernicus DEM GLO-30 (© DLR, Airbus DS)</span> · <span>Hipodrom anıtları: Grokisual 1786 LandmarkKit</span> · <b>Taslak / work in progress</b></footer>
+</body>
+</html>
