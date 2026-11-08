@@ -16,8 +16,8 @@ export type DriveHandle = {
 };
 
 const STEP = 2.5;
-/** Verified on the major road just south of Taksim square (open street, not a building). */
-const START = { x: 522, z: -1588 };
+/** Eminönü, the street in front of Yeni Cami toward Galata Bridge. Open for ~80 m. */
+const START = { x: -639, z: 639 };
 
 function paintRing(ring: Ring, x0: number, z0: number, nx: number, nz: number, mark: (i: number, j: number) => void) {
   const n = ring.length;
