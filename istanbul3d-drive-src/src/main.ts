@@ -18,6 +18,7 @@ import { buildRustemPasa } from './landmarks/rustempasa';
 import { buildGalata } from './landmarks/galata';
 import { buildExtra } from './landmarks/extras';
 import { buildKapalicarsi } from './landmarks/kapalicarsi';
+import { attachDrive, type DriveHandle } from './drive';
 import './style.css';
 
 // Published page is istanbul3d-drive/; the reviewed map files stay in istanbul3d/.
@@ -35,6 +36,7 @@ function mapRoot(): string {
   return u.href;
 }
 const MAP = mapRoot();
+let drive: DriveHandle | null = null;
 
 // ?step=N shows the build up to step N (1 base, 2 toy look, 3 flat layers, 4 trees, 5 time of day, 6 landmarks). Default: all.
 const QS = new URLSearchParams(location.search);
@@ -847,18 +849,29 @@ async function main() {
     const pos: number[] = [], col: number[] = [];
     const top = new THREE.Color('#77706c'), side = new THREE.Color('#c8bfb2'), bot = new THREE.Color('#7d766f');
     const tri = (a: number[], b: number[], c: number[], k: THREE.Color) => { pos.push(...a, ...b, ...c); for (let i = 0; i < 3; i++) col.push(k.r, k.g, k.b); };
+    // Galata's end ramps were flat steps and the last piece was missing, so the deck stopped short of the Eminönü road.
+    const galataDeck = (z: number) => {
+      const smooth = (t: number) => { const s = THREE.MathUtils.clamp(t, 0, 1); return s * s * (3 - 2 * s); };
+      if (z >= 530) return 0.45 + 6.05 * smooth((588 - z) / 52);
+      if (z <= 236) return 0.45 + 6.05 * smooth((z - 186) / 50);
+      return null;
+    };
     for (const b of BR.bridges) for (const st of b.strips) {
       const r = st.p as number[], v: THREE.Vector2[] = []; for (let i = 0; i < r.length; i += 2) v.push(new THREE.Vector2(r[i], r[i + 1]));
       if (THREE.ShapeUtils.isClockWise(v)) v.reverse();
-      let sx = 0, sz = 0; for (const q of v) { sx += q.x; sz += q.y; } const lift = Math.max(0, H(sx / v.length, sz / v.length)); // wm6: bridges.json heights are above local ground (was faded out above 12 m: high decks on the hills sank); wm5: ramps (low strips) sit on the terrain, the high spans stay
-      if (lift > 0.3 && st.y < 3) continue; // wm7: low ramp strips on land are dropped (they stood up as blocks/stubs at the bridge ends; the OSM road drapes there, t125u)
-      const y1 = st.y + lift, y0 = st.y - st.t + lift;
+      let sx = 0, sz = 0; for (const q of v) { sx += q.x; sz += q.y; } const lift = Math.max(0, H(sx / v.length, sz / v.length));
+      if (lift > 2 && st.y < 3 && b.id !== 'w280961352') continue; // hillside stubs; Galata keeps both shore ramps
+      const deckZ = (z: number) => { const g = b.id === 'w280961352' ? galataDeck(z) : null; return g == null ? st.y + lift : g; };
+      const y1 = deckZ(sz), y0 = y1 - Math.max(1.4, st.t);
       for (const t of THREE.ShapeUtils.triangulateShape(v, [])) {
         const [a, bb, c] = t.map((k) => v[k]);
-        tri([a.x, y1, a.y], [c.x, y1, c.y], [bb.x, y1, bb.y], top); tri([a.x, y0, a.y], [bb.x, y0, bb.y], [c.x, y0, c.y], bot);
+        tri([a.x, deckZ(a.y), a.y], [c.x, deckZ(c.y), c.y], [bb.x, deckZ(bb.y), bb.y], top);
+        tri([a.x, deckZ(a.y) - 1.6, a.y], [bb.x, deckZ(bb.y) - 1.6, bb.y], [c.x, deckZ(c.y) - 1.6, c.y], bot);
       }
       for (let i = 0; i < v.length; i++) { const a = v[i], c = v[(i + 1) % v.length];
-        tri([a.x, y0, a.y], [c.x, y0, c.y], [c.x, y1, c.y], side); tri([a.x, y0, a.y], [c.x, y1, c.y], [a.x, y1, a.y], side); }
+        const ay = deckZ(a.y), cy = deckZ(c.y);
+        tri([a.x, ay - 1.6, a.y], [c.x, cy - 1.6, c.y], [c.x, cy, c.y], side); tri([a.x, ay - 1.6, a.y], [c.x, cy, c.y], [a.x, ay, a.y], side); }
+      void y0;
     }
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.computeVertexNormals();
     const dm = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true })); dm.castShadow = dm.receiveShadow = STEP >= 2; scene.add(dm);
@@ -1358,8 +1371,12 @@ async function main() {
   VIEWS.dolma_sea = { t: [1800, -1740], y: 8, d: narrow ? 700 : 560, pol: 1.15, az: 0.55 }; // wm10: camera really on the water (SE of the shore)
   VIEWS.mid_gumussuyu = { t: [1000, -1600], y: 25, d: narrow ? 700 : 560, pol: 0.95, az: 0.5 };
  VIEWS.suleymaniye_s = { t: [-1260, 820], y: 30, d: narrow ? 600 : 480, pol: 1.0, az: 2.4 };
-  controls.enabled = true;
-  setView('eminonu');
+  drive = await attachDrive({
+    scene, camera, controls, H, bounds: S.bounds_m, map: MAP, narrow,
+    roads: [...(S.roads.major || []), ...(S.roads.minor || [])],
+    plazas: S.plazas, buildings: S.buildings, water: S.water,
+  });
+  (window as any).__drive = drive;
   mark('ready'); (window as any).__scene = scene; (window as any).__camera = camera; (window as any).__ready = true;
 }
 
@@ -1411,17 +1428,19 @@ function frame(now?: number) {
   const t = now ?? performance.now();
   const dt = Math.min(0.08, (t - frameT) / 1000);
   frameT = t;
-  controls.update();
-  sun.target.position.copy(controls.target);
-  sun.position.copy(controls.target).addScaledVector(sunDir, 3000);
-  const d = camera.position.distanceTo(controls.target);
-  const de = d * FOVK; // distance as seen through the old 35° lens
+  if (drive) drive.update(dt); else controls.update();
+  const aim = drive ? drive.focus() : controls.target;
+  sun.target.position.copy(aim);
+  sun.position.copy(aim).addScaledVector(sunDir, drive ? 1800 : 3000);
+  const d = camera.position.distanceTo(aim);
+  const de = d * FOVK;
   const far = de > 3200 ? 2 : de > 1800 ? 1 : 0;
   if (far !== xtFar) { xtFar = far; for (const [tm, c, n] of XT) tm.count = c.count = far === 2 ? Math.ceil(n * 0.3) : far === 1 ? Math.ceil(n * 0.65) : n; }
-  const s = THREE.MathUtils.clamp(de * 0.75, 250, 2600);
+  const s = THREE.MathUtils.clamp(drive ? 160 : de * 0.75, drive ? 80 : 250, drive ? 700 : 2600);
   const sc = sun.shadow.camera; if (sc.right !== s) { sc.left = -s; sc.right = s; sc.top = s; sc.bottom = -s; sc.updateProjectionMatrix(); }
   if (LOOK && scene.fog instanceof THREE.Fog) {
-    if (COL) { scene.fog.near = d * 0.95; scene.fog.far = d + de * 1.3 + 5000; }
+    if (drive) { scene.fog.near = 50; scene.fog.far = 900; }
+    else if (COL) { scene.fog.near = d * 0.95; scene.fog.far = d + de * 1.3 + 5000; }
     else if (WALLS) { scene.fog.near = d * 0.8; scene.fog.far = d + de * 0.6 + 3500; }
     else { scene.fog.near = d * 2.2; scene.fog.far = d * 9 + 6000; }
   }

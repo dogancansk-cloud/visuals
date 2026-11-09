@@ -16,8 +16,8 @@ export type DriveHandle = {
 };
 
 const STEP = 2.5;
-/** Eminönü, the street in front of Yeni Cami toward Galata Bridge. Open for ~80 m. */
-const START = { x: -639, z: 639 };
+/** Eminönü end of Galata Bridge, on the first ramp, facing across the Golden Horn. */
+const START = { x: -592.4, z: 572.3, yaw: Math.atan2(19, -35.2) };
 
 function paintRing(ring: Ring, x0: number, z0: number, nx: number, nz: number, mark: (i: number, j: number) => void) {
   const n = ring.length;
@@ -114,19 +114,26 @@ export async function attachDrive(opts: {
 
   try {
     const BR = await (await fetch(`${map}data/bridges.json`)).json();
-    for (const b of BR.bridges as { strips: { p: Ring; y: number; t: number }[] }[]) {
+    for (const b of BR.bridges as { id?: string; strips: { p: Ring; y: number; t: number }[] }[]) {
       for (const st of b.strips) {
         const r = st.p;
         let sx = 0, sz = 0, n = 0;
         for (let i = 0; i < r.length; i += 2) { sx += r[i]; sz += r[i + 1]; n++; }
         const lift = Math.max(0, H(sx / n, sz / n));
-        if (lift > 0.3 && st.y < 3) continue; // same rule as the map: low land ramps are not drawn
-        const top = st.y + lift;
+        if (lift > 2 && st.y < 3 && b.id !== 'w280961352') continue;
+        const smooth = (t: number) => { const u = Math.max(0, Math.min(1, t)); return u * u * (3 - 2 * u); };
+        const galataAt = (z: number) => {
+          if (b.id !== 'w280961352') return null;
+          if (z >= 530) return 0.45 + 6.05 * smooth((588 - z) / 52);
+          if (z <= 236) return 0.45 + 6.05 * smooth((z - 186) / 50);
+          return 6.5;
+        };
         paint(r, (i, j) => {
           const k = id(i, j);
+          const h = galataAt(z0 + (j + 0.5) * STEP) ?? st.y + lift;
           road[k] = 1;
           const prev = deck.get(k);
-          if (prev == null || top > prev) deck.set(k, top);
+          if (prev == null || h > prev) deck.set(k, h);
         });
       }
     }
@@ -174,7 +181,7 @@ export async function attachDrive(opts: {
   const surface = (x: number, z: number) => {
     const g = H(x, z);
     const d = deckAt(x, z);
-    return (d > g + 0.55 ? d : g) + 0.42;
+    return (d > 0.3 ? Math.max(d, g) : g) + 0.42;
   };
 
   let sx = START.x, sz = START.z;
@@ -199,7 +206,8 @@ export async function attachDrive(opts: {
     }
     return run;
   };
-  {
+  if (clearRun(START.yaw) >= 12) yaw = START.yaw;
+  else {
     let best = -1;
     for (let a = 0; a < 24; a++) {
       const t = a / 24 * Math.PI * 2;
@@ -332,7 +340,7 @@ export async function attachDrive(opts: {
     const dark = [0.16, 0.15, 0.14], dash = [0.92, 0.78, 0.22], edge = [0.72, 0.68, 0.6];
     for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
       const v = road[id(i, j)];
-      if (!v) continue;
+      if (!v || deck.has(id(i, j))) continue;
       const ax = x0 + i * STEP, az = z0 + j * STEP;
       const yy = surface(ax + STEP * 0.5, az + STEP * 0.5) + 0.12;
       const stripe = v === 1 && (i + j) % 5 === 0;
@@ -403,15 +411,15 @@ export async function attachDrive(opts: {
     car.rotation.y = yaw;
     if (knob) knob.style.transform = `translate(calc(-50% + ${touchSteer * 28}px), -50%)`;
     if (ribbonAt.distanceToSquared(new THREE.Vector2(x, z)) > 36) paintRibbon();
-    let back = narrow ? 7.2 : 8.2;
-    const up = narrow ? 2.7 : 3.1;
+    let back = narrow ? 12 : 13;
+    const up = narrow ? 5.4 : 5.8;
     const camX = x - Math.sin(yaw) * back, camZ = z - Math.cos(yaw) * back;
     if (!cellAt(camX, camZ)) back *= 0.55;
     const desired = new THREE.Vector3(x - Math.sin(yaw) * back, y + up, z - Math.cos(yaw) * back);
     if (!snapped) { cam.copy(desired); snapped = true; }
     else cam.lerp(desired, 1 - Math.exp(-dt * 6));
     camera.position.copy(cam);
-    look.set(x + Math.sin(yaw) * 4.5, y + 0.9, z + Math.cos(yaw) * 4.5);
+    look.set(x + Math.sin(yaw) * 14, y + 2.4, z + Math.cos(yaw) * 14);
     camera.lookAt(look);
     focus.set(x, y + 0.8, z);
     controls.target.copy(focus);
@@ -420,7 +428,10 @@ export async function attachDrive(opts: {
 
   update(0);
   const roadCells = road.reduce((n, v) => n + (v ? 1 : 0), 0);
-  (window as any).__driveInfo = { start: { x: homeX, z: homeZ, yaw: homeYaw }, roadCells, decks: deck.size, grid: [nx, nz] };
+  (window as any).__driveInfo = {
+    start: { x: homeX, z: homeZ, yaw: homeYaw }, roadCells, decks: deck.size,
+    ramp: [555, 565, 572, 580, 590].map((z) => ({ z, d: deckAt(-590, z) })),
+  };
 
   return {
     update, reset, focus: () => focus,
