@@ -18,7 +18,6 @@ import { buildRustemPasa } from './landmarks/rustempasa';
 import { buildGalata } from './landmarks/galata';
 import { buildExtra } from './landmarks/extras';
 import { buildKapalicarsi } from './landmarks/kapalicarsi';
-import { attachDrive, type DriveHandle } from './drive';
 import './style.css';
 
 // Published page is istanbul3d-drive/; the reviewed map files stay in istanbul3d/.
@@ -36,7 +35,6 @@ function mapRoot(): string {
   return u.href;
 }
 const MAP = mapRoot();
-let drive: DriveHandle | null = null;
 
 // ?step=N shows the build up to step N (1 base, 2 toy look, 3 flat layers, 4 trees, 5 time of day, 6 landmarks). Default: all.
 const QS = new URLSearchParams(location.search);
@@ -1360,13 +1358,9 @@ async function main() {
   VIEWS.dolma_sea = { t: [1800, -1740], y: 8, d: narrow ? 700 : 560, pol: 1.15, az: 0.55 }; // wm10: camera really on the water (SE of the shore)
   VIEWS.mid_gumussuyu = { t: [1000, -1600], y: 25, d: narrow ? 700 : 560, pol: 0.95, az: 0.5 };
  VIEWS.suleymaniye_s = { t: [-1260, 820], y: 30, d: narrow ? 600 : 480, pol: 1.0, az: 2.4 };
-  drive = await attachDrive({
-    scene, camera, controls, H, bounds: S.bounds_m, map: MAP, narrow,
-    roads: [...(S.roads.major || []), ...(S.roads.minor || [])],
-    plazas: S.plazas, buildings: S.buildings, water: S.water,
-  });
-  (window as any).__drive = drive;
-  mark('ready'); (window as any).__scene = scene; (window as any).__ready = true;
+  controls.enabled = true;
+  setView('eminonu');
+  mark('ready'); (window as any).__scene = scene; (window as any).__camera = camera; (window as any).__ready = true;
 }
 
 // post-processing (high quality only): ambient occlusion, gentle bloom, subtle tilt-shift, then tone mapping + sRGB
@@ -1399,7 +1393,7 @@ function setupPost() {
         gl_FragColor = vec4(clamp(x, 0.0, 1.0), c.a); }`,
   }));
 }
-// Drive view stays sharp and cheaper: no ambient occlusion, bloom or tilt-shift.
+setupPost();
 
 // wm4 super-tiles (1.5 km): when a whole super-tile is beyond the LOD distance, one merged far mesh replaces its many chunk LODs (fewer draw calls)
 type Super = { key: number; bld: THREE.BufferGeometry[]; trees: { m: THREE.Matrix4; c: THREE.Color }[]; members: THREE.Object3D[]; merged: THREE.Object3D[]; c: THREE.Vector3; r: number };
@@ -1417,19 +1411,17 @@ function frame(now?: number) {
   const t = now ?? performance.now();
   const dt = Math.min(0.08, (t - frameT) / 1000);
   frameT = t;
-  if (drive) drive.update(dt); else controls.update();
-  const aim = drive ? drive.focus() : controls.target;
-  sun.target.position.copy(aim);
-  sun.position.copy(aim).addScaledVector(sunDir, 1800);
-  const d = camera.position.distanceTo(aim);
+  controls.update();
+  sun.target.position.copy(controls.target);
+  sun.position.copy(controls.target).addScaledVector(sunDir, 3000);
+  const d = camera.position.distanceTo(controls.target);
   const de = d * FOVK; // distance as seen through the old 35° lens
   const far = de > 3200 ? 2 : de > 1800 ? 1 : 0;
-  if (far !== xtFar) { xtFar = far; for (const [t, c, n] of XT) t.count = c.count = far === 2 ? Math.ceil(n * 0.3) : far === 1 ? Math.ceil(n * 0.65) : n; }
-  const s = THREE.MathUtils.clamp(drive ? 180 : de * 0.75, 80, 900);
+  if (far !== xtFar) { xtFar = far; for (const [tm, c, n] of XT) tm.count = c.count = far === 2 ? Math.ceil(n * 0.3) : far === 1 ? Math.ceil(n * 0.65) : n; }
+  const s = THREE.MathUtils.clamp(de * 0.75, 250, 2600);
   const sc = sun.shadow.camera; if (sc.right !== s) { sc.left = -s; sc.right = s; sc.top = s; sc.bottom = -s; sc.updateProjectionMatrix(); }
   if (LOOK && scene.fog instanceof THREE.Fog) {
-    if (drive) { scene.fog.near = narrow ? 28 : 55; scene.fog.far = narrow ? 420 : 780; }
-    else if (COL) { scene.fog.near = d * 0.95; scene.fog.far = d + de * 1.3 + 5000; }
+    if (COL) { scene.fog.near = d * 0.95; scene.fog.far = d + de * 1.3 + 5000; }
     else if (WALLS) { scene.fog.near = d * 0.8; scene.fog.far = d + de * 0.6 + 3500; }
     else { scene.fog.near = d * 2.2; scene.fog.far = d * 9 + 6000; }
   }
