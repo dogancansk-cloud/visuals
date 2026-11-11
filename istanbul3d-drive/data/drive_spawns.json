@@ -1,0 +1,56 @@
+{
+ "note": "Named drive spawn points (local metres: x east, z south; yaw = atan2(dx, dz), car forward = (sin yaw, cos yaw)). Verified drivable in the browser (drive3 world test).",
+ "spawns": [
+  {
+   "id": "eminonu",
+   "x": -559.6,
+   "z": 669.8,
+   "yaw": 1.379,
+   "road": "Reşadiye Caddesi",
+   "osm_way": 827063325,
+   "dist_to_target_m": 91.2
+  },
+  {
+   "id": "karakoy",
+   "x": -330.8,
+   "z": 119.2,
+   "yaw": 2.788,
+   "road": "Kemeraltı Caddesi",
+   "osm_way": 931813836,
+   "dist_to_target_m": 70.9
+  },
+  {
+   "id": "sultanahmet",
+   "x": -252.1,
+   "z": 1704.5,
+   "yaw": -1.713,
+   "road": "Divanyolu/Ordu (tramvay)",
+   "osm_way": 825886239,
+   "dist_to_target_m": 17.1
+  },
+  {
+   "id": "taksim",
+   "x": 416.9,
+   "z": -1544.8,
+   "yaw": 2.038,
+   "road": "Tarlabaşı Bulvarı",
+   "osm_way": 1214030596,
+   "dist_to_target_m": 68.0
+  },
+  {
+   "id": "besiktas",
+   "x": 2410.3,
+   "z": -2073.5,
+   "yaw": 1.755,
+   "road": "Beşiktaş Caddesi",
+   "osm_way": [
+    "bjk",
+    2394.8,
+    -2073.5,
+    2438.4,
+    -2083.9
+   ],
+   "dist_to_target_m": 0.5
+  }
+ ]
+}
