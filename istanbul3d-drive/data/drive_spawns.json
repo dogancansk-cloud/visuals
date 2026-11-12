@@ -30,12 +30,13 @@
   },
   {
    "id": "taksim",
-   "x": 416.9,
-   "z": -1544.8,
-   "yaw": 2.038,
-   "road": "Tarlabaşı Bulvarı",
-   "osm_way": 1214030596,
-   "dist_to_target_m": 68.0
+   "x": 630.0,
+   "z": -1455.0,
+   "yaw": -1.778,
+   "road": "Tak-ı Zafer Caddesi",
+   "osm_way": 25556723,
+   "dist_to_target_m": 68.0,
+   "note": "wm17c: on Tak-ı Zafer Cd. facing the square, monument and Maksem (was Tarlabaşı Blv., facing away)"
   },
   {
    "id": "besiktas",
