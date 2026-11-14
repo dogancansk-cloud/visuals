@@ -25,6 +25,8 @@ button.on{background:#b5523b;color:#fff}
 #st button{width:44px;padding:0}
 #cap{margin:9px 2px 1px;font-size:15.5px;line-height:1.45}
 #cap b{color:#b5523b;margin-right:6px}
+#tlw{display:flex;align-items:center;gap:8px;margin-top:8px}#tl{flex:1;accent-color:#b5523b;height:22px;margin:0}#sc{font-size:12.5px;color:#5a6670;min-width:74px;text-align:right;white-space:nowrap}
+#ss{margin:5px 2px 0;font-size:14.5px;line-height:1.4;color:#2f4858;font-weight:600;min-height:1.4em}#ss .tag{font-weight:650}
 .tag{color:#8a3a26;font-weight:650;white-space:nowrap}
 .k{color:#5c6c78;font-size:.82em}
 #ft{position:fixed;left:0;right:0;bottom:6px;text-align:center;font-size:12px;color:#33414c;text-shadow:0 0 4px #fff;pointer-events:none}
@@ -45,7 +47,7 @@ body.clean #hd,body.clean #pn,body.clean #big,body.clean #hk{display:none}
 #tr{right:10px;top:10px;flex-direction:column}#hk{height:40px;padding:0 12px;font-size:13px}#hk .lg{display:none}#hk .sh{display:inline}#tr{align-items:flex-end}#hd{max-width:calc(100% - 104px)}
 #big{display:none}
 #pn{bottom:22px;padding:8px}#tabs button{font-size:12.5px;height:34px;padding:0 6px}
-#cap{font-size:13.5px;line-height:1.4;max-height:132px;overflow:auto}
+#cap{font-size:13px;line-height:1.38;max-height:84px;overflow:auto}#ss{font-size:12.5px;line-height:1.35}#sc{font-size:11.5px;min-width:60px}#tlw{margin-top:6px}
 button{height:40px;min-width:38px;padding:0 8px}#st button{width:32px;min-width:0}#st{gap:4px}#row{gap:5px}#pv,#nx{min-width:34px;padding:0}#pp{min-width:38px;padding:0}
 #mb{padding:14px 15px;font-size:14px}}
 #xb{position:fixed;left:50%;transform:translateX(-50%);bottom:28px;width:min(860px,calc(100% - 24px));border-radius:14px;padding:10px 12px;display:none}
@@ -61,6 +63,7 @@ body.ins #pn,body.ins #big{display:none}body.ins #xb{display:block}body.clean #x
 <div id="big">1</div>
 <div id="pn" class="card"><div id="tabs"><button id="tA">Kabartmaya göre: bocurgatlar</button><button id="tB">Referans şemaya göre: rampa</button></div>
 <div id="row"><button id="pv" aria-label="Önceki aşama">‹</button><div id="st"></div><button id="nx" aria-label="Sonraki aşama">›</button><button id="pp" aria-label="Oynat/Duraklat">▶︎</button></div>
+<div id="tlw"><input type="range" id="tl" min="1" max="6" step="0.001" value="1" aria-label="Zaman çizelgesi"><span id="sc"></span></div><div id="ss"></div>
 <div id="cap"></div></div>
 <div id="xb" class="card"><div id="xf"><button data-f="NE">KD: dikiliş</button><button data-f="SW">GB: yarış</button><button data-f="SE">GD: Latince</button><button data-f="NW">KB: Grekçe</button><button data-f="USE">Üst GD</button><button data-f="UNW">Üst KB</button><button data-f="UNE">Üst KD</button><button data-f="USW">Üst GB</button><button id="xq">‹ Sahneye dön</button></div><div id="xc"></div></div>
 <div id="ft">© Doğancan Işık, CC BY 4.0</div>
@@ -71,7 +74,7 @@ body.ins #pn,body.ins #big{display:none}body.ins #xb{display:block}body.clean #x
 <p>390'da İmparator I. Theodosius'un emriyle, şehir valisi Proclus'un yönetiminde Hipodrom'a dikildi <span class="k">[K9][K3]</span>. Latince yazıta göre iş 30, Grekçe yazıta göre 32 günde bitti <span class="k">[K4]</span>.</p>
 <p>Bugün aslının yaklaşık üçte ikisi duruyor <span class="k">[K1][K12]</span>; piramidion dahil yüksekliği 19,46 m, kaidesiyle yaklaşık 24,8 m <span class="k">[K2]</span>. Alt ucunun ne zaman ve nerede kırıldığı ya da kesildiği belirsiz <span class="tag">[doğrulanmadı]</span>.</p>
 <h3>Yöntem hakkında</h3>
-<p>Alt kaidenin kuzeydoğu yüzündeki kabartmada yerde yatan taş, sivri ucuna bağlı halatlarla (Spon 1678 levhası, Budge'da yayımlanan) bocurgatlara (kollarla döndürülen dikey makara) doğru çekilir <span class="k">[K10][K14][K18]</span>. Kabartmada bocurgatlar iki sıradadır: 2 alt + 2 üst, toplam 4 <span class="k">[K14]</span>. “Her bocurgatı dört adam çevirir” okuması Budge'ındır; taşın tekerlekli bir kızakta olabileceğini de o yazar <span class="k">[K10]</span>. En yakın çağdaş tanıklık Ammianus'tur: 357'de Roma'da bir dikilitaş, yüksek dikey kirişler, sayısız halat ve binlerce adamın döndürdüğü çarklarla dikildi <span class="k">[K8]</span>. Rampa, 390 dikilişine ait hiçbir kaynakta ve kabartmada geçmez. Bu sayfadaki rampa bölümü yalnızca referans şemaya dayalı bir rekonstrüksiyondur <span class="tag">[doğrulanmadı]</span>.</p>
+<p>Alt kaidenin kuzeydoğu yüzündeki kabartmada yerde yatan taş, sivri ucuna bağlı halatlarla (Spon 1678 levhası, Budge'da yayımlanan) bocurgatlara (kollarla döndürülen dikey makara) doğru çekilir <span class="k">[K10][K14][K18]</span>. Kabartmada bocurgatlar iki sıradadır: 2 alt + 2 üst, toplam 4 <span class="k">[K14]</span>. “Her bocurgatı dört adam çevirir” okuması Budge'ındır; taşın tekerlekli bir kızakta olabileceğini de o yazar <span class="k">[K10]</span>. En yakın çağdaş benzer anlatım Ammianus'unkidir (390 dikilişini anlatmaz): 357'de Roma'da bir dikilitaş, yüksek dikey kirişler, sayısız halat ve binlerce adamın döndürdüğü çarklarla dikildi <span class="k">[K8]</span>. Rampa, 390 dikilişine ait hiçbir kaynakta ve kabartmada geçmez. Bu sayfadaki rampa bölümü yalnızca referans şemaya dayalı bir rekonstrüksiyondur <span class="tag">[doğrulanmadı]</span>.</p>
 <h3>Kaide yazıtları <span class="k">(metin [K4]; Türkçe çeviri [K3][K4] metinlerinden)</span></h3>
 <p><b>Latince (alt kaide, güneydoğu yüzü):</b></p>
 <blockquote>"Bir zamanlar boyun eğmesi zor olandım; huzurlu efendilere itaat etmem ve zorbalar yok edildikten sonra zafer palmiyesini taşımam emredildi. Her şey Theodosius'a ve onun ölümsüz soyuna boyun eğer. Ben de böylece üç kere on günde yenildim ve evcilleştirildim; Proclus yargıçken (şehir valisiyken) yüce göklere yükseltildim."</blockquote>
@@ -80,6 +83,7 @@ body.ins #pn,body.ins #big{display:none}body.ins #xb{display:block}body.clean #x
 <p>Proclus 392'de görevden alındı ve adı iki yazıttan da silindi; ad 392 ile 395 arasında yeniden kazındı <span class="k">[K3]</span>.</p>
 <p style="font-size:13.5px;color:#4d5a64">"Πρόκλος ἐπεκέκλετο" için iki okuma vardır: "Proclus çağrıldı" (Safran <span class="k">[K3]</span>) ve "(Theodosius) Proclus'u yardıma çağırdı" (Kähler <span class="k">[K5]</span>; The Byzantine Legacy <span class="k">[K18]</span>). Yukarıdaki çeviri ikinci okumayı izler.</p>
 <h3>Bu canlandırma hakkında</h3>
+<p>Kaldırma aşamalarındaki ara adımlar (halatın gerilip gevşemesi, bocurgatların halatla eş dönmesi, dönme noktası, ağırlık merkezi, salınım, manivelalarla son ayar) basit fiziğe dayalı bir canlandırmadır; kaynaklarda adım adım tarif edilmez <span class="tag">[rekonstrüksiyon]</span>. Alttaki çubukla hareketi ileri geri sarabilirsiniz.</p>
 <p>Ölçüler: dikilitaş 19,46 m, piramidion 2,67 m <span class="k">[K2]</span>. Kaide, aşağıdan yukarı: kesme taştan iki basamaklı temel, üst basamağı 6,44 × 6,50 m <span class="k">[K19]</span>; 3,7 m kare ve 1,5 m yüksek yazıtlı alt kaide <span class="k">[K10][K19]</span> (1,5 m Gyllius'un kaide ölçüsüdür; bugünkü yazıt bloğuyla aynı olduğu <span class="tag">[doğrulanmadı]</span>); aynı bloktan, yaklaşık 2,75 m kare oluklu bir plinth ve köşelerinde dört granit blok (yaklaşık 0,45 × 0,62 m) <span class="k">[K19]</span>; 2,4 m kabartmalı üst kaide <span class="k">[K10]</span>; yaklaşık 0,47 m kare ve 0,49 m yüksek dört tunç takoz <span class="k">[K19]</span>. Gyllius'un "iki basamak" (toplam 0,9 m) tarifinin bu plinth ve granit bloklara karşılık geldiği bir çıkarımdır; plinth yüksekliği bu yüzden 0,9 m çizildi <span class="tag">[doğrulanmadı]</span>. Temel basamaklarının yüksekliği ölçülmemiştir, burada 2 × 0,15 m <span class="tag">[doğrulanmadı]</span>. Temel hariç toplam yaklaşık 24,75 m; <span class="k">[K2]</span> yaklaşık 24,8 m verir. Temelle birlikte model 25,05 m olur; fark ölçülmemiş temel basamaklarından gelir. Gövdenin alt genişliği ve üst kaide genişliği tahmindir <span class="tag">[doğrulanmadı]</span>. Bocurgat düzeni, kirişler ve halat bağlantıları şematiktir <span class="tag">[rekonstrüksiyon]</span>. Son sahnede kaidenin yüzleri gerçek fotoğraflardan dokulandı: alt kaidenin kuzeydoğu (dikiliş) ve güneybatı (yarış) yüzleri ile üst kaidenin dört yüzü Mark Landon'ın 1991 fotoğraflarından <span class="k">[G3]</span>; Latince yazıtın satır düzeni Sébah & Joaillier fotoğrafından <span class="k">[G4]</span>, metni EDH'den <span class="k">[K4]</span>; Grekçe yazıt Spon 1678 levhasından <span class="k">[G1]</span>. Kabartma derinliği fotoğraf parlaklığından türetildi, oluklu plinth dokusu ve harf biçimleri <span class="tag">[rekonstrüksiyon]</span>. Gövdedeki işaretler gerçek hiyeroglifleri göstermez.</p>
 <h3>Kaynaklar</h3>
 <ol>
@@ -120,24 +124,54 @@ body.ins #pn,body.ins #big{display:none}body.ins #xb{display:block}body.clean #x
 (()=>{
 const T_=s=>s.replace(/\[(doğrulanmadı|rekonstrüksiyon)\]/g,'<span class="tag">[$1]</span>').replace(/\[((K|G)[0-9][^\]]*)\]/g,'<span class="k">[$1]</span>');
 const MODES={
- cap:{n:6,title:'Kabartmaya göre: bocurgatlarla dikiliş',sub:'Kaidenin kuzeydoğu yüzündeki kabartmaya ve Ammianus\'un çağdaş anlatımına dayanır [K10][K14][K18][K8]. Düzen ve ayrıntılar şematiktir [rekonstrüksiyon].',
+ cap:{n:6,title:'Kabartmaya göre: bocurgatlarla dikiliş',sub:'Kaidenin kuzeydoğu yüzündeki kabartmaya ve Ammianus\'un 357 Roma dikilişine dair çağdaş benzer anlatımına dayanır [K10][K14][K18][K8]. Düzen ve ayrıntılar şematiktir [rekonstrüksiyon].',
   cap:[
   "Kabartmada yerde yatan taş, sivri ucuna bağlı halatlarla (Spon 1678 levhası, Budge'da yayımlanan) bocurgatlara doğru çekilir [K10][K14][K18]. Bocurgatlar iki sıradadır: 2 alt + 2 üst, toplam 4 [K14]. “Her bocurgatı dört adam çevirir” okuması ve tekerlekli kızak Budge'ındır [K10]. Eli kalkık bir adam komut verir, bir blok üzerinde duran biri izler [K10]. Taşın geliş yönü ve kaideye göre yeri [rekonstrüksiyon].",
-  "Kaidenin çevresine yüksek dikey kirişler kurulur. Ammianus 357'de Roma'daki bir dikilişi yüksek kirişlerden bir \"orman\", sayısız halat ve çarkları döndüren binlerce adamla anlatır [K8]; 390 için en yakın çağdaş tanıklık budur. Kirişlerin sayısı ve düzeni [rekonstrüksiyon]. Kaide blokları yerinde, yüzeyleri taslak [rekonstrüksiyon].",
+  "Kaidenin çevresine yüksek dikey kirişler kurulur. Ammianus 357'de Roma'daki bir dikilişi yüksek kirişlerden bir \"orman\", sayısız halat ve çarkları döndüren binlerce adamla anlatır [K8]; en yakın çağdaş benzer anlatım budur, 390 dikilişini anlatmaz. Kirişlerin sayısı ve düzeni [rekonstrüksiyon]. Kaide blokları yerinde, yüzeyleri taslak [rekonstrüksiyon].",
   "Halatlar gövdenin üst bölümünden kirişlerin tepesindeki makaralara, oradan bocurgatlara gider. Bağlama noktaları [rekonstrüksiyon].",
-  "Bocurgatlar döndükçe taşın üst tarafı yükselir, alt ucu kaideye doğru kılavuzlanır [rekonstrüksiyon]. Ammianus, taşın uzun süre havada asılı kaldığını yazar [K8]. Rampa kullanılmaz.",
+  "Bocurgatlar döndükçe taşın üst tarafı yükselir, alt ucu kaideye doğru kılavuzlanır [rekonstrüksiyon]. Ammianus, 357'de Roma'da dikilen dikilitaşın uzun süre havada asılı kaldığını yazar [K8]; 390 için benzer bir an varsayıldı [rekonstrüksiyon]. Rampa kullanılmaz.",
   "Taş kaidesine oturtulur. Yazıtlara göre iş 30 ya da 32 gün sürdü [K4]. Altındaki dört tunç takoz bugün yerinde; 390'da konuldukları [doğrulanmadı] [K2][K10].",
   "Son hal: iki kaide parçası 390'larda birlikte yerleştirildi [K3]. Kabartma ve yazıtların dikilişten sonra işlendiği bir çıkarımdır [doğrulanmadı]. Kuzeydoğu yüzde dikiliş, güneybatıda yarış sahnesi; güneydoğuda Latince, kuzeybatıda Grekçe yazıt [K3][K18]. Kaide yüzleri Mark Landon'ın 1991 fotoğraflarından dokulandı [G3]; derinlik [rekonstrüksiyon]. Yakından bakmak için “Kabartmayı incele”."]},
  ramp:{n:5,title:'Referans şemaya dayalı rampa rekonstrüksiyonu [doğrulanmadı]',sub:'Mısır usulü olası bir yöntem [rekonstrüksiyon]. 390 dikilişine ait hiçbir kaynakta ve kabartmada rampa geçmez [K10][K14][K18].',
   cap:[
   "Taş eğimli rampada yatıyor. Sivri ucuna bağlı halat, yüksek direğin tepesinden geçip çeken ekibe uzanıyor. [doğrulanmadı]",
   "Çeken ekip halatı çekiyor; taş rampa boyunca yukarı, dik kenara doğru ilerliyor. [doğrulanmadı]",
-  "Kare alt uç kenarı aşınca taş kenarın üzerinde devriliyor; arkadaki ikinci ekip sivri uca bağlı halatla frenliyor. [doğrulanmadı]",
+  "Kare alt uç kenarı aşınca taş kenarın üzerinde devriliyor; arkadaki ikinci ekip sivri uca bağlı halatlarla frenliyor [doğrulanmadı]. Halat ve ekip sayısı şematik [rekonstrüksiyon].",
   "Alt uç kaideye oturuyor; direğin tepesinden geçen halat taşı dikey konuma çekiyor. [doğrulanmadı]",
   "Taş kaidesinde dik duruyor. Kaide burada oyma öncesi, taslak halde [rekonstrüksiyon]. [doğrulanmadı]"]}
 };
+const SUBS={cap:[
+ [1,"Taş kızakta yatıyor; sivri ucu bocurgatlara dönük [K10][K14]."],
+ [1.04,"Bocurgatlar kısa turlarla döner: halat gerilir, taş bir parça ilerler, halat gevşer [rekonstrüksiyon]."],
+ [1.86,"Taş kaidenin yanında durur; kızak taşın altında kalır."],
+ [2,"Kaidenin çevresine yüksek kirişler kurulur [rekonstrüksiyon]; 357'de Roma'daki dikilişte de böyleydi [K8]."],
+ [2.4,"Halatlar kiriş tepesindeki makaralardan bocurgatlara geçirilir [rekonstrüksiyon]."],
+ [3,"Halatlar gerilir; taş henüz kıpırdamaz [rekonstrüksiyon]."],
+ [3.1,"Kalkış: üst taraf yerden ayrılır, taş kare alt ucun köşesi üzerinde döner (kırmızı: dönme noktası) [rekonstrüksiyon]."],
+ [3.25,"Bocurgatların her turunda taş biraz daha kalkar; alt uç kızakla kaideye doğru kayar [rekonstrüksiyon]."],
+ [3.83,"Alt uç yerden kesilir; taş halatlarda asılı kalır [rekonstrüksiyon]."],
+ [4.3,"Taş dikeye gelir; makaraların altına, kaidenin üstüne salınır [rekonstrüksiyon]."],
+ [4.55,"Salınım halatlarla sönümlenir; kaide üstünde manivelacılar hazır [rekonstrüksiyon]."],
+ [4.68,"İndirme: halat azar azar boşaltılır; manivelalarla yan düzeltmeler [rekonstrüksiyon]."],
+ [4.95,"Taş dört tunç takoza oturur [K2][K10]; takozların 390'da konduğu [doğrulanmadı]."],
+ [5,"Taş kaidesinde. Yazıtlara göre iş 30 ya da 32 gün sürdü [K4]."],
+ [5.3,"Son hal: kirişler sökülür, kaide kabartmalarıyla [K3][K18]."]],
+ ramp:[
+ [1,"Taş rampada; halat sivri uçtan direğin tepesine, oradan çeken ekibe uzanıyor [doğrulanmadı]."],
+ [1.04,"Kısa çekişler: her çekişte halat gerilir, taş bir parça ilerler, sonra halat gevşer [rekonstrüksiyon]."],
+ [2,"Kare alt uç rampa kenarını aşar; taş boşluğa doğru taşar (sarı: ağırlık merkezi) [rekonstrüksiyon]."],
+ [2.44,"Ağırlık merkezi kenarı geçer; taş kenar üzerinde dönmeye başlar (kırmızı: dönme noktası) [rekonstrüksiyon]."],
+ [2.55,"Arka ekip sivri uca bağlı halatları azar azar bırakarak frenler; dönüş yavaş ve kontrollü [doğrulanmadı]. Halat ve ekip sayısı şematik [rekonstrüksiyon]."],
+ [3,"Taş dik yüz boyunca kayarak alt ucunu kaideye indirir; fren halatı gergin [doğrulanmadı]."],
+ [4,"Alt uç kaidede; direk halatı her çekişte taşı biraz daha dikeye çeker [doğrulanmadı]."],
+ [4.8,"Küçük düzeltmelerle taş dik konuma oturur [rekonstrüksiyon]."],
+ [5,"Taş kaidesinde dik [doğrulanmadı]."]]};
 const D2R=Math.PI/180, lerp=(a,b,t)=>a+(b-a)*t, cl=(x,a,b)=>Math.max(a,Math.min(b,x)), sm=t=>{t=cl(t,0,1);return t*t*(3-2*t)};
 const isPh=()=>innerWidth<700;
+const V2=(x,y)=>new THREE.Vector2(x,y);
+// rope-driven increments: n pulls; each pull eases forward (duty), then a pause while the rope slackens
+function pulse(u,n,duty=.65){u=cl(u,0,1);if(u>=1)return[1,0];if(u<=0)return[0,0];const x=u*n,k=Math.floor(x),f=x-k;
+ const p=(k+sm(f/duty))/n,te=f<duty?sm(f/.08):1-sm((f-duty)/.18);return[p,te];}
 const Q=new URLSearchParams(location.search);
 // ---------- dimensions (m) ----------
 const L=19.46, PYR=2.67, W1=1.655, W0=2.35;   // [K2]; W0 = estimate
@@ -159,21 +193,39 @@ const XE=-(nup(A4).x*HW+S4*dir(A4).x);           // pedestal at x=0
 const X0=XE-H/Math.tan(ALPHA), TOE=XE+H/Math.tan(FACE);
 const XM=6.5, HM=31, TEAM0=XM+17, BRK0=X0-1.2;
 function buttAt(s,a){const d=dir(a),n=nup(a);return new THREE.Vector2(XE+n.x*HW+s*d.x,H+n.y*HW+s*d.y)}
-function stateRamp(t){let s,a,b;
-  if(t<=2){s=lerp(-14,-.6,sm(t-1));a=ALPHA;b=buttAt(s,a);}
-  else if(t<=3){const u=t-2;s=lerp(-.6,8,sm(u));a=lerp(ALPHA,A3,sm((u-.35)/.65));b=buttAt(s,a);}
-  else if(t<=4){const u=sm(t-3);s=lerp(8,S4,u);a=lerp(A3,A4,u);b=buttAt(s,a);}
-  else{const u=sm(t-4);a=lerp(A4,-90*D2R,u);b=new THREE.Vector2(0,lerp(P+.6,P,u));}
-  return {a,b};}
+const SCOG=7.8, SPIV=8.4;   // centre of gravity ~7.8 m from butt (square tapered shaft W0 2.35 est., W1 1.655, incl. pyramidion; Grokian 7.78); stone overhangs until 8.4 m
+function stateRamp(t){let s,a,b,tens=0,brk=0,piv=false,cog=false;
+  if(t<=2){const[q,te]=pulse((t-1)/.92,6);s=lerp(-14,-.6,q);a=ALPHA;tens=te;}
+  else if(t<=2.5){const[q,te]=pulse((t-2)/.5,4);s=lerp(-.6,SPIV,q);a=ALPHA;tens=te;cog=true;piv=s>0;}
+  else if(t<=3){const[q,te]=pulse((t-2.5)/.5,4,.75);s=SPIV;a=lerp(ALPHA,A3,q);brk=.45+.55*te;cog=t<2.8;piv=true;}
+  else if(t<=4){const[q,te]=pulse(t-3,3,.75);s=lerp(SPIV,S4,q);a=lerp(A3,A4,q);brk=.45+.55*te;tens=.35;piv=true;}
+  else{const u=t-4,[q,te]=pulse(u/.8,3,.75);a=lerp(A4,-90*D2R,q);tens=te;
+    let y=P+.6,x=0;if(u>.8){const v=(u-.8)/.2;y=lerp(P+.6,P,sm(v));x=.1*Math.sin(v*Math.PI*2)*(1-v);}
+    return{a,b:V2(x,y),tens,brk:0,piv:null,cog:false};}
+  b=buttAt(s,a);return{a,b,tens,brk,piv:piv?V2(XE,H):null,cog};}
 // ---------- capstan-mode geometry ----------
 const SLED=.75, YL=SLED+HW, HS=31;
 const CAPS=[[-37,6.5],[-37,-6.5],[-44,7],[-44,-7]];
-function stateCap(t){let a=0,b;
-  if(t<=2){b=new THREE.Vector2(lerp(-3.4,-8,sm((t-1)/.8)),YL);}
-  else if(t<=3){b=new THREE.Vector2(-8,YL);}
-  else if(t<=4){const u=sm(t-3);a=lerp(0,-90*D2R,sm(u*1.1));b=new THREE.Vector2(lerp(-8,0,sm((u-.3)/.65)),lerp(YL,P+1.2,sm((u-.1)/.6)));}
-  else{const u=sm((t-4)/.8);a=-90*D2R;b=new THREE.Vector2(0,lerp(P+1.2,P,u));}
-  return {a,b};}
+function stateCap(t){let a=0,b,tens=0,piv=null,lev=0,sx=-8,lh=0;const C0=-8;
+  if(t<=2){const[q,te]=pulse((t-1)/.85,5);b=V2(lerp(-3.4,-8,q),YL);tens=te;sx=b.x;}
+  else if(t<=3){b=V2(-8,YL);}
+  else if(t<=4.55){let C,ang;
+    if(t<3.1){ang=0;C=V2(C0,SLED);tens=sm((t-3)/.1);}
+    else if(t<3.25){ang=-6*sm((t-3.1)/.15);C=V2(C0,SLED);tens=1;}
+    else if(t<4.3){const[q,te]=pulse((t-3.25)/1.05,6);tens=te;ang=lerp(-6,-80,q);
+      let cx=lerp(C0,-4.2,sm(q/.6));cx=lerp(cx,-HW-.3,sm((q-.85)/.15));C=V2(cx,lerp(SLED,P+.9,sm((q-.45)/.4)));
+      if(q<.6)sx=cx;else sx=-4.2;}
+    else{const u=sm((t-4.3)/.25);ang=lerp(-80,-90,u);C=V2(lerp(-HW-.3,-HW,u),lerp(P+.9,P+1.2,u));tens=1;sx=-4.2;}
+    if(t>=4.3)sx=-4.2;
+    a=ang*D2R;b=C.clone().add(nup(a).multiplyScalar(HW));   // rotation about the butt's lower corner C
+    if(t>=3.1&&C.y<SLED+.05)piv=C;}
+  else{a=-90*D2R;tens=1;sx=-4.2;
+    if(t<4.8)a+=Math.exp(-(t-4.55)*16)*Math.sin((t-4.55)*55)*2.4*D2R;   // damped sway while hanging
+    let y=P+1.2,x=0;
+    if(t>=4.68&&t<4.95){const[q,te]=pulse((t-4.68)/.27,3,.7);y=lerp(P+1.2,P+.05,q);tens=.55+.45*te;x=.15*Math.sin(q*Math.PI*2.5)*(1-q);}
+    else if(t>=4.95){const v=sm((t-4.95)/.05);y=lerp(P+.05,P,v);}
+    lev=sm((t-4.6)/.08)*(1-sm((t-5.02)/.1));lh=t>=4.95?1:0;b=V2(x,y);}
+  return{a,b,tens,piv,lev,sx,lh};}
 // ---------- renderer ----------
 const cv=document.getElementById('c');
 const R=new THREE.WebGLRenderer({canvas:cv,antialias:true,preserveDrawingBuffer:true});
@@ -294,6 +346,9 @@ for(let i=0;i<5;i++){const y=1.4+i*3.2;const w=lerp(W0,W1,y/shaftH)+.28;const b=
 // ---------- shared helpers ----------
 const cylG=new THREE.CylinderGeometry(1,1,1,6,1);cylG.translate(0,.5,0);const UPV=new THREE.Vector3(0,1,0);
 function seg(par,mat,r){const m=new THREE.Mesh(cylG,mat);m.userData.r=r;m.castShadow=true;par.add(m);return m;}
+function rope(par,mat,r){const o={s1:seg(par,mat,r),s2:seg(par,mat,r)};o.s1.castShadow=o.s2.castShadow=false;return o;}
+function setRope(o,a,b,sag){const d=new THREE.Vector3().subVectors(b,a),hz=Math.hypot(d.x,d.z)/Math.max(d.length(),.001);const m=a.clone().lerp(b,.5);m.y-=sag*hz;setSeg(o.s1,a,m);setSeg(o.s2,m,b);}
+function showRope(o,v){o.s1.visible=o.s2.visible=v;}
 function setSeg(m,a,b){const d=new THREE.Vector3().subVectors(b,a);const l=d.length();m.position.copy(a);m.scale.set(m.userData.r,Math.max(l,.001),m.userData.r);m.quaternion.setFromUnitVectors(UPV,d.normalize());}
 const skin=new THREE.MeshStandardMaterial({color:0x8a5a3c,roughness:.8});
 const cloth=[0x7a3b2a,0x34506b,0x5b4a2f,0x6e2f3a].map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.95}));
@@ -323,9 +378,11 @@ const rMast=new THREE.Group();RG.add(rMast);
 {const m=new THREE.Mesh(new THREE.CylinderGeometry(.35,.6,HM,12),rWood);m.position.set(XM,HM/2,0);m.castShadow=true;
 const pul=new THREE.Mesh(new THREE.CylinderGeometry(.6,.6,.5,16).rotateX(Math.PI/2),rWood);pul.position.set(XM,HM,0);rMast.add(m,pul);
 [[XM+3,0,13],[XM+3,0,-13],[XM+11,0,-11]].forEach(q=>{setSeg(seg(rMast,rStay,.06),new THREE.Vector3(XM,HM-.4,0),new THREE.Vector3(...q));});}
-const rr=[0,1,2,3,4].map(()=>seg(RG,rRope,.13));
+const rr=[0,1,2,3,4].map(()=>seg(RG,rRope,.13));rr[0].visible=rr[1].visible=rr[3].visible=false;
+const rA=rope(RG,rRope,.13),rB=rope(RG,rRope,.13),rC=rope(RG,rRope,.13);showRope(rC,false);
+const BZS=[-1.5,0,1.5],brkR=BZS.map(()=>rope(RG,rRope,.13)),brkT=BZS.map(()=>seg(RG,rRope,.13));
 const coil=new THREE.Mesh(new THREE.TorusGeometry(1,.35,6,18).rotateX(Math.PI/2),rRope);coil.castShadow=true;RG.add(coil);
-const pull=[],brake=[];for(let i=0;i<9;i++){const p=person(i);RG.add(p);pull.push(p);}for(let i=0;i<6;i++){const p=person(i+2);p.rotation.y=Math.PI;RG.add(p);brake.push(p);}
+const pull=[],brake=[];for(let i=0;i<9;i++){const p=person(i);RG.add(p);pull.push(p);}for(let i=0;i<24;i++){const p=person(i+2);p.rotation.y=Math.PI;RG.add(p);brake.push(p);}
 function attachPt(st){const d=dir(st.a),n=nup(st.a);return st.b.clone().addScaledVector(d,-(L-3)).addScaledVector(n,lerp(W1,W0,3/L)/2+.12);}
 const LEN0=attachPt(stateRamp(1)).distanceTo(new THREE.Vector2(XM,HM));
 // ======================= CAPSTAN MODE =======================
@@ -368,10 +425,22 @@ const cmdr=person(0,offM);cmdr.position.set(-31,0,6);cmdr.rotation.y=Math.PI*.6;
 const blk=new THREE.Mesh(new THREE.BoxGeometry(1.2,.8,1.2),new THREE.MeshStandardMaterial({color:0xd8d0bf,roughness:.9}));blk.position.set(-22,.4,8);blk.castShadow=true;CG.add(blk);
 const watcher=person(1,offM);watcher.position.set(-22,.8,8);watcher.rotation.y=Math.PI/2;pose(watcher,0,0,.2);CG.add(watcher);
 const pullR=CAPS.map(()=>seg(CG,cRope,.1)), liftA=[0,1].map(()=>seg(CG,cRope,.12)), liftB=CAPS.map(()=>seg(CG,cRope,.1));
-[...pullR,...liftA,...liftB].forEach(r=>r.castShadow=false);
+[...pullR,...liftA,...liftB].forEach(r=>{r.castShadow=false;r.visible=false;});
+const pullP=CAPS.map(()=>rope(CG,cRope,.1)),liftAP=[0,1].map(()=>rope(CG,cRope,.12)),liftBP=CAPS.map(()=>rope(CG,cRope,.1));
+// working platform + lever men for the final adjustment [rekonstrüksiyon]
+const levG=new THREE.Group();CG.add(levG);
+for(const sx of[-1,1]){const bd=new THREE.Mesh(new THREE.BoxGeometry(.9,.15,8.8),sWood);bd.position.set(sx*2.5,Y_BZ-.075,0);bd.castShadow=bd.receiveShadow=true;levG.add(bd);}
+const levS=[0,1].map(()=>seg(levG,new THREE.MeshStandardMaterial({color:0x5a3c20,roughness:.85}),.07));
+const levMen=[0,1].map(i=>{const p=person(i+5);p.position.set(i?2.75:-2.75,Y_BZ,i?-.8:.8);p.rotation.y=i?Math.PI:0;levG.add(p);return p;});
+// markers: pivot (red axis) and centre of gravity (yellow)
+const mkM=c=>new THREE.MeshBasicMaterial({color:c,depthTest:false,transparent:true,opacity:.9});
+const pivM=new THREE.Group();S.add(pivM);{const c=new THREE.Mesh(new THREE.CylinderGeometry(.2,.2,3.8,10).rotateX(Math.PI/2),mkM(0xd62d20));pivM.add(c);
+ for(const z of[-1.9,1.9]){const s=new THREE.Mesh(new THREE.SphereGeometry(.45,14,10),mkM(0xd62d20));s.position.z=z;pivM.add(s);}pivM.traverse(o=>o.renderOrder=10);}
+const cogM=new THREE.Group();S.add(cogM);const cogS=new THREE.Mesh(new THREE.SphereGeometry(.42,16,12),mkM(0xf2b705));cogM.add(cogS);
+const cogL=new THREE.Mesh(cylG,mkM(0xf2b705));cogL.userData.r=.05;cogM.add(cogL);cogM.traverse(o=>o.renderOrder=11);
 // ---------- UI ----------
 const $=id=>document.getElementById(id);
-let MODE=Q.get('mode')==='ramp'?'ramp':'cap', T=1, target=1, playing=false, hold=0;
+let MODE=Q.get('mode')==='ramp'?'ramp':'cap', T=1, target=1, playing=false, hold=0, follow=true;
 let clean=localStorage.getItem('dk_clean')==='1';if(Q.has('clean'))clean=Q.get('clean')==='1';
 function setClean(v){clean=v;document.body.classList.toggle('clean',v);$('ib').classList.toggle('off',v);try{localStorage.setItem('dk_clean',v?'1':'0')}catch(e){}}
 setClean(clean);$('ib').onclick=()=>setClean(!clean);
@@ -379,15 +448,18 @@ $('ins').onclick=()=>setIns(INS?null:'NE');document.querySelectorAll('#xf [data-
 $('hk').onclick=()=>$('md').classList.add('open');$('mx').onclick=()=>$('md').classList.remove('open');$('md').onclick=e=>{if(e.target.id==='md')$('md').classList.remove('open')};
 let sb=[];
 function buildStages(){const st=$('st');st.innerHTML='';sb=[];for(let i=1;i<=MODES[MODE].n;i++){const b=document.createElement('button');b.textContent=i;b.setAttribute('aria-label','Aşama '+i);b.onclick=()=>go(i);st.appendChild(b);sb.push(b);}
- $('tA').classList.toggle('on',MODE==='cap');$('tB').classList.toggle('on',MODE==='ramp');$('mt').innerHTML=T_(MODES[MODE].title);$('ms').innerHTML=T_(MODES[MODE].sub);shown=0;}
-function setMode(m){if(INS)setIns(null);if(m===MODE)return;MODE=m;T=1;target=1;playing=false;buildStages();camTo(preset());upd();}
+ $('tA').classList.toggle('on',MODE==='cap');$('tB').classList.toggle('on',MODE==='ramp');$('mt').innerHTML=T_(MODES[MODE].title);$('tl').max=MODES[MODE].n;ssk=-1;$('ms').innerHTML=T_(MODES[MODE].sub);shown=0;}
+function setMode(m){if(INS)setIns(null);if(m===MODE)return;MODE=m;T=1;target=1;playing=false;buildStages();follow=true;upd();}
 $('tA').onclick=()=>setMode('cap');$('tB').onclick=()=>setMode('ramp');
-function go(i){if(INS)setIns(null);target=cl(i,1,MODES[MODE].n);playing=false;camTo(preset(target));upd();}
+function go(i){if(INS)setIns(null);target=cl(i,1,MODES[MODE].n);playing=false;follow=true;upd();}
 $('pv').onclick=()=>go(Math.round(target)-1);$('nx').onclick=()=>go(Math.round(target)+1);
-$('pp').onclick=()=>{playing=!playing;if(playing&&T>=MODES[MODE].n-.001){T=1;target=1;camTo(preset(1));}hold=0;upd();};
+$('pp').onclick=()=>{if(INS)setIns(null);playing=!playing;if(playing&&T>=MODES[MODE].n-.001){T=1;target=1;}hold=0;follow=true;upd();};
+const tl=$('tl');tl.addEventListener('input',()=>{if(INS)setIns(null);playing=false;T=target=+tl.value;follow=true;upd();});
 addEventListener('keydown',e=>{if(e.key==='ArrowRight')go(target+1);if(e.key==='ArrowLeft')go(target-1);if(e.key===' '){e.preventDefault();$('pp').onclick();}if(e.key==='i')setClean(!clean);});
-let shown=0;
+let shown=0,ssk=-1;
 function upd(){const k=Math.round(T);$('pp').textContent=playing?'❚❚':'▶︎';sb.forEach((b,i)=>b.classList.toggle('on',i+1===k));
+ if(document.activeElement!==$('tl'))$('tl').value=T;const SS=SUBS[MODE];let si=0;for(let i=0;i<SS.length;i++)if(T>=SS[i][0]-1e-4)si=i;
+ if(si!==ssk){ssk=si;$('sc').textContent='Adım '+(si+1)+'/'+SS.length;$('ss').innerHTML=T_(SS[si][1]);}
  if(k!==shown){shown=k;$('big').textContent=k;$('cap').innerHTML='<b>'+k+'.</b>'+T_(MODES[MODE].cap[k-1]);}}
 // ---------- camera ----------
 const cam=new THREE.PerspectiveCamera(34,1,.5,900);
@@ -399,7 +471,7 @@ const XCAP={NE:"Alt kaide, kuzeydoğu yüz: dikiliş kabartması [K10][K18]. Dok
  SW:"Alt kaide, güneybatı yüz: iki kuşaklı yarış sahnesi. Üst kuşakta spina anıtları ve iki atlı (galip arabacılar), alt kuşakta soldan sağa yarışan dört atlı arabalar [K18]. Doku Mark Landon'ın 1991 fotoğrafından [G3]. Spon 1678 yalnız üst kuşağı çizmiştir [G1]. Kaidenin alt kısmı Osmanlı döneminde toprağa gömülmüş, Nisan 1857'de Newton kazısıyla açılmıştır [K1]; alt kuşağın Spon'un zamanında toprak altında olması bir olasılıktır [doğrulanmadı]. Araba ve figür sayısı fotoğraftaki kadardır; derinlik fotoğraf parlaklığından [rekonstrüksiyon].",
  SE:"Alt kaide, güneydoğu yüz: Latince yazıt, CIL III 737 [K4][K3]. Metin EDH'den [K4]. Boşluksuz satır düzeni ve bloğu kesen çatlak Sébah & Joaillier fotoğrafından (Barth 1913) [G4][K19]; harf biçimleri [rekonstrüksiyon].",
  NW:"Alt kaide, kuzeybatı yüz: Grekçe yazıt, AP IX 682 [K3][K4]. Harfler Spon 1678 levhasındaki baskıdan aktarıldı [G1]; bu yüzün net ve tam bir serbest fotoğrafı yok, harf biçimleri [rekonstrüksiyon]. Kazıma derinliği [rekonstrüksiyon].",
- USE:"Üst kaide, güneydoğu yüz (imparator locasına bakan). Düz lentolu, iki sütunlu dikdörtgen kathisma ve ortada ayakta, elinde zafer çelengi tutan imparator; fotoğraflarda görüldüğü gibi bu bölme yalnız bu yüzde vardır [G3][G5: Ka.II.a.21]. Yanlarda memurlar ve muhafızlar; korkuluğun altında iki sıra seyirci, dansçılar ve su orgları [K18][K19]; su orgları fotoğraflarda alt kuşağın iki ucundadır [G3][G5]. Doku Mark Landon'ın 1991 fotoğrafından [G3]; Sébah 1870'ler ve Doğancan Işık'ın fotoğrafıyla aynı düzende [G5][G2]. Kimlikler [doğrulanmadı].",
+ USE:"Üst kaide, güneydoğu yüz (imparator locasına bakan). Düz lentolu, iki sütunlu dikdörtgen kathisma ve ortada ayakta, elinde zafer çelengi tutan imparator; fotoğraflarda görüldüğü gibi bu bölme yalnız bu yüzde vardır [G3][G5]. Yanlarda memurlar ve muhafızlar; korkuluğun altında iki sıra seyirci, dansçılar ve su orgları [K18][K19]; su orgları fotoğraflarda alt kuşağın iki ucundadır [G3][G5]. Doku Mark Landon'ın 1991 fotoğrafından [G3]; Sébah 1870'ler ve Doğancan Işık'ın fotoğrafıyla aynı düzende [G5][G2]. Kimlikler [doğrulanmadı].",
  UNW:"Üst kaide, kuzeybatı yüz (taraftarlara bakan). Kemerli bölmede dört oturan figür; kimlikleri tartışmalıdır [K18][K19] [doğrulanmadı]. Alt kuşakta diz çökmüş, hediye sunan barbarlar; belki bir elçilik [K18][K3]. Doku Mark Landon'ın 1991 fotoğrafından [G3].",
  UNE:"Üst kaide, kuzeydoğu yüz (carceres'e bakan). Kemerli bölmede imparator ve yanında figürler; oturuyor mu ayakta mı kesin değil [K14][K19] [doğrulanmadı]. Alt kuşakta kemerli kapı ve seyirciler [K18]. Kabartmayı kesen dikey oluk: Safran'a göre çeşme kanalı [K3], Wace ve Traquair'e göre takozları koruyan tahliye oluğu [K19]. Doku Mark Landon'ın 1991 fotoğrafından [G3].",
  USW:"Üst kaide, güneybatı yüz (sphendone'ye bakan). Kemerli bölmede dört figür, iki yanda oval kalkanlı ve mızraklı muhafızlar; alt kuşakta kemerli kapı, üstünde merdiven ve merdivende memurlar, iki yanda seyirciler [K18][K3][K19]. Sol üstte korniş kırık. Doku Mark Landon'ın 1991 fotoğrafından [G3]."};
@@ -410,68 +482,79 @@ function insPreset(){const F=FACES[INS],ph=isPh(),tv=Math.tan(cam.fov*D2R/2),asp
  const ty=F.c[1]-(.5-fc)*2*tv*d,cy=F.c[1]+.15,s=F.n[2]*.1,q=-F.n[0]*.1;
  return {t:[F.c[0],ty,F.c[2]],p:[F.c[0]+F.n[0]*d+s*d,cy,F.c[2]+F.n[2]*d+q*d]};}
 function setIns(f){INS=f;document.body.classList.toggle('ins',!!f);$('ins').classList.toggle('on',!!f);
- if(f){if(MODE!=='cap'){MODE='cap';buildStages();}target=T=MODES.cap.n;playing=false;ctl.minDistance=1.2;
+ if(f){if(MODE!=='cap'){MODE='cap';buildStages();}target=T=MODES.cap.n;playing=false;follow=false;ctl.minDistance=1.2;
   const F=FACES[f],l=[-F.n[2],0,F.n[0]];
   sun.position.set(F.c[0]+(F.n[0]*.3+l[0]*.9)*80,F.c[1]+.36*80,F.c[2]+(F.n[2]*.3+l[2]*.9)*80);sun.intensity=2.3;
   document.querySelectorAll('#xf [data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f===f));$('xc').innerHTML=T_(XCAP[f]);}
- else{ctl.minDistance=8;sun.position.copy(SUN0);sun.intensity=SUNI;}
+ else{ctl.minDistance=8;sun.position.copy(SUN0);sun.intensity=SUNI;follow=true;}
  tw=null;camTo(preset(),!f?0:0);upd();}
-function preset(stage){if(INS)return insPreset();const ph=isPh();stage=stage||Math.round(target);
- if(MODE==='cap'&&stage>=6)return ph?{t:[0,2.6,0],p:[17,8,21]}:{t:[0,2.4,0],p:[14,8,16.5]};
- if(MODE==='cap'&&stage<=1)return ph?{t:[-25,3,0],p:[42,28,95]}:{t:[-22,5,0],p:[-30,13,64]};
- if(MODE==='cap')return ph?{t:[-18,11,0],p:[44,28,108]}:{t:[-17,12,0],p:[-28,17,92]};
- return ph?{t:[-6,4,0],p:[105,26,48]}:{t:[-14,9,0],p:[-36,28,112]};}
+const KF={cap:{d:[[1,[-22,5,0],[-30,13,64]],[1.9,[-15,6,0],[-30,14,70]],[2.6,[-14,11,0],[-30,17,84]],[3.1,[-11,6,0],[-30,10,52]],[3.9,[-4,13,0],[-36,19,74]],[4.45,[0,14,0],[-28,17,72]],[4.7,[0,7,0],[-12,9.5,27]],[5,[0,6,0],[-12,9,27]],[5.6,[0,2.4,0],[14,8,16.5]]],
+ p:[[1,[-25,3,0],[42,28,95]],[1.9,[-18,6,0],[38,26,92]],[2.6,[-16,11,0],[44,28,108]],[3.1,[-12,7,0],[36,22,88]],[3.9,[-4,13,0],[36,26,96]],[4.45,[0,14,0],[30,22,92]],[4.7,[0,7,0],[16,12,38]],[5,[0,6,0],[16,12,38]],[5.6,[0,2.6,0],[17,8,21]]]},
+ ramp:{d:[[1,[-24,9,0],[-40,24,104]],[1.9,[-14,11,0],[-30,22,86]],[2.25,[XE-5,H-2,0],[XE-20,H+6,58]],[2.6,[XE-26,7,0],[XE-30,24,108]],[3.05,[XE-26,7,0],[XE-30,24,108]],[3.6,[-3,9,0],[-22,14,60]],[5,[0,9,0],[-20,13,56]]],
+ p:[[1,[-14,6,0],[90,32,70]],[1.9,[-8,9,0],[70,28,60]],[2.25,[XE-2,H-2,0],[36,22,52]],[2.6,[XE-30,-2,0],[XE-110,38,25]],[3.05,[XE-30,-2,0],[XE-110,38,25]],[3.6,[-2,9,0],[42,20,56]],[5,[0,9,0],[40,18,52]]]}};
+function camAt(t){const k=KF[MODE][isPh()?'p':'d'];if(t<=k[0][0])return{t:k[0][1],p:k[0][2]};
+ for(let i=1;i<k.length;i++)if(t<=k[i][0]){const u=sm((t-k[i-1][0])/(k[i][0]-k[i-1][0])),f=(a,b)=>a.map((x,j)=>lerp(x,b[j],u));return{t:f(k[i-1][1],k[i][1]),p:f(k[i-1][2],k[i][2])};}
+ const z=k[k.length-1];return{t:z[1],p:z[2]};}
+function preset(stage){if(INS)return insPreset();return camAt(stage||T);}
 let tw=null;function camTo(pr,inst){const k=JSON.stringify(pr);if(tw&&tw.k===k)return;
  if(inst){ctl.target.set(...pr.t);cam.position.set(...pr.p);tw={k,done:1};ctl.update();return;}
  tw={k,t0:performance.now(),ft:ctl.target.clone(),fp:cam.position.clone(),tt:new THREE.Vector3(...pr.t),tp:new THREE.Vector3(...pr.p)};}
-ctl.addEventListener('start',()=>{if(tw)tw.done=1;});
+ctl.addEventListener('start',()=>{if(tw)tw.done=1;follow=false;});
 function resize(){R.setSize(innerWidth,innerHeight,false);cam.aspect=innerWidth/innerHeight;cam.fov=isPh()?50:34;cam.updateProjectionMatrix();}
 addEventListener('resize',()=>{resize();tw=null;camTo(preset(),1);});resize();
 // ---------- apply ----------
 const v3=(x,y,z=0)=>new THREE.Vector3(x,y,z);
 function placeObe(st){obe.position.set(st.b.x,st.b.y,0);obe.rotation.z=Math.atan2(-Math.sin(st.a),-Math.cos(st.a))-Math.PI/2;}
 function onObe(st,fromButt,side,zz){const d=dir(st.a),n=nup(st.a);const w=lerp(W0,W1,fromButt/L)/2;const p=st.b.clone().addScaledVector(d,-fromButt).addScaledVector(n,side*(w+.1));return v3(p.x,p.y,zz||0);}
-function applyRamp(t,clock,moving){RG.visible=true;CG.visible=false;setRelief(false);
+function markers(st,show){const pv=show&&st.piv;pivM.visible=!!pv;if(pv)pivM.position.set(st.piv.x,st.piv.y,0);
+ cogM.visible=!!(show&&st.cog);if(cogM.visible){const c=st.b.clone().addScaledVector(dir(st.a),-SCOG);cogS.position.set(c.x,c.y,0);setSeg(cogL,v3(c.x,c.y),v3(c.x,0));}}
+function applyRamp(t){RG.visible=true;CG.visible=false;setRelief(false);levG.visible=false;
  const st=stateRamp(t);placeObe(st);const f5=1-sm((t-4.35)/.6);bandM.opacity=f5;bands.forEach(b=>b.visible=f5>.02);
- const A=attachPt(st),a3=v3(A.x,A.y),M=v3(XM,HM),hand=1.05,hp=v3(TEAM0,hand);
- setSeg(rr[0],a3,M);setSeg(rr[1],M,hp);const tail=v3(TEAM0+9*1.25+1.2,.25);setSeg(rr[2],hp,tail);
+ const A=attachPt(st),a3=v3(A.x,A.y),M=v3(XM,HM),hand=1.05,hp=v3(TEAM0,hand),sag=1-st.tens;
+ setRope(rA,a3,M,sag*1.1);setRope(rB,M,hp,sag*1.6);const tail=v3(TEAM0+9*1.25+1.2,.25);setSeg(rr[2],hp,tail);
  const pulled=LEN0-a3.distanceTo(M);coil.position.set(tail.x+1.2,.35,0);const cs=.4+Math.sqrt(Math.max(pulled,0))*.22;coil.scale.set(cs,1+cs*.4,cs);
- pull.forEach((p,i)=>{p.position.set(TEAM0+i*1.25,0,0);pose(p,-.38,moving?clock*5:0,-(1.25-.38*.6));p.visible=f5>.02;});
- const bv=sm((t-2.35)/.4)*(1-sm((t-3.55)/.4)),bOn=bv>.02,bh=v3(BRK0,hand);
- setSeg(rr[3],a3,bh);setSeg(rr[4],bh,v3(BRK0-6*1.25-1,.25));rr[3].visible=rr[4].visible=bOn;
- brake.forEach((p,i)=>{p.position.set(BRK0-i*1.25,0,0);pose(p,-.32,0,-(1.25-.32*.6));p.visible=bOn;});
- [rr[0],rr[1],rr[2],coil,rMast].forEach(o=>o.visible=f5>.02);rWood.opacity=rRope.opacity=rStay.opacity=f5;}
-function applyCap(t,clock,moving){RG.visible=false;CG.visible=true;
+ pull.forEach((p,i)=>{p.position.set(TEAM0+i*1.25,0,0);const ln=.12+.3*st.tens;pose(p,-ln,pulled*2.4,-(1.25-ln*.6));p.visible=f5>.02;});
+ const bOn=t>2.3&&t<4.08,bh=v3(BRK0,hand);
+ rr[4].visible=false;BZS.forEach((z,j)=>{const az=(j-1)*.55,h=v3(BRK0,hand,z);setRope(brkR[j],v3(a3.x,a3.y,az),h,(1-st.brk)*.8);showRope(brkR[j],bOn);setSeg(brkT[j],h,v3(BRK0-8*1.25-1,.25,z));brkT[j].visible=bOn;});
+ brake.forEach((p,i)=>{p.position.set(BRK0-Math.floor(i/3)*1.25,0,BZS[i%3]+.35);const ln=.1+.32*st.brk;pose(p,-ln,0,-(1.25-ln*.6));p.visible=bOn;});
+ showRope(rA,f5>.02);showRope(rB,f5>.02);[rr[2],coil,rMast].forEach(o=>o.visible=f5>.02);rWood.opacity=rRope.opacity=rStay.opacity=f5;
+ markers(st,!clean||true);}
+const liftLen=st=>onObe(st,L*.62,1,0).distanceTo(v3(0,HS-.2,0));const LL3=liftLen(stateCap(3));
+function applyCap(t){RG.visible=false;CG.visible=true;
  const st=stateCap(t);placeObe(st);
  setRelief(t>5.45);
  const f6=1-sm((t-5.05)/.5);   // workers/scaffold leave in final
  bandM.opacity=Math.min(f6,1-sm((t-4.6)/.5));bands.forEach(b=>b.visible=bandM.opacity>.02);
- // sledge follows until stage 3
- const sx=t<=3?st.b.x:-8;sled.position.set(sx,0,0);sled.visible=f6>.02;
- // scaffold rises 1.4-2
+ sled.position.set(st.sx,0,0);sled.visible=f6>.02;
  const sc=sm((t-1.35)/.6);scaf.scale.y=Math.max(sc,.001);scaf.visible=sc>.01&&f6>.02;sWood.opacity=f6;
- // capstans spin while stone moves
- const spinning=moving&&((t>1&&t<1.85)||(t>3&&t<5));caps.forEach((c,ci)=>{if(spinning)c.rot.rotation.y+=.012*(ci%2?-1:1);c.men.forEach((p,k)=>pose(p,.35,spinning?clock*6+k:0,-1.35));c.g.visible=f6>.02;});
+ // capstans turn exactly with the rope taken in (haul + lift), men walk with them
+ const rin=t<=3?(-3.4-st.b.x):(4.6+LL3-liftLen(st));
+ caps.forEach((c,ci)=>{c.rot.rotation.y=(ci%2?-1:1)*rin*.55;c.men.forEach((p,k)=>pose(p,.15+.3*st.tens,rin*2.2+k*1.6,-1.35));c.g.visible=f6>.02;});
  cWood.opacity=cRope.opacity=f6;cmdr.visible=watcher.visible=blk.visible=_arches.visible=f6>.02;
- // horizontal pulling ropes (stage 1-2), fade during 2-3
+ const sag=1-st.tens;
  const pv=1-sm((t-2.1)/.6);const front=onObe(st,L-PYR-.2,0);
- pullR.forEach((r,i)=>{const c=caps[i];setSeg(r,v3(front.x,front.y,i%2?-.6:.6),v3(c.x,1.0,c.z));r.visible=pv>.02&&f6>.02;});
- // lifting ropes (stage 3+)
- const lv=sm((t-2.3)/.6);const at=L*.62;
- liftA.forEach((r,i)=>{const z=i?-1.3:1.3;const p=onObe(st,at,1,0);setSeg(r,v3(p.x,p.y,z*.6),v3(0,HS-.2,z));r.visible=lv>.02&&f6>.02;});
- liftB.forEach((r,i)=>{const c=caps[i];const z=c.z>0?1.3:-1.3;setSeg(r,v3(0,HS-.2,z),v3(c.x,1.0,c.z));r.visible=lv>.02&&f6>.02;});
-}
-window.DK={ins:f=>{setIns(f);tw=null;camTo(preset(),1);},go:(m,i)=>{if(INS)setIns(null);if(m!==MODE){MODE=m;buildStages();}target=i;T=i;playing=false;tw=null;camTo(preset(i),1);upd();},P,S4,XE,TOE};
+ pullP.forEach((r,i)=>{const c=caps[i];setRope(r,v3(front.x,front.y,i%2?-.6:.6),v3(c.x,1.0,c.z),sag*1.4);showRope(r,pv>.02&&f6>.02);});
+ const lv=sm((t-2.3)/.6),lon=lv>.02&&f6>.02,ls=t<3?1:sag;
+ liftAP.forEach((r,i)=>{const z=i?-1.3:1.3;const p=onObe(st,L*.62,1,0);setRope(r,v3(p.x,p.y,z*.6),v3(0,HS-.2,z),ls*.8);showRope(r,lon);});
+ liftBP.forEach((r,i)=>{const c=caps[i];const z=c.z>0?1.3:-1.3;setRope(r,v3(0,HS-.2,z),v3(c.x,1.0,c.z),ls*2.2);showRope(r,lon);});
+ // levers at the butt during the final adjustment [rekonstrüksiyon]
+ levG.visible=st.lev>.02&&f6>.02;
+ if(levG.visible)levS.forEach((s,i)=>{const sx=i?1:-1,z=i?-.8:.8,h=v3(sx*2.25,Y_BZ+1.15,z),tip=v3(sx*(HW-.25),st.b.y+.06,z);
+   const pry=st.lh?0:Math.sin(t*90+i)*.08;setSeg(s,v3(h.x,h.y+pry,z),tip);pose(levMen[i],.45,0,-1.2);});
+ markers(st,true);}
+window.DK={ins:f=>{setIns(f);tw=null;camTo(preset(),1);},go:(m,i)=>{if(INS)setIns(null);if(m!==MODE){MODE=m;buildStages();}target=i;T=i;playing=false;tw=null;follow=true;camTo(preset(i),1);upd();},
+ setT:(m,t)=>{if(INS)setIns(null);if(m!==MODE){MODE=m;buildStages();}T=target=t;playing=false;tw=null;follow=true;camTo(camAt(t),1);upd();},P,S4,XE,TOE};
 buildStages();
 {const st0=+(Q.get('stage')||1);target=T=cl(st0,1,MODES[MODE].n);}camTo(preset(),1);upd();
 // ---------- loop ----------
-let last=performance.now(),clock=0;
+let last=performance.now(),clock=0;const SPD={cap:7.5,ramp:7.5};
 function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;const N=MODES[MODE].n;
- if(playing&&T>=target-.0005){hold+=dt;if(hold>1.8){hold=0;if(target<N){target=Math.round(T)+1;camTo(preset(target));}else{playing=false;}}}
- const moving=Math.abs(target-T)>.001;
- if(T<target)T=Math.min(target,T+dt/3.4);else if(T>target)T=Math.max(target,T-dt/1.4);
+ if(playing){if(hold>0)hold-=dt;else{const k=Math.floor(T+1e-6),nt=T+dt/SPD[MODE];if(nt>=k+1&&k+1<N){T=k+1;hold=1.1;}else T=Math.min(N,nt);}
+   target=T;if(T>=N-1e-6)playing=false;}
+ else if(T<target)T=Math.min(target,T+dt/4.5);else if(T>target)T=Math.max(target,T-dt/1.6);
  if(tw&&!tw.done){const u=sm((now-tw.t0)/1400);ctl.target.lerpVectors(tw.ft,tw.tt,u);cam.position.lerpVectors(tw.fp,tw.tp,u);if(u>=1)tw.done=1;}
- if(MODE==='cap')applyCap(T,clock,moving);else applyRamp(T,clock,moving);
+ else if(follow&&!INS){const c=camAt(T),k=1-Math.exp(-dt*3);ctl.target.lerp(v3(...c.t),k);cam.position.lerp(v3(...c.p),k);}
+ if(MODE==='cap')applyCap(T);else applyRamp(T);
  upd();ctl.update();R.render(S,cam);requestAnimationFrame(loop);}
 requestAnimationFrame(loop);
 })();
