@@ -1580,7 +1580,7 @@ function draw(){
   const seatLv=st.up.seat,motorLv=st.up.motor,holdLv=st.up.hold;
   const bowExt=seatLv*1.8,sternExt=holdLv*1.5;
 
-  const tier=boatTier(),tsc=(1+tier*.08)*(1+.12*Math.max(0,Math.sin(Math.min(1,pulseT)*Math.PI)));
+  const tier=boatTier(),rawLen=33+bowExt+sternExt+tier*2.5,tsc=(33+(rawLen-33)*.35)/rawLen*(1+.12*Math.max(0,Math.sin(Math.min(1,pulseT)*Math.PI))); // en büyük hali ~38 birim: vapurdan (46) küçük
   ctx.save();ctx.translate(boat.x,boat.y);ctx.rotate(boat.a);ctx.scale(tsc,tsc);
   if(isNight){
     const beam=ctx.createRadialGradient(16+bowExt,0,2,16+bowExt,0,125);
