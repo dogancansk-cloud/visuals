@@ -1,0 +1,929 @@
+<!doctype html><html lang="tr"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><meta property="og:title" content="Boğaz Filosu">
+<meta property="og:description" content="İstanbul Boğazı ve Haliç’te kendi deniz taşımacılığı şirketini kur. Hat aç, tekne al, kaptan tut, sözleşmeleri yetiştir. Tarayıcıda hemen oyna.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://dogancansk-cloud.github.io/visuals/bogaz_filosu.html">
+<meta property="og:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_filosu_og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Boğaz Filosu">
+<meta name="twitter:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_filosu_og.jpg"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>Boğaz Filosu</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Figtree:wght@400..700&display=swap">
+<style>
+/* Layout: full-bleed sea chart you pan and zoom; company HUD on top, management tabs and sheet at the bottom. */
+:root{
+  --water:#2b7f97; --deep:#236e87; --shallow:#8fc9cb; --quay:#a7b391;
+  --land:#dde4cd; --onwater:#eaf6f6;
+  --ink:#15303a; --muted:#56707a; --panel:#fbfcf7; --line:#d3dbc8; --soft:#eef2e6;
+  --accent:#f2b705; --accent-ink:#2a2100;
+  --good:#1f7d54; --warn:#a86a00; --crit:#c2412d;
+  --display:"Bricolage Grotesque","Avenir Next Condensed","Segoe UI",system-ui,sans-serif;
+  --body:"Figtree","Segoe UI",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --water:#103445; --deep:#0b2937; --shallow:#1f5262; --quay:#3d4d43;
+    --land:#1c2824; --onwater:#b9d3d6;
+    --ink:#e8efe9; --muted:#9db0aa; --panel:#15201d; --line:#2e3d37; --soft:#1d2a26;
+    --accent:#f6c21c; --accent-ink:#231b00;
+    --good:#56c28f; --warn:#f0b040; --crit:#ff7a66; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --water:#103445; --deep:#0b2937; --shallow:#1f5262; --quay:#3d4d43;
+  --land:#1c2824; --onwater:#b9d3d6;
+  --ink:#e8efe9; --muted:#9db0aa; --panel:#15201d; --line:#2e3d37; --soft:#1d2a26;
+  --accent:#f6c21c; --accent-ink:#231b00;
+  --good:#56c28f; --warn:#f0b040; --crit:#ff7a66; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--land);color:var(--ink);font-family:var(--body);font-size:14px;overflow:hidden}
+#app{position:relative;height:100%;overflow:hidden}
+#c{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.ui{position:absolute;inset:0;display:flex;flex-direction:column;gap:6px;padding-block:8px;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));pointer-events:none}
+.ui>*{pointer-events:auto;width:min(100%,520px);align-self:center}
+.hud{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:7px 2px}
+.stat{padding:0 9px;min-width:0;border-left:1px solid var(--line)}
+.stat:first-child{border-left:0}
+.k{display:block;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap}
+.v{display:block;font-family:var(--display);font-weight:700;font-size:16px;line-height:1.25;font-variant-numeric:tabular-nums;white-space:nowrap}
+.v.neg{color:var(--crit)}
+.bar2{display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.bar2>*{pointer-events:auto}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{font:700 12.5px var(--display);padding:7px 10px;border:0;border-left:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;min-width:36px}
+.seg button:first-child{border-left:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.goal{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:12.5px;line-height:1.35}
+.goal b{font-family:var(--display)}
+.goal span{color:var(--muted);font-variant-numeric:tabular-nums}
+.banner{background:var(--ink);color:var(--panel);border-radius:10px;padding:6px 10px;font-size:12.5px;font-weight:600}
+.grow{flex:1;pointer-events:none!important}
+.toasts{position:absolute;left:0;right:0;top:190px;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none!important;padding-inline:16px;width:100%!important}
+.toast{background:var(--ink);color:var(--panel);border-radius:10px;padding:7px 11px;font-weight:600;font-size:12.5px;max-width:480px;text-align:center}
+.toast.bad{background:var(--crit);color:#fff}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.card p{margin:2px 0 0;color:var(--muted)}
+.sheet{max-height:min(52%,460px);overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tabs button{font:700 12.5px var(--display);padding:10px 2px;border:0;border-left:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.tabs button:first-child{border-left:0}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.tabs sup{font-size:10px;margin-left:2px}
+h2{margin:0;font-family:var(--display);font-weight:800;font-size:19px;line-height:1.15}
+h3{margin:4px 0 0;font-family:var(--display);font-weight:700;font-size:13.5px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h3 small{font-family:var(--body);font-weight:500;color:var(--muted);font-size:12px}
+ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+li{padding:8px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.rw{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.rw>*{min-width:0}
+.mut{color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.pos{color:var(--good);font-weight:700;font-variant-numeric:tabular-nums}
+.negt{color:var(--crit);font-weight:700;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink);margin-right:6px;vertical-align:-1px}
+.tag{font-size:10px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;padding:2px 6px;border-radius:5px;border:1px solid var(--line);color:var(--muted);margin-right:6px;white-space:nowrap}
+.tag.hi{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn{font:600 12.5px var(--body);padding:7px 11px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.bad{color:var(--crit)}
+.btn:disabled{opacity:.45;cursor:default}
+.btn:focus-visible,.tabs button:focus-visible,.seg button:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+select{font:600 12.5px var(--body);padding:6px 8px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);max-width:100%}
+.btns{display:flex;gap:6px;flex-wrap:wrap}
+.tbl{display:grid;grid-template-columns:1fr auto;gap:3px 12px;font-size:13px;font-variant-numeric:tabular-nums}
+.tbl span:nth-child(even){text-align:right}
+.bars{display:flex;align-items:flex-end;gap:5px;height:60px;border-bottom:1px solid var(--line)}
+.bars i{flex:1;background:var(--good);border-radius:3px 3px 0 0;min-height:2px}
+.bars i.l{background:var(--crit)}
+.help{border-left:3px solid var(--accent);padding:2px 0 2px 10px;font-size:13px;line-height:1.45}
+.help p{margin:0 0 4px}
+.done{color:var(--good);font-weight:700}
+.modal{position:absolute;inset:0;background:rgba(10,20,25,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal div{background:var(--panel);border-radius:16px;padding:20px;max-width:380px;display:flex;flex-direction:column;gap:10px}
+.modal p{margin:0;line-height:1.45}
+.cond{display:inline-block;width:46px;height:5px;border-radius:3px;background:var(--line);vertical-align:middle;overflow:hidden;margin-right:4px}
+.cond i{display:block;height:100%}
+.share{display:inline-block;width:110px;height:6px;border-radius:3px;background:var(--crit);overflow:hidden}
+.share i{display:block;height:100%;background:var(--good)}
+.rival{border:1px dashed var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:3px;font-size:13px}
+.seg.kind{width:100%}.seg.kind button{flex:1;padding:9px 6px}
+.toast.ach-t{background:var(--accent);color:var(--accent-ink)}
+.ach-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.ach{display:flex;gap:7px;align-items:flex-start;padding:6px 8px;border:1px solid var(--line);border-radius:8px;opacity:.72}
+.ach.on{opacity:1;border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.ach svg{flex:none;width:24px;height:24px}
+.ach b{display:block;font:700 12px var(--display);line-height:1.2}
+.ach span{display:block;font-size:10.5px;color:var(--muted);line-height:1.3}
+.ach span.ok{color:var(--good);font-weight:700}
+.ach i{display:block;height:3px;background:var(--line);border-radius:2px;margin-top:3px;overflow:hidden}
+.ach i em{display:block;height:3px;background:var(--accent)}
+#offer{align-items:center}
+#offer p{margin:2px 0 0;color:var(--muted);font-size:12px}
+#offer .tag{margin-right:6px}
+@media (max-width:360px){.ach-grid{grid-template-columns:minmax(0,1fr)}}
+.modal .pick{width:min(100%,440px);max-height:86%;overflow-y:auto;gap:8px}
+.pick h2{font-size:18px}.pick h3{margin:6px 0 0}.pick p{margin:0;font-size:13px}
+.pick .warn{background:var(--soft);border-left:3px solid var(--warn);padding:6px 9px;border-radius:6px}
+.pick-list{display:flex;flex-direction:column;gap:6px}.pick-list .btn{text-align:left;white-space:normal;min-height:44px}
+#start{position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;overflow-y:auto;background:rgba(10,24,30,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.st-box{background:var(--panel);border:1px solid var(--line);border-radius:18px;width:min(100%,460px);padding:20px 20px 16px;display:flex;flex-direction:column;gap:12px;margin:auto}
+.st-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.st-top .seg{flex:none;display:flex;width:auto}.st-top .seg button{min-width:38px}
+.st-box h1{font:800 30px/1 var(--display);margin:0;letter-spacing:-.01em}
+.st-sub{margin:4px 0 0;color:var(--muted);font-size:13px;line-height:1.4}
+.st-ticket{display:flex;gap:6px;font:700 10.5px var(--body);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.st-h{font:700 11px var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:2px 0 -4px}
+.diffs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.diff{text-align:left;font:inherit;color:var(--ink);background:var(--soft);border:1.5px solid transparent;border-radius:12px;padding:9px 10px;cursor:pointer;display:flex;flex-direction:column;gap:3px;min-width:0}
+.diff b{font:700 14.5px var(--display)}.diff span{font-size:11.5px;color:var(--muted);line-height:1.35}
+.diff i{font-style:normal;font:700 10.5px var(--body);color:var(--ink);opacity:.8}
+.diff[aria-pressed="true"]{border-color:var(--accent);background:var(--panel);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 30%,transparent)}
+.diff.kaos b{color:var(--crit)}
+.diff:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+.st-info{font-size:12.5px;line-height:1.45;margin:0;padding:8px 10px;background:var(--soft);border-radius:10px;color:var(--ink)}
+.st-btns{display:flex;flex-direction:column;gap:7px}.st-btns .btn{min-height:42px;font-size:14px}
+.st-note{font-size:11.5px;color:var(--crit);margin:-4px 0 0;text-align:center}
+@media (max-width:380px){.diffs{grid-template-columns:1fr}}
+[hidden]{display:none!important}
+</style>
+
+<div id="app">
+  <canvas id="c" aria-label="İstanbul Boğazı haritası: iskeleler, hatlar ve tekneler"></canvas>
+  <div class="ui">
+    <header class="hud">
+      <div class="stat"><span class="k" data-tr="Kasa" data-en="Cash">Kasa</span><span class="v" id="vCash">₺400 B</span></div>
+      <div class="stat"><span class="k" id="vDay">1. gün</span><span class="v" id="vClock">06:00</span></div>
+      <div class="stat"><span class="k" data-tr="İtibar" data-en="Reputation">İtibar</span><span class="v" id="vRep">50</span></div>
+      <div class="stat"><span class="k" data-tr="Bugün" data-en="Today">Bugün</span><span class="v" id="vToday">₺0</span></div>
+    </header>
+    <div class="bar2">
+      <div class="seg" id="speed" role="group" data-tra="Oyun hızı" data-ena="Game speed" aria-label="Oyun hızı">
+        <button data-s="0" id="sp0" data-tr="Dur" data-en="Pause">Dur</button><button data-s="1" id="sp1">1x</button><button data-s="2" id="sp2">2x</button><button data-s="4" id="sp4">4x</button><button data-s="8" id="sp8">8x</button>
+      </div>
+      <div class="seg" role="group"><button id="menuB" data-tr="Menü" data-en="Menu">Menü</button></div>
+      <div class="seg" id="lang" role="group" aria-label="Dil / Language"><button data-l="tr" id="lTR">TR</button><button data-l="en" id="lEN">EN</button></div>
+      <div class="seg" role="group" data-tra="Yakınlaştırma" data-ena="Zoom" aria-label="Yakınlaştırma"><button id="zin" data-tra="Yakınlaştır" data-ena="Zoom in" aria-label="Yakınlaştır">+</button><button id="zout" data-tra="Uzaklaştır" data-ena="Zoom out" aria-label="Uzaklaştır">−</button></div>
+    </div>
+    <div class="goal" id="goal"></div>
+    <div class="banner" id="banner" hidden></div>
+    <div class="grow"></div>
+    <div class="toasts" id="toasts"></div>
+    <div class="card" id="offer" hidden></div>
+    <div class="card" id="info" hidden></div>
+    <section class="sheet" id="sheet" hidden></section>
+    <nav class="tabs" id="tabs" data-tra="Yönetim" data-ena="Management" aria-label="Yönetim">
+      <button data-t="filo" id="tFilo"><span data-tr="Filo" data-en="Fleet">Filo</span></button><button data-t="hat" id="tHat"><span data-tr="Hatlar" data-en="Lines">Hatlar</span></button><button data-t="is" id="tIs"><span data-tr="İşler" data-en="Jobs">İşler</span><sup id="jobN"></sup></button><button data-t="fin" id="tFin"><span data-tr="Finans" data-en="Finance">Finans</span></button><button data-t="kar" id="tKar"><span data-tr="Kariyer" data-en="Career">Kariyer</span></button>
+    </nav>
+  </div>
+  <div id="start" hidden role="dialog" aria-modal="true" aria-labelledby="stTitle"><div class="st-box" id="stBox"></div></div>
+  <div class="modal" id="pick" hidden role="dialog" aria-modal="true"><div id="pickBox" class="pick"></div></div>
+  <div class="modal" id="modal" hidden><div><h2 id="mTitle"></h2><p id="mText"></p><button class="btn pri" id="mBtn" data-tr="Yeniden başla" data-en="Start over">Yeniden başla</button></div></div>
+</div>
+
+<script>
+(()=>{
+const $=id=>document.getElementById(id);
+const cv=$('c'),ctx=cv.getContext('2d');
+const TAU=Math.PI*2,K=1.35; // K: harita ölçeği (1 birim ≈ 3,7 m)
+const clamp=(v,a,b)=>v<a?a:v>b?b:v,rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[(Math.random()*a.length)|0];
+const hsh=(i,j)=>{const n=Math.sin(i*127.1+j*311.7)*43758.5453;return n-Math.floor(n)};
+let LANG='tr';try{const l=localStorage.getItem('bogaz-filosu-lang');if(l==='en'||l==='tr')LANG=l}catch(_){}
+const t=(a,b)=>LANG==='en'?b:a,L2=p=>Array.isArray(p)?(LANG==='en'?p[1]:p[0]):p;
+
+/* ---------- Harita: gerçek koordinatlardan ---------- */
+const LAT0=41.262,LON0=28.925;
+const X=lon=>(lon-LON0)*16800*K,Z=lat=>(LAT0-lat)*22240*K;
+const WX=Math.round(X(29.125)),WZ=Math.round(Z(40.948));
+const conv=N=>N.map(n=>[X(n[1]),Z(n[0]),n[2]/5*K]);
+const B=conv([[41.262,29.16,5200],[41.246,29.14,3000],[41.231,29.128,1700],[41.215,29.120,1300],[41.200,29.108,700],[41.178,29.082,550],[41.160,29.066,1500],[41.137,29.074,1350],[41.119,29.082,850],[41.110,29.072,900],[41.101,29.061,450],[41.084,29.0612,380],[41.076,29.051,560],[41.066,29.050,520],[41.055,29.0445,620],[41.046,29.0355,600],[41.038,29.0185,900],[41.030,29.004,900],[41.020,28.996,950],[41.008,28.998,1100],[40.995,28.995,1900]]);
+const G=conv([[41.0195,28.990,320],[41.0195,28.979,260],[41.0200,28.973,230],[41.0240,28.966,230],[41.0285,28.9585,260],[41.0320,28.952,240],[41.0365,28.948,230],[41.0420,28.944,200],[41.0475,28.9405,210],[41.0550,28.941,160],[41.0620,28.944,110]]);
+const M=conv([[40.975,28.925,2300],[40.980,28.955,2400],[40.985,28.985,2300],[40.978,29.005,2000]]);
+function cr(a,b,c,d,q){return .5*(2*b+(c-a)*q+(2*a-5*b+4*c-d)*q*q+(3*b-a-3*c+d)*q*q*q)}
+function spline(N,step){const o=[];for(let i=0;i<N.length-1;i++){const a=N[Math.max(i-1,0)],b=N[i],c=N[i+1],d=N[Math.min(i+2,N.length-1)];
+  const n=Math.ceil(Math.hypot(c[0]-b[0],c[1]-b[1])/step);for(let k=0;k<n;k++){const q=k/n;o.push([cr(a[0],b[0],c[0],d[0],q),cr(a[1],b[1],c[1],d[1],q),Math.max(18,cr(a[2],b[2],c[2],d[2],q))])}}
+  o.push(N[N.length-1].slice());return o}
+// Kıvrımlı açık deniz kıyıları: Karadeniz kuzeyde, Marmara güneyde (düz kenar yerine büyük daireler)
+const SEAS=conv([[41.305,28.925,6600],[41.322,28.965,8400],[41.309,29.01,6300],[41.326,29.055,8600],[41.306,29.1,6100],[41.318,29.15,7400],[40.952,28.94,5200],[40.946,28.985,5000],[40.94,29.04,4300],[40.925,29.1,4600]]);
+const SM=[...spline(B,18),...spline(G,12),...spline(M,60),...SEAS];
+// Açık denizler: Karadeniz (kuzey), Marmara (güney)
+const RECTS=[[-800,-6000,WX+1600,Z(41.275)+6000],[-800,Z(40.94),WX+1600,4000]];
+const CS=200,bw=Math.ceil(WX/CS),bh=Math.ceil(WZ/CS),bk=[];for(let i=0;i<bw*bh;i++)bk.push([]);
+for(const s of SM){const rc=s[2]+CS*1.5,i0=clamp(Math.floor((s[0]-rc)/CS),0,bw-1),i1=clamp(Math.floor((s[0]+rc)/CS),0,bw-1),j0=clamp(Math.floor((s[1]-rc)/CS),0,bh-1),j1=clamp(Math.floor((s[1]+rc)/CS),0,bh-1);
+  for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)bk[j*bw+i].push(s)}
+function rectD(x,z,R){const qx=Math.abs(x-R[0]-R[2]/2)-R[2]/2,qz=Math.abs(z-R[1]-R[3]/2)-R[3]/2;return Math.hypot(Math.max(qx,0),Math.max(qz,0))+Math.min(Math.max(qx,qz),0)}
+function sdf(x,z){const L=bk[clamp(z/CS|0,0,bh-1)*bw+clamp(x/CS|0,0,bw-1)];let d=330;
+  for(let i=0;i<L.length;i++){const s=L[i],dd=Math.hypot(x-s[0],z-s[1])-s[2];if(dd<d)d=dd}
+  for(const R of RECTS){const rd=rectD(x,z,R);if(rd<d)d=rd}return d}
+function grad(x,z){const gx=sdf(x+2,z)-sdf(x-2,z),gz=sdf(x,z+2)-sdf(x,z-2),l=Math.hypot(gx,gz)||1;return{x:gx/l,z:gz/l}}
+function snap(x,z){for(let i=0;i<300;i++){const d=sdf(x,z);if(Math.abs(d)<.5)break;const g=grad(x,z);x-=g.x*d*.8;z-=g.z*d*.8}const g=grad(x,z);return{x,z,dx:g.x,dz:g.z}}
+function inland(x,z,min){for(let i=0;i<300&&sdf(x,z)<min;i++){const g=grad(x,z);x+=g.x*3;z+=g.z*3}return[x,z]}
+function trace(c,pad,v){c.beginPath();for(const p of SM){const r=p[2]+pad;if(r<=3)continue;
+  if(v&&(p[0]+r<v.x0||p[0]-r>v.x1||p[1]+r<v.y0||p[1]-r>v.y1))continue;c.moveTo(p[0]+r,p[1]);c.arc(p[0],p[1],r,0,TAU)}
+  for(const R of RECTS)c.rect(R[0]-pad,R[1]-pad,R[2]+2*pad,R[3]+2*pad)}
+
+/* ---------- İskeleler ---------- */
+const E=['Avrupa','Europe'],A=['Anadolu','Asia'];
+// ad, enlem, boylam, yaka, popülerlik, etiket (t: turistik, c: yük, y: tersane)
+const PD=[
+ ['Rumeli Kavağı',41.1810,29.0750,E,1.5,'t'],['Sarıyer',41.1680,29.0570,E,4,'c'],['Tarabya',41.1395,29.0575,E,2,''],
+ ['Yeniköy',41.1200,29.0710,E,2,''],['İstinye',41.1130,29.0600,E,3,'cy'],['Emirgan',41.1040,29.0565,E,2,'t'],
+ ['Bebek',41.0770,29.0445,E,3,'t'],['Arnavutköy',41.0680,29.0440,E,2,''],['Ortaköy',41.0473,29.0270,E,4,'t'],
+ ['Beşiktaş',41.0405,29.0075,E,8,'t'],['Kabataş',41.0340,28.9930,E,7,'t'],
+ ['Anadolu Kavağı',41.1740,29.0880,A,2,'t'],['Beykoz',41.1340,29.0920,A,3,'c'],['Paşabahçe',41.1170,29.0930,A,2,'c'],
+ ['Çubuklu',41.1070,29.0830,A,1.5,''],['Kanlıca',41.1000,29.0660,A,2,''],['Anadolu Hisarı',41.0830,29.0670,A,2,'t'],
+ ['Kandilli',41.0740,29.0580,A,1.5,''],['Çengelköy',41.0510,29.0520,A,2.5,''],['Beylerbeyi',41.0440,29.0440,A,2,'t'],
+ ['Kuzguncuk',41.0360,29.0300,A,2,''],['Üsküdar',41.0270,29.0150,A,9,'t'],
+ ['Harem',41.0110,29.0090,A,3,'c'],['Haydarpaşa',40.9970,29.0180,A,3,'cy'],['Kadıköy',40.9920,29.0230,A,10,'tc'],
+ ['Yenikapı',41.0020,28.9530,E,4,'c'],
+ ['Karaköy',41.0220,28.9770,E,8,'tc'],['Eminönü',41.0180,28.9730,E,10,'tc'],['Kasımpaşa',41.0300,28.9670,E,2.5,'cy'],
+ ['Fener',41.0300,28.9500,E,2,''],['Balat',41.0340,28.9470,E,2.5,''],['Hasköy',41.0400,28.9510,E,2,''],
+ ['Sütlüce',41.0480,28.9440,E,2,''],['Eyüp',41.0470,28.9360,E,4,'t']
+];
+const PIERS=PD.map(d=>{const s=snap(X(d[2]),Z(d[1]));let off=24,wx,wz;do{wx=s.x-s.dx*off;wz=s.z-s.dz*off;off+=4}while(sdf(wx,wz)>-14&&off<110);
+  return{name:d[0],x:s.x,z:s.z,dx:s.dx,dz:s.dz,wx,wz,side:d[3],pop:d[4],tour:d[5].includes('t'),cargo:d[5].includes('c'),yard:d[5].includes('y')}});
+const P=n=>PIERS.findIndex(p=>p.name===n);
+const NODES=PIERS.map(p=>[p.wx,p.wz]);
+const VN=NODES.push([X(29.15),Z(41.257)])-1,VS=NODES.push([X(28.985),Z(40.955)])-1;
+// Galataport: kıyı noktası, kıyıya paralel yön ve kruvaziyerin hemen dibindeki yanaşma yeri
+const GPC=(()=>{const s=snap(X(28.9838),Z(41.0262));return{x:s.x,z:s.z,nx:s.dx,nz:s.dz,a:Math.atan2(s.dz,s.dx)+Math.PI/2}})();
+const GP=NODES.push([GPC.x-GPC.nx*60,GPC.z-GPC.nz*60])-1;
+const berth=slot=>{const along=(slot?-1:1)*62;return{x:GPC.x-GPC.nx*24+Math.cos(GPC.a)*along,z:GPC.z-GPC.nz*24+Math.sin(GPC.a)*along,a:GPC.a}};
+
+/* ---------- Su üstünde yol bulma ---------- */
+const GS=20,gw=Math.ceil(WX/GS),gh=Math.ceil(WZ/GS),gcBase=new Float32Array(gw*gh);
+for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){const d=sdf((i+.5)*GS,(j+.5)*GS);gcBase[j*gw+i]=d<-11?1+clamp((68+d)/68,0,1)*1.5:0}
+let gc=gcBase.slice();
+function cellOf(x,z){const ci=clamp(x/GS|0,0,gw-1),cj=clamp(z/GS|0,0,gh-1);
+  for(let r=0;r<12;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){const i=ci+di,j=cj+dj;if(i>=0&&j>=0&&i<gw&&j<gh&&gc[j*gw+i])return j*gw+i}return 0}
+const DXN=[1,-1,0,0,1,1,-1,-1],DYN=[0,0,1,-1,1,-1,1,-1];let NC=NODES.map(n=>cellOf(n[0],n[1])),trees={},paths={};
+function tree(a){if(trees[a])return trees[a];const par=new Int32Array(gw*gh).fill(-1),dist=new Float64Array(gw*gh).fill(1e9),hk=[],hv=[];
+  const push=(k,v)=>{let i=hk.length;hk.push(k);hv.push(v);while(i>0){const p=(i-1)>>1;if(hk[p]<=k)break;hk[i]=hk[p];hv[i]=hv[p];i=p}hk[i]=k;hv[i]=v};
+  const pop=()=>{const v=hv[0],lk=hk.pop(),lv=hv.pop(),n=hk.length;if(n){let i=0;for(;;){let c=2*i+1;if(c>=n)break;if(c+1<n&&hk[c+1]<hk[c])c++;if(hk[c]>=lk)break;hk[i]=hk[c];hv[i]=hv[c];i=c}hk[i]=lk;hv[i]=lv}return v};
+  const src=NC[a];dist[src]=0;par[src]=src;push(0,src);
+  while(hk.length){const dk=hk[0],u=pop();if(dk>dist[u])continue;const ui=u%gw,uj=(u/gw)|0;
+    for(let n=0;n<8;n++){const i=ui+DXN[n],j=uj+DYN[n];if(i<0||j<0||i>=gw||j>=gh)continue;const v=j*gw+i,c=gc[v];if(!c)continue;const nd=dk+c*(n<4?1:1.414);if(nd<dist[v]){dist[v]=nd;par[v]=u;push(nd,v)}}}
+  return trees[a]=par}
+const inZone=(x,z,m)=>S.zone&&Math.hypot(x-S.zone.x,z-S.zone.z)<S.zone.r+(m||0);
+function los(a,b){const L=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.ceil(L/12);for(let i=1;i<n;i++){const q=i/n,x=a[0]+(b[0]-a[0])*q,z=a[1]+(b[1]-a[1])*q;if(sdf(x,z)>-11||inZone(x,z,4))return false}return true}
+function mkPath(pts){const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));return{pts,cum,len:cum[cum.length-1]}}
+function pathBetween(a,b){const k=a*100+b;if(paths[k])return paths[k];if(a===b)return paths[k]=mkPath([NODES[a],NODES[a]]);
+  const par=tree(a),raw=[NODES[b]];let c=NC[b],g=0;while(c!==NC[a]&&par[c]>=0&&g++<99999){raw.push([(c%gw+.5)*GS,(((c/gw)|0)+.5)*GS]);c=par[c]}raw.push(NODES[a]);raw.reverse();
+  const out=[raw[0]];let i=0;while(i<raw.length-1){let j=Math.min(raw.length-1,i+70);while(j>i+1&&!los(raw[i],raw[j]))j--;out.push(raw[j]);i=j}
+  paths[k]=mkPath(out);paths[b*100+a]=mkPath(out.slice().reverse());return paths[k]}
+function posAt(p,d){d=clamp(d,0,p.len);let i=1;while(i<p.cum.length-1&&p.cum[i]<d)i++;const a=p.pts[i-1],b=p.pts[i],sl=p.cum[i]-p.cum[i-1]||1,q=(d-p.cum[i-1])/sl;
+  return{x:a[0]+(b[0]-a[0])*q,z:a[1]+(b[1]-a[1])*q,ang:Math.atan2(b[1]-a[1],b[0]-a[0])}}
+const kmOf=(a,b)=>pathBetween(a,b).len*.005/K;
+const SPD=kn=>kn*.1029*K; // knot → birim/sn
+// Devlet protokolü bölgesi: yasak hücreleri kapat, rotaları yeniden hesapla
+function setZone(on){gc=gcBase.slice();if(on&&S.zone){const zr=S.zone.r+6;for(let j=0;j<gh;j++)for(let i=0;i<gw;i++){if(Math.hypot((i+.5)*GS-S.zone.x,(j+.5)*GS-S.zone.z)<zr)gc[j*gw+i]=0}}
+  NC=NODES.map(n=>cellOf(n[0],n[1]));trees={};paths={};S.lines.forEach(l=>{l.marks=null})}
+
+/* ---------- Harita süsleri: yapılar, evler, korular, şamandıralar ---------- */
+const MARKS=[['tower','Galata Kulesi',41.0256,28.9741],['port','Galataport',41.0266,28.9822],['palace','Dolmabahçe Sarayı',41.0392,29.0005],['palace','Çırağan Sarayı',41.0440,29.0170],
+ ['palace','Beylerbeyi Sarayı',41.0425,29.0395],['station','Haydarpaşa Garı',40.9966,29.0190],['palace','Topkapı Sarayı',41.0115,28.9834],['mosque','Ayasofya',41.0086,28.9802],
+ ['mosque','Sultanahmet Camii',41.0054,28.9768],['mosque','Süleymaniye',41.0162,28.9640],['mosque','Ortaköy Camii',41.0473,29.0262],['mosque','Eyüp Sultan',41.0479,28.9338],
+ ['castle','Rumeli Hisarı',41.0848,29.0560],['castle','Anadolu Hisarı',41.0822,29.0672],['tram','Taksim · İstiklal',41.0355,28.9810],['spire','Çamlıca Kulesi',41.0320,29.0690],['light','Rumeli Feneri',41.2340,29.1095],['light','Anadolu Feneri',41.2185,29.1520]]
+ .map(m=>{if(m[0]==='port')return{k:'port',n:m[1],x:GPC.x+GPC.nx*9,z:GPC.z+GPC.nz*9,a:GPC.a};const p=inland(X(m[3]),Z(m[2]),m[0]==='light'?6:16);return{k:m[0],n:m[1],x:p[0],z:p[1]}});
+const KIZ={x:X(29.0041),z:Z(41.0211)};
+const DISTRICTS=[['FATİH',41.0105,28.9500],['BEYOĞLU',41.0400,28.9700],['BEŞİKTAŞ',41.0560,29.0080],['ŞİŞLİ',41.0640,28.9870],['KAĞITHANE',41.0870,28.9700],['EYÜPSULTAN',41.0640,28.9200],
+ ['SARIYER',41.1600,29.0450],['ÜSKÜDAR',41.0250,29.0400],['KADIKÖY',40.9870,29.0500],['BEYKOZ',41.1300,29.1050]].map(d=>{const p=inland(X(d[2]),Z(d[1]),220);return{n:d[0],x:p[0],z:p[1]}});
+const BRIDGES=[['15 Temmuz Şehitler Köprüsü','15 July Martyrs Bridge',41.0477,29.0283,41.0428,29.0398,1],['Fatih Sultan Mehmet Köprüsü','Fatih Sultan Mehmet Bridge',41.0915,29.0575,41.0905,29.0690,1],
+ ['Yavuz Sultan Selim Köprüsü','Yavuz Sultan Selim Bridge',41.2038,29.1050,41.2012,29.1225,1],['Galata Köprüsü','Galata Bridge',41.0170,28.9718,41.0236,28.9746,0],
+ ['Haliç Metro Köprüsü','Golden Horn Metro Bridge',41.0212,28.9668,41.0262,28.9700,0],['Atatürk Köprüsü','Atatürk Bridge',41.0226,28.9612,41.0270,28.9658,0]].map(b=>{
+  const ax=X(b[3]),az=Z(b[2]),bx=X(b[5]),bz=Z(b[4]),l=Math.hypot(bx-ax,bz-az),dx=(bx-ax)/l,dz=(bz-az)/l;let mx=(ax+bx)/2,mz=(az+bz)/2;
+  if(sdf(mx,mz)>0){let best=null;for(let s=-200;s<=200;s+=10){const x=mx+dx*s,z=mz+dz*s;if(sdf(x,z)<0&&(!best||sdf(x,z)<sdf(best[0],best[1])))best=[x,z]}if(!best)return null;[mx,mz]=best}
+  const reach=sg=>{let s=0;while(s<2000&&sdf(mx+dx*s*sg,mz+dz*s*sg)<0)s+=4;return s+(b[6]?26:14)};const r1=reach(1),r0=reach(-1);
+  return{n:[b[0],b[1]],sus:b[6],x0:mx-dx*r0,z0:mz-dz*r0,x1:mx+dx*r1,z1:mz+dz*r1,w:b[6]?15:10}}).filter(Boolean);
+const HOUSES=(()=>{const o=[],st=17,urb=z=>z>Z(41.065)?1:z>Z(41.11)?.6:.32;
+  for(let gz=0;gz<WZ/st;gz++)for(let gx=0;gx<WX/st;gx++){const h=hsh(gx,gz),x=gx*st+h*11,z=gz*st+hsh(gz,gx)*11;if(h>.62)continue;const d=sdf(x,z);
+    if(d<14||d>300)continue;if(hsh(gx+41,gz+7)>urb(z)*(d<130?.62:.28))continue;if(MARKS.some(m=>Math.abs(m.x-x)<34&&Math.abs(m.z-z)<34))continue;
+    o.push([x,z,9+h*7,8+hsh(gx+3,gz)*5,(hsh(gx+9,gz+2)*5)|0])}
+  return o.length>9000?o.filter((_,i)=>i%Math.ceil(o.length/9000)===0):o})();
+const PARKS=(()=>{const o=[];for(let i=0;i<70;i++){const x=hsh(i,11)*WX,z=Z(41.24)+hsh(i,17)*(Z(40.99)-Z(41.24)),d=sdf(x,z);if(d>120)o.push([x,z,60+hsh(i,23)*120])}return o})();
+const GULLS=Array.from({length:26},(_,i)=>{const p=PIERS[(i*7)%PIERS.length];return{x:p.wx-p.dx*(30+hsh(i,2)*60),z:p.wz-p.dz*(30+hsh(i,2)*60),r:30+hsh(i,4)*50,ph:hsh(i,5)*TAU,s:.25+hsh(i,6)*.3}});
+
+/* ---------- Tekne sınıfları, kaptanlar ---------- */
+const CLS={
+ motor:{n:['Dolmuş motoru','Water bus'],cap:35,cargo:0,kn:9,price:120000,upk:1400,fuel:16,col:'#e9dcc3',sz:11,roles:['hat'],use:['Yolcu hattı','Passenger line']},
+ vapur:{n:['Vapur','Ferry'],cap:160,cargo:0,kn:11,price:780000,upk:8000,fuel:60,col:'#ffffff',sz:17,roles:['hat'],use:['Yolcu hattı','Passenger line']},
+ otobus:{n:['Deniz otobüsü','Sea bus'],cap:90,cargo:0,kn:22,price:1350000,upk:11000,fuel:105,col:'#7fd4ff',sz:15,roles:['hat'],use:['Hızlı yolcu hattı','Fast passenger line']},
+ mavna:{n:['Yük mavnası','Cargo barge'],cap:0,cargo:40,kn:7,price:240000,upk:2200,fuel:26,col:'#b08a5c',sz:15,roles:['yuk'],use:['Yük işleri','Cargo jobs']},
+ taksi:{n:['Deniz taksi','Water taxi'],cap:8,cargo:0,kn:24,price:210000,upk:1900,fuel:22,col:'#ffb703',sz:9,roles:['taksi'],use:['Özel ulaşım','Private rides']},
+ gezi:{n:['Gezi teknesi','Tour boat'],cap:60,cargo:0,kn:10,price:460000,upk:4500,fuel:38,col:'#b388ff',sz:14,roles:['tur','etkinlik'],use:['Tur hattı, etkinlik','Tour line, events']},
+ yat:{n:['Yat','Yacht'],cap:12,cargo:0,kn:16,price:1700000,upk:13000,fuel:85,col:'#2c3e50',sz:13,roles:['vip','tur','taksi','etkinlik'],use:['VIP, tur, taksi','VIP, tours, taxi']}
+};
+const CAPT=[{n:['Çaylak','Rookie'],sal:0,spd:1,wear:1,fuel:1,cost:0},{n:['Usta','Skilled'],sal:900,spd:1.06,wear:.8,fuel:.92,cost:25000},{n:['Kıdemli','Veteran'],sal:2000,spd:1.12,wear:.6,fuel:.85,cost:60000}];
+const NAMES=['Martı','Yunus','Lodos','Poyraz','Erguvan','Yakamoz','Lüfer','Palamut','Karabatak','İmbat','Meltem','Sümbül','Kırlangıç','Leylak','Mercan','Fener','Kumru','Hamsi','Istakoz','Midye'];
+const LCOL=['#e63946','#f77f00','#2a9d8f','#6a4c93','#1982c4','#d81159','#8ac926','#ff9f1c'];
+const JT={yuk:{n:['Yük','Cargo'],cat:'yuk'},taksi:{n:['Deniz taksi','Water taxi'],cat:'ozel'},vip:{n:['VIP transfer','VIP transfer'],cat:'ozel'},tur:{n:['Boğaz turu','Bosphorus tour'],cat:'tur'},gunbatimi:{n:['Gün batımı turu','Sunset tour'],cat:'tur'},etkinlik:{n:['Özel etkinlik','Private event'],cat:'tur'}};
+const CAT={hat:['Hat biletleri','Line tickets'],tur:['Tur hatları ve turlar','Tours'],yuk:['Yük işleri','Cargo jobs'],ozel:['Özel ulaşım','Private rides'],diger:['Hedef ödülleri','Goal rewards'],
+  yakit:['Yakıt','Fuel'],bakim:['Bakım ve personel','Upkeep and crew'],onarim:['Onarım ve tersane','Repairs and shipyard'],egitim:['Kaptan eğitimi','Captain training'],faiz:['Kredi faizi','Loan interest']};
+const RIVAL=['Rıhtım Hatları','Rıhtım Lines'];
+
+/* ---------- Durum ---------- */
+const DAY=86400,GSEC=72; // 1 oyun günü = 1x hızda 20 gerçek dakika
+const mkBoat=(id,cls,name,at)=>({id,cls,name,at,mode:'idle',auto:!CLS[cls].roles.includes('hat')&&!CLS[cls].roles.includes('tur'),lineId:0,load:{},cond:100,age:0,capt:0});
+const DIFF={
+ kolay:{n:['Kolay','Easy'],d:['Bol sermaye, ucuz yakıt, sabırlı müşteri. Rahat bir başlangıç.','Plenty of capital, cheap fuel, patient clients. A relaxed start.'],cash:600000,pay:1.15,cost:.85,wear:.8,ev:1.4,rival:1.6,grace:7200,pen:.7,tk:1.4,neg:3},
+ orta:{n:['Orta','Normal'],d:['Dengeli ekonomi. Oyunun tasarlandığı ayar.','Balanced economy. The game as designed.'],cash:400000,pay:1,cost:1,wear:1,ev:1,rival:1,grace:5400,pen:1,tk:1,neg:2},
+ zor:{n:['Zor','Hard'],d:['Daha az kazanç, pahalı bakım, rakip erken gelir.','Lower earnings, pricier upkeep, the rival arrives early.'],cash:300000,pay:.9,cost:1.12,wear:1.2,ev:.75,rival:.7,grace:4500,pen:1.3,tk:.75,neg:2},
+ kaos:{n:['İstanbul kaosu','Istanbul chaos'],d:['Olay olay üstüne, tanker trafiği, saldırgan rakip. Tek gece eksi = iflas.','Event after event, tanker traffic, a ruthless rival. One night in the red = bankrupt.'],cash:220000,pay:.8,cost:1.25,wear:1.4,ev:.5,rival:.5,grace:3600,pen:1.6,tk:.5,neg:1}};
+const D=()=>DIFF[S.diff]||DIFF.orta;
+const FRESH=(df)=>({diff:df||'orta',t:21600,day:0,cash:(DIFF[df]||DIFF.orta).cash,loan:0,rep:50,fuelIdx:1,boats:[mkBoat(1,'motor','Martı',P('Karaköy'))],lines:[],jobs:[],contracts:[],log:[],events:[],zone:null,autoMaint:false,
+  rival:{lines:[],price:df==='kaos'?.92:1,rep:df==='kaos'?58:50,nextOpen:21600+DAY*.55*((DIFF[df]||DIFF.orta).rival),boatT:0},surges:[],nextSurge:21600+1800,paxToday:0,rivalToday:0,share:null,bestShare:0,stuPax:0,tourPax:0,crisisWin:0,
+  today:{inc:{},exp:{}},hist:[],bestDay:0,totalPax:0,tours:0,jobsDone:0,goal:0,negDays:0,nextId:2,nextJob:21600+500,nextEvent:21600+9000,dead:false});
+let S=FRESH(),speed=1,tab='hat',sel=null,arm='',newLine=[P('Karaköy'),P('Kadıköy')],newKind='hat',tankers=[],nextTanker=0,mods={speed:1,demand:1,tour:1,tourPay:1,hot:[]};
+const loc=()=>LANG==='en'?'en-US':'tr-TR';
+const tl=n=>(n<0?'-':'')+'₺'+Math.abs(Math.round(n)).toLocaleString(loc());
+const tlc=n=>{const a=Math.abs(n),s=n<0?'-':'';return a>=1e6?s+'₺'+(a/1e6).toLocaleString(loc(),{maximumFractionDigits:2})+t(' Mn',' M'):a>=1e5?s+'₺'+Math.round(a/1e3)+t(' B','K'):tl(n)};
+const hour=()=>(S.t%DAY)/3600;
+const clock=x=>{const m=Math.floor((x%DAY)/60);return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0')};
+const dur=s=>{s=Math.max(0,s);const h=Math.floor(s/3600),m=Math.round((s%3600)/60);return h?h+t(' sa ',' h ')+m+t(' dk',' min'):m+t(' dk',' min')};
+const sum=o=>Object.values(o).reduce((a,b)=>a+b,0),opInc=o=>sum(o)-(o.diger||0);
+const nm=n=>String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,LANG==='en'?',':'.');
+function earn(c,a){if(c==='hat'||c==='tur')a*=D().pay;S.cash+=a;S.today.inc[c]=(S.today.inc[c]||0)+a}
+function spend(c,a){if(c!=='faiz')a*=D().cost;S.cash-=a;S.today.exp[c]=(S.today.exp[c]||0)+a}
+function log(tr,en,bad){S.log.unshift({t:S.t,m:[tr,en]});if(S.log.length>16)S.log.pop();toast(t(tr,en),bad)}
+function toast(msg,bad,cls){const e=document.createElement('div');e.className='toast'+(bad?' bad':'')+(cls?' '+cls:'');e.textContent=msg;const box=$('toasts');box.append(e);while(box.children.length>3)box.firstChild.remove();setTimeout(()=>e.remove(),4400)}
+const KEY='bogaz-filosu-v2';
+function save(){try{const o=JSON.parse(JSON.stringify(S));o.boats.forEach(b=>{if(b.job){o.jobs.push(b.job);b.job=null;b.mode=b.lineId?'line':'idle'}b.path=null;b.load={};b.it=null;b.dwell=0;b.pend=false;b.hold=false;if(b.mt==='go')b.mt=null});
+  o.lines.forEach(l=>{l.wait=null;l.marks=null});o.rival.lines.forEach(r=>r.vis=null);localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY));if(o&&o.boats&&o.lines){S=Object.assign(FRESH(),o);S.lines.forEach(initWait);S.boats.forEach(b=>{b.load={};b.li=null;if(b.mode==='job')b.mode='idle'});if(S.zone)setZone(true)}}catch(e){}}
+
+/* ---------- Hatlar ---------- */
+function initWait(l){l.wait=l.stops.map(()=>l.stops.map(()=>0))}
+const lineName=l=>l.stops.length>2?PIERS[l.stops[0]].name+' – '+PIERS[l.stops[l.stops.length-1]].name+' ('+l.stops.length+t(' durak',' stops')+')':PIERS[l.stops[0]].name+' – '+PIERS[l.stops[1]].name;
+const lineKm=l=>{let s=0;for(let i=0;i<l.stops.length-1;i++)s+=kmOf(l.stops[i],l.stops[i+1]);return s};
+function lineMarks(l){if(l.marks!=null)return l.marks;const pts=[];for(let i=0;i<l.stops.length-1;i++)pts.push(...pathBetween(l.stops[i],l.stops[i+1]).pts);
+  const near=MARKS.filter(m=>{for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i],dx=b[0]-a[0],dz=b[1]-a[1],L=dx*dx+dz*dz||1,q=clamp(((m.x-a[0])*dx+(m.z-a[1])*dz)/L,0,1);if(Math.hypot(a[0]+dx*q-m.x,a[1]+dz*q-m.z)<210)return true}return false});
+  return l.marks=Math.min(5,near.length+(pts.some(p=>Math.hypot(p[0]-KIZ.x,p[1]-KIZ.z)<260)?1:0))}
+const fare=(l,i,j)=>Math.round((10+kmOf(l.stops[i],l.stops[j])*4)*l.price*(l.stu?.875:1));
+const tourFare=l=>Math.round((120+lineKm(l)*15)*l.price*(1+.1*lineMarks(l)));
+const tod=h=>h<5?.08:h<6?.25:h<7?.6:h<10?1.7:h<16?.8:h<17?1.1:h<20?1.8:h<23?.7:.25;
+const pw=p=>Math.pow(p.pop,1.35); // büyük iskeleler (Eminönü, Kadıköy, Üsküdar, Karaköy, Beşiktaş, Kabataş) çok daha yoğun
+// Sabah Anadolu'dan Avrupa'ya, akşam Avrupa'dan Anadolu'ya işe gidiş-dönüş akışı
+const dirF=(a,b,h)=>a.side===b.side?1:h>=6.5&&h<10?(a.side===A?1.6:.7):h>=16.5&&h<20.5?(a.side===E?1.6:.7):1;
+const surgeMult=(ai,bj,h)=>{let m=1;for(const s of S.surges)if(S.t>=s.start&&S.t<s.end&&!s.tour&&((s.a===ai&&s.b===bj)||(s.a===bj&&s.b===ai)))m*=s.mult;return m};
+const tourSurge=i=>{let m=1;for(const s of S.surges)if(s.tour&&S.t>=s.start&&S.t<s.end&&(s.a===i||s.b===i))m*=s.mult;return m};
+const tourTod=h=>h<8?0:h<10?.6:h<17?1.2:h<20?1.5:h<22?.6:0;
+const closed=i=>S.zone&&Math.hypot(NODES[i][0]-S.zone.x,NODES[i][1]-S.zone.z)<S.zone.r+8;
+const attr=(price,boats,rep)=>Math.pow(1/price,1.6)*(1+.25*Math.min(boats,6))*(rep/50);
+const rivalLine=(a,b)=>S.rival.lines.find(r=>r.stops.includes(a)&&r.stops.includes(b));
+function demandTick(dtg){const h=hour(),base=.62*tod(h)*mods.demand*(.8+S.rep/250)*dtg/3600,served={},keep=Math.exp(-dtg/5400); // beklemekten sıkılan yolcu yavaşça gider
+  for(const l of S.lines){const nb=S.boats.filter(b=>b.lineId===l.id).length;if(!nb)continue;
+    if(l.kind==='tur'){const tb=2.4*tourTod(h)*mods.tour*dtg/3600*clamp(1.9-.9*l.price,.2,1.5)*(1+.08*lineMarks(l));
+      for(let i=0;i<l.stops.length;i++){l.wait[i][i]*=keep;if(closed(l.stops[i]))continue;const p=PIERS[l.stops[i]];if(l.wait[i][i]<220)l.wait[i][i]+=tb*(p.tour?1:.35)*(p.pop/6+.5)*tourSurge(l.stops[i])}continue}
+    const pm=clamp(1.9-.9*l.price,.2,1.5)*(l.stu?1.25:1);
+    for(let i=0;i<l.stops.length;i++){const ai=l.stops[i],a=PIERS[ai];if(closed(ai))continue;let tot=0;for(let j=0;j<l.stops.length;j++)tot+=l.wait[i][j];
+      for(let j=0;j<l.stops.length;j++){if(i===j)continue;l.wait[i][j]*=keep;const bj=l.stops[j],b=PIERS[bj];if(closed(bj))continue;served[ai*100+bj]=1;
+        let r=base*pm*Math.sqrt(pw(a)*pw(b))*(a.side!==b.side?1.35:1)*dirF(a,b,h)*surgeMult(ai,bj,h);
+        const rl=rivalLine(ai,bj);if(rl){const au=attr(l.price*(l.stu?.9:1),nb,S.rep)*(l.stu?1.15:1),ar=attr(S.rival.price,rl.boats,S.rival.rep),sh=au/(au+ar);S.rivalToday+=r/pm*(1-sh);r*=sh}
+        if(tot>500){S.rep=Math.max(0,S.rep-r*.006);continue}l.wait[i][j]+=r}}}
+  for(const rl of S.rival.lines){const a=rl.stops[0],b=rl.stops[1];if(served[a*100+b]||served[b*100+a]||closed(a)||closed(b))continue;
+    S.rivalToday+=2*base*Math.sqrt(pw(PIERS[a])*pw(PIERS[b]))*surgeMult(a,b,0)*(PIERS[a].side!==PIERS[b].side?1.4:1)*clamp(1.9-.9*S.rival.price,.2,1.5)}}
+
+/* ---------- Rakip şirket ---------- */
+function rivalOpen(){const R=S.rival;if(R.lines.length>=Math.min(7,2+Math.floor(S.t/DAY/2)))return;let a,b,g=0;
+  const pl=S.lines.filter(l=>l.kind!=='tur');
+  do{if(pl.length&&Math.random()<.6){const l=pick(pl),i=(Math.random()*(l.stops.length-1))|0;a=l.stops[i];b=l.stops[i+1]}else{const pop=PIERS.map((p,i)=>i).filter(i=>PIERS[i].pop>=3);a=pick(pop);b=pick(pop)}}
+  while((a===b||R.lines.some(r=>r.stops.includes(a)&&r.stops.includes(b))||kmOf(a,b)<1)&&g++<40);
+  if(g>=40)return;R.lines.push({stops:[a,b],boats:1+(Math.random()<.4?1:0)});
+  log(L2(RIVAL)+' yeni hat açtı: '+PIERS[a].name+' – '+PIERS[b].name,RIVAL[1]+' opened a new line: '+PIERS[a].name+' – '+PIERS[b].name,true)}
+function rivalDay(){const R=S.rival,tot=S.paxToday+S.rivalToday;S.share=tot>20?S.paxToday/tot:null;if(S.share!=null&&R.lines.length)S.bestShare=Math.max(S.bestShare,S.share);
+  if(S.share!=null){if(S.share>.62)R.price=Math.max(.7,R.price*.94);else if(S.share<.4)R.price=Math.min(1.4,R.price*1.04)}
+  R.rep=clamp(50+R.lines.length*2.5,50,70);R.boatT++;if(R.boatT>=2&&R.lines.length){R.boatT=0;const l=pick(R.lines);if(l.boats<4)l.boats++}
+  if(S.share!=null&&S.share>.75&&R.lines.length>1&&Math.random()<.4){const l=R.lines.shift();log(L2(RIVAL)+' bir hattını kapattı: '+PIERS[l.stops[0]].name+' – '+PIERS[l.stops[1]].name,RIVAL[1]+' closed a line: '+PIERS[l.stops[0]].name+' – '+PIERS[l.stops[1]].name)}
+  S.paxToday=0;S.rivalToday=0}
+
+/* ---------- Tekneler ---------- */
+const yards=()=>PIERS.map((p,i)=>i).filter(i=>PIERS[i].yard);
+const maintCost=b=>Math.round(CLS[b.cls].price*.0004*(100-b.cond)/10)*10+500;
+function setPath(b,to){b.path=pathBetween(b.at,to);b.pd=0;b.to=to}
+function assignLine(b,id){b.lineId=id;b.li=null;b.load={};if(id){b.mode='line';b.auto=false}else{b.mode='idle'}if(b.path)b.pend=true}
+function sendMaint(b,quiet){if(b.job||b.broken>0||b.mt)return false;let best=yards()[0],bd=1e9;for(const y of yards()){const d=pathBetween(b.at,y).len;if(d<bd){bd=d;best=y}}
+  b.mt='go';b.mty=best;b.load={};if(b.path)b.pend=true;if(!quiet)toast(b.name+t(' bakım için '+PIERS[best].name+' tersanesine gidiyor',' heads to the '+PIERS[best].name+' shipyard'));return true}
+function arrive(b){if(b.pend){b.pend=false;return}
+  if(b.mode==='line'&&!b.mt){const l=S.lines.find(x=>x.id===b.lineId);if(!l||b.li==null||l.stops[b.li]!==b.at)return;const last=l.stops.length-1;
+    if(l.kind==='tur'){if((b.li===0||b.li===last)&&b.load.tur){S.tourPax+=b.load.tur;S.totalPax+=b.load.tur;S.paxToday+=b.load.tur;l.pax=(l.pax||0)+b.load.tur;S.rep=Math.min(100,S.rep+b.load.tur*.0006*(1+b.capt*.3));b.load.tur=0}
+      if(b.li+b.dirn<0||b.li+b.dirn>last)b.dirn=-b.dirn;
+      const n=Math.min(CLS[b.cls].cap-(b.load.tur||0),Math.floor(l.wait[b.li][b.li]));if(n>0){l.wait[b.li][b.li]-=n;b.load.tur=(b.load.tur||0)+n;const inc=Math.round(n*tourFare(l)*mods.tourPay);earn('tur',inc);l.inc=(l.inc||0)+inc}
+      b.dwell=300;return}
+    const off=b.load[b.at]||0;delete b.load[b.at];S.totalPax+=off;S.paxToday+=off;l.pax=(l.pax||0)+off;if(l.stu)S.stuPax+=off;S.rep=Math.min(100,S.rep+off*(.0004+(l.stu?.0002:0))*(1+b.capt*.2));
+    if(b.li+b.dirn<0||b.li+b.dirn>last)b.dirn=-b.dirn;
+    let free=CLS[b.cls].cap-sum(b.load),inc=0;
+    for(let j=b.li+b.dirn;j>=0&&j<l.stops.length&&free>0;j+=b.dirn){const n=Math.min(free,Math.floor(l.wait[b.li][j]));if(n<=0)continue;l.wait[b.li][j]-=n;free-=n;b.load[l.stops[j]]=(b.load[l.stops[j]]||0)+n;inc+=n*fare(l,b.li,j)}
+    if(inc){earn('hat',inc);l.inc=(l.inc||0)+inc}b.dwell=240}}
+function decide(b){
+  if(b.mt==='go'){if(b.at===b.mty){b.mt='in';b.mtT=7200;spend('onarim',maintCost(b));return}setPath(b,b.mty);return}
+  if(b.mode==='line'){const l=S.lines.find(x=>x.id===b.lineId);if(!l){b.mode='idle';b.lineId=0;return}
+    if(b.li==null||l.stops[b.li]!==b.at){let best=0,bd=1e9;l.stops.forEach((s,i)=>{const d=Math.hypot(NODES[s][0]-NODES[b.at][0],NODES[s][1]-NODES[b.at][1]);if(d<bd){bd=d;best=i}});
+      b.li=best;b.dirn=1;if(l.stops[best]===b.at)arrive(b);else setPath(b,l.stops[best]);return}
+    const nx=b.li+b.dirn;if(nx<0||nx>=l.stops.length){b.dirn=-b.dirn}b.li+=b.dirn;setPath(b,l.stops[b.li]);return}
+  if(b.mode==='job'&&b.job){if(b.ii>=b.it.length){b.mode='idle';b.job=null;return}const s=b.it[b.ii];
+    if(b.at!==s.p){setPath(b,s.p);return}b.ii++;
+    if(s.a==='load')b.dwell=300;else if(s.a==='wait')b.dwell=b.job.wait*60;else finishJob(b)}}
+function finishJob(b){const j=b.job,late=S.t>j.due,ty=JT[j.type];let pay=j.reward*(late?.6:1);if(ty.cat==='tur')pay*=mods.tourPay;pay=Math.round(pay);
+  earn(ty.cat,pay);S.jobsDone++;if(ty.cat==='tur')S.tours++;S.rep=clamp(S.rep+(late?-3:.8),0,100);
+  log(b.name+': '+j.tt[0]+' tamamlandı · +'+tl(pay)+(late?' (gecikme kesintisi)':''),b.name+': '+j.tt[1]+' done · +'+tl(pay)+(late?' (late penalty)':''),late);b.job=null;b.mode=b.lineId?'line':'idle';b.it=null}
+function accept(j,b){S.jobs=S.jobs.filter(x=>x.id!==j.id);b.mode='job';b.job=j;j.due=S.t+j.dur;b.it=[{p:j.from,a:'load'},...j.via.map(p=>({p,a:'wait'})),{p:j.to,a:'unload'}];b.ii=0;b.load={};if(b.path)b.pend=false}
+const fits=(j,b)=>j.need.includes(b.cls)&&(j.pax?CLS[b.cls].cap>=j.pax:CLS[b.cls].cargo>=j.tons);
+const idle=b=>b.mode==='idle'&&!b.job&&!(b.broken>0)&&!b.lineId&&!b.mt;
+const free=b=>!b.job&&!(b.broken>0)&&!b.mt; // hattaki tekne de işe gidebilir, iş bitince hattına döner
+function moveBoat(b,dtg){b.hold=false;
+  if(b.broken>0){b.broken-=dtg;if(b.broken<=0)log(b.name+' onarıldı, yeniden hizmette',b.name+' is repaired and back in service');return}
+  if(b.mt==='in'){b.mtT-=dtg;if(b.mtT<=0){b.mt=null;b.cond=100;log(b.name+' bakımdan çıktı (%100)',b.name+' left the shipyard (100%)')}return}
+  if(b.dwell>0){b.dwell-=dtg;return}
+  if(!b.path){if(b.mode!=='idle'||b.mt)decide(b);return}
+  const c=CLS[b.cls],cp=CAPT[b.capt||0],cf=b.cond>=60?1:.75+.25*b.cond/60;
+  const sp=SPD(c.kn)*mods.speed*cp.spd*cf,p=posAt(b.path,b.pd);b.x=p.x;b.z=p.z;b.ang=p.ang;
+  const dd=sp*dtg,q=posAt(b.path,b.pd+dd);
+  if(S.zone&&inZone(q.x,q.z,10)&&!inZone(p.x,p.z,10)){b.hold=true;return} // polis bekletiyor
+  b.pd+=dd;const km=dd*.005/K;spend('yakit',km*c.fuel*S.fuelIdx*cp.fuel*(1+(100-b.cond)*.003));
+  b.cond=Math.max(5,b.cond-km*.075*cp.wear*D().wear);
+  if(b.cond<30&&Math.random()<dtg/3600*.08*(30-b.cond)/30){const cost=Math.round(c.price*.025);b.broken=5400;spend('onarim',cost);S.rep=Math.max(0,S.rep-1);
+    log('Arıza: '+b.name+' yıprandı, 1,5 saat hizmet dışı · '+tl(-cost),'Breakdown: worn-out '+b.name+' is out for 1.5 h · '+tl(-cost),true)}
+  if(b.pd>=b.path.len){b.at=b.to;b.path=null;arrive(b)}}
+function buy(k){const c=CLS[k];if(S.cash<c.price)return;S.cash-=c.price;const used=S.boats.map(b=>b.name),n=NAMES.find(x=>!used.includes(x))||(t('Tekne ','Boat ')+S.nextId);
+  const b=mkBoat(S.nextId++,k,n,P('Karaköy'));S.boats.push(b);log(n+' ('+c.n[0]+') filoya katıldı · '+tl(-c.price),n+' ('+c.n[1]+') joined the fleet · '+tl(-c.price));
+  const ls=S.lines.filter(l=>l.kind===(c.roles.includes('tur')&&!c.roles.includes('hat')?'tur':'hat'));if((c.roles.includes('hat')||c.roles.includes('tur'))&&ls.length===1)assignLine(b,ls[0].id)}
+const lineOk=(b,l)=>l.kind==='tur'?CLS[b.cls].roles.includes('tur'):CLS[b.cls].roles.includes('hat');
+
+/* ---------- İşler ---------- */
+function genJob(){const h=hour(),night=h>=22||h<6,w={yuk:3,taksi:night?4.5:3,vip:.8,tur:h>=9&&h<16.5?3*mods.tour:0,gunbatimi:h>=16.5&&h<19.5?4*mods.tour:0,etkinlik:.35};
+  let r=Math.random()*sum(w),type='yuk';for(const k in w){r-=w[k];if(r<=0){type=k;break}}
+  const all=PIERS.map((_,i)=>i),tp=all.filter(i=>PIERS[i].tour),cp=all.filter(i=>PIERS[i].cargo),far=(a,list,min)=>{let b,g=0;do{b=pick(list)}while((b===a||kmOf(a,b)<min)&&g++<40);return b};
+  const rm=.8+S.rep/250,j={id:S.nextId++,type,via:[],wait:0,exp:S.t+rnd(4200,7800)};let kn=9;
+  if(type==='yuk'){const it=pick([['inşaat malzemesi','building materials'],['balık','fish'],['kuru yük','dry cargo'],['cam eşya','glassware'],['mobilya','furniture'],['tahıl','grain']]);
+    j.from=pick(cp);j.to=far(j.from,cp,2);j.tons=5*Math.round(rnd(2,8));j.need=['mavna'];j.reward=j.tons*(45+kmOf(j.from,j.to)*9);j.tt=[j.tons+' ton '+it[0],j.tons+' t of '+it[1]];kn=7}
+  else if(type==='taksi'){j.from=pick(all);j.to=far(j.from,all,2);j.pax=1+((Math.random()*8)|0);j.need=['taksi','yat'];j.reward=(250+kmOf(j.from,j.to)*90)*(night?1.5:1);j.tt=[j.pax+' kişilik '+(night?'gece ':'')+'deniz taksi',(night?'Night water':'Water')+' taxi for '+j.pax];kn=16}
+  else if(type==='vip'){const it=pick([['İş insanı transferi','Business transfer'],['Otel misafiri transferi','Hotel guest transfer'],['Sanatçı transferi','Artist transfer']]);
+    j.from=pick(all);j.to=far(j.from,all,3);j.pax=2+((Math.random()*10)|0);j.need=['yat'];j.reward=2000+kmOf(j.from,j.to)*350;j.tt=it;kn=16}
+  else if(type==='tur'){const long=Math.random()<.35;j.from=j.to=pick(tp);j.via=[P(long?'Anadolu Kavağı':'Anadolu Hisarı')];j.wait=long?60:15;j.pax=10+((Math.random()*50)|0);j.need=j.pax<=12?['gezi','yat']:['gezi'];j.reward=j.pax*(long?380:220);
+    j.tt=[j.pax+' kişilik '+(long?'uzun':'kısa')+' Boğaz turu',(long?'Long':'Short')+' Bosphorus tour for '+j.pax];kn=10}
+  else if(type==='gunbatimi'){j.from=j.to=pick(tp);j.via=[P('Ortaköy'),P('Üsküdar')].filter(p=>p!==j.from);j.wait=15;j.pax=8+((Math.random()*50)|0);j.need=j.pax<=12?['gezi','yat']:['gezi'];j.reward=j.pax*420;j.tt=[j.pax+' kişilik gün batımı turu','Sunset tour for '+j.pax];kn=10}
+  else{const it=pick([['Düğün teknesi','Wedding cruise'],['Film çekimi','Film shoot'],['Şirket daveti','Company party'],['Mezuniyet gecesi','Graduation night']]);
+    j.from=j.to=pick(tp);j.via=[P('Bebek')];j.wait=120;j.pax=10+((Math.random()*45)|0);j.need=j.pax<=12?['gezi','yat']:['gezi'];j.reward=rnd(25000,60000);j.tt=it;kn=10}
+  let d=0,prev=j.from;for(const p of[...j.via,j.to]){d+=pathBetween(prev,p).len;prev=p}
+  j.km=d*.005/K;j.dur=Math.round(d/SPD(kn)*1.5+j.wait*60*j.via.length+3000);j.reward=Math.round(j.reward*rm*D().pay/10)*10;S.jobs.push(j);if(S.jobs.length>8)S.jobs.shift()}
+function autoAssign(){for(const j of [...S.contracts]){const b=S.boats.find(x=>idle(x)&&x.auto&&fits(j,x));if(b)dispatch(j,b)}
+  for(const b of S.boats){if(!idle(b)||!b.auto)continue;let best=null,bs=0;
+  for(const j of S.jobs){if(!fits(j,b))continue;const sc=j.reward/(j.dur+pathBetween(b.at,j.from).len/SPD(CLS[b.cls].kn));if(sc>bs){bs=sc;best=j}}if(best)accept(best,b)}
+  if(S.autoMaint)for(const b of S.boats)if(b.cond<40&&!b.mt&&!b.job&&!(b.broken>0))sendMaint(b,true)}
+
+/* ---------- Olaylar ---------- */
+const EV=[
+ {k:'sis',h:3,n:['Sis','Fog'],d:['Boğaz’da yoğun sis: tüm tekneler %40 yavaş.','Thick fog on the Bosphorus: all boats 40% slower.']},
+ {k:'lodos',h:4,n:['Lodos','Southwester'],d:['Lodos fırtınası: tekneler %25 yavaş, hat yolcusu %30 az.','Southwest storm: boats 25% slower, 30% fewer passengers.']},
+ {k:'kopru',h:3,n:['Köprü trafiği kilit','Bridge gridlock'],d:['Köprüler tıkandı: hat yolcusu %60 fazla.','The bridges are jammed: 60% more line passengers.']},
+ {k:'kruvaziyer',h:6,n:['Kruvaziyer limanda','Cruise ship in port'],d:['Galataport’a ikinci kruvaziyer yanaştı: turist iki katı, tur kazancı %30 fazla.','A second cruise ship docked at Galataport: twice the tourists, tours pay 30% more.']},
+ {k:'protokol',h:3,n:['Devlet protokolü','State protocol'],d:['Dolmabahçe önünde resmî ziyaret: bölgeye 3 saat tekne giremez, polis devriyede.','Official visit at Dolmabahçe: no boats may enter the area for 3 hours, police on patrol.']},
+ {k:'zam',n:['Akaryakıt zammı','Fuel price hike'],d:['Yakıt %15 pahalandı.','Fuel is 15% more expensive.']},
+ {k:'indirim',n:['Akaryakıt indirimi','Fuel price cut'],d:['Yakıt %12 ucuzladı.','Fuel is 12% cheaper.']},
+ {k:'ariza'},{k:'denetim'}];
+function fireEvent(){const e=pick(EV);
+  if(e.h){if(S.events.some(x=>x.k===e.k))return;S.events.push({k:e.k,end:S.t+e.h*3600});
+    if(e.k==='protokol'){S.zone={x:X(29.0035),z:Z(41.0383),r:150};setZone(true)}
+    log(e.n[0]+': '+e.d[0],e.n[1]+': '+e.d[1],e.k==='sis'||e.k==='lodos'||e.k==='protokol')}
+  else if(e.k==='zam'){S.fuelIdx=Math.min(1.6,S.fuelIdx*1.15);log(e.n[0]+': '+e.d[0],e.n[1]+': '+e.d[1],true)}
+  else if(e.k==='indirim'){S.fuelIdx=Math.max(.7,S.fuelIdx*.88);log(e.n[0]+': '+e.d[0],e.n[1]+': '+e.d[1])}
+  else if(e.k==='ariza'){const ws=S.boats.filter(b=>!(b.broken>0)&&!b.mt);if(!ws.length)return;let tw=ws.reduce((a,b)=>a+(105-b.cond),0),r=Math.random()*tw,b=ws[0];for(const x of ws){r-=105-x.cond;if(r<=0){b=x;break}}
+    const c=Math.round(CLS[b.cls].price*.03);b.broken=7200;spend('onarim',c);S.rep=Math.max(0,S.rep-1);log('Arıza: '+b.name+' 2 saat hizmet dışı · onarım '+tl(-c),'Breakdown: '+b.name+' out for 2 hours · repair '+tl(-c),true)}
+  else if(e.k==='denetim'){const avg=S.boats.reduce((a,b)=>a+b.cond,0)/S.boats.length;if(S.rep>=60&&avg>=60){S.rep=Math.min(100,S.rep+3);log('Liman denetimi sorunsuz geçti · itibar +3','Port inspection passed · reputation +3')}
+    else{spend('onarim',15000);log('Liman denetimi: bakımsız tekneler için ₺15.000 ceza','Port inspection: ₺15,000 fine for poorly kept boats',true)}}}
+/* ---------- Talep ve yoğunluk: önceden haber verilen özel günler ---------- */
+const SURGES=[
+ {k:'mac',n:['Maç günü','Match day'],d:['Stat çıkışı yoğunluk','Stadium crowd'],pairs:[['Beşiktaş','Kadıköy'],['Beşiktaş','Üsküdar'],['Kadıköy','Karaköy'],['Kadıköy','Eminönü']],mult:2.4,h:[17,21],len:3},
+ {k:'konser',n:['Konser gecesi','Concert night'],d:['Konser dönüşü','Concert crowd'],pairs:[['Kabataş','Kadıköy'],['Kabataş','Üsküdar'],['Beşiktaş','Kadıköy']],mult:1.9,h:[19,23],len:3},
+ {k:'bayram',n:['Bayram','Holiday'],d:['Bayram ziyaretleri','Holiday visits'],pairs:[['Eminönü','Üsküdar'],['Eminönü','Kadıköy'],['Karaköy','Üsküdar']],mult:2,h:[9,13],len:5},
+ {k:'festival',n:['Ortaköy festivali','Ortaköy festival'],d:['Festival kalabalığı','Festival crowd'],pairs:[['Ortaköy','Üsküdar'],['Ortaköy','Kadıköy'],['Ortaköy','Eminönü']],mult:2,h:[12,18],len:5},
+ {k:'okul',n:['Okul açılışı','First school day'],d:['Öğrenci yoğunluğu','Students on the move'],pairs:[['Kadıköy','Beşiktaş'],['Üsküdar','Beşiktaş'],['Kadıköy','Kabataş']],mult:1.7,h:[7,9],len:3},
+ {k:'fuar',n:['Kitap fuarı','Book fair'],d:['Fuar ziyaretçileri','Fair visitors'],pairs:[['Kadıköy','Yenikapı'],['Üsküdar','Yenikapı'],['Eminönü','Yenikapı']],mult:2.2,h:[10,15],len:5},
+ {k:'turist',n:['Turist dalgası','Tourist wave'],d:['Kruvaziyer ve tur grupları','Cruise and tour groups'],pairs:[['Eminönü','Karaköy'],['Kabataş','Ortaköy']],mult:2.2,h:[9,15],len:5,tour:1}];
+function genSurge(){if(S.surges.filter(s=>s.end>S.t).length>=3)return;const ty=pick(SURGES),pr=pick(ty.pairs),day=Math.floor(S.t/DAY);
+  let start=day*DAY+ty.h[0]*3600+Math.floor(rnd(0,ty.h[1]-ty.h[0]-ty.len+1))*3600;if(start<S.t+2*3600)start+=DAY;
+  if(S.surges.some(s=>s.k===ty.k&&s.end>S.t))return;
+  const s={id:S.nextId++,k:ty.k,a:P(pr[0]),b:P(pr[1]),mult:ty.mult,start,end:start+ty.len*3600,tour:!!ty.tour};S.surges.push(s);
+  log('Talep: '+ty.n[0]+' · '+pr[0]+' – '+pr[1]+' · '+(Math.floor(start/DAY)+1)+'. gün '+clock(start)+'–'+clock(s.end)+' · yolcu x'+String(ty.mult).replace('.',','),
+      'Demand: '+ty.n[1]+' · '+pr[0]+' – '+pr[1]+' · day '+(Math.floor(start/DAY)+1)+' '+clock(start)+'–'+clock(s.end)+' · riders x'+ty.mult)}
+const surgeCovered=s=>S.lines.some(l=>(s.tour?l.kind==='tur':l.kind!=='tur')&&l.stops.includes(s.a)&&l.stops.includes(s.b)&&S.boats.some(b=>b.lineId===l.id));
+function calcMods(){S.surges=S.surges.filter(s=>s.end>S.t-3600);const was=!!S.zone;S.events=S.events.filter(e=>e.end>S.t);if(was&&!S.events.some(e=>e.k==='protokol')){S.zone=null;setZone(false);log('Protokol bitti, Dolmabahçe önü yeniden açık','The protocol is over, the Dolmabahçe area is open again')}
+  mods={speed:1,demand:1,tour:1,tourPay:1,hot:[]};
+  for(const e of S.events){if(e.k==='sis')mods.speed*=.6;if(e.k==='lodos'){mods.speed*=.75;mods.demand*=.7}if(e.k==='kopru')mods.demand*=1.6;if(e.k==='mac')mods.hot=['Beşiktaş','Kadıköy'];if(e.k==='kruvaziyer'){mods.tour=2;mods.tourPay=1.3}}}
+
+/* ---------- Tematik deniz trafiği (oyuncuyu ve birbirini etkilemez) ---------- */
+let CL=null;
+function centerline(){if(CL)return CL;const p=pathBetween(VN,VS),pts=[];for(let d=0;d<=p.len;d+=60){const q=posAt(p,d);pts.push([q.x,q.z])}
+  const side=(x,z,nx,nz)=>{for(let s=8;s<1200;s+=8)if(sdf(x+nx*s,z+nz*s)>0)return s;return 0};
+  let out=pts.map((q,i)=>{const a=pts[Math.max(0,i-2)],b=pts[Math.min(pts.length-1,i+2)],l=Math.hypot(b[0]-a[0],b[1]-a[1])||1,nx=-(b[1]-a[1])/l,nz=(b[0]-a[0])/l;
+    const r=side(q[0],q[1],nx,nz),lf=side(q[0],q[1],-nx,-nz);let o=0;if(r&&lf)o=(r-lf)/2;else if(r&&r<320)o=r-320;else if(lf&&lf<320)o=320-lf;return[q[0]+nx*o,q[1]+nz*o]});
+  for(let pass=0;pass<6;pass++)out=out.map((q,i)=>{if(i<2||i>out.length-3)return q;let x=0,z=0;for(let k=-2;k<=2;k++){x+=out[i+k][0];z+=out[i+k][1]}return[x/5,z/5]});
+  out=out.map(q=>{let[x,z]=q;const dk=Math.hypot(x-KIZ.x,z-KIZ.z);if(dk<150){x=KIZ.x+(x-KIZ.x)/dk*150;z=KIZ.z+(z-KIZ.z)/dk*150}for(let i=0;i<60&&sdf(x,z)>-45;i++){const g=grad(x,z);x-=g.x*4;z-=g.z*4}return[x,z]});
+  out[0]=NODES[VN];out[out.length-1]=NODES[VS];return CL={f:mkPath(out),b:mkPath(out.slice().reverse())}}
+let cruises=[{st:'berth',tm:rnd(3600,9000),pd:0,slot:0}],police=[{pd:0,dir:1,a:0}];
+function npcTick(dtg){
+  if(S.t>=nextTanker){const dir=Math.random()<.5,cl=centerline();tankers.push({path:dir?cl.f:cl.b,pd:0,x:0,z:0,ang:0,lane:dir?1:-1});nextTanker=S.t+rnd(2400,5400)*D().tk}
+  for(const tk of tankers){tk.pd+=SPD(10)*dtg;const p=posAt(tk.path,tk.pd),o=24*tk.lane;tk.x=p.x-Math.sin(p.ang)*o;tk.z=p.z+Math.cos(p.ang)*o;tk.ang=p.ang}tankers=tankers.filter(tk=>tk.pd<tk.path.len);
+  const want=1+(S.events.some(e=>e.k==='kruvaziyer')?1:0);if(cruises.length<want)cruises.push({st:'in',pd:0,slot:1,tm:0});
+  for(const c of cruises){if(c.st==='berth'){c.tm-=dtg;if(c.tm<=0){c.st='out';c.pd=0}}
+    else{const path=c.st==='out'?pathBetween(GP,VS):pathBetween(VS,GP);c.pd+=SPD(12)*dtg;const p=posAt(path,c.pd);c.x=p.x;c.z=p.z;c.ang=p.ang;
+      if(c.pd>=path.len){if(c.st==='out'){if(c.slot===1&&cruises.length>want){c.dead=1;continue}c.st='away';c.tm=rnd(5400,12000)}else{c.st='berth';c.tm=rnd(7200,14400)}}}
+    if(c.st==='away'){c.tm-=dtg;if(c.tm<=0){c.st='in';c.pd=0}}
+    if(c.st==='berth'){const q=berth(c.slot);c.x=q.x;c.z=q.z;c.ang=q.a}}
+  cruises=cruises.filter(c=>!c.dead);
+  const pp=police[0],pth=pathBetween(P('Bebek'),P('Kadıköy'));pp.pd+=pp.dir*SPD(16)*dtg;if(pp.pd>pth.len){pp.pd=pth.len;pp.dir=-1}if(pp.pd<0){pp.pd=0;pp.dir=1}
+  const q=posAt(pth,pp.pd);pp.x=q.x;pp.z=q.z;pp.ang=q.ang+(pp.dir<0?Math.PI:0);
+  for(const rl of S.rival.lines){const pa=pathBetween(rl.stops[0],rl.stops[1]);if(!rl.vis||rl.vis.length!==rl.boats)rl.vis=Array.from({length:rl.boats},(_,i)=>({pd:pa.len*i/rl.boats,dir:i%2?-1:1,w:0}));
+    for(const v of rl.vis){if(v.w>0){v.w-=dtg;continue}v.pd+=v.dir*SPD(11)*dtg;if(v.pd>pa.len){v.pd=pa.len;v.dir=-1;v.w=240}if(v.pd<0){v.pd=0;v.dir=1;v.w=240}
+      const p=posAt(pa,v.pd);if(S.zone&&inZone(p.x,p.z,10)){v.pd-=v.dir*SPD(11)*dtg;continue}v.x=p.x;v.z=p.z;v.ang=p.ang+(v.dir<0?Math.PI:0)}}}
+
+/* ---------- Gün sonu, hedefler ---------- */
+function endDay(){const upk=S.boats.reduce((a,b)=>a+CLS[b.cls].upk*(1+Math.min(.3,b.age*.004)),0),sal=S.boats.reduce((a,b)=>a+CAPT[b.capt||0].sal,0);
+  spend('bakim',upk+sal);if(S.loan)spend('faiz',S.loan*.004);S.boats.forEach(b=>{b.age++;b.cond=Math.max(5,b.cond-.6)});
+  const inc=opInc(S.today.inc),exp=sum(S.today.exp);if(S.events.some(e=>['sis','lodos','protokol'].includes(e.k))&&inc>exp)S.crisisWin++;
+  S.hist.push({inc,exp});if(S.hist.length>7)S.hist.shift();S.bestDay=Math.max(S.bestDay,inc);S.today={inc:{},exp:{}};
+  S.lines.forEach(l=>{l.pax=0;l.inc=0});S.fuelIdx=clamp(S.fuelIdx*rnd(.97,1.03),.7,1.6);rivalDay();
+  log(S.day+'. gün kapandı · gelir '+tl(inc)+', gider '+tl(exp),'Day '+S.day+' closed · income '+tl(inc)+', costs '+tl(exp),inc<exp);
+  if(S.cash<0){S.negDays++;if(S.negDays>=D().neg){S.dead=true;speed=0;$('mTitle').textContent=t('İflas','Bankrupt');
+      $('mText').textContent=t((D().neg>1?'Kasa '+D().neg+' gün üst üste ekside kapandı. Şirket ':'Kasa gece ekside kapandı. Şirket ')+S.day+' günde '+S.jobsDone+' iş ve '+nm(S.totalPax)+' yolcuyla kapandı.',(D().neg>1?'The till closed in the red '+D().neg+' nights in a row. The company shut down after ':'The till closed in the red overnight. The company shut down after ')+S.day+' days, '+S.jobsDone+' jobs and '+nm(S.totalPax)+' passengers.');$('modal').hidden=false}
+    else toast(t('Kasa ekside. '+(D().neg-S.negDays)+' gece daha ekside kapanırsa şirket iflas eder.','The till is in the red. '+(D().neg-S.negDays)+' more night(s) like this and the company goes bankrupt.'),true)}else S.negDays=0;save()}
+const bestInc=()=>Math.max(S.bestDay,opInc(S.today.inc));
+const GOALS=[
+ {t:['İlk hattını kur ve 300 yolcu taşı','Open your first line and carry 300 passengers'],ok:()=>S.lines.length>0&&S.totalPax>=300,p:()=>nm(S.totalPax)+' / 300',r:50000},
+ {t:['Filonu 3 tekneye çıkar','Grow the fleet to 3 boats'],ok:()=>S.boats.length>=3,p:()=>S.boats.length+' / 3',r:75000},
+ {t:['Bir günde ₺60.000 gelir yap','Earn ₺60,000 in one day'],ok:()=>bestInc()>=60000,p:()=>t('en iyi gün ','best day ')+tl(bestInc()),r:100000},
+ {t:['Bir rehberli tur hattı kur ve 300 turist taşı','Run a guided tour line and carry 300 tourists'],ok:()=>S.tourPax>=300,p:()=>nm(S.tourPax)+' / 300',r:150000},
+ {t:['6 tekne ve 70 itibar','6 boats and 70 reputation'],ok:()=>S.boats.length>=6&&S.rep>=70,p:()=>S.boats.length+' / 6 · '+t('itibar ','rep ')+Math.round(S.rep),r:200000},
+ {t:['Rakibe karşı bir günde %55 pazar payı','Win a 55% market share against the rival in one day'],ok:()=>S.bestShare>=.55,p:()=>t('en iyi pay %','best share ')+Math.round(S.bestShare*100)+(LANG==='en'?'%':''),r:250000},
+ {t:['Bir günde ₺250.000 gelir yap','Earn ₺250,000 in one day'],ok:()=>bestInc()>=250000,p:()=>t('en iyi gün ','best day ')+tl(bestInc()),r:300000},
+ {t:['10 tekne, kredisiz ₺3.000.000 kasa','10 boats, ₺3,000,000 in the till, no loan'],ok:()=>S.boats.length>=10&&S.loan===0&&S.cash>=3e6,p:()=>S.boats.length+' / 10 · '+tlc(S.cash),r:0}];
+function checkGoals(){while(S.goal<GOALS.length&&GOALS[S.goal].ok()){const g=GOALS[S.goal];S.goal++;if(g.r)earn('diger',g.r);
+  if(S.goal>=GOALS.length)log('Tüm hedefler tamam: artık Boğaz’ın patronusun!','All goals done: you run the Bosphorus now!');else log('Hedef tamam: '+g.t[0]+' · ödül '+tl(g.r),'Goal reached: '+g.t[1]+' · reward '+tl(g.r))}}
+
+/* ---------- Rozetler (tüm oyunlar boyunca kalıcı) ---------- */
+const ACH_KEY='bogaz-filosu-ach';let ACHGOT={};try{ACHGOT=JSON.parse(localStorage.getItem(ACH_KEY))||{}}catch(_){}
+const ACHS=[
+ {id:'hat',n:['İlk Hat','First Line'],d:['İlk hattını kur','Open your first line'],v:()=>S.lines.length,g:1},
+ {id:'kita',n:['Kıtalararası','Intercontinental'],d:['Avrupa ile Anadolu’yu bağlayan bir hat kur','Run a line linking Europe and Asia'],v:()=>S.lines.some(l=>new Set(l.stops.map(s=>PIERS[s].side[0])).size>1)?1:0,g:1},
+ {id:'bin',n:['İlk Bin','First Thousand'],d:['1.000 yolcu taşı','Carry 1,000 passengers'],v:()=>S.totalPax,g:1000},
+ {id:'ses',n:['Boğaz’ın Sesi','Voice of the Bosphorus'],d:['25.000 yolcu taşı','Carry 25,000 passengers'],v:()=>S.totalPax,g:25000},
+ {id:'filo5',n:['Küçük Filo','Small Fleet'],d:['5 tekneye ulaş','Own 5 boats'],v:()=>S.boats.length,g:5},
+ {id:'amiral',n:['Amiral','Admiral'],d:['12 tekneye ulaş','Own 12 boats'],v:()=>S.boats.length,g:12},
+ {id:'rehber',n:['Rehber','Tour Guide'],d:['Tur hatlarında 1.000 turist taşı','Carry 1,000 tourists on tour lines'],v:()=>S.tourPax,g:1000},
+ {id:'ogrenci',n:['Öğrenci Dostu','Student Friendly'],d:['İndirimli hatlarda 1.000 yolcu taşı','Carry 1,000 passengers on discount lines'],v:()=>S.stuPax,g:1000},
+ {id:'rakip',n:['Rakibi Geç','Beat the Rival'],d:['Bir günde %60 pazar payı al','Take a 60% market share in one day'],v:()=>Math.round(S.bestShare*100),g:60},
+ {id:'bakim',n:['Bakımlı Filo','Well Kept'],d:['En az 5 tekne, hepsi %80 üstü','5+ boats, all above 80%'],v:()=>S.boats.length>=5&&S.boats.every(b=>b.cond>=80)?1:0,g:1},
+ {id:'kidem',n:['Kıdemli Kadro','Veteran Crew'],d:['3 kıdemli kaptan yetiştir','Train 3 veteran captains'],v:()=>S.boats.filter(b=>b.capt>=2).length,g:3},
+ {id:'kriz',n:['Kriz Yönetimi','Crisis Manager'],d:['Sis, lodos ya da protokol gününü kârla kapat','Close a fog, storm or protocol day in profit'],v:()=>S.crisisWin,g:1},
+ {id:'milyon',n:['Milyoner','Millionaire'],d:['Kasada ₺1.000.000 biriktir','Hold ₺1,000,000 in the till'],v:()=>Math.max(0,S.cash),g:1e6}];
+function checkAch(){let ch=false;for(const a of ACHS)if(!ACHGOT[a.id]&&a.v()>=a.g){ACHGOT[a.id]=Date.now();ch=true;toast(t('Rozet kazandın: ','Badge earned: ')+L2(a.n)+' · '+L2(a.d),false,'ach-t')}
+  if(ch)try{localStorage.setItem(ACH_KEY,JSON.stringify(ACHGOT))}catch(_){}}
+
+function tick(dtg){S.t+=dtg;const d=Math.floor(S.t/DAY)+1;if(!S.day)S.day=d;if(d!==S.day){endDay();S.day=d}
+  calcMods();demandTick(dtg);
+  for(const j of S.jobs)if(j.exp<S.t)j.dead=1;S.jobs=S.jobs.filter(j=>!j.dead);
+  contractTick();
+  if(S.t>=S.nextJob){genJob();S.nextJob=S.t+rnd(700,1700)/Math.max(1,mods.tour*.7)}
+  if(S.t>=S.nextEvent){fireEvent();S.nextEvent=S.t+rnd(9000,20000)*D().ev}
+  if(S.t>=S.nextSurge){genSurge();S.nextSurge=S.t+rnd(4*3600,8*3600)}
+  if(S.t>=S.rival.nextOpen){rivalOpen();S.rival.nextOpen=S.t+DAY*rnd(.8,1.6)*D().rival}
+  npcTick(dtg);for(const b of S.boats)moveBoat(b,dtg)}
+
+/* ---------- Paneller ---------- */
+const condBar=c=>`<span class="cond" title="%${Math.round(c)}"><i style="width:${c}%;background:${c>=60?'var(--good)':c>=35?'var(--warn)':'var(--crit)'}"></i></span>`;
+const status=b=>b.broken>0?t('Arızalı · onarım ','Broken down · repair ')+dur(b.broken):b.mt==='in'?t('Tersanede bakımda · ','In the shipyard · ')+dur(b.mtT):b.mt==='go'?t('Bakım için ','Heading to ')+PIERS[b.mty].name+t(' tersanesine gidiyor',' shipyard'):
+  b.hold?t('Polis bekletiyor: protokol bölgesi','Held by police: protocol zone'):b.mode==='line'?(()=>{const l=S.lines.find(x=>x.id===b.lineId);return l?lineName(l)+' · '+Math.round(l.kind==='tur'?(b.load.tur||0):sum(b.load||{}))+'/'+CLS[b.cls].cap+t(' yolcu',' riders'):t('Hat bekliyor','Waiting for a line')})():
+  b.job?b.job.tt[LANG==='en'?1:0]+' · '+(S.t>b.job.due?t('gecikti','late'):t('kalan ','left ')+dur(b.job.due-S.t)):PIERS[b.at].name+t(' iskelesinde boşta',': idle at the pier');
+function pFilo(){let h=`<h2>${t('Filo','Fleet')}</h2><div class="rw"><span class="mut">${t('Yıpranan tekne yavaşlar ve sık arızalanır. Tersaneler: ','Worn boats slow down and break more often. Shipyards: ')}${yards().map(i=>PIERS[i].name).join(', ')}</span>
+  <button class="btn" data-act="automaint" id="autoMaint" aria-pressed="${S.autoMaint}">${t('Otomatik bakım','Auto maintenance')}: ${S.autoMaint?t('açık','on'):t('kapalı','off')}</button></div><ul>`;
+  for(const b of S.boats){const c=CLS[b.cls],cp=CAPT[b.capt||0],nx=CAPT[(b.capt||0)+1],linable=c.roles.includes('hat')||c.roles.includes('tur');
+    h+=`<li><div class="rw"><span><span class="dot" style="background:${c.col}"></span><b>${b.name}</b> <span class="mut">${L2(c.n)}</span></span><button class="btn bad" data-act="sell" data-id="${b.id}" id="sell${b.id}">${arm==='s'+b.id?t('Emin misin? ','Sure? ')+tl(c.price*.6*(.5+b.cond/200)):t('Sat','Sell')}</button></div>
+    <div class="mut">${status(b)}</div>
+    <div class="rw"><span class="mut">${condBar(b.cond)} %${Math.round(b.cond)} · ${t('yaş ','age ')}${b.age}${t(' gün',' d')} · ${t('kaptan: ','captain: ')}<b>${L2(cp.n)}</b></span>
+      <span class="btns">${b.cond<95&&!b.mt&&!b.job&&!(b.broken>0)?`<button class="btn" data-act="maint" data-id="${b.id}" id="mt${b.id}">${t('Bakım','Service')} · ${tl(maintCost(b))}</button>`:''}${nx?`<button class="btn" data-act="capt" data-id="${b.id}" id="cp${b.id}" ${S.cash<nx.cost?'disabled':''}>${L2(nx.n)} · ${tl(nx.cost)}</button>`:''}</span></div><div class="rw">`;
+    if(linable){const ls=S.lines.filter(l=>lineOk(b,l));h+=`<select data-sel="line" data-id="${b.id}" id="ln${b.id}" aria-label="${b.name}"><option value="0">${t('Hatta değil','Not on a line')}</option>${ls.map(l=>`<option value="${l.id}" ${b.lineId===l.id?'selected':''}>${l.kind==='tur'?t('Tur: ','Tour: '):''}${lineName(l)}</option>`).join('')}</select>`}
+    if(!c.roles.includes('hat'))h+=`<button class="btn" data-act="auto" data-id="${b.id}" id="au${b.id}" aria-pressed="${!!b.auto}">${t('Otomatik iş','Auto jobs')}: ${b.auto?t('açık','on'):t('kapalı','off')}</button>`;
+    h+=`</div></li>`}
+  h+=`</ul><h3>${t('Tekne satın al','Buy a boat')} <small>${t('Karaköy’de teslim','delivered at Karaköy')}</small></h3><ul>`;
+  for(const k in CLS){const c=CLS[k];h+=`<li><div class="rw"><span><span class="dot" style="background:${c.col}"></span><b>${L2(c.n)}</b></span><button class="btn pri" data-act="buy" data-k="${k}" id="buy_${k}" ${S.cash<c.price?'disabled':''}>${tl(c.price)}</button></div><div class="mut">${c.cap?c.cap+t(' yolcu',' riders'):c.cargo+t(' ton',' t')} · ${c.kn} ${t('knot','kn')} · ${t('günlük bakım ','daily upkeep ')}${tl(c.upk)} · ${L2(c.use)}</div></li>`}
+  return h+`</ul><h3>${t('Kaptanlar','Captains')}</h3><div class="tbl">${CAPT.map(c=>`<span>${L2(c.n)}</span><span>${c.sal?t('günlük ','daily ')+tl(c.sal)+' · ':''}${t('hız','speed')} +%${Math.round((c.spd-1)*100)} · ${t('yıpranma','wear')} -%${Math.round((1-c.wear)*100)} · ${t('yakıt','fuel')} -%${Math.round((1-c.fuel)*100)}</span>`).join('')}</div>`}
+function shareOf(l){if(l.kind==='tur')return null;const nb=S.boats.filter(b=>b.lineId===l.id).length;let a=0,n=0;
+  for(let i=0;i<l.stops.length-1;i++){const rl=rivalLine(l.stops[i],l.stops[i+1]);if(!rl)continue;const au=attr(l.price*(l.stu?.9:1),Math.max(1,nb),S.rep)*(l.stu?1.15:1),ar=attr(S.rival.price,rl.boats,S.rival.rep);a+=au/(au+ar);n++}
+  return n?a/n:null}
+function pHat(){const R=S.rival;let h=`<h2>${t('Hatlar','Lines')}</h2>`;
+  h+=`<div class="rival"><div class="rw"><b>${t('Rakip','Rival')}: ${L2(RIVAL)}</b><span class="mut">${R.lines.length} ${t('hat','lines')} · ${t('bilet','fares')} x${R.price.toFixed(2)}${S.share!=null?' · '+t('dünkü payın %','your share yesterday ')+Math.round(S.share*100)+(LANG==='en'?'%':''):''}</span></div>
+    ${R.lines.length?`<div class="mut">${R.lines.map(r=>PIERS[r.stops[0]].name+' – '+PIERS[r.stops[1]].name+' ('+r.boats+')').join(' · ')}</div>`:`<div class="mut">${t('Rakip henüz hat açmadı. Yakında senin güzergâhlarına girecek.','The rival has no lines yet. It will soon move in on your routes.')}</div>`}
+    <div class="mut">${t('Aynı güzergâhta yolcu; bilete, tekne sayısına ve itibara göre bölüşülür.','On shared routes, riders split by fare, number of boats and reputation.')}</div></div>`;
+  const sg=S.surges.filter(s=>s.end>S.t).sort((a,b)=>a.start-b.start);
+  if(sg.length){h+=`<h3>${t('Talep ve yoğunluk','Demand and crowds')} <small>${t('hattın bu iki iskeleyi bağlıyorsa yolcu katlanır','riders multiply if one of your lines links both piers')}</small></h3><ul>`;
+    for(const s of sg){const ty=SURGES.find(x=>x.k===s.k),act=S.t>=s.start,cov=surgeCovered(s);
+      h+=`<li><div class="rw"><span><span class="tag ${act?'hi':''}">${act?t('Şimdi','Now'):t('Yaklaşıyor','Upcoming')}</span><b>${L2(ty.n)}</b> · ${PIERS[s.a].name} – ${PIERS[s.b].name}</span><span class="pos">x${s.mult.toLocaleString(loc())}</span></div>
+      <div class="rw"><span class="mut">${L2(ty.d)} · ${act?t('bitişe ','ends in ')+dur(s.end-S.t):t('başlamasına ','starts in ')+dur(s.start-S.t)} · ${clock(s.start)}–${clock(s.end)}${s.tour?t(' · tur hatları',' · tour lines'):''}</span>
+      ${cov?`<span class="done">${t('Hattın hazır','Your line is ready')}</span>`:`<button class="btn" data-act="surge" data-id="${s.id}" id="sg${s.id}">${t('Bu güzergâhı seç','Pick this route')}</button>`}</div></li>`}
+    h+='</ul>'}
+  if(!S.lines.length)h+=`<div class="help"><p>${t('Hat, teknelerin kendi kendine gidip geldiği duraklar dizisidir. İlk hat için Karaköy – Kadıköy hazır seçili; “Hattı kur”a bas.','A line is a chain of stops your boats run on their own. Karaköy – Kadıköy is preselected; press “Open line”.')}</p></div>`;
+  h+='<ul>';for(const l of S.lines){const nb=S.boats.filter(b=>b.lineId===l.id).length,w=Math.floor(l.wait.reduce((a,r)=>a+sum(r),0)),sh=shareOf(l),tour=l.kind==='tur';
+    h+=`<li><div class="rw"><span><span class="dot" style="background:${l.color}"></span>${tour?`<span class="tag hi">${t('Tur','Tour')}</span>`:''}<b>${l.stops.map(s=>PIERS[s].name).join(' – ')}</b></span><button class="btn bad" data-act="dell" data-id="${l.id}" id="dl${l.id}">${arm==='l'+l.id?t('Emin misin?','Sure?'):t('Kapat','Close')}</button></div>
+    <div class="mut">${nb} ${t('tekne','boats')} · ${w} ${t('bekleyen','waiting')} · ${t('bugün ','today ')}${Math.round(l.pax||0)} ${tour?t('turist','tourists'):t('yolcu','riders')}, <span class="pos">${tl(l.inc||0)}</span>${l.stops.some(closed)?` · <span class="negt">${t('protokol: iskele kapalı','protocol: pier closed')}</span>`:''}</div>
+    ${sh!=null?`<div class="rw"><span class="mut">${t('Rakibe karşı pay','Share vs rival')} %${Math.round(sh*100)}</span><span class="share" aria-hidden="true"><i style="width:${Math.round(sh*100)}%"></i></span></div>`:''}
+    ${tour?`<div class="mut">${t('Kişi başı ','Per head ')}${tl(tourFare(l))} · ${t('güzergâhta ','landmarks on route: ')}${lineMarks(l)}${t(' önemli yapı (her biri +%10)',' (+10% each)')}</div>`:''}
+    <div class="rw"><span class="mut">${tour?t('Tur bileti','Tour fare'):t('Uçtan uca ','End to end ')+tl(fare(l,0,l.stops.length-1))}</span><span class="btns">
+      ${tour?'':`<button class="btn" data-act="stu" data-id="${l.id}" id="stu${l.id}" aria-pressed="${!!l.stu}">${t('Öğrenci indirimi','Student discount')}: ${l.stu?t('açık','on'):t('kapalı','off')}</button>`}
+      <button class="btn" data-act="price" data-id="${l.id}" data-d="-0.1" id="pm${l.id}" aria-label="${t('Bileti ucuzlat','Lower fare')}">−</button><span class="mut">x${l.price.toFixed(1)}</span><button class="btn" data-act="price" data-id="${l.id}" data-d="0.1" id="pp${l.id}" aria-label="${t('Bileti pahalılaştır','Raise fare')}">+</button></span></div>
+    ${nb?'':`<div class="negt">${tour?t('Bu tur hattında tekne yok. Filo’dan gezi teknesi ya da yat ata.','No boats on this tour line. Assign a tour boat or yacht in Fleet.'):t('Bu hatta tekne yok. Filo sekmesinden tekne ata.','No boats on this line. Assign one in the Fleet tab.')}</div>`}</li>`}
+  h+=`</ul><h3>${t('Yeni hat','New line')} <small>${t('2–5 durak, tekneler sırayla gidip döner','2–5 stops, boats shuttle back and forth')}</small></h3>
+  <div class="seg kind" role="group" aria-label="${t('Hat türü','Line type')}"><button data-act="kind" data-k="hat" id="kHat" aria-pressed="${newKind==='hat'}">${t('Yolcu hattı','Passenger line')}</button><button data-act="kind" data-k="tur" id="kTur" aria-pressed="${newKind==='tur'}">${t('Rehberli tur hattı','Guided tour line')}</button></div>
+  <div class="mut">${newKind==='tur'?t('Turistler gündüz ve akşamüstü gelir, iyi para öder; gezi teknesi ya da yat gerekir. Güzergâhtaki saraylar, hisarlar ve Kız Kulesi bileti artırır.','Tourists come by day and at sunset and pay well; needs a tour boat or yacht. Palaces, fortresses and the Maiden’s Tower along the route raise the fare.'):t('Sabah ve akşam saatleri yoğun; yakalar arası hatlar daha çok yolcu çeker.','Busy in the morning and evening; cross-continent lines draw more riders.')}</div><div class="btns">`;
+  newLine.forEach((s,i)=>{h+=`<select data-sel="stop" data-i="${i}" id="st${i}" aria-label="${i+1}. ${t('durak','stop')}">${PIERS.map((p,k)=>`<option value="${k}" ${k===s?'selected':''}>${p.name}</option>`).join('')}</select>`});
+  const ok=new Set(newLine).size===newLine.length&&S.lines.length<8;
+  h+=`</div><div class="btns"><button class="btn" data-act="addstop" id="addStop" ${newLine.length>=5?'disabled':''}>${t('Durak ekle','Add stop')}</button><button class="btn" data-act="rmstop" id="rmStop" ${newLine.length<=2?'disabled':''}>${t('Son durağı çıkar','Remove last stop')}</button><button class="btn pri" data-act="mkline" id="mkLine" ${ok?'':'disabled'}>${t('Hattı kur','Open line')}</button></div>`;
+  if(!ok)h+=`<div class="mut">${S.lines.length>=8?t('En fazla 8 hat kurulabilir.','You can run at most 8 lines.'):t('Aynı iskele bir hatta iki kez olamaz.','A pier can appear only once per line.')}</div>`;return h}
+function pIs(){let h=`<h2>${t('İşler','Jobs')}</h2>`;const act=S.boats.filter(b=>b.job);h+=`<p class="mut">${t('Teklifi kabul et, sonra '+String(D().grace/3600).replace('.',',')+' saat içinde bir tekne ata ya da satın al. Hattaki tekneler de gidebilir, iş bitince hattına döner. Süre dolarsa ödülün dörtte biri ceza ve 4 itibar kaybı.','Accept an offer, then assign or buy a boat within '+(D().grace/3600)+' hours. Line boats can go too and return to their line afterwards. Miss the deadline and you pay a quarter of the reward and lose 4 reputation.')}</p>`;
+  if(act.length){h+=`<h3>${t('Süren işler','Running jobs')}</h3><ul>`;for(const b of act)h+=`<li><div class="rw"><span><span class="tag">${L2(JT[b.job.type].n)}</span><b>${L2(b.job.tt)}</b></span><span class="pos">${tl(b.job.reward)}</span></div><div class="mut">${b.name} · ${S.t>b.job.due?t('gecikti','late'):t('kalan süre ','time left ')+dur(b.job.due-S.t)}</div></li>`;h+='</ul>'}
+  if(S.contracts.length){h+=`<h3>${t('Kabul edilen sözleşmeler','Accepted contracts')} <small>${t('süre dolmadan tekne ata','assign a boat before time runs out')}</small></h3><ul>`;
+    for(const j of S.contracts){const left=j.startBy-S.t;h+=`<li><div class="rw"><span><span class="tag hi">${L2(JT[j.type].n)}</span><b>${L2(j.tt)}</b></span><span class="pos">${tl(j.reward)}</span></div>
+      <div class="rw"><span class="${left<1800?'negt':'mut'}">${t('Atama için kalan ','Left to assign ')}${dur(left)} · ${t('ceza ','penalty ')}${tl(penalty(j))}</span><button class="btn pri" data-act="pick" data-j="${j.id}" id="pj${j.id}">${t('Tekne ata','Assign boat')}</button></div></li>`}h+='</ul>'}
+  h+=`<h3>${t('Bekleyen teklifler','Open offers')} <small>${t('kabul edersen 1,5 saat içinde tekne atamalısın','after accepting you have 1.5 h to assign a boat')}</small></h3>`;
+  if(!S.jobs.length)h+=`<p class="mut">${t('Şu an teklif yok. Turlar gündüz, gün batımı turları akşamüstü çıkar.','No offers right now. Tours appear by day, sunset tours late afternoon.')}</p>`;
+  h+='<ul>';for(const j of S.jobs){const el=S.boats.filter(b=>free(b)&&fits(j,b)),rt=[j.from,...j.via,j.to].map(p=>PIERS[p].name).join(' → ');
+    h+=`<li><div class="rw"><span><span class="tag ${JT[j.type].cat==='tur'?'hi':''}">${L2(JT[j.type].n)}</span><b>${L2(j.tt)}</b></span><span class="pos">${tl(j.reward)}</span></div><div class="mut">${rt} · ${j.km.toLocaleString(loc(),{maximumFractionDigits:1})} km · ${t('süre ','time ')}${dur(j.dur)} · ${t('teklif ','offer expires in ')}${dur(j.exp-S.t)}${t(' sonra düşer','')}</div><div class="btns">`;
+    h+=`<button class="btn pri" data-act="acc" data-j="${j.id}" id="acc${j.id}">${t('Kabul et','Accept')}</button><span class="mut">${el.length?el.length+t(' uygun tekne hazır',' suitable boats ready'):t('Uygun boş tekne yok; kabul edersen alman gerekir','No free suitable boat; you would need to buy one')} · ${t('gereken: ','needs: ')}${j.need.map(k=>L2(CLS[k].n)).join(' / ')}</span>`;h+='</div></li>'}
+  return h+'</ul>'}
+function pFin(){const inc=S.today.inc,exp=S.today.exp,upk=S.boats.reduce((a,b)=>a+CLS[b.cls].upk*(1+Math.min(.3,b.age*.004)),0),sal=S.boats.reduce((a,b)=>a+CAPT[b.capt||0].sal,0);let h=`<h2>${t('Finans','Finance')}</h2><div class="tbl">`;
+  for(const k of['hat','tur','yuk','ozel','diger'])if(inc[k])h+=`<span>${L2(CAT[k])}</span><span class="pos">${tl(inc[k])}</span>`;
+  for(const k of['yakit','bakim','onarim','egitim','faiz'])if(exp[k])h+=`<span>${L2(CAT[k])}</span><span class="negt">${tl(-exp[k])}</span>`;
+  h+=`<span><b>${t('Bugünkü net','Net today')}</b></span><span><b>${tl(sum(inc)-sum(exp))}</b></span></div><h3>${t('Son günler','Recent days')} <small>${t('yeşil kâr, kırmızı zarar','green profit, red loss')}</small></h3>`;
+  if(S.hist.length){const mx=Math.max(1,...S.hist.map(d=>Math.abs(d.inc-d.exp)));h+=`<div class="bars">${S.hist.map(d=>`<i class="${d.inc<d.exp?'l':''}" style="height:${Math.max(4,Math.abs(d.inc-d.exp)/mx*100)}%" title="${tl(d.inc-d.exp)}"></i>`).join('')}</div>`}else h+=`<p class="mut">${t('İlk gün kapanınca burada görünür.','Appears after the first day closes.')}</p>`;
+  h+=`<h3>${t('Sabit giderler','Fixed costs')} <small>${t('her gece 00:00’da','every night at 00:00')}</small></h3><div class="tbl"><span>${t('Tekne bakımı (yaşla artar)','Boat upkeep (rises with age)')}</span><span>${tl(upk)}</span><span>${t('Kaptan maaşları','Captain wages')}</span><span>${tl(sal)}</span><span>${t('Kredi faizi (günlük %0,4)','Loan interest (0.4% a day)')}</span><span>${tl(S.loan*.004)}</span><span>${t('Yakıt fiyat endeksi','Fuel price index')}</span><span>x${S.fuelIdx.toFixed(2)}</span><span>${t('Dünkü pazar payın','Yesterday’s market share')}</span><span>${S.share==null?'–':'%'+Math.round(S.share*100)}</span></div>
+  <h3>${t('Kredi','Loan')} <small>${t('borç ','debt ')}${tl(S.loan)} · ${t('üst sınır ₺2.000.000','limit ₺2,000,000')}</small></h3><div class="btns"><button class="btn" data-act="loan" data-d="250000" id="loanP" ${S.loan>=2e6?'disabled':''}>${t('₺250.000 kredi çek','Borrow ₺250,000')}</button><button class="btn" data-act="loan" data-d="-250000" id="loanM" ${S.loan<=0||S.cash<250000?'disabled':''}>${t('₺250.000 öde','Repay ₺250,000')}</button></div>`;return h}
+const MEDAL=on=>`<svg viewBox="0 0 26 26" aria-hidden="true"><path d="M8 1h4l2 8H10zM14 1h4l-2 8h-4z" fill="${on?'#c8372d':'#94a3b8'}"></path><circle cx="13" cy="16" r="8" fill="${on?'#f2b705':'#cbd5e1'}" stroke="${on?'#7c5a00':'#64748b'}" stroke-width="1.4"></circle><path d="M13 11.5l1.4 2.9 3.1.4-2.3 2.2.6 3.1-2.8-1.5-2.8 1.5.6-3.1-2.3-2.2 3.1-.4z" fill="${on?'#fff7d1':'#e2e8f0'}"></path></svg>`;
+function pKar(){let h=`<h2>${t('Kariyer','Career')}</h2><ul>`;GOALS.forEach((g,i)=>{h+=`<li><div class="rw"><span>${i<S.goal?`<span class="done">${t('Tamam','Done')}</span> · `:''}<b>${L2(g.t)}</b></span><span class="mut">${g.r?t('ödül ','reward ')+tl(g.r):t('final','final')}</span></div>${i===S.goal?`<div class="mut">${g.p()}</div>`:''}</li>`});
+  const got=ACHS.filter(a=>ACHGOT[a.id]).length;
+  h+=`</ul><h3>${t('Rozetler','Badges')} <small>${got}/${ACHS.length} · ${t('yeni oyunda da kalır','kept across games')}</small></h3><div class="ach-grid">${ACHS.map(a=>{const on=!!ACHGOT[a.id],v=Math.min(a.v(),a.g);
+    return `<div class="ach${on?' on':''}">${MEDAL(on)}<div style="min-width:0"><b>${L2(a.n)}</b><span>${L2(a.d)}</span>${on?`<span class="ok">${t('Kazanıldı','Earned')}</span>`:`<i><em style="width:${Math.round(v/a.g*100)}%"></em></i>`}</div></div>`}).join('')}</div>
+  <div class="help"><p>${t('<b>Hatlar:</b> durakları seç, tekne ata; tekneler kendiliğinden gidip gelir. Rakip aynı güzergâha girerse bilet fiyatın ve tekne sayın yolcuyu belirler.','<b>Lines:</b> pick stops and assign boats; they run on their own. If the rival moves onto a route, your fare and boat count decide who gets the riders.')}</p>
+  <p>${t('<b>Bakım ve kaptanlar:</b> tekneler yıprandıkça yavaşlar; tersanede bakım yaptır, kaptanlarını eğit.','<b>Upkeep and captains:</b> boats slow down as they wear; service them at a shipyard and train your captains.')}</p>
+  <p>${t('<b>Dikkat:</b> devlet protokolünde Dolmabahçe önü kapanır. Kasa iki gece üst üste ekside kapanırsa iflas edersin.','<b>Watch out:</b> during a state protocol the Dolmabahçe area closes. Two nights in the red and you go bankrupt.')}</p></div>
+  <h3>${t('Olay günlüğü','Event log')}</h3><ul>${S.log.map(l=>`<li><span class="mut">${t((Math.floor(l.t/DAY)+1)+'. gün ','Day '+(Math.floor(l.t/DAY)+1)+' ')+clock(l.t)}</span>${L2(l.m)}</li>`).join('')||`<li class="mut">${t('Henüz olay yok.','Nothing yet.')}</li>`}</ul>
+  <div class="btns"><button class="btn bad" data-act="reset" id="btnReset">${arm==='reset'?t('Emin misin? Tüm ilerleme silinir','Sure? All progress will be lost'):t('Oyunu sıfırla','Reset game')}</button></div>`;return h}
+// Hızlı teklif şeridi: en yeni teklifi haritanın altında gösterir, en yakın uygun tekneyi tek dokunuşla gönderir
+let offerHide=0;
+const bestBoat=j=>{let best=null,bd=1e9;for(const b of S.boats){if(!free(b)||!fits(j,b))continue;const d=pathBetween(b.at,j.from).len+(b.lineId?1500:0);if(d<bd){bd=d;best=b}}return best};
+const buyFor=j=>j.need.filter(k=>j.pax?CLS[k].cap>=j.pax:CLS[k].cargo>=j.tons).sort((a,b)=>CLS[a].price-CLS[b].price)[0];
+function renderOffer(){const el=$('offer'),j=[...S.jobs].reverse().find(x=>x.id>offerHide);if(!j||tab==='is'){el.hidden=true;return}const b=bestBoat(j),rt=[j.from,...j.via,j.to].map(p=>PIERS[p].name).join(' → ');
+  el.innerHTML=`<div style="min-width:0"><span class="tag ${JT[j.type].cat==='tur'?'hi':''}">${L2(JT[j.type].n)}</span><b>${L2(j.tt)}</b> <span class="pos">${tl(j.reward)}</span><p>${rt} · ${t('teklif ','expires in ')}${dur(j.exp-S.t)}${t(' sonra düşer','')}</p></div>
+  <div class="btns" style="flex:none"><button class="btn pri" data-q="acc" data-j="${j.id}" id="qAcc">${t('Kabul et','Accept')}</button><button class="btn" data-q="x" data-j="${j.id}" id="qX" aria-label="${t('Teklifi gizle','Hide offer')}">×</button></div>`;el.hidden=false}
+$('offer').addEventListener('click',e=>{const b=e.target.closest('button[data-q]');if(!b)return;const j=S.jobs.find(x=>x.id===+b.dataset.j);
+  if(b.dataset.q==='acc'){if(j)acceptContract(j)}
+  else offerHide=+b.dataset.j;renderOffer();render();save()});
+function buySend(j,k){if(S.cash<CLS[k].price)return;const n=S.boats.length;buy(k);const bt=S.boats[n];if(bt){if(bt.lineId)assignLine(bt,0);if(fits(j,bt)){accept(j,bt);toast(bt.name+t(' yola çıktı: ',' set off: ')+L2(j.tt))}}}
+/* ---------- Sözleşmeler: kabul et, tekne ata ya da süresinde al; atanmazsa ceza ---------- */
+const GRACE0=5400; // orta ayarda kabulden sonra 1,5 oyun saati
+const GRACE=()=>D().grace;
+const penalty=j=>Math.max(1000,Math.round(j.reward*.25*D().pen/10)*10);
+let pickId=0;
+function acceptContract(j){if(S.contracts.length>=4){toast(t('En fazla 4 bekleyen sözleşmen olabilir','You can hold at most 4 pending contracts'),true);return}
+  S.jobs=S.jobs.filter(x=>x.id!==j.id);j.startBy=S.t+GRACE();S.contracts.push(j);openPick(j.id)}
+function dispatch(j,b){S.contracts=S.contracts.filter(x=>x.id!==j.id);accept(j,b);toast(b.name+t(' yola çıktı: ',' set off: ')+L2(j.tt));if(pickId===j.id)closePick()}
+function failContract(j,why){S.contracts=S.contracts.filter(x=>x.id!==j.id);const p=penalty(j);spend('onarim',p);S.rep=Math.max(0,S.rep-4);if(pickId===j.id)closePick();
+  log((why?'Sözleşme iptal edildi: ':'Sözleşme tamamlanmadı: ')+j.tt[0]+' · ceza '+tl(-p)+', itibar −4',(why?'Contract cancelled: ':'Contract not fulfilled: ')+j.tt[1]+' · penalty '+tl(-p)+', reputation −4',true)}
+function contractTick(){for(const j of [...S.contracts])if(S.t>j.startBy)failContract(j)}
+function openPick(id){pickId=id;renderPick();$('pick').hidden=false}
+function closePick(){pickId=0;$('pick').hidden=true}
+function renderPick(){const j=S.contracts.find(x=>x.id===pickId);if(!j){closePick();return}
+  const el=S.boats.filter(b=>free(b)&&fits(j,b)).sort((a,b)=>(a.lineId?1:0)-(b.lineId?1:0)||pathBetween(a.at,j.from).len-pathBetween(b.at,j.from).len),
+    buys=j.need.filter(k=>j.pax?CLS[k].cap>=j.pax:CLS[k].cargo>=j.tons).sort((a,b)=>CLS[a].price-CLS[b].price),rt=[j.from,...j.via,j.to].map(p=>PIERS[p].name).join(' → ');
+  let h=`<h2>${L2(j.tt)}</h2><p class="mut">${rt} · ${j.km.toLocaleString(loc(),{maximumFractionDigits:1})} km · ${t('ödül ','reward ')}<b class="pos">${tl(j.reward)}</b></p>
+  <p class="warn">${t('Tekne atamak için kalan süre: ','Time left to assign a boat: ')}<b>${dur(j.startBy-S.t)}</b> · ${t('atanmazsa ceza ','penalty if not assigned ')}${tl(penalty(j))}</p>`;
+  if(el.length){h+=`<h3>${t('Uygun tekneler','Suitable boats')}</h3><div class="pick-list">`;el.forEach((b,k)=>{const eta=pathBetween(b.at,j.from).len/SPD(CLS[b.cls].kn);
+    h+=`<button class="btn ${k?'':'pri'}" data-p="as" data-b="${b.id}" id="pk${b.id}"><b>${b.name}</b> · ${L2(CLS[b.cls].n)} · ${t('varış ','arrives in ')}${dur(eta)}${b.lineId?t(' · hattan çekilir',' · leaves its line'):''} · %${Math.round(b.cond)}</button>`});h+='</div>'}
+  else h+=`<p class="mut">${t('Şu an boşta uygun teknen yok. Bir tekne al ya da hattaki uygun teknenin dönmesini bekle.','No suitable boat is free right now. Buy one, or wait for one to free up.')}</p>`;
+  h+=`<h3>${t('Tekne al ve ata','Buy and assign')}</h3><div class="pick-list">${buys.map(k=>`<button class="btn" data-p="buy" data-k="${k}" id="pb_${k}" ${S.cash<CLS[k].price?'disabled':''}>${L2(CLS[k].n)} · ${tl(CLS[k].price)}${S.cash<CLS[k].price?t(' · para yetmiyor',' · not enough cash'):''}</button>`).join('')}</div>
+  <div class="btns"><button class="btn" data-p="later" id="pLater">${t('Sonra ata','Assign later')}</button><button class="btn bad" data-p="cancel" id="pCancel">${t('Sözleşmeyi iptal et · ','Cancel contract · ')}${tl(penalty(j))}</button></div>`;
+  $('pickBox').innerHTML=h}
+$('pick').addEventListener('click',e=>{if(e.target===$('pick')){closePick();return}const b=e.target.closest('button[data-p]');if(!b||b.disabled)return;const j=S.contracts.find(x=>x.id===pickId);if(!j)return closePick();
+  const a=b.dataset.p;if(a==='as'){const bt=S.boats.find(x=>x.id===+b.dataset.b);if(bt&&free(bt)&&fits(j,bt))dispatch(j,bt)}
+  else if(a==='buy'){const k=b.dataset.k;if(S.cash>=CLS[k].price){const n=S.boats.length;buy(k);const bt=S.boats[n];if(bt){if(bt.lineId)assignLine(bt,0);dispatch(j,bt)}}}
+  else if(a==='later')closePick();else if(a==='cancel')failContract(j,1);
+  render();hud(true);save()});
+function render(){renderOffer();if(pickId)renderPick();const sh=$('sheet');document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===tab));
+  if(!tab){sh.hidden=true;return}sh.hidden=false;const y=sh.scrollTop;sh.innerHTML={filo:pFilo,hat:pHat,is:pIs,fin:pFin,kar:pKar}[tab]();sh.scrollTop=y}
+function renderInfo(){const el=$('info');if(!sel){el.hidden=true;return}let h='';
+  if(sel.k==='pier'){const p=PIERS[sel.id],ls=S.lines.filter(l=>l.stops.includes(sel.id));let w=0;ls.forEach(l=>w+=sum(l.wait[l.stops.indexOf(sel.id)]));
+    h=`<div><b>${p.name}</b> <span class="mut">${L2(p.side)}</span><p>${closed(sel.id)?t('Protokol nedeniyle kapalı · ','Closed for the protocol · '):''}${ls.length?ls.length+t(' hat · ',' lines · ')+Math.floor(w)+t(' kişi bekliyor',' waiting'):t('Bu iskeleye uğrayan hat yok','No line stops here')}${p.tour?t(' · turistik',' · tourist spot'):''}${p.cargo?t(' · yük',' · cargo'):''}${p.yard?t(' · tersane',' · shipyard'):''}</p></div>`}
+  else{const b=S.boats.find(x=>x.id===sel.id);if(!b){sel=null;el.hidden=true;return}h=`<div><b>${b.name}</b> <span class="mut">${L2(CLS[b.cls].n)} · %${Math.round(b.cond)}</span><p>${status(b)}</p></div>`}
+  el.innerHTML=h+`<button class="btn" id="infoX">${t('Kapat','Close')}</button>`;el.hidden=false}
+$('info').addEventListener('click',e=>{if(e.target.closest('#infoX')){sel=null;renderInfo()}});
+$('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=tab===b.dataset.t?'':b.dataset.t;arm='';render()});
+$('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||S.dead)return;speed=+b.dataset.s;hud(true)});
+$('lang').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;LANG=b.dataset.l;try{localStorage.setItem('bogaz-filosu-lang',LANG)}catch(_){}applyLang()});
+$('sheet').addEventListener('change',e=>{const s=e.target.closest('select');if(!s)return;
+  if(s.dataset.sel==='line'){const b=S.boats.find(x=>x.id===+s.dataset.id);if(b)assignLine(b,+s.value)}else newLine[+s.dataset.i]=+s.value;render();save()});
+$('sheet').addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b||b.disabled)return;const a=b.dataset.act,id=+b.dataset.id,bt=S.boats.find(x=>x.id===id);let keep='';
+  if(a==='buy')buy(b.dataset.k);
+  if(a==='sell'){if(arm!=='s'+id)keep='s'+id;else if(S.boats.length<=1)toast(t('Son tekneni satamazsın','You can’t sell your last boat'),true);else if(bt){const v=CLS[bt.cls].price*.6*(.5+bt.cond/200);if(bt.job)S.rep=Math.max(0,S.rep-3);S.cash+=v;S.boats=S.boats.filter(x=>x!==bt);log(bt.name+' satıldı · +'+tl(v),bt.name+' sold · +'+tl(v))}}
+  if(a==='auto'&&bt)bt.auto=!bt.auto;
+  if(a==='automaint')S.autoMaint=!S.autoMaint;
+  if(a==='maint'&&bt)sendMaint(bt);
+  if(a==='capt'&&bt){const nx=CAPT[(bt.capt||0)+1];if(nx&&S.cash>=nx.cost){spend('egitim',nx.cost);bt.capt=(bt.capt||0)+1;log(bt.name+' kaptanı artık '+nx.n[0],bt.name+'’s captain is now '+nx.n[1])}}
+  if(a==='kind')newKind=b.dataset.k;
+  if(a==='surge'){const s=S.surges.find(x=>x.id===id);if(s){newLine=[s.a,s.b];newKind=s.tour?'tur':'hat';toast(t('Güzergâh seçildi, aşağıdan “Hattı kur”a bas','Route picked, press “Open line” below'))}}
+  if(a==='addstop'&&newLine.length<5)newLine.push(PIERS.findIndex((_,i)=>!newLine.includes(i)));
+  if(a==='rmstop'&&newLine.length>2)newLine.pop();
+  if(a==='mkline'){const l={id:S.nextId++,kind:newKind,stu:false,stops:newLine.slice(),price:1,color:LCOL.find(c=>!S.lines.some(x=>x.color===c))||LCOL[0],pax:0,inc:0};initWait(l);S.lines.push(l);
+    const fb=S.boats.find(x=>idle(x)&&lineOk(x,l)),nmL=lineName(l);
+    if(fb){assignLine(fb,l.id);log(nmL+' hattı kuruldu, '+fb.name+' atandı',nmL+' line opened, '+fb.name+' assigned')}else log(nmL+' hattı kuruldu. Filo sekmesinden '+(l.kind==='tur'?'gezi teknesi ya da yat':'tekne')+' ata.',nmL+' line opened. Assign a '+(l.kind==='tur'?'tour boat or yacht':'boat')+' in the Fleet tab.')}
+  if(a==='dell'){if(arm!=='l'+id)keep='l'+id;else{S.boats.forEach(x=>{if(x.lineId===id)assignLine(x,0)});S.lines=S.lines.filter(l=>l.id!==id)}}
+  if(a==='price'){const l=S.lines.find(x=>x.id===id);if(l)l.price=clamp(Math.round((l.price+ +b.dataset.d)*10)/10,.6,1.6)}
+  if(a==='stu'){const l=S.lines.find(x=>x.id===id);if(l)l.stu=!l.stu}
+  if(a==='acc'){const j=S.jobs.find(x=>x.id===+b.dataset.j);if(j)acceptContract(j)}
+  if(a==='pick'){openPick(+b.dataset.j)}
+  if(a==='take'){const j=S.jobs.find(x=>x.id===+b.dataset.j);if(j&&bt&&free(bt)&&fits(j,bt)){accept(j,bt);toast(bt.name+t(' yola çıktı: ',' set off: ')+L2(j.tt))}}
+  if(a==='loan'){const d=+b.dataset.d;if(d>0&&S.loan<2e6){S.loan+=d;S.cash+=d}else if(d<0&&S.loan>0&&S.cash>=-d){S.loan+=d;S.cash+=d}}
+  if(a==='reset'){if(arm!=='reset')keep='reset';else restart()}
+  arm=keep;checkGoals();checkAch();render();hud(true);save()});
+function restart(df){S=FRESH(df||S.diff);setZone(false);tankers=[];cruises=[{st:'berth',tm:rnd(3600,9000),pd:0,slot:0}];speed=1;tab='hat';sel=null;newLine=[P('Karaköy'),P('Kadıköy')];newKind='hat';$('modal').hidden=true;render();renderInfo();hud(true);save()}
+$('mBtn').addEventListener('click',()=>{$('modal').hidden=true;openStart()});
+let hudK='';
+function hud(force){const inc=opInc(S.today.inc),k=[S.contracts.length,S.surges.length,(S.jobs[S.jobs.length-1]||{}).id,Math.round(S.cash/100),Math.floor(S.t/60),Math.round(S.rep),Math.round(inc/100),speed,S.goal,S.jobs.length,S.events.length,LANG].join();if(k===hudK&&!force)return;hudK=k;
+  $('vCash').textContent=tlc(S.cash);$('vCash').classList.toggle('neg',S.cash<0);$('vDay').textContent=t((Math.floor(S.t/DAY)+1)+'. gün','Day '+(Math.floor(S.t/DAY)+1));$('vClock').textContent=clock(S.t);$('vRep').textContent=Math.round(S.rep);$('vToday').textContent=tlc(inc);
+  document.querySelectorAll('#speed button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.s===speed));document.querySelectorAll('#lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LANG));$('jobN').textContent=(S.jobs.length+S.contracts.length)||'';
+  const g=GOALS[S.goal];$('goal').innerHTML=g?`<b>${t('Hedef','Goal')} ${S.goal+1}/${GOALS.length}:</b> ${L2(g.t)} <span>· ${g.p()}</span>`:`<b>${t('Tüm hedefler tamamlandı.','All goals complete.')}</b> ${t('Boğaz’ın patronusun.','You run the Bosphorus.')}`;
+  const bn=$('banner');if(S.events.length){bn.hidden=false;bn.textContent=S.events.map(e=>L2(EV.find(x=>x.k===e.k).n)+' ('+dur(e.end-S.t)+')').join(' · ')}else bn.hidden=true;
+  const as=S.surges.filter(s=>S.t>=s.start&&S.t<s.end);if(as.length){bn.hidden=false;bn.textContent=(S.events.length?bn.textContent+' · ':'')+as.map(s=>L2(SURGES.find(x=>x.k===s.k).n)+': '+PIERS[s.a].name+' – '+PIERS[s.b].name+' ('+dur(s.end-S.t)+')').join(' · ')}}
+function applyLang(){if(!$('start').hidden)renderStart();document.documentElement.lang=LANG;document.querySelectorAll('[data-tr]').forEach(el=>{el.textContent=LANG==='en'?el.dataset.en:el.dataset.tr});
+  document.querySelectorAll('[data-tra]').forEach(el=>el.setAttribute('aria-label',LANG==='en'?el.dataset.ena:el.dataset.tra));hud(true);render();renderInfo()}
+
+/* ---------- Kamera ve dokunma ---------- */
+let C={},cw=0,ch=0,dpr=1;const cam={x:X(29.0),y:Z(41.024),z:.3},ptr=new Map();let tap=null,pinch=0;
+function theme(){const cs=getComputedStyle(document.documentElement);for(const k of['water','deep','shallow','quay','land','onwater','ink','muted','panel','accent','crit'])C[k]=cs.getPropertyValue('--'+k).trim();
+  C.dark=matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!=='light'||document.documentElement.dataset.theme==='dark'}
+function resize(){cw=cv.clientWidth;ch=cv.clientHeight;dpr=Math.min(devicePixelRatio||1,2);cv.width=cw*dpr;cv.height=ch*dpr;clampCam()}
+function clampCam(){const mn=Math.min(cw/WX,ch/WZ)*.9;cam.z=clamp(cam.z,mn,1.6);cam.x=clamp(cam.x,0,WX);cam.y=clamp(cam.y,0,WZ)}
+const toW=(sx,sy)=>[(sx-cw/2)/cam.z+cam.x,(sy-ch/2)/cam.z+cam.y];
+function zoomAt(f,sx,sy){const w=toW(sx,sy);cam.z*=f;clampCam();cam.x=w[0]-(sx-cw/2)/cam.z;cam.y=w[1]-(sy-ch/2)/cam.z;clampCam()}
+cv.addEventListener('pointerdown',e=>{ptr.set(e.pointerId,[e.clientX,e.clientY]);try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  if(ptr.size===1)tap={x:e.clientX,y:e.clientY,t:performance.now(),m:0};else{tap=null;const p=[...ptr.values()];pinch=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1])}});
+cv.addEventListener('pointermove',e=>{const o=ptr.get(e.pointerId);if(!o)return;const dx=e.clientX-o[0],dy=e.clientY-o[1];ptr.set(e.pointerId,[e.clientX,e.clientY]);
+  if(ptr.size===1){cam.x-=dx/cam.z;cam.y-=dy/cam.z;clampCam();if(tap)tap.m+=Math.abs(dx)+Math.abs(dy)}
+  else if(ptr.size===2){const p=[...ptr.values()],d=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]);if(pinch>0)zoomAt(d/pinch,(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2);pinch=d}});
+const up=e=>{ptr.delete(e.pointerId);if(tap&&tap.m<10&&performance.now()-tap.t<500){const w=toW(tap.x,tap.y),r=22/cam.z;let best=null,bd=r;
+    for(const b of S.boats){const d=Math.hypot((b.x||NODES[b.at][0])-w[0],(b.z||NODES[b.at][1])-w[1]);if(d<bd){bd=d;best={k:'boat',id:b.id}}}
+    if(!best)PIERS.forEach((p,i)=>{const d=Math.hypot(p.wx-w[0],p.wz-w[1]);if(d<bd){bd=d;best={k:'pier',id:i}}});sel=best;renderInfo()}tap=null};
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',e=>{ptr.delete(e.pointerId);tap=null});
+cv.addEventListener('wheel',e=>{e.preventDefault();zoomAt(e.deltaY<0?1.15:1/1.15,e.clientX,e.clientY)},{passive:false});
+$('zin').addEventListener('click',()=>zoomAt(1.35,cw/2,ch/2));$('zout').addEventListener('click',()=>zoomAt(1/1.35,cw/2,ch/2));
+
+/* ---------- Çizim ---------- */
+const FD='"Bricolage Grotesque","Segoe UI",system-ui,sans-serif';
+const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let BUOYS=null,anim=0;
+function hull(x,y,ang,len,fill,stroke,wd){ctx.save();ctx.translate(x,y);ctx.rotate(ang);const w=len*(wd||.36);ctx.beginPath();ctx.moveTo(len*.55,0);ctx.quadraticCurveTo(len*.2,-w,-len*.4,-w*.9);ctx.lineTo(-len*.5,-w*.6);ctx.lineTo(-len*.5,w*.6);ctx.lineTo(-len*.4,w*.9);ctx.quadraticCurveTo(len*.2,w,len*.55,0);ctx.closePath();
+  ctx.fillStyle=fill;ctx.fill();ctx.lineWidth=1.3;ctx.strokeStyle=stroke;ctx.stroke();ctx.restore()}
+function label(txt,x,y,px,col,back,w,align){ctx.font=`${w||700} ${px}px ${FD}`;ctx.textAlign=align||'center';ctx.lineWidth=3.2;ctx.lineJoin='round';ctx.strokeStyle=back;ctx.strokeText(txt,x,y);ctx.fillStyle=col;ctx.fillText(txt,x,y)}
+function spaced(txt,x,y,px,col,al){ctx.save();ctx.globalAlpha=al;ctx.fillStyle=col;ctx.font=`700 ${px}px ${FD}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(txt.split('').join(' '),x,y);ctx.restore()}
+function mark(m,x,y,s,night){const fill=night?'#e2d4b7':'#fbfcf7';ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle=fill;ctx.strokeStyle='#15303a';ctx.lineWidth=1.2;
+  if(m.k==='mosque'){ctx.beginPath();ctx.arc(0,0,7.5,Math.PI,0);ctx.lineTo(7.5,3);ctx.lineTo(-7.5,3);ctx.closePath();ctx.fill();ctx.stroke();for(const q of[-11,11]){ctx.beginPath();ctx.moveTo(q,3);ctx.lineTo(q,-13);ctx.stroke()}}
+  else if(m.k==='tower'){ctx.beginPath();ctx.rect(-4.5,-8,9,12);ctx.fill();ctx.stroke();ctx.fillStyle='#c2412d';ctx.beginPath();ctx.moveTo(-6,-8);ctx.lineTo(0,-17);ctx.lineTo(6,-8);ctx.closePath();ctx.fill();ctx.stroke()}
+  else if(m.k==='palace'){ctx.beginPath();ctx.rect(-16,-4,32,8);ctx.fill();ctx.stroke();ctx.beginPath();ctx.rect(-5,-8,10,12);ctx.fill();ctx.stroke();ctx.fillStyle='#94a3b8';ctx.beginPath();ctx.arc(0,-8,4,Math.PI,0);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#15303a';for(const q of[-12,-8,8,12])ctx.fillRect(q-.8,-1.5,1.6,3)}
+  else if(m.k==='station'){ctx.beginPath();ctx.rect(-12,-5,24,10);ctx.fill();ctx.stroke();for(const q of[-12,7]){ctx.fillStyle=fill;ctx.beginPath();ctx.rect(q,-11,5,7);ctx.fill();ctx.stroke();ctx.fillStyle='#64748b';ctx.beginPath();ctx.moveTo(q-1,-11);ctx.lineTo(q+2.5,-17);ctx.lineTo(q+6,-11);ctx.closePath();ctx.fill();ctx.stroke()}}
+  else if(m.k==='castle'){ctx.beginPath();ctx.rect(-10,-6,20,10);ctx.fill();ctx.stroke();for(let q=-10;q<10;q+=5){ctx.beginPath();ctx.rect(q,-9,2.6,3);ctx.fill();ctx.stroke()}
+    for(const q of[-12,12]){ctx.beginPath();ctx.arc(q,-3,4.5,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle='#c2412d';ctx.beginPath();ctx.moveTo(q-5,-6);ctx.lineTo(q,-13);ctx.lineTo(q+5,-6);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle=fill}
+    ctx.fillStyle='#15303a';ctx.beginPath();ctx.arc(0,4,2.4,Math.PI,0);ctx.fill()}
+  else if(m.k==='tram'){ctx.strokeStyle='#15303a';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-18,5.5);ctx.lineTo(18,5.5);ctx.moveTo(-18,7.5);ctx.lineTo(18,7.5);ctx.stroke();ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(0,-7);ctx.lineTo(4,-13);ctx.stroke();ctx.fillStyle='#b91c1c';ctx.beginPath();ctx.roundRect?ctx.roundRect(-11,-7,22,12,2.5):ctx.rect(-11,-7,22,12);ctx.fill();ctx.stroke();
+    ctx.fillStyle=night?'#ffe680':'#fbfcf7';for(let q=-9;q<9;q+=4.6)ctx.fillRect(q,-5,3,4);ctx.fillStyle='#15303a';for(const q of[-6,6]){ctx.beginPath();ctx.arc(q,5.5,1.8,0,TAU);ctx.fill()}}
+  else if(m.k==='port'){ctx.rotate(m.a);ctx.beginPath();ctx.rect(-34,-5,68,10);ctx.fill();ctx.stroke();ctx.fillStyle='#00a8b5';for(let q=-28;q<30;q+=11)ctx.fillRect(q,-3,6,6)}
+  else if(m.k==='light'){ctx.beginPath();ctx.moveTo(-4,4);ctx.lineTo(-2.5,-12);ctx.lineTo(2.5,-12);ctx.lineTo(4,4);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#c2412d';ctx.fillRect(-2.5,-7,5,3);ctx.fillStyle=night?'#ffe680':'#f2b705';ctx.beginPath();ctx.arc(0,-14,2.6,0,TAU);ctx.fill()}
+  else{ctx.beginPath();ctx.moveTo(0,-24);ctx.lineTo(4,4);ctx.lineTo(-4,4);ctx.closePath();ctx.fill();ctx.stroke()}
+  ctx.restore()}
+const HCOL=[['#efe5d2','#cf9a80'],['#f4ecdd','#c48b72'],['#e8dcc6','#d3a184'],['#e2d6c0','#bf8a70'],['#f1e7d6','#c9967b']],HCOLD=[['#3a4a45','#5b3b33'],['#34433f','#4f362f'],['#3f4d48','#5e4036'],['#38463f','#523a31'],['#40504a','#5a3d33']];
+function draw(){anim+=still?0:.016;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=C.land;ctx.fillRect(0,0,cw,ch);const z=cam.z,ox=cw/2-cam.x*z,oy=ch/2-cam.y*z;
+  ctx.setTransform(dpr*z,0,0,dpr*z,dpr*ox,dpr*oy);const v={x0:cam.x-cw/2/z,x1:cam.x+cw/2/z,y0:cam.y-ch/2/z,y1:cam.y+ch/2/z},vis=(x,y,m)=>x>v.x0-m&&x<v.x1+m&&y>v.y0-m&&y<v.y1+m;
+  // korular ve evler
+  ctx.fillStyle=C.dark?'rgba(60,110,70,.25)':'rgba(110,160,95,.22)';for(const p of PARKS)if(vis(p[0],p[1],p[2])){ctx.beginPath();ctx.arc(p[0],p[1],p[2],0,TAU);ctx.fill()}
+  if(z>.32){const hc=C.dark?HCOLD:HCOL;ctx.globalAlpha=clamp((z-.32)/.15,0,1);for(const hs of HOUSES){if(!vis(hs[0],hs[1],12))continue;const c=hc[hs[4]];ctx.fillStyle=c[0];ctx.fillRect(hs[0],hs[1],hs[2],hs[3]);ctx.fillStyle=c[1];ctx.fillRect(hs[0]+1,hs[1]+1,hs[2]-2,hs[3]*.42)}ctx.globalAlpha=1}
+  // kıyı, deniz
+  ctx.fillStyle=C.quay;trace(ctx,10,v);ctx.fill();ctx.fillStyle=C.shallow;trace(ctx,4,v);ctx.fill();ctx.fillStyle=C.water;trace(ctx,0,v);ctx.fill();ctx.fillStyle=C.deep;trace(ctx,-70,v);ctx.fill();
+  ctx.fillStyle='rgba(0,20,40,.12)';trace(ctx,-130,v);ctx.fill();
+  // açık deniz: Karadeniz ve Marmara'da derinleşen su
+  for(const[y0,y1,up]of[[Z(41.26),Z(41.24),1],[Z(40.975),Z(40.948),0]]){const g=ctx.createLinearGradient(0,up?y1:y0,0,up?y0-1500:y1+1500);g.addColorStop(0,'rgba(0,25,45,0)');g.addColorStop(1,'rgba(0,25,45,.35)');ctx.fillStyle=g;
+    ctx.fillRect(-2000,up?y0-3000:y0,WX+4000,up?(y1-y0+3000):3000)}
+  spaced(t('KARADENİZ','BLACK SEA'),X(29.03),Z(41.256),Math.max(34,15/z),C.onwater,.4);spaced(t('MARMARA DENİZİ','SEA OF MARMARA'),X(28.965),Z(40.958),Math.max(34,15/z),C.onwater,.4);
+  spaced(t('BOĞAZİÇİ','BOSPHORUS'),X(29.06),Z(41.14),22,C.onwater,.28);spaced(t('HALİÇ','GOLDEN HORN'),X(28.958),Z(41.031),16,C.onwater,.3);
+  if(!BUOYS){BUOYS=[];const p=centerline().f;for(let d=300;d<p.len;d+=520){const q=posAt(p,d);for(const sd of[1,-1]){const x=q.x-Math.sin(q.ang)*62*sd,zz=q.z+Math.cos(q.ang)*62*sd;if(sdf(x,zz)<-20)BUOYS.push([x,zz,sd])}}}
+  BUOYS.forEach((b,i)=>{if(!vis(b[0],b[1],10))return;ctx.fillStyle=b[2]>0?'#ef4444':'#22c55e';ctx.beginPath();ctx.arc(b[0],b[1]+Math.sin(anim*1.6+i)*1.2,4,0,TAU);ctx.fill()});
+  // protokol bölgesi
+  if(S.zone){const Zn=S.zone,pul=1+Math.sin(anim*3)*.02;ctx.fillStyle='rgba(194,65,45,.16)';ctx.beginPath();ctx.arc(Zn.x,Zn.z,Zn.r*pul,0,TAU);ctx.fill();ctx.setLineDash([12,9]);ctx.strokeStyle='#c2412d';ctx.lineWidth=3/z;ctx.stroke();ctx.setLineDash([])}
+  // hatlar ve rakip hatları
+  ctx.lineJoin='round';ctx.lineCap='round';
+  ctx.setLineDash([10/z,8/z]);ctx.strokeStyle='rgba(120,130,140,.55)';ctx.lineWidth=2/z;for(const r of S.rival.lines){const p=pathBetween(r.stops[0],r.stops[1]).pts;ctx.beginPath();ctx.moveTo(p[0][0],p[0][1]);for(let k=1;k<p.length;k++)ctx.lineTo(p[k][0],p[k][1]);ctx.stroke()}ctx.setLineDash([]);
+  S.lines.forEach(l=>{ctx.strokeStyle=l.color;ctx.lineWidth=(l.kind==='tur'?2.6:3.2)/z;ctx.globalAlpha=.85;if(l.kind==='tur')ctx.setLineDash([3/z,6/z]);ctx.beginPath();
+    for(let i=0;i<l.stops.length-1;i++){const p=pathBetween(l.stops[i],l.stops[i+1]).pts;ctx.moveTo(p[0][0],p[0][1]);for(let k=1;k<p.length;k++)ctx.lineTo(p[k][0],p[k][1])}ctx.stroke();ctx.setLineDash([])});ctx.globalAlpha=1;
+  // gece ve gündüz
+  ctx.setTransform(dpr,0,0,dpr,0,0);const h=hour(),na=h<5?.5:h<7?.5*(7-h)/2:h<17.5?0:h<20.5?.5*(h-17.5)/3:.5,night=na>.25,sx=wx=>ox+wx*z,sy=wz=>oy+wz*z;
+  if(h>=17&&h<20){ctx.fillStyle='rgba(255,140,60,'+(.16*(1-Math.abs(h-18.5)/1.5))+')';ctx.fillRect(0,0,cw,ch)}
+  if(na>0){ctx.fillStyle='rgba(6,14,38,'+na+')';ctx.fillRect(0,0,cw,ch)}
+  if(night&&z>.3){ctx.fillStyle='rgba(255,214,120,'+(.7*na*2)+')';for(let i=0;i<HOUSES.length;i+=3){const hs=HOUSES[i];if(!vis(hs[0],hs[1],0))continue;ctx.fillRect(sx(hs[0]+hs[2]*.4),sy(hs[1]+hs[3]*.5),1.6,1.6)}}
+  if(S.events.some(e=>e.k==='sis')){ctx.fillStyle='rgba(225,230,232,.3)';ctx.fillRect(0,0,cw,ch)}
+  // ilçe adları
+  if(z>.1&&z<1.3){const al=z<.18?(z-.1)/.08*.3:z>1?(1.3-z)/.3*.3:.3;for(const d of DISTRICTS){const x=sx(d.x),y=sy(d.z);if(x<-150||y<-30||x>cw+150||y>ch+30)continue;spaced(d.n,x,y,z<.3?11:13,C.ink,al)}}
+  // yapılar
+  const ms=clamp(z*2.2,.65,1.25);for(const m of MARKS){if(!vis(m.x,m.z,60))continue;const x=sx(m.x),y=sy(m.z);mark(m,x,y,ms,night);if(z>.24){ctx.textBaseline='top';label(m.n,x+(m.k==='port'?GPC.nx*22:0),y+(m.k==='port'?GPC.nz*22:9*ms),10,C.muted,C.land,600)}}
+  {const x=sx(KIZ.x),y=sy(KIZ.z);ctx.save();ctx.translate(x,y);ctx.scale(ms,ms);ctx.fillStyle=C.quay;ctx.beginPath();ctx.arc(0,0,10,0,TAU);ctx.fill();ctx.fillStyle=night?'#e2d4b7':'#fbfcf7';ctx.strokeStyle='#15303a';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.rect(-4.5,-11,9,13);ctx.fill();ctx.stroke();ctx.fillStyle='#c2412d';ctx.beginPath();ctx.moveTo(-6,-11);ctx.lineTo(0,-21);ctx.lineTo(6,-11);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+    if(night){ctx.fillStyle='rgba(255,240,170,.18)';ctx.beginPath();ctx.moveTo(x,y-10);const a=anim*.8;ctx.arc(x,y-10,90*ms,a,a+.5);ctx.closePath();ctx.fill()}
+    if(z>.24){ctx.textBaseline='top';label(t('Kız Kulesi','Maiden’s Tower'),x,y+12*ms,10,C.onwater,C.water,600)}}
+  // tematik trafik
+  for(const tk of tankers){const x=sx(tk.x),y=sy(tk.z);if(x<-80||y<-80||x>cw+80||y>ch+80)continue;hull(x,y,tk.ang,Math.max(22,90*z),'#4a5559','#161d20',.2);ctx.fillStyle='#d97736';ctx.save();ctx.translate(x,y);ctx.rotate(tk.ang);const L=Math.max(22,90*z);ctx.fillRect(-L*.2,-L*.05,L*.42,L*.1);ctx.restore()}
+  for(const c of cruises){if(c.x==null)continue;const x=sx(c.x),y=sy(c.z);if(x<-90||y<-90||x>cw+90||y>ch+90)continue;const L=Math.max(28,120*z);hull(x,y,c.ang,L,'#f8fafc','#0f172a',.15);
+    ctx.save();ctx.translate(x,y);ctx.rotate(c.ang);ctx.fillStyle='#0e3a5c';ctx.fillRect(-L*.38,-L*.06,L*.6,L*.12);ctx.fillStyle=night?'#ffe680':'#e2e8f0';for(let k=0;k<7;k++)ctx.fillRect(-L*.35+k*L*.08,-L*.04,L*.04,L*.025);ctx.fillStyle='#facc15';ctx.beginPath();ctx.arc(-L*.15,0,L*.035,0,TAU);ctx.fill();ctx.restore()}
+  const cops=[police[0]];if(S.zone)for(let i=0;i<2;i++){const a=anim*.4+i*Math.PI;cops.push({x:S.zone.x+Math.cos(a)*(S.zone.r+16),z:S.zone.z+Math.sin(a)*(S.zone.r+16),ang:a+Math.PI/2})}
+  for(const p of cops){if(p.x==null)continue;const x=sx(p.x),y=sy(p.z);if(x<-30||y<-30||x>cw+30||y>ch+30)continue;hull(x,y,p.ang,11*clamp(z*2.4,.9,1.7),'#f8fafc','#1e3a8a');ctx.fillStyle=Math.sin(anim*12)>0?'#2563eb':'#ef4444';ctx.beginPath();ctx.arc(x,y,2.4,0,TAU);ctx.fill()}
+  for(const rl of S.rival.lines)for(const r of rl.vis||[]){if(r.x==null)continue;const x=sx(r.x),y=sy(r.z);if(x<-30||y<-30||x>cw+30||y>ch+30)continue;hull(x,y,r.ang,13*clamp(z*2.4,.9,1.7),'#9ca3af','#374151');ctx.fillStyle='#7f1d1d';ctx.beginPath();ctx.arc(x,y,2.2,0,TAU);ctx.fill()}
+  // köprüler
+  for(const br of BRIDGES){const x0=sx(br.x0),y0=sy(br.z0),x1=sx(br.x1),y1=sy(br.z1);if(Math.max(x0,x1)<-40||Math.min(x0,x1)>cw+40||Math.max(y0,y1)<-40||Math.min(y0,y1)>ch+40)continue;
+    const L=Math.hypot(x1-x0,y1-y0),a=Math.atan2(y1-y0,x1-x0),w=Math.max(3.5,br.w*z);ctx.save();ctx.translate(x0,y0);ctx.rotate(a);
+    ctx.fillStyle='rgba(0,0,0,.22)';ctx.fillRect(0,w*.35,L,w);
+    ctx.fillStyle=night?'#6b7378':'#d9d6cf';ctx.strokeStyle='#15303a';ctx.lineWidth=Math.max(.8,1.2*z*2);ctx.fillRect(0,-w/2,L,w);ctx.strokeRect(0,-w/2,L,w);
+    if(w>6){ctx.strokeStyle=night?'#4b5357':'#b9b5ab';ctx.lineWidth=1;ctx.setLineDash([w*.6,w*.6]);ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(L-4,0);ctx.stroke();ctx.setLineDash([])}
+    if(br.sus){const tw=Math.max(2,w*.28);for(const f of[.14,.86]){ctx.fillStyle='#c9302c';ctx.fillRect(L*f-tw/2,-w*.85,tw,w*1.7)}
+      if(night){for(let k=0;k<=24;k++){const q=k/24,hue=(anim*40+q*240)%360;ctx.fillStyle=`hsla(${hue},90%,65%,.9)`;const r=Math.max(1,w*.12);ctx.fillRect(L*q-r,-w/2-r,r*2,r*2);ctx.fillRect(L*q-r,w/2-r,r*2,r*2)}}}
+    else if(night){ctx.fillStyle='rgba(255,214,120,.9)';for(let k=0;k<=10;k++)ctx.fillRect(L*k/10-1,-w/2-1,2,2)}
+    ctx.restore();if(z>.2){ctx.textBaseline='bottom';const mx=(x0+x1)/2,my=(y0+y1)/2;label(L2(br.n),mx+Math.sin(a)*(w+6)*(Math.sin(a)>0?1:-1)*0,my-w/2-4,9.5,C.onwater,C.water,600)}}
+  // martılar
+  if(z>.3&&!still){ctx.strokeStyle=night?'rgba(255,255,255,.55)':'#ffffff';ctx.lineWidth=1.4;for(const g of GULLS){const a=anim*g.s+g.ph,gx=sx(g.x+Math.cos(a)*g.r),gy=sy(g.z+Math.sin(a*1.3)*g.r*.6);if(gx<-10||gy<-10||gx>cw+10||gy>ch+10)continue;
+    const f=Math.sin(anim*7+g.ph)*3;ctx.beginPath();ctx.moveTo(gx-5,gy+f);ctx.quadraticCurveTo(gx-2,gy-3,gx,gy);ctx.quadraticCurveTo(gx+2,gy-3,gx+5,gy+f);ctx.stroke()}}
+  // iskeleler
+  ctx.textBaseline='middle';const used={};S.lines.forEach(l=>l.stops.forEach((s,i)=>{used[s]=(used[s]||0)+(l.kind==='tur'?l.wait[i][i]:sum(l.wait[i]))}));
+  const sgP={};for(const s of S.surges)if(s.end>S.t&&S.t>s.start-3*3600){sgP[s.a]=sgP[s.b]=S.t>=s.start?2:1}
+  for(const i in sgP){const p=PIERS[i],x=sx(p.wx),y=sy(p.wz),k=(anim*.9)%1;ctx.strokeStyle=sgP[i]===2?'rgba(242,183,5,'+(1-k)+')':'rgba(242,183,5,.55)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,9+(sgP[i]===2?k*16:4),0,TAU);ctx.stroke()}
+  const boxes=[],fs=z<.2?9.5:z<.32?10.5:11.5,order=PIERS.map((p,i)=>i).sort((a,b)=>PIERS[b].pop-PIERS[a].pop);
+  const hit=r=>boxes.some(q=>r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1]);
+  ctx.font=`700 ${fs}px ${FD}`;const LBL={};
+  for(const i of order){const p=PIERS[i],x=sx(p.wx),y=sy(p.wz);if(x<-120||y<-40||x>cw+120||y>ch+40)continue;const w=ctx.measureText(p.name).width+6,hh=fs+4,right=p.dx>0;
+    const cand=[[right?x+9:x-9-w,y-hh/2,right?'left':'right'],[right?x-9-w:x+9,y-hh/2,right?'right':'left'],[x-w/2,y-9-hh,'center'],[x-w/2,y+9,'center']];
+    let pick0=null;for(const c of cand){const r=[c[0],c[1],c[0]+w,c[1]+hh];if(!hit(r)){pick0=c;boxes.push(r);break}}
+    if(!pick0){pick0=cand[0];boxes.push([cand[0][0],cand[0][1],cand[0][0]+w,cand[0][1]+hh])}LBL[i]=pick0}
+  PIERS.forEach((p,i)=>{const x=sx(p.wx),y=sy(p.wz);if(x<-80||y<-30||x>cw+80||y>ch+30)return;const on=i in used,s=sel&&sel.k==='pier'&&sel.id===i,cl=closed(i);
+    ctx.beginPath();ctx.arc(x,y,on?5.5:4,0,TAU);ctx.fillStyle=cl?'#c2412d':on?C.accent:C.panel;ctx.fill();ctx.lineWidth=s?3:1.5;ctx.strokeStyle=s?C.crit:C.ink;ctx.stroke();
+    if(p.yard&&z>.2){ctx.fillStyle=C.ink;ctx.font=`700 9px ${FD}`;ctx.textAlign='center';ctx.fillText('⚓',x,y-11)}
+    const lb=LBL[i],right=lb[2]!=='right';if(lb){const ly=lb[1]+(fs+4)/2,lx=lb[2]==='center'?lb[0]+(ctx.measureText(p.name).width+6)/2:lb[2]==='left'?lb[0]:lb[0]+ctx.measureText(p.name).width+6;ctx.textBaseline='middle';label(p.name,lx,ly,p.pop>=7?fs+1:fs,C.ink,C.panel,p.pop>=7?800:700,lb[2])}
+    if(on&&used[i]>=1){const tx=String(Math.floor(used[i]));ctx.font=`700 10.5px ${FD}`;const tw=ctx.measureText(tx).width+8,bx=right?x-9-tw:x+9;ctx.fillStyle=C.ink;ctx.beginPath();ctx.rect(bx,y-7.5,tw,15);ctx.fill();ctx.fillStyle=C.panel;ctx.textAlign='left';ctx.fillText(tx,bx+4,y+.5)}});
+  // filo
+  for(const b of S.boats){const c=CLS[b.cls];let wx=b.path?b.x:NODES[b.at][0],wz=b.path?b.z:NODES[b.at][1],ang=b.path?b.ang:Math.atan2(PIERS[b.at]?PIERS[b.at].dz:0,PIERS[b.at]?PIERS[b.at].dx:1)+Math.PI/2;
+    if(!b.path){b.x=wx;b.z=wz;const k=b.id%5;wx+=Math.cos(ang)*(k-2)*5/z;wz+=Math.sin(ang)*(k-2)*5/z}
+    const x=sx(wx),y=sy(wz);if(x<-30||y<-30||x>cw+30||y>ch+30)continue;
+    if(sel&&sel.k==='boat'&&sel.id===b.id){ctx.beginPath();ctx.arc(x,y,c.sz*.9+4,0,TAU);ctx.strokeStyle=C.crit;ctx.lineWidth=2.5;ctx.stroke()}
+    hull(x,y,ang,c.sz*clamp(z*2.4,.9,1.7),b.broken>0||b.mt==='in'?'#888':c.col,b.cls==='yat'?'#fff':'#111');
+    const l=b.lineId&&S.lines.find(q=>q.id===b.lineId);if(l){ctx.beginPath();ctx.arc(x,y,2.4,0,TAU);ctx.fillStyle=l.color;ctx.fill()}
+    if(b.cond<35&&!b.mt){ctx.fillStyle='#c2412d';ctx.font=`800 11px ${FD}`;ctx.textAlign='center';ctx.fillText('!',x,y-c.sz-4)}}}
+
+/* ---------- Başlangıç menüsü ---------- */
+let stDiff='orta',stArm=false,stHasSave=false,stPrevSpeed=1;
+function openStart(){stHasSave=!S.dead&&(S.t>21600+600||S.lines.length>0||S.boats.length>1);stDiff=S.diff||'orta';stArm=false;if(speed)stPrevSpeed=speed;speed=0;$('start').hidden=false;renderStart();hud(true)}
+function closeStart(){$('start').hidden=true;speed=stPrevSpeed||1;hud(true)}
+function renderStart(){const d=DIFF[stDiff],cur=DIFF[S.diff]||DIFF.orta,pct=v=>(v>=1?'+':'−')+Math.round(Math.abs(v-1)*100)+'%';
+  let h=`<div class="st-top"><div><div class="st-ticket"><span>${t('İstanbul','Istanbul')}</span><span>·</span><span>${t('Boğaz ve Haliç','Bosphorus & Golden Horn')}</span></div>
+    <h1 id="stTitle">${t('Boğaz Filosu','Bosphorus Fleet')}</h1><p class="st-sub">${t('Kendi deniz taşımacılığı şirketini kur: hatlar aç, tekne al, kaptan tut, sözleşmeleri yetiştir ve rakibinden yolcu kap.','Build your own ferry company: open lines, buy boats, hire captains, deliver contracts and win riders from your rival.')}</p></div>
+    <div class="seg" role="group" aria-label="Dil / Language"><button data-sl="tr" aria-pressed="${LANG==='tr'}" ${LANG==='tr'?'class="on"':''}>TR</button><button data-sl="en" aria-pressed="${LANG==='en'}" ${LANG==='en'?'class="on"':''}>EN</button></div></div>`;
+  h+=`<div class="st-h">${t('Zorluk','Difficulty')}</div><div class="diffs">`;
+  for(const k in DIFF){const q=DIFF[k];h+=`<button class="diff ${k}" data-d="${k}" aria-pressed="${k===stDiff}"><b>${L2(q.n)}</b><span>${L2(q.d)}</span><i>${t('Sermaye','Capital')} ${tl(q.cash)}</i></button>`}
+  h+=`</div><p class="st-info">${t('Kazanç','Earnings')} <b>${d.pay===1?'±0%':pct(d.pay)}</b> · ${t('Masraflar','Costs')} <b>${d.cost===1?'±0%':pct(d.cost)}</b> · ${t('Yıpranma','Wear')} <b>${d.wear===1?'±0%':pct(d.wear)}</b> · ${t('Tekne atama süresi','Time to assign')} <b>${String(d.grace/3600).replace('.',LANG==='tr'?',':'.')} ${t('sa','h')}</b> · ${t('İflas','Bankrupt after')} <b>${d.neg} ${t('gece eksi',d.neg>1?'nights in the red':'night in the red')}</b></p>`;
+  h+=`<div class="st-btns">`;
+  if(stHasSave)h+=`<button class="btn pri" id="stCont">${t('Devam et','Continue')} · ${t((Math.floor(S.t/DAY)+1)+'. gün','Day '+(Math.floor(S.t/DAY)+1))} · ${L2(cur.n)} · ${tlc(S.cash)}</button>`;
+  h+=`<button class="btn ${stHasSave?'':'pri'}" id="stNew">${stArm?t('Eminim, yeni oyuna başla','Yes, start a new game'):t('Yeni oyun','New game')} · ${L2(d.n)}</button>`;
+  if(stArm)h+=`<p class="st-note">${t('Kayıtlı oyunun silinecek. Rozetlerin kalır.','Your saved game will be erased. Badges are kept.')}</p>`;
+  h+=`</div>`;$('stBox').innerHTML=h}
+$('stBox').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.d){stDiff=b.dataset.d;stArm=false;renderStart();const n=$('stBox').querySelector(`[data-d="${stDiff}"]`);if(n)n.focus();return}
+  if(b.dataset.sl){LANG=b.dataset.sl;try{localStorage.setItem('bogaz-filosu-lang',LANG)}catch(_){}applyLang();render();hud(true);return}
+  if(b.id==='stCont'){closeStart();return}
+  if(b.id==='stNew'){if(stHasSave&&!stArm){stArm=true;renderStart();return}restart(stDiff);closeStart();speed=1;hud(true)}});
+$('menuB').addEventListener('click',openStart);
+
+/* ---------- Başlat ---------- */
+load();theme();resize();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',theme);
+new MutationObserver(theme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+addEventListener('resize',resize);
+if(S.dead)restart();if(S.lines.length)tab='';openStart();
+applyLang();
+let last=performance.now(),uiT=0,autoT=0,saveT=0;
+function frame(ts){const dt=Math.min(.1,(ts-last)/1000);last=ts;
+  if(speed&&!S.dead){let g=dt*GSEC*speed;while(g>0){const s=Math.min(g,30);tick(s);g-=s}
+    autoT+=dt*speed;if(autoT>.5){autoT=0;autoAssign();checkGoals();checkAch()}}
+  uiT+=dt;if(uiT>1){uiT=0;const ae=document.activeElement;if(tab&&!(ae&&ae.tagName==='SELECT'))render();if(sel)renderInfo()}
+  saveT+=dt;if(saveT>10){saveT=0;save()}
+  if(uiT===0)renderOffer();
+  hud();draw();requestAnimationFrame(frame)}
+requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
