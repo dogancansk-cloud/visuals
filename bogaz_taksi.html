@@ -615,10 +615,16 @@ const SFX=(()=>{let ac=null,master=null,eng=null,nb=null;
     crash(){if(!ok()||!nb)return;const n=ac.currentTime,s=ac.createBufferSource(),f=lp(500),g=ac.createGain();s.buffer=nb;env(g,n,.01,.5,.4);s.connect(g);g.connect(f);s.start(n);s.stop(n+.45);tone('sine',90,n,.35,.3,45)},
     ach(){if(!ok())return;const n=ac.currentTime;[523,659,784,1047].forEach((fr,i)=>{tone('triangle',fr,n+i*.11,.35,.14);tone('sine',fr*2,n+i*.11,.3,.035)})},
     gull(){if(!ok())return;const n=ac.currentTime,k=2+(Math.random()*2|0);for(let i=0;i<k;i++)tone('sine',1650+Math.random()*350,n+i*.2,.16,.035,950)},
-    engine(level,pitch){if(!SND_ON||!ac||ac.state!=='running')return; // sürekli motor uğultusu
-      if(!eng){const o=ac.createOscillator(),o2=ac.createOscillator(),f=ac.createBiquadFilter(),g=ac.createGain();o.type='sawtooth';o2.type='square';f.type='lowpass';f.frequency.value=300;g.gain.value=0;
-        o.connect(f);o2.connect(f);f.connect(g);g.connect(master);o.start();o2.start();eng={o,o2,f,g}}
-      const t0=ac.currentTime;eng.g.gain.setTargetAtTime(level,t0,.12);eng.o.frequency.setTargetAtTime(pitch,t0,.15);eng.o2.frequency.setTargetAtTime(pitch*.5,t0,.15);eng.f.frequency.setTargetAtTime(220+pitch*3,t0,.2)}
+    engine(level,pitch){if(!SND_ON||!ac||ac.state!=='running')return; // sürekli motor uğultusu: yumuşak dizel, sabit seyirde kendiliğinden kısılır
+      if(!eng){const o=ac.createOscillator(),o2=ac.createOscillator(),f=ac.createBiquadFilter(),g=ac.createGain(),lfo=ac.createOscillator(),lg=ac.createGain(),am=ac.createGain();
+        o.type='triangle';o2.type='sine';f.type='lowpass';f.Q.value=.4;f.frequency.value=180;g.gain.value=0;am.gain.value=1;lfo.type='sine';lfo.frequency.value=6;lg.gain.value=.22;
+        lfo.connect(lg);lg.connect(am.gain);o.connect(f);o2.connect(f);f.connect(am);am.connect(g);g.connect(master);o.start();o2.start();lfo.start();eng={o,o2,f,g,lfo,steady:0,lp:pitch,ll:level,lt:ac.currentTime}}
+      const t0=ac.currentTime,dt=Math.min(.25,t0-eng.lt);eng.lt=t0;
+      if(Math.abs(pitch-eng.lp)>4||Math.abs(level-eng.ll)>.012){eng.steady=0;eng.lp=pitch;eng.ll=level}else eng.steady+=dt;
+      const calm=eng.steady<12?1:Math.max(.3,1-(eng.steady-12)/6*.7);
+      eng.g.gain.setTargetAtTime(level*.5*calm,t0,eng.steady>12?.8:.15);
+      eng.o.frequency.setTargetAtTime(pitch*.5,t0,.2);eng.o2.frequency.setTargetAtTime(pitch,t0,.2);
+      eng.f.frequency.setTargetAtTime(140+pitch*1.4,t0,.25);eng.lfo.frequency.setTargetAtTime(3+pitch/16,t0,.3)}
   }})();
 function playPierBell(){SFX.resume();SFX.bell()}
 document.addEventListener('pointerdown',()=>SFX.resume(),{passive:true});
@@ -1125,7 +1131,7 @@ function step(dt){
 
     for(const n of NPCS){
       if(n.hornT>0)n.hornT-=dt;
-      if(!(n.hornT>0)&&Math.hypot(boat.x-n.x,boat.y-n.y)<n.len*.5+(n.type==='ferry'?48:70)){n.hornT=9;n.honk=1.6;SFX.horn(n.type)}
+      if(!(n.hornT>0)&&!(n.wait>0)&&n.spd>0){const hx_=boat.x-n.x,hy_=boat.y-n.y,fwd=hx_*Math.cos(n.a)+hy_*Math.sin(n.a),side=-hx_*Math.sin(n.a)+hy_*Math.cos(n.a),ahead=Math.max(n.type==='ferry'?90:130,n.spd*(n.type==='ferry'?5:7));if(fwd>n.len*.3&&fwd<n.len*.5+ahead&&Math.abs(side)<n.wid*.5+20){n.hornT=9;n.honk=1.6;SFX.horn(n.type)}} /* korna: yalnızca pruvanın önündeki koridora girince */
       const dx=nx-n.x,dy=ny-n.y,lx=dx*Math.cos(n.a)+dy*Math.sin(n.a),ly=-dx*Math.sin(n.a)+dy*Math.cos(n.a),hx=n.len*.5+12,hy=n.wid*.5+7;
       if(Math.abs(lx)<hx&&Math.abs(ly)<hy){const sd=ly>=0?1:-1,push=hy-Math.abs(ly)+1;
         nx+=-Math.sin(n.a)*sd*push;ny+=Math.cos(n.a)*sd*push;

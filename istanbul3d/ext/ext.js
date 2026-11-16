@@ -187,5 +187,8 @@ whenReady((M) => {
   buildUI(M);
   const hint = document.getElementById('badge');
   if (hint) hint.textContent = T('yükseklikler yaklaşık · etikete dokun: bilgi', 'heights approximate · tap a label for info');
-  if (!/[?&]nofree/.test(location.search)) setTimeout(() => { const n = freeCpuCopies(M); M.__freed = n; }, 1500);
+  if (!/[?&]nofree/.test(location.search)) {
+    setTimeout(() => { M.__freed = freeCpuCopies(M); }, 1500);
+    M.__onBatch = () => { setTimeout(() => { M.__freed = (M.__freed || 0) + freeCpuCopies(M); }, 300); }; // aşamalı yüklenen bloklar
+  }
 });
