@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Boğaz Taksi · Gizlilik Politikası</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Figtree:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fbfbf6;--ink:#14283c;--mut:#5c6b78;--line:#d3d8cb;--acc:#d29e00;--card:#eef0e6}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1e34;--ink:#f4f8fa;--mut:#9fb3c2;--line:#27486a;--acc:#facc15;--card:#142c47;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 Figtree,system-ui,sans-serif}
+body::before{content:"";display:block;height:4px;background:linear-gradient(90deg,#00a8b5 50%,#facc15 50%)}
+main{max-width:720px;margin:0 auto;padding:32px max(20px,env(safe-area-inset-right,0px)) 64px max(20px,env(safe-area-inset-left,0px))}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+h1{font:800 34px/1.1 "Bricolage Grotesque",Figtree,sans-serif;margin:0}
+h1 span{color:var(--acc)}
+h2{font:700 19px/1.3 Figtree,sans-serif;margin:32px 0 6px}
+p,li{color:var(--ink)}ul{padding-left:20px}li{margin:4px 0}
+.mut{color:var(--mut);font-size:14px}
+.seg{display:flex;gap:4px;padding:4px;border-radius:20px;background:var(--card)}
+.seg button{border:0;border-radius:16px;padding:6px 14px;font:700 13px Figtree,sans-serif;background:transparent;color:var(--mut);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--acc);color:#0b1e34}
+.box{background:var(--card);border-radius:14px;padding:14px 16px;margin-top:20px}
+a{color:var(--acc)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Boğaz <span>Taksi</span></h1>
+<div class="seg" role="group" aria-label="Dil / Language"><button type="button" data-l="tr" aria-pressed="true">TR</button><button type="button" data-l="en" aria-pressed="false">EN</button></div></header>
+
+<section lang="tr" id="tr">
+<h2 style="margin-top:20px;font-size:24px">Gizlilik Politikası</h2>
+<p class="mut">Son güncelleme: 17 Kasım 2026</p>
+<p>Boğaz Taksi, Doğancan Işık tarafından geliştirilen bir oyundur. Bu sayfa, oyunun hem web sürümünde (dogancansk-cloud.github.io) hem de iOS uygulamasında hangi bilgilerin toplandığını ve nasıl kullanıldığını açıklar.</p>
+
+<h2>Giriş yapmadan oynamak</h2>
+<p>Oyunu giriş yapmadan, misafir olarak oynayabilirsin. Bu durumda oyun ilerlemen (kasa, geliştirmeler, rozetler, ayarlar) yalnızca kendi cihazında saklanır ve bize gönderilmez.</p>
+
+<h2>Apple veya Google ile giriş (isteğe bağlı)</h2>
+<p>Skor tablosuna katılmak istersen Apple veya Google hesabınla giriş yapabilirsin. Giriş, Google'ın Firebase Authentication hizmetiyle yapılır ve şu bilgiler işlenir:</p>
+<ul>
+<li>Hesabına özel bir kullanıcı kimliği (rastgele bir kod),</li>
+<li>Hesabındaki ad ve e-posta adresi. Apple ile girişte "E-postamı Gizle" seçeneğini kullanabilirsin.</li>
+</ul>
+<p>E-posta adresin skor tablosunda veya başka oyunculara hiçbir zaman gösterilmez.</p>
+
+<h2>Skor tablosu</h2>
+<p>Giriş yaptığında, her zorluk seviyesindeki en yüksek kazancın şu bilgilerle Google Cloud Firestore'da saklanır ve <b>tüm oyunculara açık</b> olarak gösterilir: tabloda görünen adın (varsayılan olarak adın ve soyadının baş harfi; oyun içinden değiştirebilirsin), kazanç miktarı, teslimat sayısı ve kayıt zamanı.</p>
+
+<h2>Kullanım istatistikleri</h2>
+<p>Oyunu geliştirmek için Google Analytics for Firebase ile anonim kullanım verileri toplanır: oyun başlatma, teslimatlar, çarpışmalar, kazanılan rozetler gibi oyun içi olaylar; cihaz türü, işletim sistemi, uygulama sürümü ve yaklaşık konum (ülke/şehir düzeyinde). Bu veriler reklam için kullanılmaz, kimliğinle eşleştirilmez ve başka uygulamalardaki etkinliğinle birleştirilmez. Web sürümünde ayrıca çerez kullanmayan GoatCounter ile sayfa ziyaret sayıları tutulur.</p>
+
+<h2>Neleri yapmıyoruz</h2>
+<ul>
+<li>Oyunda reklam yok, reklam kimliği kullanılmıyor.</li>
+<li>Verilerin satılmıyor veya kiralanmıyor.</li>
+<li>Uygulama içi satın alma yok.</li>
+</ul>
+
+<h2>Hizmet sağlayıcılar</h2>
+<p>Veriler Google LLC (Firebase Authentication, Cloud Firestore, Google Analytics) sunucularında işlenir; Apple ile girişte Apple Inc. kimlik doğrulama yapar. Bu şirketlerin kendi gizlilik politikaları geçerlidir. Veriler Türkiye dışındaki sunucularda saklanabilir.</p>
+
+<h2>Saklama süresi ve silme</h2>
+<p>Skor tablosu kayıtların ve hesabın, sen silene kadar saklanır. İstediğin zaman oyunda <b>Skor tablosu → Hesabımı sil</b> ile hesabını ve tablodaki tüm kayıtlarını kalıcı olarak silebilirsin. Kullanım istatistikleri en fazla 14 ay saklanır. Silme veya verilerinle ilgili başka bir talep için bize e-postayla da ulaşabilirsin.</p>
+
+<h2>Çocuklar</h2>
+<p>Oyun her yaştan oyuncuya uygundur ancak giriş ve skor tablosu özellikleri 13 yaşından küçükler için tasarlanmamıştır. 13 yaşından küçük bir çocuğa ait bilgilerin toplandığını fark edersen bize yaz, sileriz.</p>
+
+<h2>Haklarına ve iletişim</h2>
+<p>6698 sayılı KVKK ve geçerli diğer mevzuat kapsamındaki haklarını (bilgi alma, düzeltme, silme vb.) kullanmak veya soruların için: <b>dogancansk@gmail.com</b></p>
+<p class="mut">Bu politika değişirse güncel hali bu sayfada yayımlanır.</p>
+</section>
+
+<section lang="en" id="en" hidden>
+<h2 style="margin-top:20px;font-size:24px">Privacy Policy</h2>
+<p class="mut">Last updated: 17 November 2026</p>
+<p>Boğaz Taksi is a game developed by Doğancan Işık. This page explains what information the game collects and how it is used, in both the web version (dogancansk-cloud.github.io) and the iOS app.</p>
+
+<h2>Playing without signing in</h2>
+<p>You can play as a guest without signing in. In that case your progress (cash, upgrades, badges, settings) is stored only on your own device and is not sent to us.</p>
+
+<h2>Sign in with Apple or Google (optional)</h2>
+<p>To join the leaderboard you can sign in with your Apple or Google account. Sign-in is handled by Google's Firebase Authentication, which processes:</p>
+<ul>
+<li>a unique user ID for your account (a random code),</li>
+<li>the name and email address on your account. With Sign in with Apple you can use "Hide My Email".</li>
+</ul>
+<p>Your email address is never shown on the leaderboard or to other players.</p>
+
+<h2>Leaderboard</h2>
+<p>When you are signed in, your best earnings for each difficulty level are stored in Google Cloud Firestore and are <b>visible to all players</b>, together with: your leaderboard name (by default your first name and last initial; you can change it in the game), the amount earned, the number of deliveries and the time of the record.</p>
+
+<h2>Usage statistics</h2>
+<p>To improve the game, anonymous usage data is collected with Google Analytics for Firebase: in-game events such as starting a game, deliveries, collisions and badges earned; device type, operating system, app version and approximate location (country/city level). This data is not used for advertising, not linked to your identity and not combined with your activity in other apps. The web version also counts page visits with GoatCounter, which uses no cookies.</p>
+
+<h2>What we don't do</h2>
+<ul>
+<li>No ads, and no advertising identifier is used.</li>
+<li>Your data is never sold or rented.</li>
+<li>No in-app purchases.</li>
+</ul>
+
+<h2>Service providers</h2>
+<p>Data is processed on servers of Google LLC (Firebase Authentication, Cloud Firestore, Google Analytics); with Sign in with Apple, Apple Inc. performs authentication. Their own privacy policies apply. Data may be stored on servers outside Turkey.</p>
+
+<h2>Retention and deletion</h2>
+<p>Your leaderboard records and account are kept until you delete them. You can permanently delete your account and all your leaderboard records at any time in the game via <b>Leaderboard → Delete account</b>. Usage statistics are kept for at most 14 months. You can also email us for deletion or any other request about your data.</p>
+
+<h2>Children</h2>
+<p>The game is suitable for all ages, but sign-in and the leaderboard are not designed for children under 13. If you believe information from a child under 13 has been collected, write to us and we will delete it.</p>
+
+<h2>Your rights and contact</h2>
+<p>To exercise your rights under applicable data protection law (access, correction, deletion, etc.) or for any questions: <b>dogancansk@gmail.com</b></p>
+<p class="mut">If this policy changes, the current version will be published on this page.</p>
+</section>
+</main>
+<script>
+(function(){
+  function set(l){document.getElementById('tr').hidden=l!=='tr';document.getElementById('en').hidden=l!=='en';document.documentElement.lang=l;
+    document.querySelectorAll('.seg button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.l===l)});
+    document.title=l==='en'?'Boğaz Taksi · Privacy Policy':'Boğaz Taksi · Gizlilik Politikası'}
+  document.querySelectorAll('.seg button').forEach(function(b){b.addEventListener('click',function(){set(b.dataset.l)})});
+  var q=(location.hash||'').replace('#','');var l=q==='en'||q==='tr'?q:((navigator.language||'tr').slice(0,2)==='tr'?'tr':'en');
+  try{var s=localStorage.getItem('bogaz-taksi-lang');if(!q&&(s==='en'||s==='tr'))l=s}catch(e){}
+  set(l);
+})();
+</script>
+</body>
+</html>
