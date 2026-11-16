@@ -150,6 +150,16 @@ select{font:600 12.5px var(--body);padding:6px 8px;border-radius:9px;border:1px 
 .st-note{font-size:11.5px;color:var(--crit);margin:-4px 0 0;text-align:center}
 @media (max-width:380px){.diffs{grid-template-columns:1fr}}
 [hidden]{display:none!important}
+#bwBox div{background:none;padding:0;max-width:none;display:block;border-radius:0;gap:0}
+#bwBox{gap:9px}#bwBox h3{margin:6px 0 0;font:700 13px var(--display);display:flex;justify-content:space-between;gap:8px}#bwBox h3 small{font:500 11px var(--body);color:var(--muted)}
+#bwBox .bw-stats{display:grid !important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#bwBox .bw-stats div{background:var(--soft);border-radius:9px;padding:6px 8px;display:flex !important;flex-direction:column;gap:1px;min-width:0}
+#bwBox .bw-stats span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}#bwBox .bw-stats b{font:700 14px var(--display)}
+#bwBox .bw-up{display:flex !important;flex-direction:column;gap:6px}
+#bwBox .bw-row{display:flex !important;flex-direction:row;align-items:center;justify-content:space-between;gap:8px;border:1px solid var(--line);border-radius:10px;padding:7px 9px}
+#bwBox .bw-row>div{min-width:0}#bwBox .bw-row b{font-size:13px}#bwBox .bw-row .mut{font-size:11.5px}
+.pips{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}.pips i{width:8px;height:8px;border-radius:2px;background:var(--line)}.pips i.on{background:var(--accent)}
+#bwBox .bw-head{display:flex !important;flex-direction:row;justify-content:space-between;align-items:flex-start;gap:8px}#bwBox .bw-head h2{margin:0;font:800 20px var(--display)}
 </style>
 
 <div id="app">
@@ -181,6 +191,7 @@ select{font:600 12.5px var(--body);padding:6px 8px;border-radius:9px;border:1px 
     </nav>
   </div>
   <div id="start" hidden role="dialog" aria-modal="true" aria-labelledby="stTitle"><div class="st-box" id="stBox"></div></div>
+  <div class="modal" id="bw" hidden role="dialog" aria-modal="true" aria-labelledby="bwT"><div id="bwBox" class="pick"></div></div>
   <div class="modal" id="pick" hidden role="dialog" aria-modal="true"><div id="pickBox" class="pick"></div></div>
   <div class="modal" id="modal" hidden><div><h2 id="mTitle"></h2><p id="mText"></p><button class="btn pri" id="mBtn" data-tr="Yeniden başla" data-en="Start over">Yeniden başla</button></div></div>
 </div>
@@ -240,7 +251,7 @@ const PD=[
  ['Kuzguncuk',41.0360,29.0300,A,2,''],['Üsküdar',41.0270,29.0150,A,9,'t'],
  ['Harem',41.0110,29.0090,A,3,'c'],['Haydarpaşa',40.9970,29.0180,A,3,'cy'],['Kadıköy',40.9920,29.0230,A,10,'tc'],
  ['Yenikapı',41.0020,28.9530,E,4,'c'],
- ['Karaköy',41.0220,28.9770,E,8,'tc'],['Eminönü',41.0180,28.9730,E,10,'tc'],['Kasımpaşa',41.0300,28.9670,E,2.5,'cy'],
+ ['Karaköy',41.0222,28.9800,E,8,'tc'],['Eminönü',41.0170,28.9775,E,10,'tc'],['Kasımpaşa',41.0300,28.9670,E,2.5,'cy'],
  ['Fener',41.0300,28.9500,E,2,''],['Balat',41.0340,28.9470,E,2.5,''],['Hasköy',41.0400,28.9510,E,2,''],
  ['Sütlüce',41.0480,28.9440,E,2,''],['Eyüp',41.0470,28.9360,E,4,'t']
 ];
@@ -284,7 +295,7 @@ function setZone(on){gc=gcBase.slice();if(on&&S.zone){const zr=S.zone.r+6;for(le
   NC=NODES.map(n=>cellOf(n[0],n[1]));trees={};paths={};S.lines.forEach(l=>{l.marks=null})}
 
 /* ---------- Harita süsleri: yapılar, evler, korular, şamandıralar ---------- */
-const MARKS=[['tower','Galata Kulesi',41.0256,28.9741],['port','Galataport',41.0266,28.9822],['palace','Dolmabahçe Sarayı',41.0392,29.0005],['palace','Çırağan Sarayı',41.0440,29.0170],
+const MARKS=[['tower','Galata Kulesi',41.0256,28.9768],['port','Galataport',41.0266,28.9822],['palace','Dolmabahçe Sarayı',41.0392,29.0005],['palace','Çırağan Sarayı',41.0440,29.0170],
  ['palace','Beylerbeyi Sarayı',41.0425,29.0395],['station','Haydarpaşa Garı',40.9966,29.0190],['palace','Topkapı Sarayı',41.0115,28.9834],['mosque','Ayasofya',41.0086,28.9802],
  ['mosque','Sultanahmet Camii',41.0054,28.9768],['mosque','Süleymaniye',41.0162,28.9640],['mosque','Ortaköy Camii',41.0473,29.0262],['mosque','Eyüp Sultan',41.0479,28.9338],
  ['castle','Rumeli Hisarı',41.0848,29.0560],['castle','Anadolu Hisarı',41.0822,29.0672],['tram','Taksim · İstiklal',41.0355,28.9810],['spire','Çamlıca Kulesi',41.0320,29.0690],['light','Rumeli Feneri',41.2340,29.1095],['light','Anadolu Feneri',41.2185,29.1520]]
@@ -327,7 +338,7 @@ const RIVAL=['Rıhtım Hatları','Rıhtım Lines'];
 
 /* ---------- Durum ---------- */
 const DAY=86400,GSEC=72; // 1 oyun günü = 1x hızda 20 gerçek dakika
-const mkBoat=(id,cls,name,at)=>({id,cls,name,at,mode:'idle',auto:!CLS[cls].roles.includes('hat')&&!CLS[cls].roles.includes('tur'),lineId:0,load:{},cond:100,age:0,capt:0});
+const mkBoat=(id,cls,name,at)=>({id,cls,name,at,mode:'idle',auto:!CLS[cls].roles.includes('hat')&&!CLS[cls].roles.includes('tur'),lineId:0,load:{},cond:100,age:0,capt:0,up:{eng:0,eco:0,hull:0,cap:0},inv:0});
 const DIFF={
  kolay:{n:['Kolay','Easy'],d:['Bol sermaye, ucuz yakıt, sabırlı müşteri. Rahat bir başlangıç.','Plenty of capital, cheap fuel, patient clients. A relaxed start.'],cash:600000,pay:1.15,cost:.85,wear:.8,ev:1.4,rival:1.6,grace:7200,pen:.7,tk:1.4,neg:3},
  orta:{n:['Orta','Normal'],d:['Dengeli ekonomi. Oyunun tasarlandığı ayar.','Balanced economy. The game as designed.'],cash:400000,pay:1,cost:1,wear:1,ev:1,rival:1,grace:5400,pen:1,tk:1,neg:2},
@@ -351,9 +362,9 @@ function spend(c,a){if(c!=='faiz')a*=D().cost;S.cash-=a;S.today.exp[c]=(S.today.
 function log(tr,en,bad){S.log.unshift({t:S.t,m:[tr,en]});if(S.log.length>16)S.log.pop();toast(t(tr,en),bad)}
 function toast(msg,bad,cls){const e=document.createElement('div');e.className='toast'+(bad?' bad':'')+(cls?' '+cls:'');e.textContent=msg;const box=$('toasts');box.append(e);while(box.children.length>3)box.firstChild.remove();setTimeout(()=>e.remove(),4400)}
 const KEY='bogaz-filosu-v2';
-function save(){try{const o=JSON.parse(JSON.stringify(S));o.boats.forEach(b=>{if(b.job){o.jobs.push(b.job);b.job=null;b.mode=b.lineId?'line':'idle'}b.path=null;b.load={};b.it=null;b.dwell=0;b.pend=false;b.hold=false;if(b.mt==='go')b.mt=null});
+function save(){try{const o=JSON.parse(JSON.stringify(S));o.boats.forEach(b=>{if(b.job){o.jobs.push(b.job);b.job=null;b.mode=b.lineId?'line':'idle'}b.path=null;b.load={};b.it=null;b.dwell=0;b.pend=false;b.hold=false});
   o.lines.forEach(l=>{l.wait=null;l.marks=null});o.rival.lines.forEach(r=>r.vis=null);localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}}
-function load(){try{const o=JSON.parse(localStorage.getItem(KEY));if(o&&o.boats&&o.lines){S=Object.assign(FRESH(),o);S.lines.forEach(initWait);S.boats.forEach(b=>{b.load={};b.li=null;if(b.mode==='job')b.mode='idle'});if(S.zone)setZone(true)}}catch(e){}}
+function load(){try{const o=JSON.parse(localStorage.getItem(KEY));if(o&&o.boats&&o.lines){S=Object.assign(FRESH(),o);S.lines.forEach(initWait);S.boats.forEach(b=>{b.load={};b.li=null;if(b.mode==='job')b.mode='idle';UP(b);if(b.mt&&!b.mtw)b.mtw={k:'maint'}});if(S.zone)setZone(true)}}catch(e){}}
 
 /* ---------- Hatlar ---------- */
 function initWait(l){l.wait=l.stops.map(()=>l.stops.map(()=>0))}
@@ -402,24 +413,33 @@ function rivalDay(){const R=S.rival,tot=S.paxToday+S.rivalToday;S.share=tot>20?S
 
 /* ---------- Tekneler ---------- */
 const yards=()=>PIERS.map((p,i)=>i).filter(i=>PIERS[i].yard);
+const UPG={eng:{n:['Motor yenileme','Engine upgrade'],e:['hız +%8','speed +8%'],c:[.15,.3]},eco:{n:['Ekonomik yakıt sistemi','Fuel-saving system'],e:['yakıt −%15','fuel −15%'],c:[.12,.25]},
+ hull:{n:['Gövde kaplaması','Hull plating'],e:['yıpranma ve arıza −%22','wear and breakdowns −22%'],c:[.1,.22]},cap:{n:['Kapasite artırımı','Capacity expansion'],e:['kapasite +%20','capacity +20%'],c:[.18,.35]}};
+const UP=b=>b.up||(b.up={eng:0,eco:0,hull:0,cap:0});
+const upCost=(b,k)=>Math.round(CLS[b.cls].price*UPG[k].c[UP(b)[k]]/100)*100;
+const refitCost=b=>Math.round(CLS[b.cls].price*(.2+Math.min(.3,b.age*.005))/100)*100;
+const ageWear=b=>1+Math.min(.5,Math.max(0,b.age-20)*.01);
+const capOf=b=>Math.round(CLS[b.cls].cap*(1+.2*UP(b).cap)),cargoOf=b=>Math.round(CLS[b.cls].cargo*(1+.2*UP(b).cap));
+const upN=b=>{const u=UP(b);return u.eng+u.eco+u.hull+u.cap};
+const sellVal=b=>Math.round(CLS[b.cls].price*.6*(.5+b.cond/200)*(1-Math.min(.3,b.age*.004))+(b.inv||0)*.4);
 const maintCost=b=>Math.round(CLS[b.cls].price*.0004*(100-b.cond)/10)*10+500;
 function setPath(b,to){b.path=pathBetween(b.at,to);b.pd=0;b.to=to}
 function assignLine(b,id){b.lineId=id;b.li=null;b.load={};if(id){b.mode='line';b.auto=false}else{b.mode='idle'}if(b.path)b.pend=true}
-function sendMaint(b,quiet){if(b.job||b.broken>0||b.mt)return false;let best=yards()[0],bd=1e9;for(const y of yards()){const d=pathBetween(b.at,y).len;if(d<bd){bd=d;best=y}}
-  b.mt='go';b.mty=best;b.load={};if(b.path)b.pend=true;if(!quiet)toast(b.name+t(' bakım için '+PIERS[best].name+' tersanesine gidiyor',' heads to the '+PIERS[best].name+' shipyard'));return true}
+function sendMaint(b,quiet,work){if(b.job||b.broken>0||b.mt)return false;b.mtw=work||{k:'maint'};let best=yards()[0],bd=1e9;for(const y of yards()){const d=pathBetween(b.at,y).len;if(d<bd){bd=d;best=y}}
+  b.mt='go';b.mty=best;b.load={};if(b.path)b.pend=true;if(!quiet)toast(b.name+t((b.mtw.k==='maint'?' bakım':' tersane işi')+' için '+PIERS[best].name+' tersanesine gidiyor',' heads to the '+PIERS[best].name+' shipyard'));return true}
 function arrive(b){if(b.pend){b.pend=false;return}
   if(b.mode==='line'&&!b.mt){const l=S.lines.find(x=>x.id===b.lineId);if(!l||b.li==null||l.stops[b.li]!==b.at)return;const last=l.stops.length-1;
     if(l.kind==='tur'){if((b.li===0||b.li===last)&&b.load.tur){S.tourPax+=b.load.tur;S.totalPax+=b.load.tur;S.paxToday+=b.load.tur;l.pax=(l.pax||0)+b.load.tur;S.rep=Math.min(100,S.rep+b.load.tur*.0006*(1+b.capt*.3));b.load.tur=0}
       if(b.li+b.dirn<0||b.li+b.dirn>last)b.dirn=-b.dirn;
-      const n=Math.min(CLS[b.cls].cap-(b.load.tur||0),Math.floor(l.wait[b.li][b.li]));if(n>0){l.wait[b.li][b.li]-=n;b.load.tur=(b.load.tur||0)+n;const inc=Math.round(n*tourFare(l)*mods.tourPay);earn('tur',inc);l.inc=(l.inc||0)+inc}
+      const n=Math.min(capOf(b)-(b.load.tur||0),Math.floor(l.wait[b.li][b.li]));if(n>0){l.wait[b.li][b.li]-=n;b.load.tur=(b.load.tur||0)+n;const inc=Math.round(n*tourFare(l)*mods.tourPay);earn('tur',inc);l.inc=(l.inc||0)+inc}
       b.dwell=300;return}
     const off=b.load[b.at]||0;delete b.load[b.at];S.totalPax+=off;S.paxToday+=off;l.pax=(l.pax||0)+off;if(l.stu)S.stuPax+=off;S.rep=Math.min(100,S.rep+off*(.0004+(l.stu?.0002:0))*(1+b.capt*.2));
     if(b.li+b.dirn<0||b.li+b.dirn>last)b.dirn=-b.dirn;
-    let free=CLS[b.cls].cap-sum(b.load),inc=0;
+    let free=capOf(b)-sum(b.load),inc=0;
     for(let j=b.li+b.dirn;j>=0&&j<l.stops.length&&free>0;j+=b.dirn){const n=Math.min(free,Math.floor(l.wait[b.li][j]));if(n<=0)continue;l.wait[b.li][j]-=n;free-=n;b.load[l.stops[j]]=(b.load[l.stops[j]]||0)+n;inc+=n*fare(l,b.li,j)}
     if(inc){earn('hat',inc);l.inc=(l.inc||0)+inc}b.dwell=240}}
 function decide(b){
-  if(b.mt==='go'){if(b.at===b.mty){b.mt='in';b.mtT=7200;spend('onarim',maintCost(b));return}setPath(b,b.mty);return}
+  if(b.mt==='go'){if(b.at===b.mty){b.mt='in';const w=b.mtw||{k:'maint'};b.mtT=w.k==='maint'?7200:w.k==='refit'?21600:10800;if(w.k==='maint')spend('onarim',maintCost(b));return}setPath(b,b.mty);return}
   if(b.mode==='line'){const l=S.lines.find(x=>x.id===b.lineId);if(!l){b.mode='idle';b.lineId=0;return}
     if(b.li==null||l.stops[b.li]!==b.at){let best=0,bd=1e9;l.stops.forEach((s,i)=>{const d=Math.hypot(NODES[s][0]-NODES[b.at][0],NODES[s][1]-NODES[b.at][1]);if(d<bd){bd=d;best=i}});
       b.li=best;b.dirn=1;if(l.stops[best]===b.at)arrive(b);else setPath(b,l.stops[best]);return}
@@ -431,21 +451,25 @@ function finishJob(b){const j=b.job,late=S.t>j.due,ty=JT[j.type];let pay=j.rewar
   earn(ty.cat,pay);S.jobsDone++;if(ty.cat==='tur')S.tours++;S.rep=clamp(S.rep+(late?-3:.8),0,100);
   log(b.name+': '+j.tt[0]+' tamamlandı · +'+tl(pay)+(late?' (gecikme kesintisi)':''),b.name+': '+j.tt[1]+' done · +'+tl(pay)+(late?' (late penalty)':''),late);b.job=null;b.mode=b.lineId?'line':'idle';b.it=null}
 function accept(j,b){S.jobs=S.jobs.filter(x=>x.id!==j.id);b.mode='job';b.job=j;j.due=S.t+j.dur;b.it=[{p:j.from,a:'load'},...j.via.map(p=>({p,a:'wait'})),{p:j.to,a:'unload'}];b.ii=0;b.load={};if(b.path)b.pend=false}
-const fits=(j,b)=>j.need.includes(b.cls)&&(j.pax?CLS[b.cls].cap>=j.pax:CLS[b.cls].cargo>=j.tons);
+const fits=(j,b)=>j.need.includes(b.cls)&&(j.pax?capOf(b)>=j.pax:cargoOf(b)>=j.tons);
 const idle=b=>b.mode==='idle'&&!b.job&&!(b.broken>0)&&!b.lineId&&!b.mt;
 const free=b=>!b.job&&!(b.broken>0)&&!b.mt; // hattaki tekne de işe gidebilir, iş bitince hattına döner
 function moveBoat(b,dtg){b.hold=false;
   if(b.broken>0){b.broken-=dtg;if(b.broken<=0)log(b.name+' onarıldı, yeniden hizmette',b.name+' is repaired and back in service');return}
-  if(b.mt==='in'){b.mtT-=dtg;if(b.mtT<=0){b.mt=null;b.cond=100;log(b.name+' bakımdan çıktı (%100)',b.name+' left the shipyard (100%)')}return}
+  if(b.mt==='in'){b.mtT-=dtg;if(b.mtT<=0){b.mt=null;const w=b.mtw||{k:'maint'};b.mtw=null;
+    if(w.k==='maint'){b.cond=100;log(b.name+' bakımdan çıktı (%100)',b.name+' left the shipyard (100%)')}
+    else if(w.k==='refit'){b.cond=100;b.age=0;log(b.name+' baştan sona yenilendi: yaş sıfırlandı',b.name+' was fully refitted: age reset to zero')}
+    else{UP(b)[w.k]=Math.min(2,UP(b)[w.k]+1);log(b.name+': '+UPG[w.k].n[0]+' tamamlandı (seviye '+UP(b)[w.k]+')',b.name+': '+UPG[w.k].n[1]+' finished (level '+UP(b)[w.k]+')')}
+    if(bwId===b.id)renderBW()}return}
   if(b.dwell>0){b.dwell-=dtg;return}
   if(!b.path){if(b.mode!=='idle'||b.mt)decide(b);return}
   const c=CLS[b.cls],cp=CAPT[b.capt||0],cf=b.cond>=60?1:.75+.25*b.cond/60;
-  const sp=SPD(c.kn)*mods.speed*cp.spd*cf,p=posAt(b.path,b.pd);b.x=p.x;b.z=p.z;b.ang=p.ang;
+  const u=UP(b),sp=SPD(c.kn)*mods.speed*cp.spd*cf*(1+.08*u.eng),p=posAt(b.path,b.pd);b.x=p.x;b.z=p.z;b.ang=p.ang;
   const dd=sp*dtg,q=posAt(b.path,b.pd+dd);
   if(S.zone&&inZone(q.x,q.z,10)&&!inZone(p.x,p.z,10)){b.hold=true;return} // polis bekletiyor
-  b.pd+=dd;const km=dd*.005/K;spend('yakit',km*c.fuel*S.fuelIdx*cp.fuel*(1+(100-b.cond)*.003));
-  b.cond=Math.max(5,b.cond-km*.075*cp.wear*D().wear);
-  if(b.cond<30&&Math.random()<dtg/3600*.08*(30-b.cond)/30){const cost=Math.round(c.price*.025);b.broken=5400;spend('onarim',cost);S.rep=Math.max(0,S.rep-1);
+  b.pd+=dd;const km=dd*.005/K;spend('yakit',km*c.fuel*S.fuelIdx*cp.fuel*(1-.15*u.eco)*(1+(100-b.cond)*.003));
+  b.cond=Math.max(5,b.cond-km*.075*cp.wear*D().wear*(1-.22*u.hull)*ageWear(b));
+  if(b.cond<30&&Math.random()<dtg/3600*.08*(30-b.cond)/30*(1-.22*u.hull)){const cost=Math.round(c.price*.025);b.broken=5400;spend('onarim',cost);S.rep=Math.max(0,S.rep-1);
     log('Arıza: '+b.name+' yıprandı, 1,5 saat hizmet dışı · '+tl(-cost),'Breakdown: worn-out '+b.name+' is out for 1.5 h · '+tl(-cost),true)}
   if(b.pd>=b.path.len){b.at=b.to;b.path=null;arrive(b)}}
 function buy(k){const c=CLS[k];if(S.cash<c.price)return;S.cash-=c.price;const used=S.boats.map(b=>b.name),n=NAMES.find(x=>!used.includes(x))||(t('Tekne ','Boat ')+S.nextId);
@@ -473,7 +497,7 @@ function genJob(){const h=hour(),night=h>=22||h<6,w={yuk:3,taksi:night?4.5:3,vip
 function autoAssign(){for(const j of [...S.contracts]){const b=S.boats.find(x=>idle(x)&&x.auto&&fits(j,x));if(b)dispatch(j,b)}
   for(const b of S.boats){if(!idle(b)||!b.auto)continue;let best=null,bs=0;
   for(const j of S.jobs){if(!fits(j,b))continue;const sc=j.reward/(j.dur+pathBetween(b.at,j.from).len/SPD(CLS[b.cls].kn));if(sc>bs){bs=sc;best=j}}if(best)accept(best,b)}
-  if(S.autoMaint)for(const b of S.boats)if(b.cond<40&&!b.mt&&!b.job&&!(b.broken>0))sendMaint(b,true)}
+}
 
 /* ---------- Olaylar ---------- */
 const EV=[
@@ -595,16 +619,15 @@ function tick(dtg){S.t+=dtg;const d=Math.floor(S.t/DAY)+1;if(!S.day)S.day=d;if(d
 
 /* ---------- Paneller ---------- */
 const condBar=c=>`<span class="cond" title="%${Math.round(c)}"><i style="width:${c}%;background:${c>=60?'var(--good)':c>=35?'var(--warn)':'var(--crit)'}"></i></span>`;
-const status=b=>b.broken>0?t('Arızalı · onarım ','Broken down · repair ')+dur(b.broken):b.mt==='in'?t('Tersanede bakımda · ','In the shipyard · ')+dur(b.mtT):b.mt==='go'?t('Bakım için ','Heading to ')+PIERS[b.mty].name+t(' tersanesine gidiyor',' shipyard'):
-  b.hold?t('Polis bekletiyor: protokol bölgesi','Held by police: protocol zone'):b.mode==='line'?(()=>{const l=S.lines.find(x=>x.id===b.lineId);return l?lineName(l)+' · '+Math.round(l.kind==='tur'?(b.load.tur||0):sum(b.load||{}))+'/'+CLS[b.cls].cap+t(' yolcu',' riders'):t('Hat bekliyor','Waiting for a line')})():
+const status=b=>b.broken>0?t('Arızalı · onarım ','Broken down · repair ')+dur(b.broken):b.mt==='in'?t('Tersanede '+(b.mtw&&b.mtw.k!=='maint'?(b.mtw.k==='refit'?'yenileniyor':'geliştiriliyor'):'bakımda')+' · ','In the shipyard · ')+dur(b.mtT):b.mt==='go'?t((b.mtw&&b.mtw.k!=='maint'?'Tersane işi':'Bakım')+' için ','Heading to ')+PIERS[b.mty].name+t(' tersanesine gidiyor',' shipyard'):
+  b.hold?t('Polis bekletiyor: protokol bölgesi','Held by police: protocol zone'):b.mode==='line'?(()=>{const l=S.lines.find(x=>x.id===b.lineId);return l?lineName(l)+' · '+Math.round(l.kind==='tur'?(b.load.tur||0):sum(b.load||{}))+'/'+capOf(b)+t(' yolcu',' riders'):t('Hat bekliyor','Waiting for a line')})():
   b.job?b.job.tt[LANG==='en'?1:0]+' · '+(S.t>b.job.due?t('gecikti','late'):t('kalan ','left ')+dur(b.job.due-S.t)):PIERS[b.at].name+t(' iskelesinde boşta',': idle at the pier');
-function pFilo(){let h=`<h2>${t('Filo','Fleet')}</h2><div class="rw"><span class="mut">${t('Yıpranan tekne yavaşlar ve sık arızalanır. Tersaneler: ','Worn boats slow down and break more often. Shipyards: ')}${yards().map(i=>PIERS[i].name).join(', ')}</span>
-  <button class="btn" data-act="automaint" id="autoMaint" aria-pressed="${S.autoMaint}">${t('Otomatik bakım','Auto maintenance')}: ${S.autoMaint?t('açık','on'):t('kapalı','off')}</button></div><ul>`;
+function pFilo(){let h=`<h2>${t('Filo','Fleet')}</h2><div class="rw"><span class="mut">${t('Yıpranan tekne yavaşlar ve sık arızalanır. Bakım ve geliştirmeler senin kararın; tekneye dokun, “Tekne kartı”nı aç. Tersaneler: ','Worn boats slow down and break more often. Service and upgrades are your call: open a boat’s card. Shipyards: ')}${yards().map(i=>PIERS[i].name).join(', ')}</span></div><ul>`;
   for(const b of S.boats){const c=CLS[b.cls],cp=CAPT[b.capt||0],nx=CAPT[(b.capt||0)+1],linable=c.roles.includes('hat')||c.roles.includes('tur');
-    h+=`<li><div class="rw"><span><span class="dot" style="background:${c.col}"></span><b>${b.name}</b> <span class="mut">${L2(c.n)}</span></span><button class="btn bad" data-act="sell" data-id="${b.id}" id="sell${b.id}">${arm==='s'+b.id?t('Emin misin? ','Sure? ')+tl(c.price*.6*(.5+b.cond/200)):t('Sat','Sell')}</button></div>
+    h+=`<li><div class="rw"><span><span class="dot" style="background:${c.col}"></span><b>${b.name}</b> <span class="mut">${L2(c.n)}</span></span><button class="btn bad" data-act="sell" data-id="${b.id}" id="sell${b.id}">${arm==='s'+b.id?t('Emin misin? ','Sure? ')+tl(sellVal(b)):t('Sat','Sell')}</button></div>
     <div class="mut">${status(b)}</div>
     <div class="rw"><span class="mut">${condBar(b.cond)} %${Math.round(b.cond)} · ${t('yaş ','age ')}${b.age}${t(' gün',' d')} · ${t('kaptan: ','captain: ')}<b>${L2(cp.n)}</b></span>
-      <span class="btns">${b.cond<95&&!b.mt&&!b.job&&!(b.broken>0)?`<button class="btn" data-act="maint" data-id="${b.id}" id="mt${b.id}">${t('Bakım','Service')} · ${tl(maintCost(b))}</button>`:''}${nx?`<button class="btn" data-act="capt" data-id="${b.id}" id="cp${b.id}" ${S.cash<nx.cost?'disabled':''}>${L2(nx.n)} · ${tl(nx.cost)}</button>`:''}</span></div><div class="rw">`;
+      <span class="btns"><button class="btn pri" data-act="card" data-id="${b.id}" id="bc${b.id}">${t('Tekne kartı','Boat card')}${upN(b)?' · ★'+upN(b):''}</button></span></div><div class="rw">`;
     if(linable){const ls=S.lines.filter(l=>lineOk(b,l));h+=`<select data-sel="line" data-id="${b.id}" id="ln${b.id}" aria-label="${b.name}"><option value="0">${t('Hatta değil','Not on a line')}</option>${ls.map(l=>`<option value="${l.id}" ${b.lineId===l.id?'selected':''}>${l.kind==='tur'?t('Tur: ','Tour: '):''}${lineName(l)}</option>`).join('')}</select>`}
     if(!c.roles.includes('hat'))h+=`<button class="btn" data-act="auto" data-id="${b.id}" id="au${b.id}" aria-pressed="${!!b.auto}">${t('Otomatik iş','Auto jobs')}: ${b.auto?t('açık','on'):t('kapalı','off')}</button>`;
     h+=`</div></li>`}
@@ -710,14 +733,14 @@ $('pick').addEventListener('click',e=>{if(e.target===$('pick')){closePick();retu
   else if(a==='buy'){const k=b.dataset.k;if(S.cash>=CLS[k].price){const n=S.boats.length;buy(k);const bt=S.boats[n];if(bt){if(bt.lineId)assignLine(bt,0);dispatch(j,bt)}}}
   else if(a==='later')closePick();else if(a==='cancel')failContract(j,1);
   render();hud(true);save()});
-function render(){renderOffer();if(pickId)renderPick();const sh=$('sheet');document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===tab));
+function render(){renderOffer();if(pickId)renderPick();if(bwId)renderBW();const sh=$('sheet');document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.t===tab));
   if(!tab){sh.hidden=true;return}sh.hidden=false;const y=sh.scrollTop;sh.innerHTML={filo:pFilo,hat:pHat,is:pIs,fin:pFin,kar:pKar}[tab]();sh.scrollTop=y}
 function renderInfo(){const el=$('info');if(!sel){el.hidden=true;return}let h='';
   if(sel.k==='pier'){const p=PIERS[sel.id],ls=S.lines.filter(l=>l.stops.includes(sel.id));let w=0;ls.forEach(l=>w+=sum(l.wait[l.stops.indexOf(sel.id)]));
     h=`<div><b>${p.name}</b> <span class="mut">${L2(p.side)}</span><p>${closed(sel.id)?t('Protokol nedeniyle kapalı · ','Closed for the protocol · '):''}${ls.length?ls.length+t(' hat · ',' lines · ')+Math.floor(w)+t(' kişi bekliyor',' waiting'):t('Bu iskeleye uğrayan hat yok','No line stops here')}${p.tour?t(' · turistik',' · tourist spot'):''}${p.cargo?t(' · yük',' · cargo'):''}${p.yard?t(' · tersane',' · shipyard'):''}</p></div>`}
-  else{const b=S.boats.find(x=>x.id===sel.id);if(!b){sel=null;el.hidden=true;return}h=`<div><b>${b.name}</b> <span class="mut">${L2(CLS[b.cls].n)} · %${Math.round(b.cond)}</span><p>${status(b)}</p></div>`}
+  else{const b=S.boats.find(x=>x.id===sel.id);if(!b){sel=null;el.hidden=true;return}h=`<div><b>${b.name}</b> <span class="mut">${L2(CLS[b.cls].n)} · %${Math.round(b.cond)}</span><p>${status(b)}</p></div><button class="btn pri" id="infoCard">${t('Tekne kartı','Boat card')}</button>`}
   el.innerHTML=h+`<button class="btn" id="infoX">${t('Kapat','Close')}</button>`;el.hidden=false}
-$('info').addEventListener('click',e=>{if(e.target.closest('#infoX')){sel=null;renderInfo()}});
+$('info').addEventListener('click',e=>{if(e.target.closest('#infoX')){sel=null;renderInfo()}if(e.target.closest('#infoCard')&&sel&&sel.k==='boat')openBW(sel.id)});
 $('tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=tab===b.dataset.t?'':b.dataset.t;arm='';render()});
 $('speed').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||S.dead)return;speed=+b.dataset.s;hud(true)});
 $('lang').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;LANG=b.dataset.l;try{localStorage.setItem('bogaz-filosu-lang',LANG)}catch(_){}applyLang()});
@@ -725,10 +748,10 @@ $('sheet').addEventListener('change',e=>{const s=e.target.closest('select');if(!
   if(s.dataset.sel==='line'){const b=S.boats.find(x=>x.id===+s.dataset.id);if(b)assignLine(b,+s.value)}else newLine[+s.dataset.i]=+s.value;render();save()});
 $('sheet').addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b||b.disabled)return;const a=b.dataset.act,id=+b.dataset.id,bt=S.boats.find(x=>x.id===id);let keep='';
   if(a==='buy')buy(b.dataset.k);
-  if(a==='sell'){if(arm!=='s'+id)keep='s'+id;else if(S.boats.length<=1)toast(t('Son tekneni satamazsın','You can’t sell your last boat'),true);else if(bt){const v=CLS[bt.cls].price*.6*(.5+bt.cond/200);if(bt.job)S.rep=Math.max(0,S.rep-3);S.cash+=v;S.boats=S.boats.filter(x=>x!==bt);log(bt.name+' satıldı · +'+tl(v),bt.name+' sold · +'+tl(v))}}
+  if(a==='sell'){if(arm!=='s'+id)keep='s'+id;else if(S.boats.length<=1)toast(t('Son tekneni satamazsın','You can’t sell your last boat'),true);else if(bt){const v=sellVal(bt);if(bwId===bt.id)closeBW();if(bt.job)S.rep=Math.max(0,S.rep-3);S.cash+=v;S.boats=S.boats.filter(x=>x!==bt);log(bt.name+' satıldı · +'+tl(v),bt.name+' sold · +'+tl(v))}}
   if(a==='auto'&&bt)bt.auto=!bt.auto;
-  if(a==='automaint')S.autoMaint=!S.autoMaint;
-  if(a==='maint'&&bt)sendMaint(bt);
+    if(a==='maint'&&bt)sendMaint(bt);
+  if(a==='card'&&bt)openBW(bt.id);
   if(a==='capt'&&bt){const nx=CAPT[(bt.capt||0)+1];if(nx&&S.cash>=nx.cost){spend('egitim',nx.cost);bt.capt=(bt.capt||0)+1;log(bt.name+' kaptanı artık '+nx.n[0],bt.name+'’s captain is now '+nx.n[1])}}
   if(a==='kind')newKind=b.dataset.k;
   if(a==='surge'){const s=S.surges.find(x=>x.id===id);if(s){newLine=[s.a,s.b];newKind=s.tour?'tur':'hat';toast(t('Güzergâh seçildi, aşağıdan “Hattı kur”a bas','Route picked, press “Open line” below'))}}
@@ -884,6 +907,37 @@ function draw(){anim+=still?0:.016;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillSty
     const l=b.lineId&&S.lines.find(q=>q.id===b.lineId);if(l){ctx.beginPath();ctx.arc(x,y,2.4,0,TAU);ctx.fillStyle=l.color;ctx.fill()}
     if(b.cond<35&&!b.mt){ctx.fillStyle='#c2412d';ctx.font=`800 11px ${FD}`;ctx.textAlign='center';ctx.fillText('!',x,y-c.sz-4)}}}
 
+/* ---------- Tekne kartı: yaşlanma, bakım, geliştirme ---------- */
+let bwId=0;
+function openBW(id){bwId=id;renderBW();$('bw').hidden=false}
+function closeBW(){bwId=0;$('bw').hidden=true}
+function renderBW(){const b=S.boats.find(x=>x.id===bwId);if(!b){closeBW();return}const c=CLS[b.cls],cp=CAPT[b.capt||0],nx=CAPT[(b.capt||0)+1],u=UP(b),busy=b.job||b.broken>0||b.mt;
+  const kn=(c.kn*cp.spd*(1+.08*u.eng)).toFixed(1),upk=Math.round(c.upk*(1+Math.min(.3,b.age*.004))),aw=Math.round((ageWear(b)-1)*100);
+  const why=b.job?t('Teknenin işi bitince yapılabilir','Available once the current job is done'):b.broken>0?t('Önce arıza giderilmeli','Repair the breakdown first'):b.mt?t('Tekne zaten tersane işinde','Already busy at the shipyard'):'';
+  let h=`<div class="bw-head"><div><h2 id="bwT">${b.name}</h2><span class="mut">${L2(c.n)} · ${t('kaptan','captain')} ${L2(cp.n)}</span></div><button class="btn" data-w="x" aria-label="${t('Kapat','Close')}">✕</button></div>
+  <p class="mut" style="margin:0">${status(b)}</p>
+  <div class="bw-stats"><div><span>${t('Durum','Condition')}</span><b>%${Math.round(b.cond)}</b></div><div><span>${t('Yaş','Age')}</span><b>${b.age} ${t('gün','d')}</b></div><div><span>${t('Hız','Speed')}</span><b>${kn} kn</b></div>
+   <div><span>${c.cap?t('Kapasite','Capacity'):t('Yük','Cargo')}</span><b>${c.cap?capOf(b)+t(' kişi',' pax'):cargoOf(b)+' t'}</b></div><div><span>${t('Günlük bakım','Daily upkeep')}</span><b>${tl(upk)}</b></div><div><span>${t('Satış değeri','Resale')}</span><b>${tl(sellVal(b))}</b></div></div>
+  <p class="warn" style="margin:0;font-size:12px">${t('Yaşlanma: ','Ageing: ')}${t('her gün günlük bakım biraz artar','upkeep rises a little every day')}${aw>0?t(', yıpranma şu an +%'+aw,', wear is now +'+aw+'%'):t('; 20. günden sonra yıpranma da artar','; after day 20 wear increases too')}. ${t('Tam yenileme yaşı sıfırlar.','A full refit resets the age.')}</p>`;
+  if(why)h+=`<p class="mut" style="margin:0">${why}</p>`;
+  h+=`<h3>${t('Tersane','Shipyard')}</h3><div class="bw-up">
+   <div class="bw-row"><div><b>${t('Bakım','Service')}</b><div class="mut">${t('Durumu %100’e çıkarır · 2 sa','Restores condition to 100% · 2 h')}</div></div><button class="btn" data-w="maint" ${busy||b.cond>=97?'disabled':''}>${tl(maintCost(b))}</button></div>
+   <div class="bw-row"><div><b>${t('Tam yenileme','Full refit')}</b><div class="mut">${t('Yaşı sıfırlar, durum %100 · 6 sa','Resets age, condition 100% · 6 h')}</div></div><button class="btn" data-w="refit" ${busy||b.age<5||S.cash<refitCost(b)?'disabled':''}>${tl(refitCost(b))}</button></div></div>
+  <h3>${t('Geliştirmeler','Upgrades')} <small>${t('her biri 2 seviye · tersanede 3 sa','2 levels each · 3 h at the shipyard')}</small></h3><div class="bw-up">`;
+  for(const k in UPG){const g=UPG[k],lv=u[k];if(k==='cap'&&!c.cap&&!c.cargo)continue;const cost=lv<2?upCost(b,k):0;
+    h+=`<div class="bw-row"><div><b>${L2(g.n)}</b><span class="pips">${[0,1].map(i=>`<i class="${i<lv?'on':''}"></i>`).join('')}</span><div class="mut">${t('Seviye başına ','Per level: ')}${L2(g.e)}</div></div>
+     ${lv<2?`<button class="btn pri" data-w="up" data-k="${k}" ${busy||S.cash<cost?'disabled':''}>${tl(cost)}</button>`:`<span class="mut">${t('Tam','Maxed')}</span>`}</div>`}
+  h+=`</div><h3>${t('Kaptan','Captain')}</h3><div class="bw-row"><div><b>${L2(cp.n)}</b><div class="mut">${cp.sal?t('günlük maaş ','daily wage ')+tl(cp.sal):t('maaş yok','no wage')}</div></div>${nx?`<button class="btn" data-w="capt" ${S.cash<nx.cost?'disabled':''}>${L2(nx.n)} · ${tl(nx.cost)}</button>`:`<span class="mut">${t('En üst seviye','Top level')}</span>`}</div>`;
+  $('bwBox').innerHTML=h}
+$('bw').addEventListener('click',e=>{if(e.target===$('bw')){closeBW();return}const x=e.target.closest('button[data-w]');if(!x||x.disabled)return;const b=S.boats.find(q=>q.id===bwId);if(!b)return closeBW();const w=x.dataset.w;
+  if(w==='x')return closeBW();
+  if(w==='maint')sendMaint(b);
+  if(w==='refit'){const cost=refitCost(b);if(S.cash>=cost&&sendMaint(b,false,{k:'refit'})){spend('onarim',cost)}}
+  if(w==='up'){const k=x.dataset.k,cost=upCost(b,k);if(S.cash>=cost&&UP(b)[k]<2&&sendMaint(b,false,{k})){S.cash-=cost;b.inv=(b.inv||0)+cost;log(b.name+': '+UPG[k].n[0]+' sipariş edildi · '+tl(-cost),b.name+': '+UPG[k].n[1]+' ordered · '+tl(-cost))}}
+  if(w==='capt'){const nx=CAPT[(b.capt||0)+1];if(nx&&S.cash>=nx.cost){spend('egitim',nx.cost);b.capt=(b.capt||0)+1;log(b.name+' kaptanı artık '+nx.n[0],b.name+'’s captain is now '+nx.n[1])}}
+  renderBW();render();hud(true);save()});
+addEventListener('keydown',e=>{if(e.key==='Escape'&&bwId)closeBW()});
+
 /* ---------- Başlangıç menüsü ---------- */
 let stDiff='orta',stArm=false,stHasSave=false,stPrevSpeed=1;
 function openStart(){stHasSave=!S.dead&&(S.t>21600+600||S.lines.length>0||S.boats.length>1);stDiff=S.diff||'orta';stArm=false;if(speed)stPrevSpeed=speed;speed=0;$('start').hidden=false;renderStart();hud(true)}
@@ -918,7 +972,7 @@ let last=performance.now(),uiT=0,autoT=0,saveT=0;
 function frame(ts){const dt=Math.min(.1,(ts-last)/1000);last=ts;
   if(speed&&!S.dead){let g=dt*GSEC*speed;while(g>0){const s=Math.min(g,30);tick(s);g-=s}
     autoT+=dt*speed;if(autoT>.5){autoT=0;autoAssign();checkGoals();checkAch()}}
-  uiT+=dt;if(uiT>1){uiT=0;const ae=document.activeElement;if(tab&&!(ae&&ae.tagName==='SELECT'))render();if(sel)renderInfo()}
+  uiT+=dt;if(uiT>1){uiT=0;const ae=document.activeElement;if(tab&&!(ae&&ae.tagName==='SELECT'))render();else if(bwId)renderBW();if(sel)renderInfo()}
   saveT+=dt;if(saveT>10){saveT=0;save()}
   if(uiT===0)renderOffer();
   hud();draw();requestAnimationFrame(frame)}
