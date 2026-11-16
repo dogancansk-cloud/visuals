@@ -85,8 +85,7 @@ body.noinfo #steps button span{display:none}
   .lbl{font-size:11.5px;padding:4px 9px 4px 7px}
 }
 
-#tourSeg{display:none;margin:10px 0 2px}
-body.inside #tourSeg{display:inline-flex}
+#tourSeg{display:inline-flex;margin:10px 0 2px}
 .seg{display:inline-flex;background:rgba(29,39,51,.07);border-radius:999px;padding:3px;gap:2px}
 .seg button{font:inherit;font-size:13.5px;font-weight:700;border:0;background:transparent;color:var(--ink2);padding:7px 13px;border-radius:999px;cursor:pointer;min-height:40px}
 .seg button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 2px 8px rgba(30,50,80,.14)}
@@ -105,7 +104,26 @@ body.int-free #steps button.on{background:rgba(29,39,51,.06);color:var(--ink2)}
 /* v2: free-walk stick and hint (from the live free-roam page) */
 #joy{position:fixed;z-index:6;left:calc(14px + env(safe-area-inset-left));bottom:96px;width:124px;height:124px;border-radius:50%;background:rgba(255,255,255,.55);box-shadow:0 4px 16px rgba(30,50,80,.18);display:none;touch-action:none}
 #joy i{position:absolute;left:41px;top:41px;width:42px;height:42px;border-radius:50%;background:var(--ink);opacity:.85}
-#wHint{position:fixed;z-index:6;left:50%;top:calc(env(safe-area-inset-top) + 112px);transform:translateX(-50%);max-width:90vw;text-align:center;font-size:14px;font-weight:650;color:var(--ink2);background:rgba(255,255,255,.88);padding:9px 15px;border-radius:999px;display:none;pointer-events:none}
+#wHint{position:fixed;z-index:6;left:50%;top:calc(env(safe-area-inset-top) + 72px);transform:translateX(-50%);max-width:min(420px,calc(100vw - 24px));text-align:center;font-size:14px;font-weight:650;color:var(--ink2);background:rgba(255,255,255,.88);padding:9px 15px;border-radius:16px;display:none;pointer-events:none;line-height:1.35}
+@media(min-width:761px){
+  #wHint{top:auto;bottom:28px;left:28px;transform:none;max-width:min(480px,calc(100vw - 200px));text-align:left}
+  body.int-free #keys{display:none}
+}
+@media(max-width:760px){
+  #wHint{top:calc(env(safe-area-inset-top) + 118px);max-width:min(420px,calc(100vw - 24px))}
+}
+body.int-free #dock{display:none}
+body.clean #wHint{display:none !important}
+#pad{position:fixed;z-index:6;right:calc(16px + env(safe-area-inset-right));bottom:110px;width:138px;height:138px;display:none;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;gap:6px;pointer-events:none}
+#pad button{pointer-events:auto;border:0;border-radius:14px;background:rgba(255,255,255,.86);color:var(--ink);font-size:18px;font-weight:800;box-shadow:0 4px 16px rgba(30,50,80,.16);cursor:pointer;min-height:0;touch-action:none}
+#pad button:active{background:#fff}
+#pad button[data-act=fwd]{grid-column:2;grid-row:1}
+#pad button[data-act=left]{grid-column:1;grid-row:2}
+#pad button[data-act=reset]{grid-column:2;grid-row:2;font-size:20px}
+#pad button[data-act=right]{grid-column:3;grid-row:2}
+#pad button[data-act=back]{grid-column:2;grid-row:3}
+body.clean #pad{display:none !important}
+@media(max-width:760px){#pad{right:10px;bottom:92px;width:118px;height:118px} #pad button{border-radius:12px;font-size:16px}}
 </style>
 </head>
 <body>
@@ -137,7 +155,7 @@ body.int-free #steps button.on{background:rgba(29,39,51,.06);color:var(--ink2)}
 </div>
 <div id="dock" class="glass"><button class="nav" id="bPrev" aria-label="prev">‹</button><div id="steps"></div><button class="nav" id="bNext" aria-label="next">›</button></div>
 <div id="keys"></div>
-<div id="joy"><i></i></div><div id="wHint"></div>
+<div id="joy"><i></i></div><div id="pad" aria-hidden="true"><button type="button" data-act="fwd" aria-label="ileri">▲</button><button type="button" data-act="left" aria-label="sola dön">◀</button><button type="button" data-act="reset" aria-label="görünümü sıfırla">⟲</button><button type="button" data-act="right" aria-label="sağa dön">▶</button><button type="button" data-act="back" aria-label="geri">▼</button></div><div id="wHint"></div>
 <div id="credit"></div>
 <button class="btn" id="exitClean"></button>
 <div id="loader"><div><div class="spin"></div><span id="ldT"></span><small id="ldS"></small></div></div>
@@ -4113,10 +4131,12 @@ const UI={
  loading:{tr:'Tarama yükleniyor…',en:'Loading the scan…'},
  loadingFull:{tr:'Tam çözünürlük doku (8192 × 6816) · ≈ 20 MB',en:'Full-resolution texture (8192 × 6816) · ≈ 20 MB'},
  loadingLite:{tr:'Telefon sürümü (4096 × 3408) · ≈ 12 MB',en:'Phone version (4096 × 3408) · ≈ 12 MB'},
- keys:{tr:'Serbest: WASD veya oklar yürü · sürükle bak · Shift hızlı · i bilgi · P sunum · Esc dışarı',en:'Free: WASD or arrows walk · drag to look · Shift faster · i info · P present · Esc outside'}, keysChrono:{tr:'← → sahne · 1–5 atla · i bilgi · P sunum · F tam ekran · Esc dışarı',en:'← → scene · 1–5 jump · i info · P present · F fullscreen · Esc outside'},
+ keys:{tr:'Serbest: sürükle bak · tekerlek ilerle · WASD yürü · oklar yürü/dön · Shift hızlı · i bilgi · P sunum · Esc dışarı',en:'Free: drag to look · wheel to walk · WASD move · arrows move/turn · Shift faster · i info · P present · Esc outside'}, keysChrono:{tr:'← → sahne · 1–5 atla · i bilgi · P sunum · F tam ekran · Esc dışarı',en:'← → scene · 1–5 jump · i info · P present · F fullscreen · Esc outside'},
  exterior:{tr:'Dış görünüm · yapı evreleri',en:'Exterior · building phases'}, interior:{tr:'İç mekân · tarama',en:'Interior · scan'},
  freeMode:{tr:'Serbest gezinme',en:'Free movement'},
  chronoMode:{tr:'Kronolojik sahneler',en:'Chronological scenes'},
+ ctrlHint:{tr:'Sürükle: bakın · Tekerlek: ilerleyin · WASD: yürüyün · Sol/sağ ok: dönün · Sağ alttaki düğmeler aynı işi görür.',en:'Drag to look · Wheel to walk · WASD to move · Left/right arrows to turn · Buttons at the bottom right do the same.'},
+ ctrlHintPhone:{tr:'Sürükleyerek bakın, alttaki yuvarlak kolla yürüyün. Duvarlardan geçilmez.',en:'Drag to look, walk with the stick at the bottom. Walls cannot be crossed.'},
  freeHint:{tr:'Taramada göz hizasında dolaşın. Sürükleyerek bakın; WASD veya ok tuşlarıyla, telefonda yuvarlak kolla yürüyün. Duvarlardan geçilmez, odalar arasına kapılardan geçilir. Kronolojik sahnelerde kamera, metindeki sırayla mozaiklerin yanına gider.',
            en:'Walk through the scan at eye level. Drag to look; walk with WASD or the arrow keys, or the round stick on a phone. Walls cannot be crossed; rooms connect through their doors. In chronological mode the camera flies to each mosaic in the order of the text.'},
  scanGap:{tr:'Naos bu taramada yok; kapılarının ardında ölçülere göre kurulmuş yalın bir kabuk görünür. Düz renkli yüzeyler tarama değildir.',
@@ -4675,7 +4695,7 @@ controls.enableDamping=true; controls.dampingFactor=0.08; controls.rotateSpeed=0
 
 /* ---------- state ---------- */
 let LANG=(Q.get('lang')||localStorage.getItem('kariye_lang')||'tr'); if(!/^(tr|en)$/.test(LANG))LANG='tr';
-let MODE='ext', PH=3, SC=0, TOUR='free';
+let MODE='ext', PH=0, SC=0, TOUR='free';
 let INFO=localStorage.getItem('kariye_info')!=='0'; if(Q.get('info')==='0')INFO=false; if(Q.get('info')==='1')INFO=true;
 let SCAN=null, scanLoading=false;
 const T=(o)=>o[LANG]||o.tr;
@@ -4742,10 +4762,11 @@ function loadScan(cb){
         map.encoding=THREE.sRGBEncoding; map.anisotropy=renderer.capabilities.getMaxAnisotropy(); map.minFilter=THREE.LinearMipmapLinearFilter; map.magFilter=THREE.LinearFilter; map.generateMipmaps=true; map.needsUpdate=true;
         o.material=new THREE.MeshBasicMaterial({map,side:THREE.DoubleSide}); o.frustumCulled=false;}});
       SCAN.visible=false; scene.add(SCAN);
-      // Dark well under the scan so near-floor holes read as void, not a grey plane.
+      try{fpFillScanHoles(SCAN);}catch(err){console.warn("hole fill",err);}
+      // Stone-toned well under the scan so uncapped near-floor holes show stone, not sky.
       // Scan geometry is unchanged. The well is low and open at the top, so the missing dome crown still shows the sky.
-      const well=new THREE.Group();
-      const dark=new THREE.MeshBasicMaterial({color:0x2C2A28,side:THREE.DoubleSide});
+      const well=new THREE.Group(); well.name='occluderWell';
+      const dark=new THREE.MeshBasicMaterial({color:new THREE.Color(0xA89278).convertSRGBToLinear(),side:THREE.DoubleSide,depthWrite:true});
       const fl=new THREE.Mesh(new THREE.PlaneGeometry(80,80),dark);
       fl.rotation.x=-Math.PI/2; fl.position.y=-4.08; well.add(fl);
       // low side boards, below mid-wall, hide grey through the lower wall gaps without boxing in the wide overview
@@ -4769,11 +4790,15 @@ function enterInside(i,tour){
   loadScan(()=>{fade(true);setTimeout(()=>{
     MODE='int'; scene.fog=null; document.body.classList.add('inside'); EXT.visible=false; SCAN.visible=true; sun.castShadow=false;
     applyIntControls();
-    SC=(i==null||isNaN(i))?SC:((i+SCENES.length)%SCENES.length);
     TOUR=(tour==='chrono'||tour==='free')?tour:((Q.get('tour')==='chrono')?'chrono':'free');
-    tw=null;
-    if(TOUR==='chrono'){const c=sceneCam(SCENES[SC]); cam.position.set(...c.pos); controls.target.set(...c.tgt);}
-    else{cam.position.set(...FREE_START.pos); controls.target.set(...FREE_START.tgt);}
+    tw=null; if(typeof FP!=='undefined') FP.on=false;
+    if(TOUR==='chrono'){
+      SC=(i==null||isNaN(i))?0:((i+SCENES.length)%SCENES.length);
+      const c=sceneCam(SCENES[SC]); cam.position.set(...c.pos); controls.target.set(...c.tgt);
+    } else {
+      SC=0;
+      cam.position.set(...FREE_START.pos); controls.target.set(...FREE_START.tgt);
+    }
     controls.update(); render(); fade(false);
   },450);});
 }
@@ -4787,9 +4812,14 @@ function goScene(i,instant){
   render();
 }
 function setTour(t){
-  if(MODE!=='int')return;
-  if(t==='chrono') goScene(SC);
-  else{TOUR='free'; tw=null; applyIntControls(); render();}
+  t=(t==='chrono')?'chrono':'free';
+  if(MODE!=='int'){enterInside(0,t);return;}
+  if(t==='chrono') goScene(0);
+  else{
+    TOUR='free'; tw=null; if(typeof FP!=='undefined') FP.on=false;
+    cam.position.set(...FREE_START.pos); controls.target.set(...FREE_START.tgt);
+    controls.update(); applyIntControls(); render();
+  }
 }
 function goPhase(i){const old=PH; PH=Math.max(0,Math.min(PHASES.length-1,i)); setPhase(PH); if((old<2)!==(PH<2)){const v=extView(); flyTo(v.pos,v.tgt,1400);} render();}
 
@@ -4933,7 +4963,9 @@ window.__KSHELL={"v":2,"pos":"UPuK/uz6ePuK/uz6oPuK/uz6yPuK/uz6KPuK/hT7UPuK/hT7eP
 /* ---------- v2: yalın kabuk (zemin, duvar, tonoz, kubbe), göz hizası ve çarpışma ----------
    Kabuk taramanın eksik yerlerinin arkasında düz yüzeyler gösterir; tarama değişmez.
    Serbest gezinmede kamera hep göz hizasında (1,6 m) ve yürünebilir ızgara içinde kalır; odalar arası geçiş yalnız kapılardan.
-   Kronolojik sahnelerde kameralar v1.15 kadrajlarını korur; kabuk yalnız içe bakan yüzlerle çizilir, sahneleri örtmez. */
+   Kronolojik sahnelerde kameralar v1.15 kadrajlarını korur; kabuk yalnız içe bakan yüzlerle çizilir, sahneleri örtmez.
+   v2.2: serbest ve kronolojik girişler ayrılır; kronoloji hep ilk sahneden başlar. Masaüstü fare, tekerlek, WASD/ok ve düğme denetimi.
+   v2.3: bej yama kaldırıldı; delikler yalın açık kabuk duvarı gibi durur. Masaüstünde ipucu yazısı kartı ve yön düğmelerini örtmez. */
 const KS=window.__KSHELL; delete window.__KSHELL;
 const KSb=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer;};
 const KSF=KS.floor, KSFH=new Int16Array(KSb(KSF.h));
@@ -4960,7 +4992,7 @@ function fpBuildShell(){
   for(let i=0;i<C.length;i+=3){c.setRGB(C[i]/255,C[i+1]/255,C[i+2]/255).convertSRGBToLinear();col[i]=c.r;col[i+1]=c.g;col[i+2]=c.b;}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
   g.setIndex(new THREE.BufferAttribute(KS.i32?new Uint32Array(KSb(KS.idx)):new Uint16Array(KSb(KS.idx)),1));g.computeBoundingSphere();
-  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.FrontSide}));
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({vertexColors:true,side:THREE.DoubleSide,depthWrite:true,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}));
   /* v2.1: kronolojik sahnelerde naos kapısından görünen kabuk koyu sıcak griye iner (#655A52 civarı); serbest gezinmede açık kalır */
   const dk=new Float32Array(col),t=new THREE.Color(0x655A52).convertSRGBToLinear();
   for(let i=0;i<pos.length;i+=3){const x=pos[i],z=pos[i+2];
@@ -4971,7 +5003,25 @@ function fpBuildShell(){
 function fpDropWell(){ if(!SCAN)return; const rm=[];
   SCAN.children.forEach(o=>{let dark=false;o.traverse(q=>{if(q.isMesh&&q.material&&q.material.color&&q.material.color.getHex()===0x2C2A28)dark=true;});if(dark)rm.push(o);});
   rm.forEach(o=>SCAN.remove(o));}
-function fpHint(m){const h=$('wHint');h.textContent=m;h.style.display='block';clearTimeout(fpHint.t);fpHint.t=setTimeout(()=>h.style.display='none',6500);}
+function fpFillScanHoles(root){
+  if(!root||root.userData.holesFilled)return; root.userData.holesFilled=true;
+  /* v2.3: bej yama yaklaşımı kaldırıldı. Delikler yalın açık kabuk duvarı gibi görünsün; arkadaki koridor veya gökyüzü görünmesin diye kabuk iki yüzlü kalır. */
+}
+function fpHintPlace(){
+  const h=$('wHint'); if(!h||h.style.display==='none')return;
+  const desk=innerWidth>=761 && !matchMedia('(pointer:coarse)').matches;
+  if(desk){
+    h.style.top='auto'; h.style.bottom='28px'; h.style.left='28px'; h.style.right='auto';
+    h.style.transform='none'; h.style.maxWidth='min(480px, calc(100vw - 200px))';
+    return;
+  }
+  const bar=$('bar')?$('bar').getBoundingClientRect():{bottom:0};
+  const top=Math.round((bar.bottom||0)+12);
+  h.style.top=top+'px'; h.style.bottom='auto'; h.style.left='50%'; h.style.right='auto';
+  h.style.transform='translateX(-50%)';
+}
+function fpHint(m){const h=$('wHint');h.textContent=m;h.style.display='block';fpHintPlace();clearTimeout(fpHint.t);fpHint.t=setTimeout(()=>h.style.display='none',6500);}
+addEventListener('resize',()=>{if($('wHint')&&$('wHint').style.display==='block')fpHintPlace();});
 function fpApply(){cam.position.set(FP.x,fpFloor(FP.x,FP.z)+FP_EYE,FP.z);cam.rotation.set(FP.pitch,FP.yaw,0,'YXZ');cam.updateMatrixWorld();
   const z=fpZone(FP.x,FP.z); if(z!==FP.zone){ if(z===4&&FP.zone)fpHint(LANG==='tr'?'Naos taramada yok: burada ölçülere göre kurulmuş yalın kabuk görünüyor.':'The naos is not in the scan: you see a plain shell built from measurements.'); FP.zone=z;}}
 function fpFromCam(){const p=fpNearest(cam.position.x,cam.position.z);const d=new THREE.Vector3().subVectors(controls.target,cam.position);
@@ -4981,23 +5031,73 @@ function fpFromCam(){const p=fpNearest(cam.position.x,cam.position.z);const d=ne
   FP.x=p[0];FP.z=p[1];FP.yaw=Math.atan2(-dx,-dz);FP.pitch=Math.max(-1.35,Math.min(1.35,Math.atan2(dy,Math.hypot(dx,dz))));FP.zone=fpZone(FP.x,FP.z);}
 function fpSetupScene(){ if(!FP.shell)fpBuildShell(); fpDropWell(); FP.shell.visible=true; scene.background=FP.bg; FP.setup=true;}
 function fpTeardown(){FP.setup=false;FP.on=false;if(FP.shell)FP.shell.visible=false;scene.background=null;controls.enabled=true;$('joy').style.display='none';}
-function fpJoyPlace(){const j=$('joy'); const show=FP.on&&matchMedia('(pointer:coarse)').matches&&!document.body.classList.contains('clean');
-  j.style.display=show?'block':'none'; if(!show)return;
+function fpJoyPlace(){const j=$('joy'); const coarse=matchMedia('(pointer:coarse)').matches; const clean=document.body.classList.contains('clean');
+  const show=FP.on&&coarse&&!clean;
+  j.style.display=show?'block':'none';
+  const p=$('pad'); if(p){p.style.display=(FP.on&&!coarse&&!clean)?'grid':'none'; p.setAttribute('aria-hidden', (p.style.display==='grid')?'false':'true');}
+  if(FP.on&&!FP.hinted){FP.hinted=1; const msg=T(coarse?UI.ctrlHintPhone:UI.ctrlHint);
+    try{if(!sessionStorage.getItem('kariye_ctrlHint')){sessionStorage.setItem('kariye_ctrlHint','1'); fpHint(msg);}}catch(err){fpHint(msg);}}
+  if(!show)return;
   const c=$('card'),r=c.getBoundingClientRect(),cv=INFO&&getComputedStyle(c).opacity!=='0'&&r.height>0;
-  const d=$('dock').getBoundingClientRect(); const top=cv?Math.min(r.top,d.top):d.top;
+  const dock=$('dock'), dVis=dock&&getComputedStyle(dock).display!=='none';
+  const db=dVis?dock.getBoundingClientRect():null;
+  const top=cv&&db?Math.min(r.top,db.top):(cv?r.top:(db?db.top:innerHeight-24));
   j.style.bottom=Math.round(innerHeight-top+12)+'px';}
 function fpTick(now){
   const dt=Math.min((now-(FP.last||now))/1000,0.1);FP.last=now;
-  let f=(held.KeyW||held.ArrowUp?1:0)-(held.KeyS||held.ArrowDown?1:0)+FP.joy.f, s=(held.KeyD||held.ArrowRight?1:0)-(held.KeyA||held.ArrowLeft?1:0)+FP.joy.s;
+  const pad=FP.pad||(FP.pad={f:0,b:0,tl:0,tr:0});
+  const turn=((held.ArrowLeft||held.KeyQ||pad.tl)?1:0)-((held.ArrowRight||held.KeyE||pad.tr)?1:0);
+  if(turn)FP.yaw+=turn*1.55*dt;
+  let f=(held.KeyW||held.ArrowUp||pad.f?1:0)-(held.KeyS||held.ArrowDown||pad.b?1:0)+FP.joy.f+(FP.wheel||0);
+  let s=(held.KeyD?1:0)-(held.KeyA?1:0)+FP.joy.s;
+  if(FP.wheel)FP.wheel*=Math.max(0,1-8*dt);
   const l=Math.hypot(f,s); if(l>1){f/=l;s/=l;}
   if(l>.05){const sp=(held.ShiftLeft||held.ShiftRight?3.2:1.5)*dt,sn=Math.sin(FP.yaw),cs=Math.cos(FP.yaw);
     const dx=(-sn*f+cs*s)*sp,dz=(-cs*f-sn*s)*sp;
     if(fpOk(FP.x+dx,FP.z+dz)){FP.x+=dx;FP.z+=dz;}else if(fpOk(FP.x+dx,FP.z)){FP.x+=dx;}else if(fpOk(FP.x,FP.z+dz)){FP.z+=dz;}}
   fpApply();}
 /* bakış: serbest modda sürükleme kameranın kendi çevresinde döndürür */
-canvas.addEventListener('pointerdown',e=>{if(FP.on){FP.drag=[e.clientX,e.clientY];}});
-addEventListener('pointermove',e=>{if(!FP.on||!FP.drag)return;FP.yaw-=(e.clientX-FP.drag[0])*.0045;FP.pitch=Math.max(-1.35,Math.min(1.35,FP.pitch-(e.clientY-FP.drag[1])*.0045));FP.drag=[e.clientX,e.clientY];});
+canvas.addEventListener('pointerdown',e=>{
+  if(!FP.on||e.button!==0)return;
+  if(e.target!==canvas)return;
+  try{canvas.setPointerCapture(e.pointerId);}catch(err){}
+  FP.drag=[e.clientX,e.clientY]; e.preventDefault();
+});
+addEventListener('pointermove',e=>{
+  if(!FP.on||!FP.drag)return;
+  const k=0.0036;
+  FP.yaw-=(e.clientX-FP.drag[0])*k;
+  FP.pitch=Math.max(-1.35,Math.min(1.35,FP.pitch-(e.clientY-FP.drag[1])*k));
+  FP.drag=[e.clientX,e.clientY];
+});
 addEventListener('pointerup',()=>{FP.drag=null;}); addEventListener('pointercancel',()=>{FP.drag=null;});
+canvas.addEventListener('wheel',e=>{
+  if(!FP.on)return; e.preventDefault();
+  const d=Math.max(-1,Math.min(1,-e.deltaY/120));
+  FP.wheel=(FP.wheel||0)+d*1.15;
+},{passive:false});
+(()=>{const pad=$('pad'); if(!pad)return;
+  FP.pad={f:0,b:0,tl:0,tr:0};
+  const set=(act,on)=>{
+    if(act==='fwd')FP.pad.f=on;
+    else if(act==='back')FP.pad.b=on;
+    else if(act==='left')FP.pad.tl=on;
+    else if(act==='right')FP.pad.tr=on;
+  };
+  pad.addEventListener('pointerdown',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    const act=b.dataset.act;
+    if(act==='reset'){
+      const s=FREE_START; cam.position.set(...s.pos); controls.target.set(...s.tgt); controls.update();
+      if(typeof fpFromCam==='function')fpFromCam(); e.preventDefault(); return;
+    }
+    try{b.setPointerCapture(e.pointerId);}catch(err){}
+    set(act,1); e.preventDefault(); e.stopPropagation();
+  });
+  const up=e=>{const b=e.target.closest('button'); if(b)set(b.dataset.act,0);};
+  pad.addEventListener('pointerup',up); pad.addEventListener('pointercancel',up); pad.addEventListener('pointerleave',up);
+})();
+
 (()=>{const jb=$('joy'),jk=jb.firstElementChild;const mv=e=>{const r=jb.getBoundingClientRect();let x=e.clientX-r.left-62,y=e.clientY-r.top-62;const l=Math.hypot(x,y);if(l>52){x*=52/l;y*=52/l;}FP.joy.s=x/52;FP.joy.f=-y/52;jk.style.transform='translate('+x+'px,'+y+'px)';};
   jb.addEventListener('pointerdown',e=>{jb.setPointerCapture(e.pointerId);mv(e);e.stopPropagation();});
   jb.addEventListener('pointermove',e=>{if(jb.hasPointerCapture(e.pointerId))mv(e);});
@@ -5027,7 +5127,7 @@ addEventListener('pointerup',()=>{FP.drag=null;}); addEventListener('pointercanc
    } else if(FP.setup) fpTeardown();
    return _t(now);};
 }
-function fpTone(dark){if(!FP.shell||FP.dark===dark)return;const a=FP.shell.geometry.attributes.color;a.array.set(dark?FP.colDark:FP.colLight);a.needsUpdate=true;FP.dark=dark;}
+function fpTone(dark){if(!FP.shell)return;if(FP.dark!==dark){const a=FP.shell.geometry.attributes.color;a.array.set(dark?FP.colDark:FP.colLight);a.needsUpdate=true;FP.dark=dark;}FP.shell.material.side=dark?THREE.FrontSide:THREE.DoubleSide;FP.shell.material.needsUpdate=true;}
 window.K2={fp:FP,ok:fpOk,floor:fpFloor,zone:fpZone,nearest:fpNearest,
   tryPose:(x,z,yaw,pitch)=>{const p=fpNearest(x,z);FP.x=p[0];FP.z=p[1];FP.yaw=yaw;FP.pitch=pitch;fpApply();return [FP.x,FP.z];},
   tris:()=>renderer.info.render.triangles,
