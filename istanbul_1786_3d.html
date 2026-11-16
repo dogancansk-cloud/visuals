@@ -1305,8 +1305,12 @@ function frame(now){
   const k=1-Math.pow(1-0.08,dt*60);   // v4.8: damping as MapControls dampingFactor 0.08
   for(const key of['az','el','dist','tx','tz'])cur[key]+=(goal[key]-cur[key])*k;
   placeCam();
-  if(window.__detailMesh)__detailMesh.visible=true;
-  renderer.info.reset(); renderer.render(scene,camera); overlay();
+  if(window.__detailMesh)__detailMesh.visible=cur.dist<1300;   // perf: cumba/chimney/kafes/bracket detail is sub-pixel from further away
+  // perf: static sun -> shadows drawn once (refreshed when geometry changes); idle camera -> 2 fps until the next input
+  const geoN=renderer.info.memory.geometries, moving=auto||['az','el','dist','tx','tz'].some(q=>Math.abs(goal[q]-cur[q])>(q==='dist'||q==='tx'||q==='tz'?0.02:0.0004));
+  if(geoN!==window.__geoN||now<8000){window.__geoN=geoN;renderer.shadowMap.needsUpdate=true;}
+  renderer.shadowMap.autoUpdate=false;
+  if(moving||window.__dirty||now-(window.__lastR||0)>500){window.__dirty=false;window.__lastR=now;renderer.info.reset(); renderer.render(scene,camera); overlay();}
   frames++; if(now-fpsT>1000){fps=frames*1000/(now-fpsT);frames=0;fpsT=now;}
   window.STATS={triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,fps:Math.round(fps),
     houses:D.houses.length,detail:window.DSTAT,detailVisible:window.__detailMesh&&__detailMesh.visible,geometries:renderer.info.memory.geometries};
@@ -1314,6 +1318,7 @@ function frame(now){
 }
 window.setView=v=>{Object.assign(goal,v);clampGoal();Object.assign(cur,goal);auto=false;};
 window._probe=()=>({cur:Object.fromEntries(Object.entries(cur).map(([k,v])=>[k,+v.toFixed(3)])),camY:+camera.position.y.toFixed(2),auto});
+for(const ev of['pointerdown','pointermove','wheel','keydown','resize','touchstart','click'])window.addEventListener(ev,()=>{window.__dirty=true},{passive:true});
 requestAnimationFrame(frame);
 })();
 </script>

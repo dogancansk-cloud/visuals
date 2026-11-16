@@ -1,0 +1,28 @@
+.x-bar{position:fixed;left:8px;top:44px;z-index:12;display:flex;gap:6px}
+.x-btn{font:600 13px system-ui,-apple-system,Segoe UI,sans-serif;background:#ffffffeb;color:#333;border:0;border-radius:8px;padding:8px 12px;box-shadow:0 1px 4px #00000026;cursor:pointer;min-height:36px}
+.x-btn:hover{background:#fff}
+.x-home{padding:8px 11px;font-size:15px}
+.x-panel{position:fixed;left:8px;top:88px;z-index:12;width:280px;max-height:calc(100% - 150px);display:flex;flex-direction:column;background:#fffffff2;border-radius:10px;box-shadow:0 2px 10px #00000030;overflow:hidden}
+.x-panel[hidden]{display:none}
+.x-q{margin:8px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none}
+.x-q:focus{border-color:#c8643b}
+.x-list{overflow:auto;padding:0 6px 8px}
+.x-h{font:700 11px system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#8a7a6a;padding:10px 6px 4px}
+.x-item{display:flex;justify-content:space-between;align-items:baseline;gap:8px;width:100%;text-align:left;border:0;background:none;padding:7px 6px;border-radius:6px;font:14px system-ui,sans-serif;color:#222;cursor:pointer}
+.x-item:hover,.x-item:focus-visible{background:#f3ead9}
+.x-item small{color:#8a7a6a;font-size:12px;white-space:nowrap}
+.x-empty{padding:12px 6px;color:#888;font-size:13px}
+.x-card{position:fixed;right:8px;top:52px;z-index:12;width:300px;background:#fffffff5;border-radius:10px;box-shadow:0 2px 10px #00000030;padding:12px 14px;font:14px/1.45 system-ui,sans-serif;color:#222}
+.x-card[hidden]{display:none}
+.x-card b{font-size:16px;display:block;padding-right:24px;color:#7a2f12}
+.x-card .x-y{display:inline-block;margin-top:2px;font-size:12px;color:#8a7a6a}
+.x-card p{margin:8px 0 0}
+.x-close{position:absolute;right:6px;top:4px;border:0;background:none;font-size:22px;line-height:1;color:#777;cursor:pointer;padding:4px 8px}
+.x-labels .lbl.x-click{pointer-events:auto;cursor:pointer}
+.x-labels .lbl.x-click:hover{background:#fff;color:#c8643b}
+.lbl.park{color:#3d6b2a}
+@media(max-width:700px){
+  .x-bar{top:40px}
+  .x-panel{left:8px;right:8px;width:auto;top:84px;max-height:55%}
+  .x-card{left:8px;right:8px;width:auto;top:auto;bottom:112px;max-height:40%;overflow:auto}
+}
