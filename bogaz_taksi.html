@@ -1963,6 +1963,14 @@ const DIFFS=[['kolay','Kolay','Easy'],['orta','Orta','Medium'],['zor','Zor','Har
 const $=id=>document.getElementById(id);
 const t=(a,b)=>((window.BT&&BT.lang())==='en'?b:a);
 const money=n=>'₺'+Math.round(n).toLocaleString((window.BT&&BT.lang())==='en'?'en-GB':'tr-TR');
+let delArm=false;
+async function delAccount(){const uid=user&&user.uid;if(!uid)return;
+  await Promise.all(DIFFS.map(d=>db.collection('lb_'+d[0]).doc(uid).delete().catch(()=>{})));
+  try{localStorage.removeItem('bt-nick')}catch(_){}
+  let ok=true;try{await auth.currentUser.delete()}catch(e){ok=false}
+  if(!ok){try{await auth.signOut()}catch(_){}}
+  ev('account_delete',{ok:ok?1:0});$('lbm').hidden=true;
+  if(window.BT)BT.toast(ok?t('Hesabın ve skorların silindi','Your account and scores were deleted'):t('Skorların silindi. Hesabı tamamen silmek için tekrar giriş yapıp yeniden dene.','Scores deleted. To delete the account fully, sign in again and retry.'),!ok)}
 let state='loading',auth=null,db=null,an=null,user=null,best={},bdone={},lastPush=0,timer=null,tab='orta',rows=null,busy=false,err='';
 const qEv=[];
 function ev(name,p){if(an){try{an.logEvent(name,p||{})}catch(_){}}else if(qEv.length<50)qEv.push([name,p])}
@@ -2007,7 +2015,7 @@ function renderLB(){const b=$('lbb');let h=`<div class="lbh"><h2 id="lbT">${t('S
   else h+=`<ol class="lbl">${rows.map((r,i)=>`<li class="${user&&r.id===user.uid?'me':''}"><span class="rk">${i+1}</span><span class="nm">${esc(r.name||'Kaptan')}<small>${(r.done|0)} ${t('teslimat','trips')}</small></span><span class="sc">${money(r.earned||0)}</span></li>`).join('')}</ol>`;
   if(user){const mine=best[tab];h+=`<p class="mut">${mine?t('Bu seviyedeki rekorun: ','Your record here: ')+money(mine):t('Bu seviyede henüz rekorun yok.','No record at this level yet.')}</p>
     <label class="mut" for="lbNick">${t('Tabloda görünen adın','Name on the leaderboard')}</label><div class="lbn"><input id="lbNick" maxlength="20" value="${esc(nick())}"><button data-l="nick">${t('Kaydet','Save')}</button></div>
-    <button data-l="out">${t('Çıkış yap','Sign out')}</button>`}
+    <div class="lbn"><button data-l="out" style="flex:1">${t('Çıkış yap','Sign out')}</button><button data-l="del" style="flex:1;color:var(--crit)">${delArm?t('Eminim, sil','Yes, delete'):t('Hesabımı sil','Delete account')}</button></div>${delArm?`<p class="mut">${t('Skor tablosundaki kayıtların ve hesabın kalıcı olarak silinir. Oyundaki ilerlemen bu cihazda kalır.','Your leaderboard entries and account are permanently deleted. Your game progress stays on this device.')}</p>`:''}`}
   else if(auth)h+=`<button class="pri" data-l="in">${t('Giriş yap ve tabloya katıl','Sign in to join')}</button>`;
   b.innerHTML=h}
 function openLB(){const st=window.BT&&BT.state();tab=(st&&st.diff)||tab;$('lbm').hidden=false;loadRows();ev('leaderboard_open',{difficulty:tab})}
@@ -2017,7 +2025,8 @@ document.addEventListener('click',e=>{const o=e.target.closest('[data-o]');if(o)
   if(a==='x')$('lbm').hidden=true;
   if(a==='tab'){tab=l.dataset.d;loadRows()}
   if(a==='in'){if(window.BTUI){$('lbm').hidden=true;BTUI.showLogin()}else signIn('google')}
-  if(a==='out'&&auth)auth.signOut().then(()=>{$('lbm').hidden=true});
+  if(a==='out'&&auth){delArm=false;auth.signOut().then(()=>{$('lbm').hidden=true})}
+  if(a==='del'&&user){if(!delArm){delArm=true;renderLB();return}delArm=false;delAccount()}
   if(a==='nick'){const v=($('lbNick').value||'').replace(/[<>]/g,'').trim().slice(0,20);if(!v)return;try{localStorage.setItem('bt-nick',v)}catch(_){}
     Promise.all(DIFFS.filter(d=>best[d[0]]).map(d=>db.collection('lb_'+d[0]).doc(user.uid).set({name:v,earned:best[d[0]],done:bdone[d[0]]|0,ts:firebase.firestore.FieldValue.serverTimestamp()},{merge:false}).catch(()=>{}))).then(()=>{render();loadRows()})}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('lbm').hidden)$('lbm').hidden=true});
