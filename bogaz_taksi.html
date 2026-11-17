@@ -1054,8 +1054,8 @@ const TPATH=[[1640,-640],[1540,-220],[1485,-20],[1450,250],[1350,600],[1380,950]
 const FROUTES=[[['Eminönü'],[900,2440],[1010,2640],['Kadıköy']],[['Beşiktaş'],['Üsküdar']],[['Sarıyer'],['Beykoz']],[['Bebek'],['Kandilli']],[['Kabataş'],[1000,2400],['Harem']],
  [['Ortaköy'],['Beylerbeyi']],[['Emirgan'],['Kanlıca']],[['Yeniköy'],['Paşabahçe']],[['İstinye'],['Çubuklu']],[['Arnavutköy'],['Çengelköy']],[['Rumeli Kavağı'],['Anadolu Kavağı']]];
 // Galataport rıhtımı ile Marmara çıkışı arasındaki kruvaziyer rotaları (ikincisi yan rıhtım)
-const CRUISE=[[[821,2290],[811,2330],[872,2425],[1000,2565],[1012,2700],[1150,3150],[1260,3460]]];
-CRUISE.push(CRUISE[0].map((p,i)=>i<2?[p[0]+25,p[1]+5]:p)); // yan rıhtım, sonrası aynı hat
+const CRUISE=[[[821,2290],[816,2310],[810,2334],[872,2425],[1000,2565],[1012,2700],[1150,3150],[1260,3460]]];
+CRUISE.push(CRUISE[0].map((p,i)=>i<3?[p[0]+24,p[1]+6]:p)); // yan rıhtım, sonrası aynı hat
 const off=(name,d)=>{const p=PIERS.find(q=>q.name===name);return[p.x-p.dx*d,p.y-p.dy*d]};
 // Vapur durağı: iskelenin yanında, kıyıya yakın; yanaşma halkasını ve tanker şeritlerini kapatmaz
 function stopOf(name){const p=PIERS.find(q=>q.name===name);for(const d of[40,52])for(const sg of[1,-1]){const x=p.x-p.dx*d-p.dy*sg*64,y=p.y-p.dy*d+p.dx*sg*64;
