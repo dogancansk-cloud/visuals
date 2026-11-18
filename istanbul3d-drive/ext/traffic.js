@@ -69,6 +69,7 @@ ready((D) => {
   S.traverse((o) => { if (!geoRef && o.isMesh && o.geometry && o.geometry.attributes.position && !o.geometry.attributes.position.isInterleavedBufferAttribute) geoRef = o.geometry; });
   const Geo = geoRef.constructor, Attr = geoRef.attributes.position.constructor, Col = LAMB.material.color.constructor;
   const dummy = new (O3 ? O3.constructor : S.constructor)();
+  dummy.rotation.order = 'YXZ';
   const mkGeo = (b) => { const g = new Geo(); g.setIndex(null); for (const k of Object.keys(g.attributes)) g.deleteAttribute(k); g.setAttribute('position', new Attr(new Float32Array(b.pos), 3)); g.setAttribute('color', new Attr(new Float32Array(b.col), 3)); g.computeVertexNormals(); g.computeBoundingSphere(); return g; };
   const mkMesh = (b, n) => {
     const g = mkGeo(b), mat = new LAMB.material.constructor({ vertexColors: true });
@@ -226,6 +227,15 @@ ready((D) => {
         const dx = px - nx, dz = pz - nz, dd = Math.hypot(dx, dz), R = c.bus ? 3.2 : 2.3;
         if (dd < R && bumpT <= 0) { G.bump(0.35, (dx / (dd || 1)) * (R - dd) * 0.6, (dz / (dd || 1)) * (R - dd) * 0.6); c.stop = 2; c.v = 0; bumpT = 0.6; }
         if (c.y === null || (frame + c.k) % 4 === 0) c.y = world.surface(nx, nz, c.y === null ? st.y : c.y);
+        if (c.pt === undefined || (frame + c.k) % 4 === 0) {   // eğime göre burun/yan eğimi
+          const h = c.bus ? 4 : 1.5, w = 0.85, ex = c.e.dx, ez = c.e.dz;
+          const F = world.surface(nx + ex * h, nz + ez * h, c.y), B = world.surface(nx - ex * h, nz - ez * h, c.y);
+          const R = world.surface(nx + ez * w, nz - ex * w, c.y), L = world.surface(nx - ez * w, nz + ex * w, c.y);
+          c.pt = Math.max(-.32, Math.min(.32, -Math.atan2(F - B, 2 * h)));
+          c.rl = Math.max(-.22, Math.min(.22, Math.atan2(R - L, 2 * w)));
+          if (c.ps === undefined) { c.ps = c.pt; c.rs = c.rl; }
+        }
+        c.ps += (c.pt - c.ps) * Math.min(1, dt * 6); c.rs += (c.rl - c.rs) * Math.min(1, dt * 6);
         c.x = nx; c.z = nz;
       }
       // --- yayalar ---
@@ -250,7 +260,7 @@ ready((D) => {
       let ci = 0, bi = 0;
       for (const c of cars) {
         if (c.x === undefined) continue;
-        dummy.position.set(c.x, c.y + 0.02, c.z); dummy.rotation.set(0, Math.atan2(c.e.dx, c.e.dz), 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix();
+        dummy.position.set(c.x, c.y + 0.02, c.z); dummy.rotation.set(c.ps || 0, Math.atan2(c.e.dx, c.e.dz), c.rs || 0); dummy.scale.set(1, 1, 1); dummy.updateMatrix();
         if (c.bus) busMesh.setMatrixAt(bi++, dummy.matrix); else carMesh.setMatrixAt(ci++, dummy.matrix);
       }
       carMesh.count = ci; busMesh.count = bi; carMesh.instanceMatrix.needsUpdate = busMesh.instanceMatrix.needsUpdate = true;
