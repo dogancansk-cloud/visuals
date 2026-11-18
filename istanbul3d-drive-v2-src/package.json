@@ -1,0 +1,19 @@
+{
+  "name": "istanbul3d-drive-v2",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "prep": "node tools/prep.mjs",
+    "dev": "vite",
+    "build": "tsc --noEmit && rm -rf ../istanbul3d-drive-v2/assets ../istanbul3d-drive-v2/index.html && vite build"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vite": "^7.0.0",
+    "@types/three": "^0.170.0"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  }
+}

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<meta name="theme-color" content="#1b1e24" />
+<link rel="icon" href="data:," />
+<title>İstanbul 3D — Sürüş (v2 test)</title>
+<meta name="description" content="İstanbul sokaklarında taksi sür: Eminönü, Karaköy, Sultanahmet, Beşiktaş. Tarayıcıda, telefonda ve bilgisayarda." />
+</head>
+<body>
+<div id="app"></div>
+
+<div id="loading"><div class="lbox"><b>İstanbul 3D · Sürüş</b><span id="ltext">Harita yükleniyor…</span><div class="bar"><i id="lbar"></i></div><small>v2 test sürümü</small></div></div>
+
+<div id="top">
+  <div id="money" title="Kazanç">₺0</div>
+  <div id="clock" title="Saat">16:30</div>
+  <button id="b-weather" type="button" title="Hava">☀︎</button>
+  <button id="b-time" type="button" title="Saat ileri (+1 saat)">⏩</button>
+  <button id="b-cam" type="button" title="Kamera (C)">🎥</button>
+  <button id="b-sound" type="button" title="Ses">🔊</button>
+  <button id="b-q" type="button" title="Grafik kalitesi">Oto</button>
+  <button id="b-reset" type="button" title="Yola dön (R)">↺</button>
+</div>
+
+<canvas id="minimap" width="300" height="300"></canvas>
+<div id="mission" hidden><div id="m-title"></div><div id="m-text"></div><div id="m-meta"></div></div>
+<div id="arrow" hidden><svg viewBox="0 0 40 40"><path d="M20 3 L34 34 L20 26 L6 34 Z"/></svg><span id="dist"></span></div>
+<div id="toast"></div>
+<div id="street"></div>
+
+<div id="speedo"><b id="kmh">0</b><span>km/sa</span><i id="gear">1</i></div>
+
+<div id="touch">
+  <div id="steerzone"><div id="wheel"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="9"/><path d="M8 54 H92 M50 54 V92" stroke="currentColor" stroke-width="9" fill="none"/><circle cx="50" cy="54" r="10" fill="currentColor"/></svg></div><small>sürükle: direksiyon</small></div>
+  <div id="pedals">
+    <button id="horn" type="button">Korna</button>
+    <button id="hb" type="button">El freni</button>
+    <button id="brake" type="button">Fren</button>
+    <button id="gas" type="button">Gaz</button>
+  </div>
+</div>
+
+<div id="help"><b>Klavye:</b> W/↑ gaz · S/↓ fren-geri · A/D direksiyon · Boşluk el freni · H korna · C kamera · R yola dön · T saat · Y hava · M harita</div>
+
+<footer id="credit">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL) · Arazi: Copernicus DEM (© DLR, Airbus DS) · Modeller: Grokisual · © Doğancan Işık · <b>v2 test</b></footer>
+<script type="module" src="/src/main.ts"></script>
+<script data-goatcounter="https://dogancansk.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
