@@ -83,7 +83,7 @@ export class Car {
   onHit: ((power: number) => void) | null = null; onSplash: (() => void) | null = null;
   constructor(private G: Ground, private R: Roads, private walls: Walls, withLight: boolean) {
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
-    this.body = new THREE.Mesh(carBodyGeometry('#f2c200', true), mat); this.body.castShadow = true; this.obj.add(this.body);
+    this.body = new THREE.Mesh(carBodyGeometry('#2f5d8a'), mat); this.body.castShadow = true; this.obj.add(this.body);
     const wg = wheelGeometry();
     for (const [x, z] of [[-0.86, 1.35], [0.86, 1.35], [-0.86, -1.35], [0.86, -1.35]]) { const w = new THREE.Mesh(wg, mat); w.position.set(x, 0.34, z); w.castShadow = true; this.obj.add(w); this.wheels.push(w); }
     this.headMat = new THREE.MeshBasicMaterial({ color: '#fff6dc' }); this.brakeMat = new THREE.MeshBasicMaterial({ color: '#5a0d0d' });

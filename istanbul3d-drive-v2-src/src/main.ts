@@ -12,7 +12,6 @@ import { Audio } from './game/audio';
 import { Car, Walls } from './game/car';
 import { Signals } from './game/signals';
 import { Traffic } from './game/traffic';
-import { Missions } from './game/missions';
 import { Minimap } from './game/minimap';
 import { Sea } from './world/sea';
 
@@ -85,11 +84,10 @@ async function main() {
   const traffic = new Traffic(roads, G, signals, scene, Q.cars, Q.peds);
   const minimap = new Minimap($<HTMLCanvasElement>('minimap'), roads, G);
   const toast = (t: string, ms = 1800) => { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout((toast as unknown as { h: number }).h); (toast as unknown as { h: number }).h = window.setTimeout(() => el.classList.remove('on'), ms); };
-  const missions = new Missions(roads, G, scene, meta.spawns, meta.landmarks, { toast, audio, money: $('money'), panel: $('mission'), title: $('m-title'), text: $('m-text'), metaEl: $('m-meta'), arrow: $('arrow'), dist: $('dist') });
-  car.onHit = (p) => { audio.bump(p); missions.onCrash(p); };
-  car.onSplash = () => { audio.splash(); toast('Denize düştün!\nYola geri alınıyorsun', 1600); missions.onCrash(1); };
-  signals.onRedRun = () => missions.onRedLight();
-  traffic.onPedHit = () => missions.onPedScare();
+  car.onHit = (p) => audio.bump(p);
+  car.onSplash = () => { audio.splash(); toast('Denize düştün!\nYola geri alınıyorsun', 1600); };
+  signals.onRedRun = () => toast('🚦 Kırmızı ışık!', 1300);
+  traffic.onPedHit = () => toast('Yayaya dikkat!', 1200);
 
   const spawn = meta.spawns.find((s) => s.id === (QS.get('spawn') || 'eminonu')) || meta.spawns[0];
   if (QS.get('at')) { const [ax, az, ay] = QS.get('at')!.split(',').map(Number); spawn.x = ax; spawn.z = az; spawn.yaw = ay || 0; }
@@ -140,7 +138,7 @@ async function main() {
   await warm();
   props.update(car.x, car.z, 260, 300);
   $('loading').classList.add('done');
-  toast(PHONE || document.body.classList.contains('touch') ? 'Sağda gaz/fren, solda sürükle: direksiyon' : 'W A S D ile sür · Görev için sarı işarete git', 3500);
+  toast(PHONE || document.body.classList.contains('touch') ? 'Sağda gaz/fren, solda sürükle: direksiyon' : 'W A S D ile sür', 3500);
 
   // ---------- kamera ----------
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3(); let camInit = false;
@@ -184,7 +182,6 @@ async function main() {
     if (wallsDirty) { walls.rebuild(blds.colliders.values()); wallsDirty = false; }
     signals.update(dt, car);
     traffic.update(dt, car, env.night);
-    missions.update(dt, car);
     env.update(dt, camera.position, car.obj.position);
     sea.update(t, env, camera.position); props.night(env.night);
     car.sync(input.c, env.night);
@@ -195,7 +192,7 @@ async function main() {
     audio.update({ rpm: car.rpm, throttle: input.c.throttle, speed: car.speed, slip: car.slip, horn: input.c.horn, rain: env.rainAmt, sea: G.kindAt(car.x + car.fwd[0] * 30, car.z + car.fwd[1] * 30) === 1 ? 1 : 0, t });
     hudT += dt; if (hudT > 0.1) {
       hudT = 0; kmh.textContent = String(Math.round(car.speed * 3.6)); gearEl.textContent = car.vLong < -0.5 ? 'G' : String(car.gear); clockEl.textContent = env.hourText();
-      minimap.draw(car, missions.target, missions.route, traffic, signals);
+      minimap.draw(car, null, [], traffic, signals);
       const nr = roads.nearest(car.x, car.z, 12, undefined, car.y); streetEl.textContent = nr?.w.name || '';
     }
     renderer.render(scene, camera);
@@ -208,7 +205,7 @@ async function main() {
     }
     requestAnimationFrame(frame);
   };
-  (window as unknown as Record<string, unknown>).__drv2 = { car, env, roads, G, traffic, missions, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
+  (window as unknown as Record<string, unknown>).__drv2 = { car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
   requestAnimationFrame(frame);
 }
 
