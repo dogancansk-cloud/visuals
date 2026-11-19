@@ -122,6 +122,19 @@ html[data-theme="acik"] #app .ui .hud .stat.money .v{color:#b88a00}
 html[data-theme="koyu"] .ns-job small em{color:var(--ns-acc)}
 .ns-job .ns-take{min-width:56px;height:44px;border-radius:12px;border:0;background:var(--ns-acc);color:var(--ns-acc-ink);font:800 14px var(--body);cursor:pointer;padding:0 10px;flex:none}
 .ns-job .ns-take:disabled{background:var(--ns-line);color:var(--ns-mut);cursor:default;font-size:12px}
+#app .ui .sheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;transition:transform .18s ease}
+#app .ui .sheet .ns-grab{position:relative;cursor:grab;touch-action:none}
+#app .ui .sheet .ns-grab::before{content:"";position:absolute;inset:-16px -80px}
+#app .ui .sheet .ns-ph{touch-action:none}
+#app .ui .sheet.mini>:not(.ns-grab):not(.ns-ph):not(.ns-leave){display:none}
+.rt-card .rt-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.rt-card .rt-top b{font:800 22px/1.1 var(--display);color:var(--ns-ink);min-width:0}
+.rt-card .rt-km{font:800 22px/1 var(--display);color:var(--ns-teal);white-space:nowrap}
+.rt-card .rt-sub{margin:0;font:600 13.5px/1.4 var(--body);color:var(--ns-mut)}
+.rt-card .rt-sub em{font-style:normal;color:#b88a00;font-weight:800}
+.rt-card .rt-btns{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+.rt-card .rt-btns .ns-btn{min-height:54px;font:800 17px var(--display)}
+
 .ns-pips{display:flex;gap:4px;margin-top:3px}.ns-pips i{width:18px;height:6px;border-radius:3px;background:var(--ns-line)}.ns-pips i.on{background:var(--ns-acc)}
 .ns-fuel{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .ns-fuel>span{flex:1;font:700 14px var(--body);min-width:110px}.ns-fuel>span small{color:var(--ns-mut);font-weight:600}
@@ -642,6 +655,7 @@ html[data-theme="koyu"] .emblem-frame{filter:drop-shadow(0 1px 0 rgba(255,255,25
     <button class="btn warn" id="tow" hidden data-en="Out of fuel · Call a tow (₺500)">Yakıt bitti · Çekici çağır (₺500)</button>
     <canvas id="mini" width="184" height="304"></canvas>
     <section class="sheet" id="sheet" hidden></section>
+    <section class="sheet rt-card" id="rtCard" hidden></section>
   </div>
 </div>
 
@@ -1058,8 +1072,11 @@ const CRUISE=[[[821,2290],[816,2310],[810,2334],[872,2425],[1000,2565],[1012,270
 CRUISE.push(CRUISE[0].map((p,i)=>i<3?[p[0]+24,p[1]+6]:p)); // yan rıhtım, sonrası aynı hat
 const off=(name,d)=>{const p=PIERS.find(q=>q.name===name);return[p.x-p.dx*d,p.y-p.dy*d]};
 // Vapur durağı: iskelenin yanında, kıyıya yakın; yanaşma halkasını ve tanker şeritlerini kapatmaz
-function stopOf(name){const p=PIERS.find(q=>q.name===name);for(const d of[40,52])for(const sg of[1,-1]){const x=p.x-p.dx*d-p.dy*sg*64,y=p.y-p.dy*d+p.dx*sg*64;
-    if([[0,0],[24,0],[-24,0],[0,24],[0,-24]].every(q=>at(mNav,x+q[0],y+q[1]))&&PIERS.every(o=>Math.hypot(o.wx-x,o.wy-y)>52)&&!(x>790&&x<925&&y>2235&&y<2405))return[x,y]}return off(name,75)} // son koşul: Galataport rıhtımı boş kalsın
+function stopOf(name){const p=PIERS.find(q=>q.name===name);
+  for(const lat of[26,30,34])for(const sg of[1,-1])for(const d of[24,28,32]){const ux=-p.dy*sg,uy=p.dx*sg,x=p.x-p.dx*d+ux*lat,y=p.y-p.dy*d+uy*lat;
+    if([-18,-9,0,9,18].every(k=>at(mWater,x-p.dx*k,y-p.dy*k)&&at(mWater,x-p.dx*k+ux*6,y-p.dy*k+uy*6)&&at(mWater,x-p.dx*k-ux*6,y-p.dy*k-uy*6))
+      &&PIERS.every(o=>o===p||Math.hypot(o.wx-x,o.wy-y)>48)&&!(x>790&&x<925&&y>2235&&y<2405))return{at:[x,y],ap:[x-p.dx*60,y-p.dy*60]}}
+  return{at:off(name,75),ap:null}} // Galataport rıhtımı boş kalsın
 const PRIO={tanker:3,cruise:2,ferry:1};
 // Rota: sık örneklenmiş, yumuşatılmış çizgi + birikimli uzunluk; gemiler sabit hızla bunun üstünde ilerler
 function mkRoute(pts,smooth){const o=[];for(let i=0;i<pts.length-1;i++){const a=pts[Math.max(i-1,0)],b=pts[i],c=pts[i+1],d=pts[Math.min(i+2,pts.length-1)],n=Math.max(2,Math.ceil(Math.hypot(c[0]-b[0],c[1]-b[1])/14));
@@ -1076,7 +1093,7 @@ function buildNpcs(){const d=DF(),up=TPATH.slice().reverse();NPCS.length=0;
   [[TPATH,.15,30,88,17,'#8c3b2b'],[up,.62,27,100,18,'#2b4c5e'],[TPATH,.65,30,94,17,'#3d5a45'],[up,.12,27,84,16,'#6b4a2b']].slice(0,d.tank)
     .forEach(q=>add({type:'tanker',s0:q[1],dir:1,lane:26,spd:q[2]*d.spd,len:q[3],wid:q[4],col:q[5],wait:0},q[0]));
   CRUISE.slice(0,d.cr).forEach((pts,i)=>add({type:'cruise',s0:i?1:0,dir:i?-1:1,lane:54,spd:24*d.spd,len:112,wid:21,col:'#ffffff',wait:i?4:d.wb*.5,wb:d.wb,ws:10},pts));
-  FROUTES.slice(0,d.ferry).forEach(r=>add({type:'ferry',s0:0,dir:1,lane:10,spd:30*d.spd,len:46,wid:12,col:'#f8f9fa',wait:Math.random()*14},r.map(q=>typeof q[0]==='string'?stopOf(q[0]):q)));
+  FROUTES.slice(0,d.ferry).forEach(r=>add({type:'ferry',s0:0,dir:1,lane:10,spd:30*d.spd,len:46,wid:12,col:'#f8f9fa',wait:Math.random()*14},r.flatMap((q,i)=>{if(typeof q[0]!=='string')return[q];const o=stopOf(q[0]);return !o.ap?[o.at]:i===0?[o.at,o.ap]:[o.ap,o.at]})));
   updateNpcs(0)}
 function relTo(o,px,py){const dx=px-o.x,dy=py-o.y;return[dx*Math.cos(o.a)+dy*Math.sin(o.a),-dx*Math.sin(o.a)+dy*Math.cos(o.a)]}
 // İki geminin gövde kutuları kesişiyor mu (a pozu m kadar şişirilmiş)
@@ -1087,8 +1104,9 @@ function boxHit(ax,ay,aa,al,aw,o,m){const A=[Math.cos(aa),Math.sin(aa),al/2+m*2,
   return true}
 function updateNpcs(dt){
   NPCS.forEach((n,i)=>{
-    if(n.wait>0){n.wait-=dt;n.held=false;n.ht=0}
-    else{const s1=n.s+n.dir*n.spd*dt,q=posOn(n,s1),pn=PRIO[n.type],free=n.ht>10;let hold=false;
+    if(n.wait>0){n.wait-=dt;n.held=false;n.ht=0;n.chk=n.s;n.st=0}
+    else{if(n.gh>0)n.gh-=dt;if(n.chk==null||Math.abs(n.s-n.chk)>40){n.chk=n.s;n.st=0}else if((n.st+=dt)>6){n.gh=4;n.st=0;n.chk=n.s} // 6 sn ilerleyemeyen gemi 4 sn serbest geçer
+      const s1=n.s+n.dir*n.spd*dt,q=posOn(n,s1),pn=PRIO[n.type],free=n.gh>0;let hold=false;
       if(n.x!=null&&!free)for(let k=0;k<NPCS.length&&!hold;k++){if(k===i)continue;const o=NPCS[k];if(o.x==null)continue;
         if(pn<PRIO[o.type]&&!(o.held&&o.by===i)){ // nezaket: büyük geminin önüne girme, pruvası yakınken önüne sokulma
           const ahead=o.len*.5+((o.wait>0||o.held)?24:o.spd*4.5),lat=o.wid*.5+n.len*.5+14,
@@ -1099,7 +1117,7 @@ function updateNpcs(dt){
         if(!hold&&boxHit(q.x,q.y,q.a,n.len,n.wid,o,3)){const near=boxHit(n.x,n.y,n.a,n.len,n.wid,o,3),away=Math.hypot(q.x-o.x,q.y-o.y)>Math.hypot(n.x-o.x,n.y-o.y);
           // güvenlik payına yeni giriyorsa dur; payın içindeyse yalnız gerçek temas yoksa ya da uzaklaşıyorsa ilerle
           if(!near||(boxHit(q.x,q.y,q.a,n.len,n.wid,o,0)&&!(away&&boxHit(n.x,n.y,n.a,n.len,n.wid,o,0)))){hold=true;n.by=k}}}
-      if(free){n.ht+=dt;if(n.ht>13)n.ht=0}else n.ht=hold?(n.ht||0)+dt:0; // son çare: 10 sn kilitli kalan gemi 3 sn serbest geçer
+      n.ht=hold?(n.ht||0)+dt:0;
       // karşılıklı kilit: önceliği düşük gemi kendi hattında geri çekilip yol verir
       if(hold&&n.ht>1.2){const o=NPCS[n.by];if(o&&o.held&&o.by===i&&(pn<PRIO[o.type]||(pn===PRIO[o.type]&&i>n.by))){
         const s2=clamp(n.s-n.dir*n.spd*dt*.7,0,n.r.len),b=posOn(n,s2);if(!NPCS.some((z,k)=>k!==i&&z.x!=null&&boxHit(b.x,b.y,b.a,n.len,n.wid,z,0)))n.s=s2}}
@@ -1171,7 +1189,8 @@ function hud(){const f=Math.max(0,st.fuel),key=[Math.round(st.money),Math.ceil(f
 let chipT=0;
 function chips(){$('chips').innerHTML=streakChip()+st.jobs.map(j=>{const c=j.color||'#888';return `<span class="chip${j.t<=0?' late':''}"><i style="background:${c}"></i>${PIERS[j.to].name} <b>${j.t>0?mmss(j.t):t('gecikti','late')}</b></span>`}).join('')} 
 
-function renderSheet(){const sh=$('sheet');if(moored<0){sh.hidden=true;$('ui').classList.remove('moored');return}
+function renderSheet(){const sh=$('sheet');if(moored<0){sh.hidden=true;$('ui').classList.remove('moored');setMini(false);if(rp)closeRoute();return}
+  if(rp&&!rp.closing){sh.hidden=true;return}
   const p=PIERS[moored];ensureOffers(moored);const o=offers[moored];
   const meta=[p.side===E?t('Avrupa','Europe'):t('Anadolu','Asia'),p.fuel&&t('Yakıt','Fuel'),p.yard&&t('Tersane','Shipyard')].filter(Boolean).join(' · ');
   let h=`<div class="ns-grab"></div><div class="ns-ph"><h2>${p.name}</h2><span>${meta}</span></div>`;
@@ -1181,7 +1200,7 @@ function renderSheet(){const sh=$('sheet');if(moored<0){sh.hidden=true;$('ui').c
     h+='</ul>';if(o.list.length)h+=`<p class="ns-sub">${t('İşler','Jobs')}</p>`}
   if(!o.list.length)h+=`<p class="ns-empty">${t('Şu an bekleyen iş yok. Biraz sonra yenileri gelir.','No jobs right now. New ones arrive shortly.')}</p>`;
   else{h+='<ul class="ns-jobs">';o.list.forEach((j,i)=>{const fit=canTake(j);
-    h+=`<li class="ns-job"><div><b>${jobLabel(j)} → ${PIERS[j.to].name}</b><small><em>${tl(j.pay)}</em> · ${mmss(j.limit)} · ${j.n} ${j.type==='pax'?t('koltuk',j.n===1?'seat':'seats'):t('kasa',j.n===1?'crate':'crates')}</small></div><button class="ns-take" data-act="take" data-i="${i}" id="take${i}" ${fit?'':'disabled'}>${fit?t('Al','Take'):t('Yer yok','Full')}</button></li>`});h+='</ul>'}
+    h+=`<li class="ns-job"><div><b>${jobLabel(j)} → ${PIERS[j.to].name}</b><small><em>${tl(j.pay)}</em> · ~${km(wpath(moored,j.to).len)} km · ${mmss(j.limit)} · ${j.n} ${j.type==='pax'?t('koltuk',j.n===1?'seat':'seats'):t('kasa',j.n===1?'crate':'crates')}</small></div><button class="ns-take" data-act="take" data-i="${i}" id="take${i}" ${fit?'':'disabled'}>${fit?t('Al','Take'):t('Yer yok','Full')}</button></li>`});h+='</ul>'}
   if(p.fuel){const need=Math.floor(cap('tank')-st.fuel);
     h+=`<div class="ns-fuel"><span>${t('Yakıt','Fuel')} <small>${Math.ceil(Math.max(0,st.fuel))}/${cap('tank')} L · ₺5/L</small></span><button class="ns-btn" data-act="fuel" data-l="10" id="fuel10" ${need<1?'disabled':''}>+10 L · ₺50</button><button class="ns-btn" data-act="fuel" data-l="999" id="fuelFull" ${need<1?'disabled':''}>${need<1?t('Depo dolu','Full'):t('Doldur · ','Fill · ')+tl(need*5)}</button></div>`}
   h+=`<button class="ns-btn ns-leave" data-act="leave" id="btnLeave">${t('Demir al','Cast off')}</button>`;
@@ -1190,14 +1209,73 @@ function renderSheet(){const sh=$('sheet');if(moored<0){sh.hidden=true;$('ui').c
 $('sheet').addEventListener('click',e=>{const b=e.target.closest('button[data-act]');if(!b||b.disabled)return;const act=b.dataset.act;
   if(act!=='reset')resetArm=false;
   if(act==='leave')return leave();
-  if(act==='take'){const o=offers[moored],j=o.list[+b.dataset.i];if(!j||!canTake(j))return;o.list.splice(+b.dataset.i,1);
-    j.t=j.limit;j.color=COLORS[colorI++%COLORS.length];j.id=jobId++;st.jobs.push(j);chips()}
-  if(act==='fuel'){const l=Math.min(+b.dataset.l,Math.floor(cap('tank')-st.fuel),Math.floor(st.money/5));
-    if(l<=0)toast(t('Yakıt için yeterli para yok','Not enough money for fuel'),true);else{st.fuel+=l;st.money-=l*5}}
+  if(act==='take'){const j=offers[moored].list[+b.dataset.i];if(!j||!canTake(j))return;openRoute(j);return}
+  if(act==='fuel'){const l=Math.min(+b.dataset.l,Math.floor(cap('tank')-st.fuel));
+    if(l>0){st.fuel+=l;st.money-=l*5;if(st.money<0)toast(t('Yakıt borçla alındı','Fuel bought on credit'))}}
   if(act==='up'){const k=b.dataset.k,u=UP[k],l=st.up[k];if(l<u.c.length&&st.money>=u.c[l]){const t0=boatTier();st.money-=u.c[l];st.up[k]++;SFX.upgrade();sparkle(boatTier()>t0);const t1=boatTier();toast(t1>t0?t(TIER_N[t1][0],TIER_N[t1][1]):t(u.n+' yükseltildi!',u.ne+' upgraded!'))}}
   if(act==='menu'){save();showStart(true);return}
   if(act==='reset'){if(!resetArm)resetArm=true;else{resetArm=false;st=FRESH();for(const k in offers)delete offers[k];colorI=0;moored=-1;moor(START,true);chips()}}
   hud();renderSheet();save()});
+/* ---------- İskele menüsü: tutamaçla aşağı/yukarı ---------- */
+let sheetMini=false,sDrag=null;
+function setMini(m){sheetMini=m;$('sheet').classList.toggle('mini',m)}
+$('sheet').addEventListener('pointerdown',e=>{if(!e.target.closest('.ns-grab,.ns-ph'))return;sDrag={y:e.clientY,id:e.pointerId,dy:0,grab:!!e.target.closest('.ns-grab')};try{$('sheet').setPointerCapture(e.pointerId)}catch(_){}});
+$('sheet').addEventListener('pointermove',e=>{if(!sDrag||e.pointerId!==sDrag.id)return;sDrag.dy=e.clientY-sDrag.y;const d=sheetMini?Math.min(0,sDrag.dy):Math.max(0,sDrag.dy);$('sheet').style.transition='none';$('sheet').style.transform=`translateY(${d}px)`});
+const sEnd=e=>{if(!sDrag||e.pointerId!==sDrag.id)return;const dy=sDrag.dy,g=sDrag.grab;sDrag=null;const sh=$('sheet');sh.style.transition='';sh.style.transform='';
+  if(Math.abs(dy)<6){if(g||sheetMini)setMini(!sheetMini)}else if(!sheetMini&&dy>50)setMini(true);else if(sheetMini&&dy<-30)setMini(false)};
+$('sheet').addEventListener('pointerup',sEnd);$('sheet').addEventListener('pointercancel',sEnd);
+
+/* ---------- Su yolu (A*) ve iş rotası önizlemesi ---------- */
+const PG=8,PGW=Math.ceil(W/PG),PGH=Math.ceil(H/PG),PATHS={};let PGR=null;
+function pgr(){if(!PGR){PGR=new Uint8Array(PGW*PGH);for(let j=0;j<PGH;j++)for(let i=0;i<PGW;i++){const x=i*PG+4,y=j*PG+4;PGR[j*PGW+i]=nav(x,y)?2:at(mWater,x,y)?1:0}}return PGR}
+function wpath(a,b){const key=a+'>'+b;if(PATHS[key])return PATHS[key];const g=pgr(),A=PIERS[a],B=PIERS[b];
+  const cell=(x,y)=>{const i=clamp(x/PG|0,0,PGW-1),j=clamp(y/PG|0,0,PGH-1);if(g[j*PGW+i])return j*PGW+i;let best=-1,bd=1e9;
+    for(let r=1;r<10&&best<0;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=PGW||jj>=PGH||!g[jj*PGW+ii])continue;const d=di*di+dj*dj;if(d<bd){bd=d;best=jj*PGW+ii}}return best};
+  const s0=cell(A.wx,A.wy),t0=cell(B.wx,B.wy),N=PGW*PGH,G=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),done=new Uint8Array(N);
+  const tx=t0%PGW,ty=t0/PGW|0,hh=c=>{const dx=Math.abs(c%PGW-tx),dy=Math.abs((c/PGW|0)-ty);return Math.max(dx,dy)+.414*Math.min(dx,dy)};
+  const hp=[],hf=[];const push=(c,f)=>{let i=hp.length;hp.push(c);hf.push(f);while(i>0){const q=(i-1)>>1;if(hf[q]<=f)break;hp[i]=hp[q];hf[i]=hf[q];i=q}hp[i]=c;hf[i]=f};
+  const pop=()=>{const top=hp[0],lc=hp.pop(),lf=hf.pop();if(hp.length){let i=0;for(;;){let l=2*i+1,r=l+1,m=i,mf=lf;if(l<hp.length&&hf[l]<mf){m=l;mf=hf[l]}if(r<hp.length&&hf[r]<mf){m=r;mf=hf[r]}if(m===i)break;hp[i]=hp[m];hf[i]=hf[m];i=m}hp[i]=lc;hf[i]=lf}return top};
+  let ok=s0>=0&&t0>=0;if(ok){G[s0]=0;push(s0,hh(s0));ok=false;
+    while(hp.length){const c=pop();if(done[c])continue;done[c]=1;if(c===t0){ok=true;break}const ci=c%PGW,cj=c/PGW|0;
+      for(let dj=-1;dj<=1;dj++)for(let di=-1;di<=1;di++){if(!di&&!dj)continue;const ii=ci+di,jj=cj+dj;if(ii<0||jj<0||ii>=PGW||jj>=PGH)continue;const n=jj*PGW+ii;if(!g[n]||done[n])continue;
+        if(di&&dj&&(!g[cj*PGW+ii]||!g[jj*PGW+ci]))continue;const ng=G[c]+(di&&dj?1.414:1)*(g[n]===2?1:4);if(ng<G[n]){G[n]=ng;from[n]=c;push(n,ng+hh(n))}}}}
+  let P=[];if(ok){for(let c=t0;c>=0;c=from[c])P.push([(c%PGW)*PG+4,(c/PGW|0)*PG+4]);P.reverse();P[0]=[A.wx,A.wy];P[P.length-1]=[B.wx,B.wy]}else P=[[A.wx,A.wy],[B.wx,B.wy]];
+  // görüş hattıyla sadeleştir, sonra yumuşat
+  const los=(p,q)=>{const L=Math.hypot(q[0]-p[0],q[1]-p[1]),n=Math.ceil(L/6);for(let k=1;k<n;k++){const x=lerp(p[0],q[0],k/n),y=lerp(p[1],q[1],k/n),e=Math.min(Math.hypot(x-P[0][0],y-P[0][1]),Math.hypot(x-B.wx,y-B.wy));
+    if(!(e<34?at(mWater,x,y):at(mNav,x,y))||Math.hypot(x-KIZ.x,y-KIZ.y)<26)return false}return true};
+  const S=[P[0]];for(let i=0;i<P.length-1;){let j=P.length-1;while(j>i+1&&!los(P[i],P[j]))j--;S.push(P[j]);i=j}
+  let Q=S;for(let it=0;it<2;it++){const o=[Q[0]];for(let i=0;i<Q.length-1;i++){const a2=Q[i],b2=Q[i+1];o.push([a2[0]*.75+b2[0]*.25,a2[1]*.75+b2[1]*.25],[a2[0]*.25+b2[0]*.75,a2[1]*.25+b2[1]*.75])}o.push(Q[Q.length-1]);Q=o}
+  let len=0;for(let i=1;i<Q.length;i++)len+=Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1]);
+  return PATHS[key]={pts:Q,len}}
+let rp=null;
+function openRoute(j){const P=wpath(moored,j.to),xs=P.pts.map(q=>q[0]),ys=P.pts.map(q=>q[1]);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),top=118,bot=250,
+    z=clamp(Math.min((cw-56)/Math.max(60,x1-x0),(ch-top-bot-24)/Math.max(60,y1-y0)),.12,sc*1.15);
+  rp={j,from:moored,P,z,cx:(x0+x1)/2,cy:(y0+y1)/2,ay:(top+(ch-top-bot)/2)/ch,t0:performance.now(),k:0,closing:false,col:COLORS[colorI%COLORS.length]};
+  const typ=j.n+' '+(j.type==='pax'?t('koltuk',j.n===1?'seat':'seats'):t('kasa',j.n===1?'crate':'crates'));
+  $('rtCard').innerHTML=`<div class="ns-grab"></div><div class="rt-top"><b>${PIERS[moored].name} → ${PIERS[j.to].name}</b><span class="rt-km">~${km(P.len)} km</span></div>
+    <p class="rt-sub">${jobLabel(j)}<br><em>${tl(j.pay)}</em> · ${t('süre','time')} ${mmss(j.limit)} · ${typ}</p>
+    <div class="rt-btns"><button class="ns-btn" id="rtNo" type="button">${t('İptal','Cancel')}</button><button class="ns-btn pri" id="rtOk" type="button">${t('Onayla','Confirm')}</button></div>`;
+  $('sheet').hidden=true;$('rtCard').hidden=false}
+function closeRoute(){if(!rp||rp.closing)return;rp.closing=true;rp.tc=performance.now();$('rtCard').hidden=true;renderSheet()}
+$('rtCard').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||!rp||rp.closing)return;
+  if(b.id==='rtOk'){const o=offers[rp.from],i=o?o.list.indexOf(rp.j):-1,j=rp.j;
+    if(moored===rp.from&&i>=0&&canTake(j)){o.list.splice(i,1);j.t=j.limit;j.color=COLORS[colorI++%COLORS.length];j.id=jobId++;st.jobs.push(j);chips();hud();save()}
+    else toast(t('Bu iş artık alınamıyor','This job is no longer available'),true)}
+  closeRoute()});
+function drawRoute(){const Q=rp.P.pts,e=rp.e;if(e<=0)return;ctx.save();ctx.globalAlpha=Math.min(1,e*1.5);ctx.lineCap='round';ctx.lineJoin='round';
+  const tr=()=>{ctx.beginPath();ctx.moveTo(Q[0][0],Q[0][1]);for(let i=1;i<Q.length;i++)ctx.lineTo(Q[i][0],Q[i][1])};
+  tr();ctx.strokeStyle='#ffffff';ctx.lineWidth=12/sc;ctx.stroke();
+  const L=rp.P.len,d=L*Math.min(1,(performance.now()-rp.t0)/900);ctx.setLineDash([d,L+10]);tr();ctx.strokeStyle=rp.col;ctx.lineWidth=6.5/sc;ctx.stroke();ctx.setLineDash([]);
+  const a=Q[0],b=Q[Q.length-1];ctx.lineWidth=2.5/sc;ctx.strokeStyle='#14283c';
+  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(a[0],a[1],8/sc,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle=rp.col;ctx.beginPath();ctx.arc(a[0],a[1],3.5/sc,0,TAU);ctx.fill();
+  const r=11/sc;ctx.fillStyle=rp.col;ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.arc(b[0],b[1]-r*2.2,r,Math.PI*.78,Math.PI*.22);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(b[0],b[1]-r*2.2,r*.42,0,TAU);ctx.fill();ctx.restore()}
+function drawRP(){if(!rp)return draw();const now=performance.now();
+  rp.k=rp.closing?1-(now-rp.tc)/350:Math.min(1,(now-rp.t0)/450);if(rp.closing&&rp.k<=0){rp=null;return draw()}
+  const e=rp.e=rp.k<.5?2*rp.k*rp.k:1-Math.pow(-2*rp.k+2,2)/2,s0=sc,cx=cam.x,cy=cam.y,ay=cam.ay;
+  sc=lerp(s0,rp.z,e);cam.x=lerp(cx,rp.cx,e);cam.y=lerp(cy,rp.cy,e);cam.ay=lerp(ay,rp.ay,e);try{draw()}finally{sc=s0;cam.x=cx;cam.y=cy;cam.ay=ay}}
+
 
 const boatTier=()=>{const n=st.up.motor+st.up.tank+st.up.seat+st.up.hold;return n>=12?3:n>=8?2:n>=4?1:0};
 const TIER_N=[['',''],['Teknen spor tekne oldu!','Your boat is now a sport boat!'],['Teknen yat oldu!','Your boat is now a yacht!'],['Teknen lüks yat oldu!','Your boat is now a luxury yacht!']];
@@ -1220,7 +1298,7 @@ function moor(i,silent){moored=i;const p=PIERS[i];boat.v=0;boat.a=Math.atan2(p.d
   $('tow').hidden=true;chips();hud();renderSheet();save()}
 function leave(){if(moored<0)return;const p=PIERS[moored];leftPier=moored;moored=-1;st.seen=true;SFX.resume();SFX.depart();boat.a=Math.atan2(-p.dy,-p.dx);boat.v=8;renderSheet();save()}
 $('tow').addEventListener('click',()=>{let best=-1,bd=1e9;PIERS.forEach((p,i)=>{if(!p.fuel)return;const d=Math.hypot(p.wx-boat.x,p.wy-boat.y);if(d<bd){bd=d;best=i}});
-  st.money-=500;st.fuel=15;boat.x=PIERS[best].wx;boat.y=PIERS[best].wy;leftPier=-1;toast(t('Çekici seni '+PIERS[best].name+' iskelesine getirdi · -₺500','The tow boat brought you to '+PIERS[best].name+' pier · -₺500'),true);moor(best)});
+  st.money-=500;st.fuel=cap('tank');boat.x=PIERS[best].wx;boat.y=PIERS[best].wy;leftPier=-1;toast(t('Çekici seni '+PIERS[best].name+' iskelesine getirdi, depo dolu · -₺500','The tow boat brought you to '+PIERS[best].name+' pier, tank full · -₺500'),true);moor(best)});
 
 
 /* ---------- Input ---------- */
@@ -1272,7 +1350,7 @@ function step(dt){
     $('tow').hidden=!(st.fuel<=0&&moored<0);
   }else{const p=PIERS[moored];boat.x+=(p.wx-boat.x)*Math.min(1,dt*6);boat.y+=(p.wy-boat.y)*Math.min(1,dt*6)}
   for(let i=wake.length-1;i>=0;i--){wake[i].l-=dt*.85;if(wake[i].l<=0)wake.splice(i,1)}
-  const kf=Math.min(1,dt*6);cam.x+=(boat.x-cam.x)*kf;cam.y+=(boat.y-cam.y)*kf;cam.ay+=((moored>=0&&cw<700?.2:.5)-cam.ay)*kf;
+  const kf=Math.min(1,dt*6);cam.x+=(boat.x-cam.x)*kf;cam.y+=(boat.y-cam.y)*kf;cam.ay+=((moored>=0&&cw<700&&!sheetMini?.2:.5)-cam.ay)*kf;
   chipT-=dt;if(chipT<=0){chipT=.25;if(st.jobs.length)chips()}
   saveT-=dt;if(saveT<=0){saveT=8;save()}
   for(const n of NPCS)if(n.honk>0)n.honk-=dt;
@@ -1358,7 +1436,7 @@ function updateMini(pal){
   x.fillStyle=pal.land;x.fillRect(0,0,184,304);
   x.scale(184/W,304/H);x.fillStyle=pal.water;trace(x,0);x.fill();miniBase=b;
 }
-function resize(){cw=cv.clientWidth;ch=cv.clientHeight;dpr=Math.min(devicePixelRatio||1,2);cv.width=cw*dpr;cv.height=ch*dpr;sc=clamp(Math.min(cw,ch)/540,.68,1.1)}
+function resize(){const r=cv.getBoundingClientRect();cw=r.width||cv.clientWidth;ch=r.height||cv.clientHeight;const d=Math.min(devicePixelRatio||1,3);cv.width=Math.round(cw*d);cv.height=Math.round(ch*d);dpr=cv.width/cw;sc=clamp(Math.min(cw,ch)/540,.68,1.1)}
 const hsh=(i,j)=>{const n=Math.sin(i*127.1+j*311.7)*43758.5453;return n-Math.floor(n)};
 let FD=THEME==='koyu'?FD_KOYU:FD_ACIK;
 const FS={pier:11.2,badge:8.6,region:28,pen:13,bosph:13,halic:11,marm:16,stun:12};
@@ -1737,6 +1815,7 @@ function draw(){
     ctx.globalAlpha=1;
   }
 
+  if(rp)drawRoute();
   ctx.setTransform(dpr,0,0,dpr,0,0);
 
   const seen={};
@@ -1873,8 +1952,8 @@ $('pauseBtn').addEventListener('click',()=>openSet('pause'));
 $('nsSet').addEventListener('click',()=>openSet('start'));
 function openHelp(){const fl=PIERS.filter(p=>p.fuel).map(p=>p.name).join(', '),yl=PIERS.filter(p=>p.yard).map(p=>p.name).join(', ');
   $('helpB').innerHTML=`<div class="ns-grab"></div><div class="ns-hd"><h2 id="helpT">${t('Nasıl oynanır','How to play')}</h2><button class="ns-ic" type="button" data-close="helpM" aria-label="${t('Kapat','Close')}">${XI}</button></div><div class="ns-help">`+(LANG==='en'
-   ?`<p><b>Steer:</b> press and drag on the screen; the boat turns that way and speeds up. Arrow keys work too.</p><p><b>Dock:</b> enter the dashed ring in front of a pier slowly. Don't hit ferries or tankers.</p><p><b>Jobs:</b> deliver before the timer runs out. Night riders pay 25% more; on-time deliveries in a row build a streak.</p><p><b>Fuel</b> (₺5/L): ${fl}.</p><p><b>Shipyard</b> (upgrades): ${yl}. The more you upgrade, the fancier your boat gets.</p>`
-   :`<p><b>Sürüş:</b> ekrana basılı tutup sürükle; tekne o yöne döner ve hızlanır. Klavyede ok tuşları da çalışır.</p><p><b>Yanaşma:</b> iskelenin önündeki kesikli halkaya yavaşça gir. Vapur ve tankerlere çarpma.</p><p><b>İşler:</b> süre dolmadan teslim et. Gece yolcuları %25 fazla öder; arka arkaya zamanında teslimat seri bonusu getirir.</p><p><b>Yakıt</b> (litresi ₺5): ${fl}.</p><p><b>Tersane</b> (geliştirme): ${yl}. Geliştirdikçe teknen de şıklaşır.</p>`)
+   ?`<p><b>Steer:</b> press and drag on the screen; the boat turns that way and speeds up. Arrow keys work too.</p><p><b>Dock:</b> enter the dashed ring in front of a pier slowly. Don't hit ferries or tankers.</p><p><b>Jobs:</b> deliver before the timer runs out. Night riders pay 25% more; on-time deliveries in a row build a streak.</p><p><b>Fuel</b> (₺5/L): ${fl}. You can buy fuel on credit even when your money is below zero. If you run dry, a tow boat (₺500) takes you to the nearest fuel pier and fills your tank.</p><p><b>Shipyard</b> (upgrades): ${yl}. The more you upgrade, the fancier your boat gets.</p>`
+   :`<p><b>Sürüş:</b> ekrana basılı tutup sürükle; tekne o yöne döner ve hızlanır. Klavyede ok tuşları da çalışır.</p><p><b>Yanaşma:</b> iskelenin önündeki kesikli halkaya yavaşça gir. Vapur ve tankerlere çarpma.</p><p><b>İşler:</b> süre dolmadan teslim et. Gece yolcuları %25 fazla öder; arka arkaya zamanında teslimat seri bonusu getirir.</p><p><b>Yakıt</b> (litresi ₺5): ${fl}. Paran eksiye düşse de borçla yakıt alabilirsin. Yakıtın biterse çekici (₺500) seni en yakın yakıt iskelesine götürür ve depoyu doldurur.</p><p><b>Tersane</b> (geliştirme): ${yl}. Geliştirdikçe teknen de şıklaşır.</p>`)
    +`</div><button class="ns-btn pri" type="button" data-close="helpM">${t('Anladım','Got it')}</button>`;$('helpM').hidden=false}
 document.addEventListener('click',e=>{const c=e.target.closest('[data-close]');if(c){$(c.dataset.close).hidden=true;if(c.dataset.close==='achM')achOpen=false}});
 ['helpM','achM'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id)){$(id).hidden=true;if(id==='achM')achOpen=false}}));
@@ -1920,7 +1999,7 @@ $('todBtn').textContent=todLabel();
 /* ---------- Boot ---------- */
 const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
 resize();
-addEventListener('resize',resize);
+addEventListener('resize',resize);try{new ResizeObserver(resize).observe(cv)}catch(_){};
 const sv=load();
 if(sv&&sv.m<0&&sv.b&&nav(sv.b[0],sv.b[1])){boat.x=sv.b[0];boat.y=sv.b[1];boat.a=sv.b[2]||0;renderSheet();chips();hud()}
 else{const i=sv&&sv.m>=0&&sv.m<PIERS.length?sv.m:START;boat.x=PIERS[i].wx;boat.y=PIERS[i].wy;moor(i,true)}
@@ -1928,7 +2007,7 @@ buildNpcs();sndUI();cam.x=boat.x;cam.y=boat.y;cam.ay=moored>=0&&cw<700?.2:.5;sho
 try{if(!localStorage.getItem('bt-login-seen'))showLogin()}catch(_){}
 applyTheme(THEME);
 let last=performance.now();
-function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(paused){time+=dt;updateNpcs(dt);SFX.engine(0,46)}else step(dt);draw();requestAnimationFrame(frame)}
+function frame(t){const dt=Math.min(.05,(t-last)/1000);last=t;if(paused){time+=dt;updateNpcs(dt);SFX.engine(0,46)}else step(dt);drawRP();requestAnimationFrame(frame)}
 let _booted=false;function _bootLoop(){if(_booted)return;_booted=true;draw();requestAnimationFrame(frame)}
 const _face=(typeof FD==='string'?FD.split(',')[0].replace(/"/g,'').trim():'sans-serif');
 function _startWhenFontsReady(){
