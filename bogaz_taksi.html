@@ -777,7 +777,7 @@ const SFX=(()=>{let ac=null,master=null,eng=null,nb=null;
   }})();
 /* ---------- Fon müziği (kodla üretilen, makam esintili) + Boğaz ortam sesi ---------- */
 const MUS_KEY='bogaz-taksi-music';let MUS_ON=true;try{if(localStorage.getItem(MUS_KEY)==='0')MUS_ON=false}catch(_){}
-const MUS=(()=>{let ac=null,mg=null,amb=null,rv=null,timer=null,nextT=0,step=0,phrase=[],deg=4,drone=null;
+const MUS=(()=>{let ac=null,mg=null,amb=null,rv=null,timer=null,nextT=0,step=0,phrase=[],deg=4,drone=null,inst='kanun';
   // Hicaz (Re): Re Mi♭ Fa# Sol La Si♭ Do Re — iki oktav
   const SC=[0,1,4,5,7,8,10];const hz=d=>146.83*Math.pow(2,(SC[((d%7)+7)%7]+12*Math.floor(d/7))/12);
   function mood(){const k=typeof st!=='undefined'?st.diff:'orta',n=typeof getDayFactor==='function'&&getDayFactor()>.65;return{bpm:k==='kaos'?96:k==='zor'?82:n?56:68,drum:k==='kaos'||k==='zor',night:n}}
@@ -788,23 +788,38 @@ const MUS=(()=>{let ac=null,mg=null,amb=null,rv=null,timer=null,nextT=0,step=0,p
     fl.type='lowpass';fl.frequency.value=1800;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.16*v,t+Math.min(.18,dur*.4));g.gain.setTargetAtTime(.0001,t+dur*.8,dur*.18);
     const o2g=ac.createGain();o2g.gain.value=.25;o.connect(fl);o2.connect(o2g);o2g.connect(fl);fl.connect(g);g.connect(mg);g.connect(rv);
     [o,o2,vib].forEach(x=>{x.start(t);x.stop(t+dur+1.2)})}
-  function pluck(f,t,v){const o=ac.createOscillator(),g=ac.createGain(),fl=ac.createBiquadFilter();o.type='sawtooth';o.frequency.value=f;fl.type='lowpass';fl.frequency.setValueAtTime(2600,t);fl.frequency.exponentialRampToValueAtTime(500,t+.35);
+  // Telli çalgı: Karplus-Strong ile gerçekçi tel sesi (her perde için bir kez üretilip saklanır)
+  const KS={};function ksBuf(f,s,damp,dur){const key=f.toFixed(1)+'_'+s+'_'+damp;if(KS[key])return KS[key];const sr=ac.sampleRate,len=sr*dur|0,b=ac.createBuffer(1,len,sr),d=b.getChannelData(0),N=Math.max(2,Math.round(sr/f)),q=new Float32Array(N);
+    for(let i=0;i<N;i++)q[i]=(Math.random()*2-1)*(.6+.4*Math.sin(i/N*Math.PI));let k=0;
+    for(let i=0;i<len;i++){const a=q[k],c=q[(k+1)%N],v=damp*((1-s)*a+s*c);d[i]=a;q[k]=v;k=(k+1)%N}return KS[key]=b}
+  function str(f,t,v,s,damp,hp,dur){const src=ac.createBufferSource(),g=ac.createGain(),fl=ac.createBiquadFilter();src.buffer=ksBuf(f,s,damp,dur||2.2);fl.type='highpass';fl.frequency.value=hp||120;
+    g.gain.setValueAtTime(v,t);g.gain.setTargetAtTime(.0001,t+(dur||2.2)*.75,.25);src.connect(fl);fl.connect(g);g.connect(mg);g.connect(rv);src.start(t);src.stop(t+(dur||2.2))}
+  // Kanun: parlak, metalik tel; çoğu zaman oktav çift basılır
+  function kanun(f,t,v){str(f*2,t,.42*v,.12,.9975,260,2.4);str(f*4,t+.004,.13*v,.12,.996,600,1.6)}
+  function pluck(f,t,v){str(f,t,.16*v,.35,.995,90,1.4)}
+  function pluckOld(f,t,v){const o=ac.createOscillator(),g=ac.createGain(),fl=ac.createBiquadFilter();o.type='sawtooth';o.frequency.value=f;fl.type='lowpass';fl.frequency.setValueAtTime(2600,t);fl.frequency.exponentialRampToValueAtTime(500,t+.35);
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.07*v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+.7);o.connect(fl);fl.connect(g);g.connect(mg);g.connect(rv);o.start(t);o.stop(t+.8)}
   function drum(t,low){const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(low?110:320,t);o.frequency.exponentialRampToValueAtTime(low?55:180,t+.12);
     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(low?.16:.05,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+(low?.3:.09));o.connect(g);g.connect(mg);o.start(t);o.stop(t+.35)}
   function newPhrase(){const out=[];let d=deg,len=6+(Math.random()*5|0);for(let i=0;i<len;i++){d=Math.max(2,Math.min(11,d+[-2,-1,-1,1,1,2,0][Math.random()*7|0]));out.push({d,l:[1,1,2,2,3][Math.random()*5|0]})}
-    out.push({d:Math.random()<.5?7:4,l:4});out.push({rest:1,l:2+(Math.random()*3|0)});deg=out[out.length-2].d;return out}
+    out.push({d:Math.random()<.5?7:4,l:4});out.push({rest:1,l:2+(Math.random()*3|0)});deg=out[out.length-2].d;
+    const nt=typeof getDayFactor==='function'&&getDayFactor()>.65;out[0].inst=Math.random()<(nt?.45:.2)?'ney':'kanun';return out}
   function sched(){if(!ac||!MUS_ON)return;const m=mood(),beat=60/m.bpm;
     while(nextT<ac.currentTime+1.2){const t=nextT,b8=step%8; // 8'lik döngü: bağlama ostinatosu (2+2+2+2), ney cümlesi üstünde
       if(b8===0||b8===3||b8===6)pluck(hz(b8===0?0:b8===3?4:2)*.5,t,b8===0?1:.7);
       if(m.drum){if(b8===0||b8===5)drum(t,true);else if(b8===2||b8===3||b8===7)drum(t,false)}
-      if(!phrase.length)phrase=newPhrase();const n=phrase[0];if(n._t==null){n._t=t;if(!n.rest)ney(hz(n.d),t,n.l*beat*.98,m.night?.8:1)}
+      if(!phrase.length){phrase=newPhrase();inst=phrase[0].inst}const n=phrase[0];
+      if(n._t==null){n._t=t;if(!n.rest){const v=m.night?.8:1,f=hz(n.d);
+        if(inst==='ney')ney(f,t,n.l*beat*.98,v);
+        else{kanun(f,t,v);if(n.l>=3){const rep=Math.round(n.l*beat/(beat/4));for(let r=1;r<rep;r++)kanun(f,t+r*beat/4,v*Math.max(.25,.8-r*.06))} // uzun seste kanun tremolosu
+          else if(n.l===2&&Math.random()<.4){kanun(hz(n.d+1),t+beat*.5,v*.6);kanun(f,t+beat*.75,v*.6)} // küçük süsleme
+          if(phrase.length===3&&Math.random()<.7)for(let r=0;r<3;r++)kanun(hz(n.d-3+r),t+n.l*beat-.3+r*.1,v*.55)}}} // cümle sonuna çarpma
       if(t-n._t>=n.l*beat-1e-3)phrase.shift();
       nextT+=beat/2;step++}}
   function startDrone(){if(drone)return;const g=ac.createGain();g.gain.value=0;g.connect(mg);const os=[73.42,110,146.83].map((f,i)=>{const o=ac.createOscillator();o.type=i?'sine':'triangle';o.frequency.value=f;const og=ac.createGain();og.gain.value=i===1?.35:.5;o.connect(og);og.connect(g);o.start();return o});
     g.gain.setTargetAtTime(.05,ac.currentTime,3);drone={g,os}}
   function startAmb(master){if(amb||!master)return;const L=ac.sampleRate*4|0,b=ac.createBuffer(1,L,ac.sampleRate),d=b.getChannelData(0);let p=0;for(let i=0;i<L;i++){p=p*.97+(Math.random()*2-1)*.03;d[i]=p*6}
-    const src=ac.createBufferSource();src.buffer=b;src.loop=true;const fl=ac.createBiquadFilter();fl.type='lowpass';fl.frequency.value=700;const g=ac.createGain();g.gain.value=.05;
+    const src=ac.createBufferSource();src.buffer=b;src.loop=true;const fl=ac.createBiquadFilter();fl.type='lowpass';fl.frequency.value=700;const g=ac.createGain();g.gain.value=.035;
     const lfo=ac.createOscillator(),lg=ac.createGain();lfo.frequency.value=.12;lg.gain.value=.035;lfo.connect(lg);lg.connect(g.gain); // dalga kabarması
     src.connect(fl);fl.connect(g);g.connect(master);src.start();lfo.start();amb={src,g}}
   return{
