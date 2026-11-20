@@ -890,7 +890,7 @@ const PD=[
  ['Kuzguncuk',1065,2100,1,0,A,'N',''],['Üsküdar',1000,2230,1,0,A,'N','f'],
  ['Harem',990,2550,1,0,A,'S',''],['Haydarpaşa',1000,2700,1,.1,A,'S','y'],['Kadıköy',1300,3050,.75,-.66,A,'S','f'],
  ['Yenikapı',420,3000,0,-1,E,'S',''],
- ['Karaköy',735,2408,.1,-1,E,'G','f'],['Eminönü',850,2522,-1,0,E,'G',''],['Kasımpaşa',630,2360,.45,-.89,E,'G','y'],
+ ['Karaköy',788,2420,0,-1,E,'G','f'],['Eminönü',772,2450,0,1,E,'G',''],['Kasımpaşa',630,2360,.45,-.89,E,'G','y'],
  ['Fener',530,2290,-.62,.78,E,'G',''],['Hasköy',440,2200,.78,-.62,E,'G',''],['Balat',440,2200,-.78,.62,E,'G',''],
  ['Sütlüce',370,2090,.89,-.46,E,'G',''],['Eyüp',320,1970,-1,.15,E,'G','f']
 ];
@@ -906,11 +906,11 @@ const BRIDGES=[
  {n:'Yavuz Sultan Selim Köprüsü',p:span(1481,120,1,0)},
  {n:'Fatih Sultan Mehmet Köprüsü',p:span(1348,1310,1,0)},
  {n:'15 Temmuz Şehitler Köprüsü',p:span(1178,1900,1,.1)},
- {n:'Galata Köprüsü',p:span(772,2418,.2,-.98)},
+ {n:'Galata Köprüsü',p:span(726,2415,.33,-.94)},
  {n:'Atatürk Köprüsü',p:span(655,2372,.45,-.89)},
  {n:'Haliç Köprüsü',p:span(402,2148,.84,-.54)}
 ];
-const MARKS=[['tower','Galata Kulesi',735,2252],['port','Galataport',800,2296],['palace','Dolmabahçe Sarayı',858,2122],['palace','Çırağan Sarayı',928,2028],['palace','Beylerbeyi Sarayı',1322,2022],(()=>{const q=PIERS.find(z=>z.name==='Haydarpaşa');return['station','Haydarpaşa Garı',q.x+q.dx*32,q.y-40]})(),['tower','Anadolu Hisarı',1468,1392],['tower','Topkapı Sarayı',748,2548],['mosque','Ayasofya',700,2592],['mosque','Sultanahmet',648,2622],['mosque','Süleymaniye',548,2452],
+const MARKS=[['tower','Galata Kulesi',735,2252],['port','Galataport',811,2262],['palace','Dolmabahçe Sarayı',858,2122],['palace','Çırağan Sarayı',928,2028],['palace','Beylerbeyi Sarayı',1322,2022],(()=>{const q=PIERS.find(z=>z.name==='Haydarpaşa');return['station','Haydarpaşa Garı',q.x+q.dx*32,q.y-40]})(),['tower','Anadolu Hisarı',1468,1392],['tower','Topkapı Sarayı',748,2548],['mosque','Ayasofya',700,2592],['mosque','Sultanahmet',648,2622],['mosque','Süleymaniye',548,2452],
  ['tower','Rumeli Hisarı',1190,1392],['spire','Çamlıca Kulesi',1420,2255],['mosque','Eyüp Sultan',235,1985],
  ['mosque','Ortaköy Camii',958,1934],['mosque','Çamlıca Camii',1560,1895],['tram','Taksim',755,2175]]
  .filter(m=>!at(mWater,m[2],m[3]));
@@ -1154,14 +1154,14 @@ const FROUTES=[[['Eminönü'],[900,2440],[1010,2640],['Kadıköy']],[['Beşikta�
  [['Ortaköy'],['Beylerbeyi']],[['Emirgan'],['Kanlıca']],[['Yeniköy'],['Paşabahçe']],[['İstinye'],['Çubuklu']],[['Arnavutköy'],['Çengelköy']],[['Rumeli Kavağı'],['Anadolu Kavağı']]];
 // Galataport rıhtımı ile Marmara çıkışı arasındaki kruvaziyer rotaları (ikincisi yan rıhtım)
 // İki rıhtım art arda: kuzeydeki (Kabataş tarafı) ve güneydeki (Karaköy tarafı); ikisi aynı anda yanaşabilir
-const CRUISE=[[[832,2250],[828,2266],[824,2282],[850,2334],[905,2410],[1000,2565],[1012,2700],[1150,3150],[1260,3460]],
-  [[811,2338],[807,2354],[803,2370],[830,2420],[905,2490],[1010,2600],[1030,2720],[1170,3160],[1270,3460]]];
+const CRUISE=[[[836,2235],[833,2251],[830,2267],[864,2332],[925,2420],[1000,2565],[1012,2700],[1150,3150],[1260,3460]],
+  [[818,2296],[815,2312],[812,2328],[840,2385],[910,2475],[1010,2600],[1030,2720],[1170,3160],[1270,3460]]];
 const off=(name,d)=>{const p=PIERS.find(q=>q.name===name);return[p.x-p.dx*d,p.y-p.dy*d]};
 // Vapur durağı: iskelenin yanında, kıyıya yakın; yanaşma halkasını ve tanker şeritlerini kapatmaz
 function stopOf(name){const p=PIERS.find(q=>q.name===name);
   for(const lat of[26,30,34])for(const sg of[1,-1])for(const d of[24,28,32]){const ux=-p.dy*sg,uy=p.dx*sg,x=p.x-p.dx*d+ux*lat,y=p.y-p.dy*d+uy*lat;
     if([-18,-9,0,9,18].every(k=>at(mWater,x-p.dx*k,y-p.dy*k)&&at(mWater,x-p.dx*k+ux*6,y-p.dy*k+uy*6)&&at(mWater,x-p.dx*k-ux*6,y-p.dy*k-uy*6))
-      &&PIERS.every(o=>o===p||Math.hypot(o.wx-x,o.wy-y)>48)&&!(x>790&&x<925&&y>2235&&y<2405))return{at:[x,y],ap:[x-p.dx*60,y-p.dy*60]}}
+      &&PIERS.every(o=>o===p||Math.hypot(o.wx-x,o.wy-y)>48)&&BRIDGES.every(b=>{const[x1,y1,x2,y2]=b.p,vx=x2-x1,vy=y2-y1,t=Math.max(0,Math.min(1,((x-x1)*vx+(y-y1)*vy)/(vx*vx+vy*vy)));return Math.hypot(x1+vx*t-x,y1+vy*t-y)>45})&&!(x>790&&x<925&&y>2195&&y<2345))return{at:[x,y],ap:[x-p.dx*60,y-p.dy*60]}}
   return{at:off(name,75),ap:null}} // Galataport rıhtımı boş kalsın
 const PRIO={tanker:3,cruise:2,ferry:1};
 // Rota: sık örneklenmiş, yumuşatılmış çizgi + birikimli uzunluk; gemiler sabit hızla bunun üstünde ilerler
@@ -1178,7 +1178,7 @@ function buildNpcs(){const d=DF(),up=TPATH.slice().reverse();NPCS.length=0;
   const add=(o,pts)=>{o.r=mkRoute(pts,true);if(!routeOk(o)){o.r=mkRoute(pts,false);if(!routeOk(o))return}o.s=o.s0*o.r.len;NPCS.push(o)};
   [[TPATH,.15,30,88,17,'#8c3b2b'],[up,.62,27,100,18,'#2b4c5e'],[TPATH,.65,30,94,17,'#3d5a45'],[up,.12,27,84,16,'#6b4a2b']].slice(0,d.tank)
     .forEach(q=>add({type:'tanker',s0:q[1],dir:1,lane:26,spd:q[2]*d.spd,len:q[3],wid:q[4],col:q[5],wait:0},q[0]));
-  CRUISE.slice(0,d.cr).forEach((pts,i)=>add({type:'cruise',s0:i?1:0,dir:i?-1:1,lane:54,spd:24*d.spd,len:76,wid:15,col:'#ffffff',wait:i?4:d.wb*.5,wb:d.wb,ws:10},pts));
+  CRUISE.slice(0,d.cr).forEach((pts,i)=>add({type:'cruise',s0:i?1:0,dir:i?-1:1,lane:54,spd:24*d.spd,len:58,wid:13,col:'#ffffff',wait:i?4:d.wb*.5,wb:d.wb,ws:10},pts));
   FROUTES.slice(0,d.ferry).forEach(r=>add({type:'ferry',s0:0,dir:1,lane:10,spd:30*d.spd,len:46,wid:12,col:'#f8f9fa',wait:Math.random()*14},r.flatMap((q,i)=>{if(typeof q[0]!=='string')return[q];const o=stopOf(q[0]);return !o.ap?[o.at]:i===0?[o.at,o.ap]:[o.ap,o.at]})));
   updateNpcs(0)}
 function relTo(o,px,py){const dx=px-o.x,dy=py-o.y;return[dx*Math.cos(o.a)+dy*Math.sin(o.a),-dx*Math.sin(o.a)+dy*Math.cos(o.a)]}
@@ -2002,8 +2002,8 @@ function draw(){
         ctx.fillStyle='#64748b';ctx.beginPath();ctx.moveTo(x+q-1,y-11);ctx.lineTo(x+q+2.5,y-17);ctx.lineTo(x+q+6,y-11);ctx.closePath();ctx.fill();ctx.stroke()}
       ctx.fillStyle='#14283c';for(const q of[-4,0,4])ctx.fillRect(x+q-1,y-2,2,4);
     }else if(m[0]==='port'){
-      ctx.save();ctx.translate(x,y);ctx.rotate(.25);ctx.beginPath();ctx.rect(-5,-70,10,140);ctx.fill();ctx.stroke(); // iki rıhtımlık uzun terminal
-      ctx.fillStyle='#00a8b5';for(let q=-64;q<66;q+=11)ctx.fillRect(-3,q,6,5);ctx.restore();
+      ctx.save();ctx.translate(x,y);ctx.rotate(.24);ctx.beginPath();ctx.rect(-5,-64,10,128);ctx.fill();ctx.stroke(); // iki rıhtımlık uzun terminal
+      ctx.fillStyle='#00a8b5';for(let q=-58;q<60;q+=11)ctx.fillRect(-3,q,6,5);ctx.restore();
     }else{
       ctx.beginPath();ctx.moveTo(x,y-24);ctx.lineTo(x+4,y+4);ctx.lineTo(x-4,y+4);ctx.closePath();ctx.fill();ctx.stroke();
       if(isNight){
