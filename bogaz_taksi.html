@@ -122,6 +122,16 @@ html[data-theme="acik"] #app .ui .hud .stat.money .v{color:#b88a00}
 html[data-theme="koyu"] .ns-job small em{color:var(--ns-acc)}
 .ns-job .ns-take{min-width:56px;height:44px;border-radius:12px;border:0;background:var(--ns-acc);color:var(--ns-acc-ink);font:800 14px var(--body);cursor:pointer;padding:0 10px;flex:none}
 .ns-job .ns-take:disabled{background:var(--ns-line);color:var(--ns-mut);cursor:default;font-size:12px}
+.ns-daily{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:14px;background:var(--ns-card)}
+.ns-daily h3{margin:0;font:800 13px var(--body);color:var(--ns-mut);text-transform:none;letter-spacing:normal;display:flex;justify-content:space-between}
+.ns-daily li{list-style:none;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.ns-daily ul{margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.ns-daily span{font:700 13.5px var(--body);color:var(--ns-ink);min-width:0}
+.ns-daily em{font:800 12.5px var(--body);font-style:normal;color:#b88a00;white-space:nowrap}
+html[data-theme="koyu"] .ns-daily em{color:var(--ns-acc)}
+.ns-daily .bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--ns-line);overflow:hidden}
+.ns-daily .bar i{display:block;height:100%;background:var(--ns-teal)}
+.ns-daily li.ok span{color:var(--ns-mut);text-decoration:line-through}
 #app .ui .sheet{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;transition:transform .18s ease}
 #app .ui .sheet .ns-grab{position:relative;cursor:grab;touch-action:none}
 #app .ui .sheet .ns-grab::before{content:"";position:absolute;inset:-16px -80px}
@@ -739,7 +749,7 @@ const SFX=(()=>{let ac=null,master=null,eng=null,nb=null;
     env(g,t0,Math.min(.03,dur/4),pk,dur);o.connect(g);g.connect(dest||master);o.start(t0);o.stop(t0+dur+.05)}
   function lp(f){const x=ac.createBiquadFilter();x.type='lowpass';x.frequency.value=f;x.connect(master);return x}
   return{
-    resume(){const a=init();if(a&&a.state==='suspended')a.resume().catch(()=>{})},
+    resume(){const a=init();if(a&&a.state==='suspended')a.resume().catch(()=>{});if(a)MUS.boot(a,master)},
     setOn(v){SND_ON=v;if(master)master.gain.setTargetAtTime(v?.8:0,ac.currentTime,.05);if(v)this.resume()},
     bell(){if(!ok())return;const n=ac.currentTime;[0,.22].forEach(o=>{tone('sine',880,n+o,.55,.2);tone('triangle',1318.5,n+o,.55,.12)})},
     depart(){if(!ok())return;const n=ac.currentTime,f=lp(1500); // taksi teknesinin "düt düt" kornası
@@ -764,6 +774,42 @@ const SFX=(()=>{let ac=null,master=null,eng=null,nb=null;
       eng.g.gain.setTargetAtTime(level*.5*calm,t0,eng.steady>12?.8:.15);
       eng.o.frequency.setTargetAtTime(pitch*.5,t0,.2);eng.o2.frequency.setTargetAtTime(pitch,t0,.2);
       eng.f.frequency.setTargetAtTime(140+pitch*1.4,t0,.25);eng.lfo.frequency.setTargetAtTime(3+pitch/16,t0,.3)}
+  }})();
+/* ---------- Fon müziği (kodla üretilen, makam esintili) + Boğaz ortam sesi ---------- */
+const MUS_KEY='bogaz-taksi-music';let MUS_ON=true;try{if(localStorage.getItem(MUS_KEY)==='0')MUS_ON=false}catch(_){}
+const MUS=(()=>{let ac=null,mg=null,amb=null,rv=null,timer=null,nextT=0,step=0,phrase=[],deg=4,drone=null;
+  // Hicaz (Re): Re Mi♭ Fa# Sol La Si♭ Do Re — iki oktav
+  const SC=[0,1,4,5,7,8,10];const hz=d=>146.83*Math.pow(2,(SC[((d%7)+7)%7]+12*Math.floor(d/7))/12);
+  function mood(){const k=typeof st!=='undefined'?st.diff:'orta',n=typeof getDayFactor==='function'&&getDayFactor()>.65;return{bpm:k==='kaos'?96:k==='zor'?82:n?56:68,drum:k==='kaos'||k==='zor',night:n}}
+  function verb(){const L=ac.sampleRate*2.2|0,b=ac.createBuffer(2,L,ac.sampleRate);for(let c=0;c<2;c++){const d=b.getChannelData(c);for(let i=0;i<L;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/L,3)}
+    const cv=ac.createConvolver();cv.buffer=b;const g=ac.createGain();g.gain.value=.35;cv.connect(g);g.connect(mg);return cv}
+  function ney(f,t,dur,v){const o=ac.createOscillator(),o2=ac.createOscillator(),g=ac.createGain(),vib=ac.createOscillator(),vg=ac.createGain(),fl=ac.createBiquadFilter();
+    o.type='sine';o2.type='triangle';o.frequency.value=f*2;o2.frequency.value=f*2;vib.frequency.value=5.2;vg.gain.value=f*.012;vib.connect(vg);vg.connect(o.frequency);vg.connect(o2.frequency);
+    fl.type='lowpass';fl.frequency.value=1800;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.16*v,t+Math.min(.18,dur*.4));g.gain.setTargetAtTime(.0001,t+dur*.8,dur*.18);
+    const o2g=ac.createGain();o2g.gain.value=.25;o.connect(fl);o2.connect(o2g);o2g.connect(fl);fl.connect(g);g.connect(mg);g.connect(rv);
+    [o,o2,vib].forEach(x=>{x.start(t);x.stop(t+dur+1.2)})}
+  function pluck(f,t,v){const o=ac.createOscillator(),g=ac.createGain(),fl=ac.createBiquadFilter();o.type='sawtooth';o.frequency.value=f;fl.type='lowpass';fl.frequency.setValueAtTime(2600,t);fl.frequency.exponentialRampToValueAtTime(500,t+.35);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.07*v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+.7);o.connect(fl);fl.connect(g);g.connect(mg);g.connect(rv);o.start(t);o.stop(t+.8)}
+  function drum(t,low){const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.setValueAtTime(low?110:320,t);o.frequency.exponentialRampToValueAtTime(low?55:180,t+.12);
+    g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(low?.16:.05,t+.005);g.gain.exponentialRampToValueAtTime(.0001,t+(low?.3:.09));o.connect(g);g.connect(mg);o.start(t);o.stop(t+.35)}
+  function newPhrase(){const out=[];let d=deg,len=6+(Math.random()*5|0);for(let i=0;i<len;i++){d=Math.max(2,Math.min(11,d+[-2,-1,-1,1,1,2,0][Math.random()*7|0]));out.push({d,l:[1,1,2,2,3][Math.random()*5|0]})}
+    out.push({d:Math.random()<.5?7:4,l:4});out.push({rest:1,l:2+(Math.random()*3|0)});deg=out[out.length-2].d;return out}
+  function sched(){if(!ac||!MUS_ON)return;const m=mood(),beat=60/m.bpm;
+    while(nextT<ac.currentTime+1.2){const t=nextT,b8=step%8; // 8'lik döngü: bağlama ostinatosu (2+2+2+2), ney cümlesi üstünde
+      if(b8===0||b8===3||b8===6)pluck(hz(b8===0?0:b8===3?4:2)*.5,t,b8===0?1:.7);
+      if(m.drum){if(b8===0||b8===5)drum(t,true);else if(b8===2||b8===3||b8===7)drum(t,false)}
+      if(!phrase.length)phrase=newPhrase();const n=phrase[0];if(n._t==null){n._t=t;if(!n.rest)ney(hz(n.d),t,n.l*beat*.98,m.night?.8:1)}
+      if(t-n._t>=n.l*beat-1e-3)phrase.shift();
+      nextT+=beat/2;step++}}
+  function startDrone(){if(drone)return;const g=ac.createGain();g.gain.value=0;g.connect(mg);const os=[73.42,110,146.83].map((f,i)=>{const o=ac.createOscillator();o.type=i?'sine':'triangle';o.frequency.value=f;const og=ac.createGain();og.gain.value=i===1?.35:.5;o.connect(og);og.connect(g);o.start();return o});
+    g.gain.setTargetAtTime(.05,ac.currentTime,3);drone={g,os}}
+  function startAmb(master){if(amb||!master)return;const L=ac.sampleRate*4|0,b=ac.createBuffer(1,L,ac.sampleRate),d=b.getChannelData(0);let p=0;for(let i=0;i<L;i++){p=p*.97+(Math.random()*2-1)*.03;d[i]=p*6}
+    const src=ac.createBufferSource();src.buffer=b;src.loop=true;const fl=ac.createBiquadFilter();fl.type='lowpass';fl.frequency.value=700;const g=ac.createGain();g.gain.value=.05;
+    const lfo=ac.createOscillator(),lg=ac.createGain();lfo.frequency.value=.12;lg.gain.value=.035;lfo.connect(lg);lg.connect(g.gain); // dalga kabarması
+    src.connect(fl);fl.connect(g);g.connect(master);src.start();lfo.start();amb={src,g}}
+  return{
+    boot(a,master){if(ac)return;ac=a;mg=ac.createGain();mg.gain.value=MUS_ON?.55:0;mg.connect(ac.destination);rv=verb();nextT=ac.currentTime+.4;startDrone();startAmb(master);timer=setInterval(sched,250)},
+    setOn(v){MUS_ON=v;try{localStorage.setItem(MUS_KEY,v?'1':'0')}catch(_){}if(mg)mg.gain.setTargetAtTime(v?.55:0,ac.currentTime,.3);if(v&&ac){nextT=Math.max(nextT,ac.currentTime+.2)}}
   }})();
 function playPierBell(){SFX.resume();SFX.bell()}
 document.addEventListener('pointerdown',()=>SFX.resume(),{passive:true});
@@ -798,14 +844,14 @@ const PD=[
  ['Rumeli Kavağı',1480,150,-1,0,E,'N',''],['Sarıyer',1420,350,-1,0,E,'N','f'],['Tarabya',1330,700,-1,0,E,'N',''],
  ['Yeniköy',1380,880,-1,0,E,'N',''],['İstinye',1400,1050,-1,0,E,'N','fy'],['Emirgan',1370,1220,-1,0,E,'N',''],
  ['Bebek',1280,1530,-1,0,E,'N','f'],['Arnavutköy',1260,1680,-1,0,E,'N',''],['Ortaköy',1140,1970,-1,0,E,'N',''],
- ['Beşiktaş',1065,2100,-1,0,E,'N','f'],['Kabataş',1000,2230,-1,0,E,'N',''],
+ ['Beşiktaş',1065,2100,-1,0,E,'N','f'],['Kabataş',1000,2172,-1,0,E,'N',''],
  ['Anadolu Kavağı',1480,150,1,0,A,'N',''],['Beykoz',1330,700,1,0,A,'N','f'],['Paşabahçe',1380,880,1,0,A,'N',''],
  ['Çubuklu',1400,1050,1,0,A,'N',''],['Kanlıca',1370,1220,1,0,A,'N','f'],['Anadolu Hisarı',1330,1380,1,0,A,'N',''],
  ['Kandilli',1280,1530,1,0,A,'N',''],['Çengelköy',1210,1830,1,0,A,'N',''],['Beylerbeyi',1140,1970,1,0,A,'N',''],
  ['Kuzguncuk',1065,2100,1,0,A,'N',''],['Üsküdar',1000,2230,1,0,A,'N','f'],
  ['Harem',990,2550,1,0,A,'S',''],['Haydarpaşa',1000,2700,1,.1,A,'S','y'],['Kadıköy',1300,3050,.75,-.66,A,'S','f'],
  ['Yenikapı',420,3000,0,-1,E,'S',''],
- ['Karaköy',735,2408,.1,-1,E,'G','f'],['Eminönü',745,2412,0,1,E,'G',''],['Kasımpaşa',630,2360,.45,-.89,E,'G','y'],
+ ['Karaköy',735,2408,.1,-1,E,'G','f'],['Eminönü',850,2522,-1,0,E,'G',''],['Kasımpaşa',630,2360,.45,-.89,E,'G','y'],
  ['Fener',530,2290,-.62,.78,E,'G',''],['Hasköy',440,2200,.78,-.62,E,'G',''],['Balat',440,2200,-.78,.62,E,'G',''],
  ['Sütlüce',370,2090,.89,-.46,E,'G',''],['Eyüp',320,1970,-1,.15,E,'G','f']
 ];
@@ -825,7 +871,7 @@ const BRIDGES=[
  {n:'Atatürk Köprüsü',p:span(655,2372,.45,-.89)},
  {n:'Haliç Köprüsü',p:span(402,2148,.84,-.54)}
 ];
-const MARKS=[['tower','Galata Kulesi',735,2252],['port','Galataport',800,2296],['palace','Dolmabahçe Sarayı',836,2158],['palace','Çırağan Sarayı',928,2028],['palace','Beylerbeyi Sarayı',1322,2022],(()=>{const q=PIERS.find(z=>z.name==='Haydarpaşa');return['station','Haydarpaşa Garı',q.x+q.dx*32,q.y-40]})(),['tower','Anadolu Hisarı',1468,1392],['tower','Topkapı Sarayı',748,2548],['mosque','Ayasofya',700,2592],['mosque','Sultanahmet',648,2622],['mosque','Süleymaniye',548,2452],
+const MARKS=[['tower','Galata Kulesi',735,2252],['port','Galataport',800,2296],['palace','Dolmabahçe Sarayı',858,2122],['palace','Çırağan Sarayı',928,2028],['palace','Beylerbeyi Sarayı',1322,2022],(()=>{const q=PIERS.find(z=>z.name==='Haydarpaşa');return['station','Haydarpaşa Garı',q.x+q.dx*32,q.y-40]})(),['tower','Anadolu Hisarı',1468,1392],['tower','Topkapı Sarayı',748,2548],['mosque','Ayasofya',700,2592],['mosque','Sultanahmet',648,2622],['mosque','Süleymaniye',548,2452],
  ['tower','Rumeli Hisarı',1190,1392],['spire','Çamlıca Kulesi',1420,2255],['mosque','Eyüp Sultan',235,1985],
  ['mosque','Ortaköy Camii',958,1934],['mosque','Çamlıca Camii',1560,1895],['tram','Taksim',755,2175]]
  .filter(m=>!at(mWater,m[2],m[3]));
@@ -1036,14 +1082,14 @@ const UP={
  hold:{n:'Ambar',ne:'Cargo hold',u:'kasa',ue:'crates',lv:[3,5,8,12],c:[1200,3000,6000]}
 };
 const DIFF={
- kolay:{n:'Kolay',ne:'Easy',sign:'HAT 01 · SAKİN SULAR',signe:'LINE 01 · CALM WATERS',weather:'Poyraz 6 kn · Hafif Akıntı',weathere:'Poyraz 6 kn · Light Current',wave:'Dalga: 0.3 m',wavee:'Waves: 0.3 m',pay:1.2,time:1.25,lp:.45,lc:.55,stun:2,hit:40,tank:1,ferry:3,spd:.85,cur:4,cr:0,wb:40},
- orta:{n:'Orta',ne:'Medium',sign:'HAT 02 · GÜNLÜK SEFER',signe:'LINE 02 · DAILY SERVICE',weather:'Poyraz 12 kn · Orta Akıntı',weathere:'Poyraz 12 kn · Moderate Current',wave:'Dalga: 0.8 m',wavee:'Waves: 0.8 m',pay:1,time:1,lp:.3,lc:.4,stun:3,hit:70,tank:2,ferry:5,spd:1,cur:7,cr:1,wb:40},
- zor:{n:'Zor',ne:'Hard',sign:'HAT 03 · LODOS',signe:'LINE 03 · LODOS WIND',weather:'Lodos 20 kn · Ters Akıntı',weathere:'Lodos 20 kn · Counter-Current',wave:'Dalga: 1.6 m',wavee:'Waves: 1.6 m',pay:.8,time:.9,lp:.15,lc:.25,stun:4,hit:100,tank:3,ferry:8,spd:1.15,cur:-10,cr:1,wb:26},
- kaos:{n:'İstanbul Kaosu',ne:'Istanbul Chaos',sign:'EKSPER · YOĞUN TRAFİK',signe:'EXPRESS · HEAVY TRAFFIC',weather:'Fırtına 28 kn · Anafor',weathere:'Gale 28 kn · Whirlpools',wave:'Dalga: 2.5 m',wavee:'Waves: 2.5 m',pay:.65,time:.8,lp:.05,lc:.15,stun:5,hit:130,tank:4,ferry:11,spd:1.3,cur:14,cr:2,wb:16}
+ kolay:{n:'Kolay',ne:'Easy',sign:'HAT 01 · SAKİN SULAR',signe:'LINE 01 · CALM WATERS',weather:'Poyraz 6 kn · Hafif Akıntı',weathere:'Poyraz 6 kn · Light Current',wave:'Dalga: 0.3 m',wavee:'Waves: 0.3 m',pay:1.2,time:1.25,lp:.45,lc:.55,stun:2,hit:40,tank:1,ferry:3,spd:.85,cur:4,cr:0,wb:40,wx:null},
+ orta:{n:'Orta',ne:'Medium',sign:'HAT 02 · GÜNLÜK SEFER',signe:'LINE 02 · DAILY SERVICE',weather:'Poyraz 12 kn · Orta Akıntı',weathere:'Poyraz 12 kn · Moderate Current',wave:'Dalga: 0.8 m',wavee:'Waves: 0.8 m',pay:1,time:1,lp:.3,lc:.4,stun:3,hit:70,tank:2,ferry:5,spd:1,cur:7,cr:1,wb:40,wx:{gap:[170,260],dur:[35,50],kinds:['fog','wind'],w:7}},
+ zor:{n:'Zor',ne:'Hard',sign:'HAT 03 · LODOS',signe:'LINE 03 · LODOS WIND',weather:'Lodos 20 kn · Ters Akıntı',weathere:'Lodos 20 kn · Counter-Current',wave:'Dalga: 1.6 m',wavee:'Waves: 1.6 m',pay:.8,time:.9,lp:.15,lc:.25,stun:4,hit:100,tank:3,ferry:8,spd:1.15,cur:-10,cr:1,wb:26,wx:{gap:[100,160],dur:[45,65],kinds:['fog','wind'],w:10}},
+ kaos:{n:'İstanbul Kaosu',ne:'Istanbul Chaos',sign:'EKSPER · YOĞUN TRAFİK',signe:'EXPRESS · HEAVY TRAFFIC',weather:'Fırtına 28 kn · Anafor',weathere:'Gale 28 kn · Whirlpools',wave:'Dalga: 2.5 m',wavee:'Waves: 2.5 m',pay:.65,time:.8,lp:.05,lc:.15,stun:5,hit:130,tank:4,ferry:11,spd:1.3,cur:14,cr:2,wb:16,wx:{gap:[55,85],dur:[45,70],kinds:['fog','wind','storm'],w:14}}
 };
 const DF=()=>DIFF[st.diff]||DIFF.orta;
 const dn=d=>t(d.n,d.ne);
-const FRESH=()=>({diff:'orta',money:250,fuel:60,up:{motor:0,tank:0,seat:0,hold:0},done:0,earned:0,jobs:[],seen:false,streak:0,noHit:0});
+const FRESH=()=>({diff:'orta',money:250,fuel:60,up:{motor:0,tank:0,seat:0,hold:0},done:0,earned:0,jobs:[],seen:false,streak:0,noHit:0,guide:0});
 let st=FRESH();
 const boat={x:0,y:0,a:0,v:0};
 const cam={x:0,y:0,ay:.5};
@@ -1068,8 +1114,9 @@ const TPATH=[[1640,-640],[1540,-220],[1485,-20],[1450,250],[1350,600],[1380,950]
 const FROUTES=[[['Eminönü'],[900,2440],[1010,2640],['Kadıköy']],[['Beşiktaş'],['Üsküdar']],[['Sarıyer'],['Beykoz']],[['Bebek'],['Kandilli']],[['Kabataş'],[1000,2400],['Harem']],
  [['Ortaköy'],['Beylerbeyi']],[['Emirgan'],['Kanlıca']],[['Yeniköy'],['Paşabahçe']],[['İstinye'],['Çubuklu']],[['Arnavutköy'],['Çengelköy']],[['Rumeli Kavağı'],['Anadolu Kavağı']]];
 // Galataport rıhtımı ile Marmara çıkışı arasındaki kruvaziyer rotaları (ikincisi yan rıhtım)
-const CRUISE=[[[821,2290],[816,2310],[810,2334],[872,2425],[1000,2565],[1012,2700],[1150,3150],[1260,3460]]];
-CRUISE.push(CRUISE[0].map((p,i)=>i<3?[p[0]+24,p[1]+6]:p)); // yan rıhtım, sonrası aynı hat
+// İki rıhtım art arda: kuzeydeki (Kabataş tarafı) ve güneydeki (Karaköy tarafı); ikisi aynı anda yanaşabilir
+const CRUISE=[[[832,2250],[828,2266],[824,2282],[850,2334],[905,2410],[1000,2565],[1012,2700],[1150,3150],[1260,3460]],
+  [[811,2338],[807,2354],[803,2370],[830,2420],[905,2490],[1010,2600],[1030,2720],[1170,3160],[1270,3460]]];
 const off=(name,d)=>{const p=PIERS.find(q=>q.name===name);return[p.x-p.dx*d,p.y-p.dy*d]};
 // Vapur durağı: iskelenin yanında, kıyıya yakın; yanaşma halkasını ve tanker şeritlerini kapatmaz
 function stopOf(name){const p=PIERS.find(q=>q.name===name);
@@ -1092,7 +1139,7 @@ function buildNpcs(){const d=DF(),up=TPATH.slice().reverse();NPCS.length=0;
   const add=(o,pts)=>{o.r=mkRoute(pts,true);if(!routeOk(o)){o.r=mkRoute(pts,false);if(!routeOk(o))return}o.s=o.s0*o.r.len;NPCS.push(o)};
   [[TPATH,.15,30,88,17,'#8c3b2b'],[up,.62,27,100,18,'#2b4c5e'],[TPATH,.65,30,94,17,'#3d5a45'],[up,.12,27,84,16,'#6b4a2b']].slice(0,d.tank)
     .forEach(q=>add({type:'tanker',s0:q[1],dir:1,lane:26,spd:q[2]*d.spd,len:q[3],wid:q[4],col:q[5],wait:0},q[0]));
-  CRUISE.slice(0,d.cr).forEach((pts,i)=>add({type:'cruise',s0:i?1:0,dir:i?-1:1,lane:54,spd:24*d.spd,len:112,wid:21,col:'#ffffff',wait:i?4:d.wb*.5,wb:d.wb,ws:10},pts));
+  CRUISE.slice(0,d.cr).forEach((pts,i)=>add({type:'cruise',s0:i?1:0,dir:i?-1:1,lane:54,spd:24*d.spd,len:76,wid:15,col:'#ffffff',wait:i?4:d.wb*.5,wb:d.wb,ws:10},pts));
   FROUTES.slice(0,d.ferry).forEach(r=>add({type:'ferry',s0:0,dir:1,lane:10,spd:30*d.spd,len:46,wid:12,col:'#f8f9fa',wait:Math.random()*14},r.flatMap((q,i)=>{if(typeof q[0]!=='string')return[q];const o=stopOf(q[0]);return !o.ap?[o.at]:i===0?[o.at,o.ap]:[o.ap,o.at]})));
   updateNpcs(0)}
 function relTo(o,px,py){const dx=px-o.x,dy=py-o.y;return[dx*Math.cos(o.a)+dy*Math.sin(o.a),-dx*Math.sin(o.a)+dy*Math.cos(o.a)]}
@@ -1156,27 +1203,73 @@ function mixHex(c1,c2,t){
 }
 
 /* ---------- Jobs ---------- */
-const ONE=['Bir memur','Bir balıkçı','Bir öğrenci','Bir fotoğrafçı','Bir aşçı','Bir rehber'];
-const MANY=['turist','kişilik aile','arkadaş','müzisyen','gezgin'];
-const ITEMS=['simit tablası','balık kasası','çay kolisi','lokum kolisi','baharat çuvalı','halı balyası','çini sandığı','kitap kolisi'];
-const ONE_EN=['A civil servant','A fisherman','A student','A photographer','A cook','A tour guide'];
-const MANY_EN=[n=>n+' tourists',n=>'A family of '+n,n=>n+' friends',n=>n+' musicians',n=>n+' travellers'];
-const ITEMS_EN=[['simit tray','simit trays'],['fish crate','fish crates'],['box of tea','boxes of tea'],['box of Turkish delight','boxes of Turkish delight'],['sack of spices','sacks of spices'],['carpet bale','carpet bales'],['chest of tiles','chests of tiles'],['box of books','boxes of books']];
+// Listeler sadece sona eklenerek büyür: kayıtlı işlerdeki sıra numaraları bozulmasın (simit 0. sırada, rozet buna bakıyor)
+const ONE=['Bir memur','Bir balıkçı','Bir öğrenci','Bir fotoğrafçı','Bir aşçı','Bir rehber',
+  'Bir ressam','Bir doktor','Bir gazeteci','Bir arkeolog','Bir mimar','Bir şair','Bir dalgıç','Bir kuyumcu','Bir sahaf','Bir yalı sahibi','Bir futbolcu','Bir tiyatrocu','Bir veteriner','Bir kaptan emeklisi'];
+const MANY=['turist','kişilik aile','arkadaş','müzisyen','gezgin',
+  'öğrenci','futbol taraftarı','balıkçı','koro üyesi','iş insanı','öğretmen','dansçı','fotoğrafçı','emekli','bisikletli','yüzücü','ressam'];
+const ITEMS=['simit tablası','balık kasası','çay kolisi','lokum kolisi','baharat çuvalı','halı balyası','çini sandığı','kitap kolisi',
+  'tulumba tepsisi','zeytinyağı tenekesi','meyve kasası','nar kasası','semaver','bakır cezve kolisi','çiçek kovası','kumaş topu','ekmek sepeti',
+  'peynir tekerleği','kahve çuvalı','antika sandık','midye kovası','boza bidonu','kestane çuvalı','gazete destesi','mektup torbası','balık ağı'];
+const ONE_EN=['A civil servant','A fisherman','A student','A photographer','A cook','A tour guide',
+  'A painter','A doctor','A journalist','An archaeologist','An architect','A poet','A diver','A jeweller','A bookseller','A waterside mansion owner','A footballer','An actor','A vet','A retired captain'];
+const MANY_EN=[n=>n+' tourists',n=>'A family of '+n,n=>n+' friends',n=>n+' musicians',n=>n+' travellers',
+  n=>n+' students',n=>n+' football fans',n=>n+' fishermen',n=>n+' choir singers',n=>n+' businesspeople',n=>n+' teachers',n=>n+' dancers',n=>n+' photographers',n=>n+' retirees',n=>n+' cyclists',n=>n+' swimmers',n=>n+' painters'];
+const ITEMS_EN=[['simit tray','simit trays'],['fish crate','fish crates'],['box of tea','boxes of tea'],['box of Turkish delight','boxes of Turkish delight'],['sack of spices','sacks of spices'],['carpet bale','carpet bales'],['chest of tiles','chests of tiles'],['box of books','boxes of books'],
+  ['tray of tulumba','trays of tulumba'],['tin of olive oil','tins of olive oil'],['fruit crate','fruit crates'],['crate of pomegranates','crates of pomegranates'],['samovar','samovars'],['box of copper coffee pots','boxes of copper coffee pots'],['bucket of flowers','buckets of flowers'],['bolt of fabric','bolts of fabric'],['bread basket','bread baskets'],
+  ['cheese wheel','cheese wheels'],['sack of coffee','sacks of coffee'],['antique chest','antique chests'],['bucket of mussels','buckets of mussels'],['jug of boza','jugs of boza'],['sack of chestnuts','sacks of chestnuts'],['bundle of newspapers','bundles of newspapers'],['mail bag','mail bags'],['fishing net','fishing nets']];
+// Aynı yolcu/yük kısa sürede tekrar etmesin: her liste için son seçilenleri hatırla
+const RECENT={};function riFresh(a,key){const r=RECENT[key]||(RECENT[key]=[]),keep=Math.min(8,a.length-2);let x,t=0;
+  do{x=(Math.random()*a.length)|0}while(r.includes(x)&&++t<30);r.push(x);while(r.length>keep)r.shift();return x}
 const ri=a=>(Math.random()*a.length)|0;
-function jobLabel(j){if(LANG!=='en'||!j.lb)return j.label;const[k,i,n,night]=j.lb;
+function jobLabel(j){if(j.tour)return(LANG==='en'?j.le:j.label)+(st.jobs.includes(j)?' · 📸 '+j.td.filter(Boolean).length+'/'+j.td.length:'');if(LANG!=='en'||!j.lb)return j.label;const[k,i,n,night]=j.lb;
   const s=k==='o'?ONE_EN[i]:k==='m'?MANY_EN[i](n):n+' '+ITEMS_EN[i][n===1?0:1];
   return s+(night?' · night fare':'')}
 const pick=a=>a[(Math.random()*a.length)|0];
 function genJob(pi){const from=PIERS[pi];let to,d,tries=0;
   do{to=(Math.random()*PIERS.length)|0;d=route(from,PIERS[to])}while((to===pi||d<350)&&++tries<60);
   const pax=Math.random()<.6;let n,label,pay,lb;
-  if(pax){n=1+Math.floor(Math.pow(Math.random(),1.6)*Math.min(cap('seat'),6));let x;if(n===1){x=ri(ONE);label=ONE[x];lb=['o',x,n,0]}else{x=ri(MANY);label=n+' '+MANY[x];lb=['m',x,n,0]}pay=r5(22+d*.12*(.7+.3*n))}
-  else{n=1+Math.floor(Math.pow(Math.random(),1.6)*Math.min(cap('hold'),5));const x=ri(ITEMS);label=n+' '+ITEMS[x];lb=['i',x,n,0];pay=r5(18+d*.09*(.6+.4*n))}
+  if(pax){n=1+Math.floor(Math.pow(Math.random(),1.6)*Math.min(cap('seat'),6));let x;if(n===1){x=riFresh(ONE,'o');label=ONE[x];lb=['o',x,n,0]}else{x=riFresh(MANY,'m');label=n+' '+MANY[x];lb=['m',x,n,0]}pay=r5(22+d*.12*(.7+.3*n))}
+  else{n=1+Math.floor(Math.pow(Math.random(),1.6)*Math.min(cap('hold'),5));let x=dailyItem();if(x<0||Math.random()>.3)x=riFresh(ITEMS,'i');label=n+' '+ITEMS[x];lb=['i',x,n,0];pay=r5(18+d*.09*(.6+.4*n))}
   if(pax&&getDayFactor()>.65){pay=r5(pay*1.25);label+=' · gece tarifesi';lb[3]=1}
   pay=r5(pay*DF().pay);
   return{type:pax?'pax':'cargo',from:pi,n,label,lb,to,dist:d,pay,limit:Math.round((15+d/34)*DF().time)}}
-function ensureOffers(pi){const o=offers[pi];if(!o||time-o.t>75||!o.list.length)offers[pi]={t:time,list:[genJob(pi),genJob(pi),genJob(pi)]}}
+function ensureOffers(pi){const o=offers[pi];if(!o||time-o.t>75||!o.list.length){const l=[genJob(pi),genJob(pi),genJob(pi)];if(Math.random()<.35){const tj=genTour(pi);if(tj)l[1]=tj}offers[pi]={t:time,list:l}}}
 const canTake=j=>used(j.type)+j.n<=cap(j.type==='pax'?'seat':'hold');
+
+/* ---------- Günlük görevler: her gün 3 yeni hedef (kolay/orta/zor), tamamlanınca ödül ---------- */
+const DKEY='bt-daily',DITEMS=[5,0,1,3,4,2,12,11];
+const DKINDS={
+  del:{tr:g=>g+' teslimat yap',en:g=>'Make '+g+' deliveries',g:[5,8,12]},
+  item:{tr:(g,x)=>'Bugün '+g+' '+ITEMS[x]+' teslim et',en:(g,x)=>'Deliver '+g+' '+ITEMS_EN[x][g===1?0:1]+' today',g:[2,3,5]},
+  pax:{tr:g=>g+' yolcu taşı',en:g=>'Carry '+g+' passengers',g:[8,14,22]},
+  earn:{tr:g=>'Teslimatlardan '+tl(g)+' kazan',en:g=>'Earn '+tl(g)+' from deliveries',g:[800,1600,3000]},
+  cross:{tr:g=>g+' kez kıtalar arası yolcu taşı',en:g=>'Carry passengers between continents '+g+' times',g:[2,4,6]},
+  night:{tr:g=>g+' gece tarifesi işi bitir',en:g=>'Finish '+g+' night-fare jobs',g:[1,2,4]},
+  ontime:{tr:g=>'Üst üste '+g+' işi zamanında teslim et',en:g=>'Deliver '+g+' jobs on time in a row',g:[3,5,8]},
+  pier:{tr:g=>g+' farklı iskeleye yanaş',en:g=>'Dock at '+g+' different piers',g:[4,7,10]}};
+const DREW=[200,350,600];
+function dayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function seedRnd(str){let h=2166136261;for(const c of str)h=Math.imul(h^c.charCodeAt(0),16777619);return()=>{h=Math.imul(h^(h>>>15),2246822507);h=Math.imul(h^(h>>>13),3266489909);return((h^=h>>>16)>>>0)/4294967296}}
+let DAILY=null;
+function daily(){const k=dayKey();if(DAILY&&DAILY.d===k)return DAILY;
+  try{const o=JSON.parse(localStorage.getItem(DKEY));if(o&&o.d===k)return DAILY=o}catch(_){}
+  const r=seedRnd('bt'+k),kinds=Object.keys(DKINDS),m=[];
+  while(m.length<3){const kd=kinds[(r()*kinds.length)|0];if(m.some(q=>q.k===kd))continue;const tier=m.length,x=kd==='item'?DITEMS[(r()*DITEMS.length)|0]:-1;
+    m.push({k:kd,x,g:DKINDS[kd].g[tier],p:0,ok:0,rw:DREW[tier]})}
+  DAILY={d:k,m,piers:[]};saveDaily();return DAILY}
+function saveDaily(){try{localStorage.setItem(DKEY,JSON.stringify(DAILY))}catch(_){}}
+function dailyText(q){const K=DKINDS[q.k];return LANG==='en'?K.en(q.g,q.x):K.tr(q.g,q.x)}
+function dailyItem(){const q=daily().m.find(q=>q.k==='item'&&!q.ok);return q?q.x:-1}
+function dailyAdd(kind,v,set){const D=daily();let any=false;
+  for(const q of D.m){if(q.k!==kind||q.ok)continue;q.p=set?Math.max(q.p,v):q.p+v;
+    if(q.p>=q.g){q.p=q.g;q.ok=1;const rw=r5(q.rw*DF().pay);st.money+=rw;any=true;
+      setTimeout(()=>{toast(t('Günlük görev tamam: ','Daily goal done: ')+dailyText(q)+' · +'+tl(rw));SFX.coin(2);sparkle(true)},700)}}
+  saveDaily();return any}
+function dailyHTML(){const D=daily(),n=D.m.filter(q=>q.ok).length;
+  return `<div class="ns-daily" id="daily"><h3><span>${t('Günlük görevler','Daily goals')}</span><span>${n}/3</span></h3><ul>`+
+    D.m.map(q=>`<li class="${q.ok?'ok':''}"><span>${dailyText(q)}</span><em>${q.ok?'✓':tl(r5(q.rw*DF().pay))}</em><div class="bar"><i style="width:${Math.round(q.p/q.g*100)}%"></i></div></li>`).join('')+`</ul></div>`}
+
 
 /* ---------- UI ---------- */
 function toast(msg,bad){const t=document.createElement('div');t.className='toast'+(bad?' bad':'');t.textContent=msg;$('toasts').append(t);setTimeout(()=>t.remove(),3600)}
@@ -1193,14 +1286,15 @@ function renderSheet(){const sh=$('sheet');if(moored<0){sh.hidden=true;$('ui').c
   if(rp&&!rp.closing){sh.hidden=true;return}
   const p=PIERS[moored];ensureOffers(moored);const o=offers[moored];
   const meta=[p.side===E?t('Avrupa','Europe'):t('Anadolu','Asia'),p.fuel&&t('Yakıt','Fuel'),p.yard&&t('Tersane','Shipyard')].filter(Boolean).join(' · ');
-  let h=`<div class="ns-grab"></div><div class="ns-ph"><h2>${p.name}</h2><span>${meta}</span></div>`;
+  let h=`<div class="ns-grab"></div><div class="ns-ph"><h2>${p.name}</h2><span>${meta}</span></div>`+dailyHTML();
   if(p.yard){h+=`<ul class="ns-jobs">`;
     for(const k in UP){const u=UP[k],l=st.up[k],max=l>=u.c.length,un=t(u.u,u.ue);
       h+=`<li class="ns-job"><div><b>${t(u.n,u.ne)} <small>${max?u.lv[l]+' '+un:u.lv[l]+' → '+u.lv[l+1]+' '+un}</small></b><span class="ns-pips">${u.c.map((_,i)=>`<i class="${i<l?'on':''}"></i>`).join('')}</span></div><button class="ns-take" data-act="up" data-k="${k}" id="up_${k}" ${max||st.money<u.c[l]?'disabled':''}>${max?t('Tam','Max'):tl(u.c[l])}</button></li>`}
-    h+='</ul>';if(o.list.length)h+=`<p class="ns-sub">${t('İşler','Jobs')}</p>`}
+    h+=guideRow()+'</ul>';if(o.list.length)h+=`<p class="ns-sub">${t('İşler','Jobs')}</p>`}
   if(!o.list.length)h+=`<p class="ns-empty">${t('Şu an bekleyen iş yok. Biraz sonra yenileri gelir.','No jobs right now. New ones arrive shortly.')}</p>`;
   else{h+='<ul class="ns-jobs">';o.list.forEach((j,i)=>{const fit=canTake(j);
-    h+=`<li class="ns-job"><div><b>${jobLabel(j)} → ${PIERS[j.to].name}</b><small><em>${tl(j.pay)}</em> · ~${km(wpath(moored,j.to).len)} km · ${mmss(j.limit)} · ${j.n} ${j.type==='pax'?t('koltuk',j.n===1?'seat':'seats'):t('kasa',j.n===1?'crate':'crates')}</small></div><button class="ns-take" data-act="take" data-i="${i}" id="take${i}" ${fit?'':'disabled'}>${fit?t('Al','Take'):t('Yer yok','Full')}</button></li>`});h+='</ul>'}
+    h+=`<li class="ns-job"><div><b>${jobLabel(j)}${j.tour?' ↺':' → '+PIERS[j.to].name}</b><small><em>${tl(j.pay)}</em> · ~${km(j.tour?j.dist:wpath(moored,j.to).len)} km · ${mmss(j.limit)} · ${j.n} ${j.type==='pax'?t('koltuk',j.n===1?'seat':'seats'):t('kasa',j.n===1?'crate':'crates')}</small></div><button class="ns-take" data-act="take" data-i="${i}" id="take${i}" ${fit?'':'disabled'}>${fit?t('Al','Take'):t('Yer yok','Full')}</button></li>`});h+='</ul>'}
+  if(!p.yard&&o.list.some(j=>j.tour))h+=`<ul class="ns-jobs">${guideRow()}</ul>`;
   if(p.fuel){const need=Math.floor(cap('tank')-st.fuel);
     h+=`<div class="ns-fuel"><span>${t('Yakıt','Fuel')} <small>${Math.ceil(Math.max(0,st.fuel))}/${cap('tank')} L · ₺5/L</small></span><button class="ns-btn" data-act="fuel" data-l="10" id="fuel10" ${need<1?'disabled':''}>+10 L · ₺50</button><button class="ns-btn" data-act="fuel" data-l="999" id="fuelFull" ${need<1?'disabled':''}>${need<1?t('Depo dolu','Full'):t('Doldur · ','Fill · ')+tl(need*5)}</button></div>`}
   h+=`<button class="ns-btn ns-leave" data-act="leave" id="btnLeave">${t('Demir al','Cast off')}</button>`;
@@ -1212,6 +1306,7 @@ $('sheet').addEventListener('click',e=>{const b=e.target.closest('button[data-ac
   if(act==='take'){const j=offers[moored].list[+b.dataset.i];if(!j||!canTake(j))return;openRoute(j);return}
   if(act==='fuel'){const l=Math.min(+b.dataset.l,Math.floor(cap('tank')-st.fuel));
     if(l>0){st.fuel+=l;st.money-=l*5;if(st.money<0)toast(t('Yakıt borçla alındı','Fuel bought on credit'))}}
+  if(act==='guide'){const g=st.guide||0;if(g<GUIDE_C.length&&st.money>=GUIDE_C[g]){st.money-=GUIDE_C[g];st.guide=g+1;SFX.upgrade();sparkle(false);toast(t('Rehber tuttun! Turlarda bahşiş artık +%','You hired a guide! Tour tips are now +')+(st.guide*25)+t('',' %'))}}
   if(act==='up'){const k=b.dataset.k,u=UP[k],l=st.up[k];if(l<u.c.length&&st.money>=u.c[l]){const t0=boatTier();st.money-=u.c[l];st.up[k]++;SFX.upgrade();sparkle(boatTier()>t0);const t1=boatTier();toast(t1>t0?t(TIER_N[t1][0],TIER_N[t1][1]):t(u.n+' yükseltildi!',u.ne+' upgraded!'))}}
   if(act==='menu'){save();showStart(true);return}
   if(act==='reset'){if(!resetArm)resetArm=true;else{resetArm=false;st=FRESH();for(const k in offers)delete offers[k];colorI=0;moored=-1;moor(START,true);chips()}}
@@ -1228,7 +1323,8 @@ $('sheet').addEventListener('pointerup',sEnd);$('sheet').addEventListener('point
 /* ---------- Su yolu (A*) ve iş rotası önizlemesi ---------- */
 const PG=8,PGW=Math.ceil(W/PG),PGH=Math.ceil(H/PG),PATHS={};let PGR=null;
 function pgr(){if(!PGR){PGR=new Uint8Array(PGW*PGH);for(let j=0;j<PGH;j++)for(let i=0;i<PGW;i++){const x=i*PG+4,y=j*PG+4;PGR[j*PGW+i]=nav(x,y)?2:at(mWater,x,y)?1:0}}return PGR}
-function wpath(a,b){const key=a+'>'+b;if(PATHS[key])return PATHS[key];const g=pgr(),A=PIERS[a],B=PIERS[b];
+function wpath(a,b){return wpathXY(PIERS[a],PIERS[b],a+'>'+b)}
+function wpathXY(A,B,key){if(PATHS[key])return PATHS[key];const g=pgr();
   const cell=(x,y)=>{const i=clamp(x/PG|0,0,PGW-1),j=clamp(y/PG|0,0,PGH-1);if(g[j*PGW+i])return j*PGW+i;let best=-1,bd=1e9;
     for(let r=1;r<10&&best<0;r++)for(let dj=-r;dj<=r;dj++)for(let di=-r;di<=r;di++){const ii=i+di,jj=j+dj;if(ii<0||jj<0||ii>=PGW||jj>=PGH||!g[jj*PGW+ii])continue;const d=di*di+dj*dj;if(d<bd){bd=d;best=jj*PGW+ii}}return best};
   const s0=cell(A.wx,A.wy),t0=cell(B.wx,B.wy),N=PGW*PGH,G=new Float32Array(N).fill(1e9),from=new Int32Array(N).fill(-1),done=new Uint8Array(N);
@@ -1247,13 +1343,45 @@ function wpath(a,b){const key=a+'>'+b;if(PATHS[key])return PATHS[key];const g=pg
   let Q=S;for(let it=0;it<2;it++){const o=[Q[0]];for(let i=0;i<Q.length-1;i++){const a2=Q[i],b2=Q[i+1];o.push([a2[0]*.75+b2[0]*.25,a2[1]*.75+b2[1]*.25],[a2[0]*.25+b2[0]*.75,a2[1]*.25+b2[1]*.75])}o.push(Q[Q.length-1]);Q=o}
   let len=0;for(let i=1;i<Q.length;i++)len+=Math.hypot(Q[i][0]-Q[i-1][0],Q[i][1]-Q[i-1][1]);
   return PATHS[key]={pts:Q,len}}
+/* ---------- Tur işleri: turistleri simge yapıların önünden geçirip başladığın iskeleye geri getir ---------- */
+const SIGHT_EN={'Kız Kulesi':"Maiden's Tower",'Dolmabahçe Sarayı':'Dolmabahçe Palace','Çırağan Sarayı':'Çırağan Palace','Beylerbeyi Sarayı':'Beylerbeyi Palace','Ortaköy Camii':'Ortaköy Mosque',
+  'Rumeli Hisarı':'Rumeli Fortress','Anadolu Hisarı':'Anadolu Fortress','Haydarpaşa Garı':'Haydarpaşa Station','Galata Kulesi':'Galata Tower','Topkapı Sarayı':'Topkapı Palace','Eyüp Sultan':'Eyüp Sultan Mosque'};
+let SIGHTS=null;
+function sights(){if(SIGHTS)return SIGHTS;const src=[['Kız Kulesi',KIZ.x,KIZ.y]].concat(MARKS.filter(m=>SIGHT_EN[m[1]]).map(m=>[m[1],m[2],m[3]]));
+  SIGHTS=[];for(const[n,x,y]of src){let best=null,bd=1e9;for(let r=0;r<=220&&!best;r+=6)for(let a=0;a<TAU;a+=.2){const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;
+      if(nav(px,py)&&nav(px+8,py)&&nav(px-8,py)&&nav(px,py+8)&&nav(px,py-8)){const d=Math.hypot(px-x,py-y);if(d<bd){bd=d;best=[px+(px-x)/(d||1)*14,py+(py-y)/(d||1)*14]}}}
+    if(best&&nav(best[0],best[1]))SIGHTS.push({n,x:best[0],y:best[1]});else if(best)SIGHTS.push({n,x:best[0]-(best[0]-x)/Math.hypot(best[0]-x,best[1]-y)*14,y:best[1]-(best[1]-y)/Math.hypot(best[0]-x,best[1]-y)*14})}
+  return SIGHTS}
+const sightName=i=>LANG==='en'?SIGHT_EN[sights()[i].n]:sights()[i].n;
+function tourLegs(pi,ids){const P=PIERS[pi],pts=[P].concat(ids.map(i=>({wx:sights()[i].x,wy:sights()[i].y}))).concat([P]),keys=['p'+pi].concat(ids.map(i=>'s'+i)).concat(['p'+pi]);
+  const out={pts:[],len:0};for(let k=0;k<pts.length-1;k++){const w=wpathXY(pts[k],pts[k+1],keys[k]+'>'+keys[k+1]);out.pts=out.pts.concat(k?w.pts.slice(1):w.pts);out.len+=w.len}return out}
+function genTour(pi){if(cap('seat')<2)return null;const P=PIERS[pi];
+  const near=sights().map((q,i)=>({i,d:Math.hypot(q.x-P.wx,q.y-P.wy)})).filter(o=>o.d>60&&o.d<1000).sort((a,b)=>a.d-b.d).slice(0,5);if(near.length<2)return null;
+  const a=near[(Math.random()*near.length)|0].i;let b;do{b=near[(Math.random()*near.length)|0].i}while(b===a);
+  let ids=[a,b];const L1=tourLegs(pi,ids).len,L2=tourLegs(pi,[b,a]).len;if(L2<L1)ids=[b,a];const L=Math.min(L1,L2);
+  const n=2+Math.floor(Math.pow(Math.random(),1.4)*(Math.min(cap('seat'),8)-1));
+  const pay=r5((70+L*.16*(.7+.3*n))*DF().pay),nm=ids.map(i=>sights()[i].n),ne=ids.map(i=>SIGHT_EN[sights()[i].n]);
+  return{type:'pax',tour:ids,td:ids.map(()=>0),from:pi,to:pi,n,dist:L,pay,limit:Math.round((35+L/30)*DF().time),
+    label:'Tur · '+n+' turist: '+nm.join(' + '),le:'Tour · '+n+' tourists: '+ne.join(' + ')}}
+const tourDone=j=>!j.tour||j.td.every(Boolean);
+function tourStep(){for(const j of st.jobs){if(!j.tour)continue;j.tour.forEach((si,k)=>{if(j.td[k])return;const q=sights()[si];
+    if(Math.hypot(boat.x-q.x,boat.y-q.y)<78){j.td[k]=1;const d=j.td.filter(Boolean).length;
+      toast('📸 '+t(q.n+' önünden geçildi · tur '+d+'/'+j.td.length,SIGHT_EN[q.n]+' passed · tour '+d+'/'+j.td.length)+(tourDone(j)?t(' · şimdi '+PIERS[j.to].name+' iskelesine dön',' · now head back to '+PIERS[j.to].name):''));SFX.coin(1);chips();save()}})}}
+function drawTourSights(){const done={};for(const j of st.jobs){if(!j.tour)continue;j.tour.forEach((si,k)=>{if(j.td[k]||done[si])return;done[si]=1;const q=sights()[si],pu=1+.06*Math.sin(time*4);
+    ctx.save();ctx.translate(q.x,q.y);ctx.strokeStyle=j.color;ctx.lineWidth=2.2/Math.max(sc,.5);ctx.setLineDash([7,6]);ctx.beginPath();ctx.arc(0,0,78*pu,0,TAU);ctx.stroke();ctx.setLineDash([]);
+    camIcon(j.color);ctx.restore()})}}
+function camIcon(col,k){k=k||1;ctx.save();ctx.scale(k,k);ctx.fillStyle=col;ctx.strokeStyle='#14283c';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(-11,-7,22,15,3);ctx.fill();ctx.stroke();ctx.beginPath();ctx.roundRect(-4,-10,8,4,1);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(0,.5,4.2,0,TAU);ctx.fill();ctx.stroke();ctx.restore()}
+const GUIDE_C=[1500,3500];
+function guideRow(){const g=st.guide||0,max=g>=GUIDE_C.length,lv=[t('Yok','None'),t('Rehber','Guide'),t('Kıdemli rehber','Senior guide')];
+  return `<li class="ns-job"><div><b>${t('Rehber','Tour guide')} <small>${max?lv[g]:lv[g]+' → '+lv[g+1]}</small></b><small>${t('Turlarda bahşiş','Tour tips')} +%${(g)*25}${max?'':' → +%'+(g+1)*25}</small></div><button class="ns-take" data-act="guide" id="guideBtn" ${max||st.money<GUIDE_C[g]?'disabled':''}>${max?t('Tam','Max'):tl(GUIDE_C[g])}</button></li>`}
 let rp=null;
-function openRoute(j){const P=wpath(moored,j.to),xs=P.pts.map(q=>q[0]),ys=P.pts.map(q=>q[1]);
+function openRoute(j){const P=j.tour?tourLegs(moored,j.tour):wpath(moored,j.to),xs=P.pts.map(q=>q[0]),ys=P.pts.map(q=>q[1]);
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys),top=118,bot=250,
     z=clamp(Math.min((cw-56)/Math.max(60,x1-x0),(ch-top-bot-24)/Math.max(60,y1-y0)),.12,sc*1.15);
   rp={j,from:moored,P,z,cx:(x0+x1)/2,cy:(y0+y1)/2,ay:(top+(ch-top-bot)/2)/ch,t0:performance.now(),k:0,closing:false,col:COLORS[colorI%COLORS.length]};
   const typ=j.n+' '+(j.type==='pax'?t('koltuk',j.n===1?'seat':'seats'):t('kasa',j.n===1?'crate':'crates'));
-  $('rtCard').innerHTML=`<div class="ns-grab"></div><div class="rt-top"><b>${PIERS[moored].name} → ${PIERS[j.to].name}</b><span class="rt-km">~${km(P.len)} km</span></div>
+  $('rtCard').innerHTML=`<div class="ns-grab"></div><div class="rt-top"><b>${j.tour?PIERS[moored].name+' ↺':PIERS[moored].name+' → '+PIERS[j.to].name}</b><span class="rt-km">~${km(P.len)} km</span></div>
     <p class="rt-sub">${jobLabel(j)}<br><em>${tl(j.pay)}</em> · ${t('süre','time')} ${mmss(j.limit)} · ${typ}</p>
     <div class="rt-btns"><button class="ns-btn" id="rtNo" type="button">${t('İptal','Cancel')}</button><button class="ns-btn pri" id="rtOk" type="button">${t('Onayla','Confirm')}</button></div>`;
   $('sheet').hidden=true;$('rtCard').hidden=false}
@@ -1270,7 +1398,9 @@ function drawRoute(){const Q=rp.P.pts,e=rp.e;if(e<=0)return;ctx.save();ctx.globa
   const a=Q[0],b=Q[Q.length-1];ctx.lineWidth=2.5/sc;ctx.strokeStyle='#14283c';
   ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(a[0],a[1],8/sc,0,TAU);ctx.fill();ctx.stroke();ctx.fillStyle=rp.col;ctx.beginPath();ctx.arc(a[0],a[1],3.5/sc,0,TAU);ctx.fill();
   const r=11/sc;ctx.fillStyle=rp.col;ctx.beginPath();ctx.moveTo(b[0],b[1]);ctx.arc(b[0],b[1]-r*2.2,r,Math.PI*.78,Math.PI*.22);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(b[0],b[1]-r*2.2,r*.42,0,TAU);ctx.fill();ctx.restore()}
+  ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(b[0],b[1]-r*2.2,r*.42,0,TAU);ctx.fill();
+  if(rp.j.tour)for(const si of rp.j.tour){const q=sights()[si];ctx.save();ctx.translate(q.x,q.y);camIcon(rp.col,1/sc);ctx.restore()}
+  ctx.restore()}
 function drawRP(){if(!rp)return draw();const now=performance.now();
   rp.k=rp.closing?1-(now-rp.tc)/350:Math.min(1,(now-rp.t0)/450);if(rp.closing&&rp.k<=0){rp=null;return draw()}
   const e=rp.e=rp.k<.5?2*rp.k*rp.k:1-Math.pow(-2*rp.k+2,2)/2,s0=sc,cx=cam.x,cy=cam.y,ay=cam.ay;
@@ -1282,19 +1412,23 @@ const TIER_N=[['',''],['Teknen spor tekne oldu!','Your boat is now a sport boat!
 const SPARKS=[];let pulseT=0;
 function sparkle(big){pulseT=big?1.2:.7;for(let i=0;i<(big?60:32);i++){const a=Math.random()*TAU,r=8+Math.random()*26;SPARKS.push({x:boat.x+Math.cos(a)*r,y:boat.y+Math.sin(a)*r,vx:Math.cos(a)*(12+Math.random()*30),vy:Math.sin(a)*(12+Math.random()*30)-10,l:1,s:1.5+Math.random()*2.5,c:Math.random()<.6?'#facc15':'#ffffff',d:.6+Math.random()*.7})}}
 function moor(i,silent){moored=i;const p=PIERS[i];boat.v=0;boat.a=Math.atan2(p.dy,p.dx)+Math.PI/2;
-  if(!silent){const here=st.jobs.filter(j=>j.to===i);
+  if(!silent){const here=st.jobs.filter(j=>j.to===i&&(tourDone(j)||j.t<=0));
     for(const j of here){let pay,note='';
       let m=1;
       if(j.t>0){const tip=j.type==='pax'?r5(j.pay*.18*j.t/j.limit):0;pay=j.pay+tip;if(tip)note=t(' (bahşiş ',' (tip ')+tl(tip)+')';
         if(true){st.streak=(st.streak||0)+1;m=streakMult(st.streak);if(m>1){pay=r5(pay*m);note+=t(' · seri x',' · streak x')+fmtM(m)}}}
       else{pay=r5(j.pay*(j.type==='pax'?DF().lp:DF().lc));{const pc=Math.round((j.type==='pax'?DF().lp:DF().lc)*100);note=t(' (gecikme: ücretin %'+pc+'’i)',' (late: '+pc+'% of the fare)')}
         if((st.streak||0)>=2)note+=t(' · '+st.streak+'’lik seri bozuldu',' · your '+st.streak+'-delivery streak is over');st.streak=0}
+      if(j.tour){if(!tourDone(j)){pay=r5(pay*.35);note+=t(' · tur yarım kaldı',' · tour left unfinished')}else if(st.guide){const gb=r5(j.pay*.25*st.guide);pay+=gb;note+=t(' · rehber bahşişi +',' · guide tip +')+tl(gb)}}
       st.money+=pay;st.earned+=pay;st.done++;try{window.BTO&&BTO.delivery(st,j,pay)}catch(_){}toast(jobLabel(j)+t(' teslim edildi · +',' delivered · +')+tl(pay)+note,j.t<=0);
       if(j.t>0)SFX.coin(m);else SFX.late();
       const S=ACH.s;S.del++;st.noHit=(st.noHit||0)+1;if(st.diff==='kaos')S.kaos++;
       if(j.type==='pax'&&j.from!=null&&PIERS[j.from]&&PIERS[j.from].side!==p.side)S.cross++;
-      if(j.lb&&j.lb[3]===1)S.night++;if(j.lb&&j.lb[0]==='i'&&j.lb[1]===0)S.simit+=j.n}
-    st.jobs=st.jobs.filter(j=>j.to!==i);ACH.s.piers[p.name]=1;saveAch();checkAch()}
+      if(j.lb&&j.lb[3]===1)S.night++;if(j.lb&&j.lb[0]==='i'&&j.lb[1]===0)S.simit+=j.n
+      dailyAdd('del',1);dailyAdd('earn',pay);if(j.type==='pax'){dailyAdd('pax',j.n);if(j.from!=null&&PIERS[j.from]&&PIERS[j.from].side!==p.side)dailyAdd('cross',1)}
+      if(j.lb&&j.lb[0]==='i')dailyAdd('item',j.lb[1]===dailyItem()?j.n:0);if(j.lb&&j.lb[3]===1)dailyAdd('night',1);if(j.t>0)dailyAdd('ontime',st.streak||0,true)}
+    st.jobs=st.jobs.filter(j=>!here.includes(j));ACH.s.piers[p.name]=1;saveAch();checkAch()
+    {const D=daily();if(!D.piers.includes(p.name)){D.piers.push(p.name);dailyAdd('pier',D.piers.length,true)}}}
   $('tow').hidden=true;chips();hud();renderSheet();save()}
 function leave(){if(moored<0)return;const p=PIERS[moored];leftPier=moored;moored=-1;st.seen=true;SFX.resume();SFX.depart();boat.a=Math.atan2(-p.dy,-p.dx);boat.v=8;renderSheet();save()}
 $('tow').addEventListener('click',()=>{let best=-1,bd=1e9;PIERS.forEach((p,i)=>{if(!p.fuel)return;const d=Math.hypot(p.wx-boat.x,p.wy-boat.y);if(d<bd){bd=d;best=i}});
@@ -1315,10 +1449,51 @@ cv.addEventListener('pointerup',endJoy);cv.addEventListener('pointercancel',endJ
 /* ---------- Simulation ---------- */
 const wake=[];let wakeT=0,saveT=0,bumpT=0,stun=0;
 const wrap=a=>{while(a>Math.PI)a-=TAU;while(a<-Math.PI)a+=TAU;return a};
+/* ---------- Hava durumu (sis / rüzgâr / fırtına) ve yunuslar ---------- */
+const WX={kind:null,t:0,dur:0,next:60,k:0,a:0,wx:0,wy:0,ann:''};
+function wxReset(){WX.kind=null;WX.k=0;const c=DF().wx;WX.next=c?c.gap[0]*.6+Math.random()*30:1e9}
+function wxStep(dt){const c=DF().wx;if(!c){WX.kind=null;WX.k=Math.max(0,WX.k-dt);return}
+  if(WX.kind){WX.t+=dt;const fade=Math.min(WX.t/4,(WX.dur-WX.t)/4,1);WX.k=clamp(fade,0,1);
+    if(WX.t>=WX.dur){WX.kind=null;WX.k=0;WX.next=c.gap[0]+Math.random()*(c.gap[1]-c.gap[0]);toast(t('Hava açıldı','The weather has cleared'))}}
+  else if((WX.next-=dt)<=0){WX.kind=c.kinds[(Math.random()*c.kinds.length)|0];WX.t=0;WX.dur=c.dur[0]+Math.random()*(c.dur[1]-c.dur[0]);
+    WX.a=Math.random()<.5?-Math.PI/2.4:Math.PI*.75; // poyraz kuzeyden, lodos güneybatıdan
+    const nm=WX.kind==='fog'?t('Sis bastırıyor, görüş azaldı','Fog is rolling in, visibility is low'):WX.kind==='wind'?(WX.a<0?t('Poyraz çıktı, tekne sürükleniyor','A north wind (poyraz) is pushing your boat'):t('Lodos çıktı, tekne sürükleniyor','A southwest wind (lodos) is pushing your boat')):t('Fırtına! Sis ve sert rüzgâr bir arada','Storm! Fog and strong wind together');
+    toast(nm,true)}
+  const wind=WX.kind==='wind'||WX.kind==='storm'?c.w*(WX.kind==='storm'?1.2:1)*WX.k*(1+.25*Math.sin(time*.7)):0;
+  WX.wx=Math.cos(WX.a+.3*Math.sin(time*.13))*wind;WX.wy=Math.sin(WX.a+.3*Math.sin(time*.13))*wind}
+const fogOn=()=>(WX.kind==='fog'||WX.kind==='storm')?WX.k:0;
+// Yunus sürüsü: ara sıra teknenin yakınında zıplayan 3-4 yunus (sadece görsel sürpriz)
+const DOL={t:0,next:35,pod:[]};
+function dolStep(dt){if(DOL.pod.length){DOL.t+=dt;if(DOL.t>7)DOL.pod=[];return}
+  if((DOL.next-=dt)>0||moored>=0)return;DOL.next=45+Math.random()*60;
+  for(let tries=0;tries<20;tries++){const a=Math.random()*TAU,r=110+Math.random()*90,x=boat.x+Math.cos(a)*r,y=boat.y+Math.sin(a)*r;
+    if(!nav(x,y)||!nav(x+40,y)||!nav(x-40,y))continue;const h=Math.random()*TAU,n=3+((Math.random()*2)|0);
+    DOL.pod=Array.from({length:n},(_,i)=>({x:x+(Math.random()-.5)*30,y:y+(Math.random()-.5)*30,h:h+(Math.random()-.5)*.4,ph:i*.55+Math.random()*.3}));DOL.t=0;
+    if(!ACH.s.dolphin){ACH.s.dolphin=1;saveAch()}toast(t('Yunuslar! 🐬','Dolphins! 🐬'));break}}
+function drawDolphins(){if(!DOL.pod.length)return;const T=DOL.t;
+  for(const d of DOL.pod){const per=1.6,q=((T+d.ph)%per)/per,up=T+d.ph<7-.3;const sx=d.x+Math.cos(d.h)*T*18,sy=d.y+Math.sin(d.h)*T*18;
+    if(q<.55&&up){const z=Math.sin(q/.55*Math.PI);ctx.save();ctx.translate(sx+Math.cos(d.h)*q*16,sy+Math.sin(d.h)*q*16);ctx.rotate(d.h+(q/.55-.5)*1.4*0);
+      ctx.globalAlpha=.25+.75*z;ctx.fillStyle='#4b5d6e';ctx.strokeStyle='#22303c';ctx.lineWidth=1;const L=10+4*z;
+      ctx.beginPath();ctx.ellipse(0,0,L,3.2,0,0,TAU);ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-1,-3);ctx.lineTo(-4,-7*z-1);ctx.lineTo(-5,-2.5);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(-L,0);ctx.lineTo(-L-4,-3);ctx.lineTo(-L-4,3);ctx.closePath();ctx.fill();ctx.restore()}
+    else if(q>=.55&&q<.7){ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1.2;const rr=Math.max(.1,(q-.55)*60);ctx.beginPath();ctx.arc(sx+Math.cos(d.h)*16,sy+Math.sin(d.h)*16,rr,0,TAU);ctx.stroke()}}}
+function drawWind(v){const k=(WX.kind==='wind'||WX.kind==='storm')?WX.k:0;if(k<=0)return;const a=Math.atan2(WX.wy,WX.wx);
+  ctx.save();ctx.strokeStyle=CURNIGHT?'rgba(220,235,255,.45)':'rgba(255,255,255,.85)';ctx.lineWidth=2.2/Math.max(sc,.5);ctx.lineCap='round';
+  const span=Math.max(v.x1-v.x0,v.y1-v.y0),n=Math.round(80*k);
+  const Wv=v.x1-v.x0,Hv=v.y1-v.y0,md=(q,m)=>((q%m)+m)%m,dx=Math.cos(a)*time*110,dy=Math.sin(a)*time*110;
+  for(let i=0;i<n;i++){const rx=Math.sin(i*91.7)*.5+.5,ry=Math.sin(i*47.3+1)*.5+.5,sp=.8+.4*(Math.sin(i*13.1)*.5+.5);
+    const x=v.x0+md(rx*Wv+dx*sp,Wv),y=v.y0+md(ry*Hv+dy*sp,Hv);
+    if(!at(mWater,x,y))continue;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*34,y+Math.sin(a)*34);ctx.stroke()}
+  ctx.restore()}
+function drawFog(ox,oy){const k=fogOn();if(k<=0)return;const bx=ox+(boat.x-cam.x)*sc,by=oy+(boat.y-cam.y)*sc,r0=95*Math.max(sc,.7),r1=r0+170*Math.max(sc,.7);
+  const c=CURNIGHT?'28,38,54':'232,236,238',g=ctx.createRadialGradient(bx,by,r0,bx,by,r1);g.addColorStop(0,`rgba(${c},0)`);g.addColorStop(1,`rgba(${c},${.86*k})`);
+  ctx.fillStyle=g;ctx.fillRect(0,0,cw,ch)}
+
 function step(dt){
   time+=dt;
   bumpT=Math.max(0,bumpT-dt);
-  updateNpcs(dt);
+  updateNpcs(dt);wxStep(dt);dolStep(dt);if(moored<0)tourStep();
   for(const j of st.jobs)j.t-=dt;
   if(moored<0){let thr=0,turn=0;
     if(joy){const dx=joy.x-joy.ox,dy=joy.y-joy.oy,len=Math.hypot(dx,dy);
@@ -1331,7 +1506,7 @@ function step(dt){
     boat.a=wrap(boat.a+turn*2.6*dt*(.45+.55*Math.min(1,Math.abs(boat.v)/30)));
     st.fuel-=Math.abs(thr)*(.95+.12*st.up.motor)*dt;
     const inB=boat.x>800&&boat.y<2650,cf=DF().cur,cx=inB?(st.diff==='kaos'?cf*.6*Math.cos(time*.21):-1):0,cy=inB?(st.diff==='kaos'?cf*Math.sin(time*.3):cf):0;
-    let nx=boat.x+(Math.cos(boat.a)*boat.v+cx)*dt,ny=boat.y+(Math.sin(boat.a)*boat.v+cy)*dt;
+    let nx=boat.x+(Math.cos(boat.a)*boat.v+cx+WX.wx)*dt,ny=boat.y+(Math.sin(boat.a)*boat.v+cy+WX.wy)*dt;
 
     for(const n of NPCS){
       if(n.hornT>0)n.hornT-=dt;
@@ -1788,8 +1963,8 @@ function draw(){
         ctx.fillStyle='#64748b';ctx.beginPath();ctx.moveTo(x+q-1,y-11);ctx.lineTo(x+q+2.5,y-17);ctx.lineTo(x+q+6,y-11);ctx.closePath();ctx.fill();ctx.stroke()}
       ctx.fillStyle='#14283c';for(const q of[-4,0,4])ctx.fillRect(x+q-1,y-2,2,4);
     }else if(m[0]==='port'){
-      ctx.save();ctx.translate(x,y);ctx.rotate(.25);ctx.beginPath();ctx.rect(-5,-28,10,56);ctx.fill();ctx.stroke();
-      ctx.fillStyle='#00a8b5';for(let q=-22;q<24;q+=11)ctx.fillRect(-3,q,6,5);ctx.restore();
+      ctx.save();ctx.translate(x,y);ctx.rotate(.25);ctx.beginPath();ctx.rect(-5,-70,10,140);ctx.fill();ctx.stroke(); // iki rıhtımlık uzun terminal
+      ctx.fillStyle='#00a8b5';for(let q=-64;q<66;q+=11)ctx.fillRect(-3,q,6,5);ctx.restore();
     }else{
       ctx.beginPath();ctx.moveTo(x,y-24);ctx.lineTo(x+4,y+4);ctx.lineTo(x-4,y+4);ctx.closePath();ctx.fill();ctx.stroke();
       if(isNight){
@@ -1797,7 +1972,7 @@ function draw(){
       }
     }
     ctx.textAlign='center';ctx.textBaseline='top';
-    if(m[0]==='port'){ctx.textBaseline='bottom';halo(m[1],x+6,y-33,THEME==='koyu'?pal.ink:pal.muted,pal.land,FS.badge,600)}else halo(m[1],x,y+8,THEME==='koyu'?pal.ink:pal.muted,pal.land,FS.badge,600);
+    if(m[0]==='port'){ctx.textAlign='right';ctx.textBaseline='middle';halo(m[1],x-12,y,THEME==='koyu'?pal.ink:pal.muted,pal.land,FS.badge,600)}else halo(m[1],x,y+8,THEME==='koyu'?pal.ink:pal.muted,pal.land,FS.badge,600);
   }
 
   if(!still && day<0.85){
@@ -1815,8 +1990,9 @@ function draw(){
     ctx.globalAlpha=1;
   }
 
+  drawTourSights();drawDolphins();drawWind(v);
   if(rp)drawRoute();
-  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.setTransform(dpr,0,0,dpr,0,0);drawFog(ox,oy);
 
   const seen={};
   for(const j of st.jobs){if(seen[j.to])continue;seen[j.to]=1;const p=PIERS[j.to],sx=ox+(p.wx-cam.x)*sc,sy=oy+(p.wy-cam.y)*sc;
@@ -1915,7 +2091,7 @@ $('newBtn').addEventListener('click',()=>{
   playPierBell();
   st=FRESH();st.diff=pickD;for(const k in offers)delete offers[k];colorI=0;moored=-1;leftPier=-1;stun=0;wake.length=0;
   boat.x=PIERS[START].wx;boat.y=PIERS[START].wy;
-  buildNpcs();moor(START,true);chips();cam.x=boat.x;cam.y=boat.y;
+  buildNpcs();wxReset();moor(START,true);chips();cam.x=boat.x;cam.y=boat.y;
   $('start').hidden=true;paused=false;if(firstHelp)openHelp();try{window.BTO&&BTO.ev('game_start',{difficulty:st.diff,mode:'new'})}catch(_){}
 });
 
@@ -1928,7 +2104,8 @@ function renderSet(){if(!setMode)return;const ing=setMode==='pause';
   let h=`<div class="ns-grab"></div><div class="ns-hd"><h2 id="setT">${ing?t('Duraklatıldı','Paused'):t('Ayarlar','Settings')}</h2>${ing?'':`<button class="ns-ic" type="button" data-s="close" aria-label="${t('Kapat','Close')}">${XI}</button>`}</div>`;
   if(ing)h+=`<button class="ns-btn pri" type="button" data-s="resume">${t('Devam et','Resume')}</button>`;
   h+=`<div class="ns-box">
-   <div class="ns-row"><span>${t('Ses','Sound')}</span><button class="ns-sw" type="button" data-s="snd" aria-pressed="${SND_ON}" aria-label="${t('Ses','Sound')}"><i></i></button></div>
+   <div class="ns-row"><span>${t('Ses efektleri','Sound effects')}</span><button class="ns-sw" type="button" data-s="snd" aria-pressed="${SND_ON}" aria-label="${t('Ses efektleri','Sound effects')}"><i></i></button></div>
+   <div class="ns-row"><span>${t('Müzik','Music')}</span><button class="ns-sw" type="button" data-s="mus" aria-pressed="${MUS_ON}" aria-label="${t('Müzik','Music')}"><i></i></button></div>
    <div class="ns-row"><span>${t('Gün saati','Time of day')}</span>${seg('tod',[[0,t('Oto','Auto')],[1,t('Gündüz','Day')],[2,t('Akşam','Sunset')],[3,t('Gece','Night')]],todMode)}</div>
    <div class="ns-row"><span>${t('Dil','Language')}</span>${seg('lang',[['tr','TR'],['en','EN']],LANG)}</div>
    <div class="ns-row"><span>${t('Tema','Theme')}</span>${seg('theme',[['koyu',t('Koyu','Dark')],['acik',t('Açık','Light')]],THEME)}</div></div>`;
@@ -1941,6 +2118,7 @@ function closeSet(){const ing=setMode==='pause';$('setM').hidden=true;setMode=nu
 $('setB').addEventListener('click',e=>{const b=e.target.closest('[data-s]');if(!b)return;const a=b.dataset.s;
   if(a==='close'||a==='resume')return closeSet();
   if(a==='snd'){SFX.setOn(!SND_ON);try{localStorage.setItem(SND_KEY,SND_ON?'1':'0')}catch(_){}sndUI()}
+  if(a==='mus'){MUS.setOn(!MUS_ON);SFX.resume()}
   if(a==='tod'){todMode=+b.dataset.v;$('todBtn').textContent=todLabel();miniBase=null}
   if(a==='lang')setLang(b.dataset.v);
   if(a==='theme')applyTheme(b.dataset.v);
@@ -1952,8 +2130,8 @@ $('pauseBtn').addEventListener('click',()=>openSet('pause'));
 $('nsSet').addEventListener('click',()=>openSet('start'));
 function openHelp(){const fl=PIERS.filter(p=>p.fuel).map(p=>p.name).join(', '),yl=PIERS.filter(p=>p.yard).map(p=>p.name).join(', ');
   $('helpB').innerHTML=`<div class="ns-grab"></div><div class="ns-hd"><h2 id="helpT">${t('Nasıl oynanır','How to play')}</h2><button class="ns-ic" type="button" data-close="helpM" aria-label="${t('Kapat','Close')}">${XI}</button></div><div class="ns-help">`+(LANG==='en'
-   ?`<p><b>Steer:</b> press and drag on the screen; the boat turns that way and speeds up. Arrow keys work too.</p><p><b>Dock:</b> enter the dashed ring in front of a pier slowly. Don't hit ferries or tankers.</p><p><b>Jobs:</b> deliver before the timer runs out. Night riders pay 25% more; on-time deliveries in a row build a streak.</p><p><b>Fuel</b> (₺5/L): ${fl}. You can buy fuel on credit even when your money is below zero. If you run dry, a tow boat (₺500) takes you to the nearest fuel pier and fills your tank.</p><p><b>Shipyard</b> (upgrades): ${yl}. The more you upgrade, the fancier your boat gets.</p>`
-   :`<p><b>Sürüş:</b> ekrana basılı tutup sürükle; tekne o yöne döner ve hızlanır. Klavyede ok tuşları da çalışır.</p><p><b>Yanaşma:</b> iskelenin önündeki kesikli halkaya yavaşça gir. Vapur ve tankerlere çarpma.</p><p><b>İşler:</b> süre dolmadan teslim et. Gece yolcuları %25 fazla öder; arka arkaya zamanında teslimat seri bonusu getirir.</p><p><b>Yakıt</b> (litresi ₺5): ${fl}. Paran eksiye düşse de borçla yakıt alabilirsin. Yakıtın biterse çekici (₺500) seni en yakın yakıt iskelesine götürür ve depoyu doldurur.</p><p><b>Tersane</b> (geliştirme): ${yl}. Geliştirdikçe teknen de şıklaşır.</p>`)
+   ?`<p><b>Steer:</b> press and drag on the screen; the boat turns that way and speeds up. Arrow keys work too.</p><p><b>Dock:</b> enter the dashed ring in front of a pier slowly. Don't hit ferries or tankers.</p><p><b>Jobs:</b> deliver before the timer runs out. Night riders pay 25% more; on-time deliveries in a row build a streak.</p><p><b>Fuel</b> (₺5/L): ${fl}. You can buy fuel on credit even when your money is below zero. If you run dry, a tow boat (₺500) takes you to the nearest fuel pier and fills your tank.</p><p><b>Tours</b>: Take tourists past the marked landmarks (📸), then bring them back to the pier where you started. Hire a guide to earn bigger tips on tours.</p><p><b>Daily goals</b> refresh every day; you'll see them at the top of the pier menu, and the reward goes straight into your cash when you finish one.</p><p><b>Weather</b>: On Medium, Hard and Istanbul Chaos, fog and wind roll in from time to time. Fog cuts visibility and wind pushes your boat.</p><p><b>Shipyard</b> (upgrades): ${yl}. The more you upgrade, the fancier your boat gets.</p>`
+   :`<p><b>Sürüş:</b> ekrana basılı tutup sürükle; tekne o yöne döner ve hızlanır. Klavyede ok tuşları da çalışır.</p><p><b>Yanaşma:</b> iskelenin önündeki kesikli halkaya yavaşça gir. Vapur ve tankerlere çarpma.</p><p><b>İşler:</b> süre dolmadan teslim et. Gece yolcuları %25 fazla öder; arka arkaya zamanında teslimat seri bonusu getirir.</p><p><b>Yakıt</b> (litresi ₺5): ${fl}. Paran eksiye düşse de borçla yakıt alabilirsin. Yakıtın biterse çekici (₺500) seni en yakın yakıt iskelesine götürür ve depoyu doldurur.</p><p><b>Tur işleri</b>: Turistleri işaretli simge yapıların (📸) önünden geçir, sonra başladığın iskeleye geri getir. Rehber tutarsan turlardan daha çok bahşiş alırsın.</p><p><b>Günlük görevler</b> her gün yenilenir; iskele menüsünün üstünde görürsün, bitirince ödül hemen kasana girer.</p><p><b>Hava</b>: Orta, Zor ve İstanbul Kaosu'nda ara ara sis ve rüzgâr çıkar. Siste görüş azalır, rüzgâr tekneni sürükler.</p><p><b>Tersane</b> (geliştirme): ${yl}. Geliştirdikçe teknen de şıklaşır.</p>`)
    +`</div><button class="ns-btn pri" type="button" data-close="helpM">${t('Anladım','Got it')}</button>`;$('helpM').hidden=false}
 document.addEventListener('click',e=>{const c=e.target.closest('[data-close]');if(c){$(c.dataset.close).hidden=true;if(c.dataset.close==='achM')achOpen=false}});
 ['helpM','achM'].forEach(id=>$(id).addEventListener('click',e=>{if(e.target===$(id)){$(id).hidden=true;if(id==='achM')achOpen=false}}));
@@ -2003,7 +2181,7 @@ addEventListener('resize',resize);try{new ResizeObserver(resize).observe(cv)}cat
 const sv=load();
 if(sv&&sv.m<0&&sv.b&&nav(sv.b[0],sv.b[1])){boat.x=sv.b[0];boat.y=sv.b[1];boat.a=sv.b[2]||0;renderSheet();chips();hud()}
 else{const i=sv&&sv.m>=0&&sv.m<PIERS.length?sv.m:START;boat.x=PIERS[i].wx;boat.y=PIERS[i].wy;moor(i,true)}
-buildNpcs();sndUI();cam.x=boat.x;cam.y=boat.y;cam.ay=moored>=0&&cw<700?.2:.5;showStart(!!sv);document.querySelectorAll('.ns-lang').forEach(b=>b.textContent=LANG.toUpperCase());
+buildNpcs();wxReset();sndUI();cam.x=boat.x;cam.y=boat.y;cam.ay=moored>=0&&cw<700?.2:.5;showStart(!!sv);document.querySelectorAll('.ns-lang').forEach(b=>b.textContent=LANG.toUpperCase());
 try{if(!localStorage.getItem('bt-login-seen'))showLogin()}catch(_){}
 applyTheme(THEME);
 let last=performance.now();
