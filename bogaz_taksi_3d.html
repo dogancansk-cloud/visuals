@@ -175,12 +175,24 @@ function buildWater(){
       float wave(vec2 p,float t){return .55*sin(p.x*.045+t*.9)*cos(p.y*.038+t*.7)+.3*sin((p.x*.8+p.y*.6)*.09+t*1.6)+.16*sin((p.y*.9-p.x*.4)*.16+t*2.3);}
       void main(){vec4 w=modelMatrix*vec4(position,1.);w.y+=wave(w.xz,uTime);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}`,
     fragmentShader:`uniform float uTime,uFogD;uniform sampler2D uDepth;uniform vec4 uExt;uniform vec3 uSun,uSunC,uDeep,uShal,uHor,uTop,uFog;varying vec3 vW;
-      void main(){vec3 n=normalize(cross(dFdx(vW),dFdy(vW)));if(n.y<0.)n=-n;n=normalize(mix(vec3(0.,1.,0.),n,.55));
+      vec2 waveGrad(vec2 p,float t){float a=p.x*.045+t*.9,b=p.y*.038+t*.7,c=(p.x*.8+p.y*.6)*.09+t*1.6,e=(p.y*.9-p.x*.4)*.16+t*2.3;
+        return vec2(.55*.045*cos(a)*cos(b)+.3*.072*cos(c)-.16*.064*cos(e),-.55*.038*sin(a)*sin(b)+.3*.054*cos(c)+.16*.144*cos(e));}
+      vec2 ripple(vec2 p,float t){vec2 g=vec2(0.);
+        g+=.075*vec2(.96,.28)*cos(dot(p,vec2(.96,.28))*.42+t*2.1);
+        g+=.065*vec2(-.52,.85)*cos(dot(p,vec2(-.52,.85))*.55+t*2.5);
+        g+=.055*vec2(.31,-.95)*cos(dot(p,vec2(.31,-.95))*.71+t*2.9);
+        g+=.045*vec2(-.88,-.47)*cos(dot(p,vec2(-.88,-.47))*.93+t*3.3);
+        g+=.04*vec2(.66,.75)*cos(dot(p,vec2(.66,.75))*1.27+t*3.9);
+        g+=.035*vec2(-.2,-.98)*cos(dot(p,vec2(-.2,-.98))*1.63+t*4.4);
+        return g;}
+      void main(){float cd=length(cameraPosition-vW);
+        vec2 gr=waveGrad(vW.xz,uTime)+ripple(vW.xz,uTime)*.45*(1.-smoothstep(80.,600.,cd));
+        vec3 n=normalize(vec3(-gr.x,1.,-gr.y));
         vec3 v=normalize(cameraPosition-vW);vec2 uv=(vW.xz-uExt.xy)/uExt.zw;float dep=texture2D(uDepth,uv).r;
         if(uv.x<0.||uv.y<0.||uv.x>1.||uv.y>1.)dep=1.;
         vec3 base=mix(uShal,uDeep,smoothstep(.0,.55,dep));
         float fr=pow(1.-max(dot(n,v),0.),4.);vec3 r=reflect(-v,n);vec3 refl=mix(uHor,uTop,smoothstep(0.,.5,r.y));
-        vec3 c=mix(base,refl,.12+.7*fr);
+        vec3 c=mix(base,refl,.1+.55*fr);
         float sp=max(dot(r,uSun),0.);c+=uSunC*(pow(sp,180.)*2.2+pow(sp,14.)*.12);
         float foam=(1.-smoothstep(.0,.035,dep))*(.55+.45*sin(uTime*1.4+vW.x*.13+vW.z*.09));c=mix(c,vec3(.93,.95,.93),clamp(foam,0.,1.)*.75);
         float d=length(cameraPosition-vW);c=mix(c,uFog,1.-exp(-uFogD*uFogD*d*d));
