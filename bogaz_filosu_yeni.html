@@ -186,24 +186,167 @@ select{font:600 12.5px var(--body);padding:6px 8px;border-radius:9px;border:1px 
 .news .nw span{position:absolute;left:0;top:0;white-space:nowrap;line-height:18px;will-change:transform}
 .news .nw span.hot{color:#f2b705;font-weight:700}
 @media (prefers-reduced-motion:reduce){.news .nw span{position:static;display:block;overflow:hidden;text-overflow:ellipsis}}
+
+/* ===== 1.1 sade arayüz: Boğaz Taksi tarzı ===== */
+:root{--ns-ink:#14283c;--ns-mut:#5c6b78;--ns-card:#eef0e6;--ns-acc-ink:#0b1e34;--ns-sel:#e3e7da;--ns-line:#d3d8cb;--ns-teal:#00808a;--ns-glass:rgba(251,251,246,.94);--ns-acc:#facc15;--ns-bg:#fbfbf6;--body:"Figtree","Segoe UI",system-ui,sans-serif}
+/* ===== Sade arayüz (2026-11) ===== */
+.start.ns[hidden]{display:none}
+#start.start.ns{background:var(--ns-bg)!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;align-items:stretch}
+.ns-btn{font:700 15px var(--body);border-radius:16px;border:1.5px solid var(--ns-line);background:transparent;color:var(--ns-ink);min-height:48px;cursor:pointer;padding:0 16px}
+.ns-btn.pri{background:var(--ns-acc);color:var(--ns-acc-ink);border-color:transparent;font:800 18px var(--display)}
+.ns-btn.sec{border-color:var(--ns-teal);color:var(--ns-teal);font:800 16px var(--display)}
+.ns-btn:disabled{opacity:.45;cursor:default}
+.ns-btn:focus-visible,.ns-ic:focus-visible,.ns-seg button:focus-visible,.ns-link:focus-visible{outline:2px solid var(--ns-acc);outline-offset:2px}
+.ns-ic{width:40px;height:40px;border-radius:20px;border:1px solid var(--ns-line);background:transparent;color:var(--ns-ink);display:inline-flex;align-items:center;justify-content:center;font:700 12px var(--body);cursor:pointer;flex:none}
+.ns-seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;border-radius:26px;background:var(--ns-card)}
+.ns-seg button{height:40px;border-radius:20px;border:0;background:transparent;color:var(--ns-mut);font:700 14px var(--body);cursor:pointer}
+.ns-seg button[aria-pressed="true"]{background:var(--ns-acc);color:var(--ns-acc-ink);font-weight:800}
+/* başlangıç */
+.start.ns{background:var(--ns-bg);display:block;padding:0;color:var(--ns-ink);font-family:var(--body)}
+.ns-wrap{min-height:100%;max-width:440px;margin:0 auto;box-sizing:border-box;display:flex;flex-direction:column;padding:max(18px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px))}
+.ns-top{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:12px}
+.ns-prof{display:flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 6px;border-radius:20px;border:0;background:var(--ns-card);color:var(--ns-ink);font:600 14px var(--body);cursor:pointer;max-width:62%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ns-prof .av{width:28px;height:28px;border-radius:14px;background:var(--ns-line);color:var(--ns-ink);display:flex;align-items:center;justify-content:center;flex:none;font:800 13px var(--display)}
+.ns-prof.in .av{background:var(--ns-acc);color:var(--ns-acc-ink)}
+.ns-tr{display:flex;gap:8px}
+.ns-hero{flex-grow:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px 0;min-height:220px}
+.ns-hero img{width:160px;height:180px;object-fit:contain}
+.ns-hero h1{margin:4px 0 0;font:800 44px/1 var(--display);letter-spacing:-.01em;text-align:center;color:var(--ns-ink)}
+.ns-hero h1 span{color:var(--ns-acc)}
+html[data-theme="acik"] .ns-hero h1 span{color:#d29e00}
+.ns-act{display:flex;flex-direction:column;gap:12px}
+.ns-meta{margin:0 0 6px;text-align:center;font:600 12.5px var(--body);color:var(--ns-mut)}
+.ns-act .ns-btn.pri{min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.ns-act .ns-btn.pri small{font:600 12px var(--body);opacity:.75}
+.ns-act .ns-btn.armed{border-color:var(--crit);color:var(--crit)}
+.ns-links{display:flex;justify-content:space-between;align-items:center;padding:20px 12px 8px}
+.ns-link{display:flex;align-items:center;gap:7px;background:none;border:0;color:var(--ns-mut);font:600 14px var(--body);cursor:pointer;padding:10px 4px;min-height:44px}
+.ns-link:hover{color:var(--ns-ink)}
+/* alttan panel / modal */
+.ns-modal{position:fixed;inset:0;z-index:50;background:rgba(6,16,30,.6);display:flex;align-items:flex-end;justify-content:center}
+.ns-modal[hidden]{display:none}
+.ns-sheet{width:min(100%,460px);max-height:88%;overflow-y:auto;box-sizing:border-box;background:var(--ns-bg);color:var(--ns-ink);border:1px solid var(--ns-line);border-bottom:0;border-radius:26px 26px 0 0;padding:10px 20px max(24px,env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:16px;font-family:var(--body)}
+.ns-grab{width:40px;height:4px;border-radius:2px;background:var(--ns-line);align-self:center;flex:none}
+.ns-sheet h2{margin:0;font:800 26px/1 var(--display);color:var(--ns-ink)}
+.ns-hd{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ns-box{display:flex;flex-direction:column;border-radius:14px;background:var(--ns-card);padding:4px 14px}
+.ns-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:52px;border-bottom:1px solid var(--ns-line)}
+.ns-row:last-child{border-bottom:0}
+.ns-row>span{font:700 15px var(--body)}
+.ns-mini{display:flex;gap:2px;padding:3px;border-radius:16px;background:var(--ns-bg)}
+.ns-mini button{height:30px;padding:0 10px;border-radius:14px;border:0;background:transparent;color:var(--ns-mut);font:700 12px var(--body);cursor:pointer}
+.ns-mini button[aria-pressed="true"]{background:var(--ns-sel);color:var(--ns-ink)}
+.ns-sw{width:50px;height:30px;border-radius:15px;border:0;background:var(--ns-line);padding:3px;display:flex;cursor:pointer}
+.ns-sw i{width:24px;height:24px;border-radius:12px;background:#fff;display:block}
+.ns-sw[aria-pressed="true"]{background:#00a8b5;justify-content:flex-end}
+.ns-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ns-help p{margin:0;font:500 14px/1.5 var(--body);color:var(--ns-ink)}
+.ns-help b{font-weight:800}
+.ns-help{display:flex;flex-direction:column;gap:10px}
+.ns-ph{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.ns-ph h2{margin:0;font:800 28px/1 var(--display);color:var(--ns-ink)}
+.ns-ph span{font:700 12px var(--body);color:var(--ns-mut)}
+.ns-jobs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.ns-job{display:flex;align-items:center;gap:12px;padding:10px 10px 10px 14px;border-radius:14px;background:var(--ns-card)}
+.ns-job>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ns-job b{font:700 15px var(--body);color:var(--ns-ink)}
+.ns-job small{font:600 12.5px var(--body);color:var(--ns-mut)}
+.ns-job small em{font-style:normal;color:#b88a00;font-weight:800}
+html[data-theme="koyu"] .ns-job small em{color:var(--ns-acc)}
+.ns-job .ns-take{min-width:56px;height:44px;border-radius:12px;border:0;background:var(--ns-acc);color:var(--ns-acc-ink);font:800 14px var(--body);cursor:pointer;padding:0 10px;flex:none}
+.ns-job .ns-take:disabled{background:var(--ns-line);color:var(--ns-mut);cursor:default;font-size:12px}
+.ns-daily{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:14px;background:var(--ns-card)}
+.ns-daily h3{margin:0;font:800 13px var(--body);color:var(--ns-mut);text-transform:none;letter-spacing:normal;display:flex;justify-content:space-between}
+.ns-daily li{list-style:none;display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center}
+.ns-daily ul{margin:0;padding:0;display:flex;flex-direction:column;gap:7px}
+.ns-daily span{font:700 13.5px var(--body);color:var(--ns-ink);min-width:0}
+.ns-daily em{font:800 12.5px var(--body);font-style:normal;color:#b88a00;white-space:nowrap}
+html[data-theme="koyu"] .ns-daily em{color:var(--ns-acc)}
+.ns-daily .bar{grid-column:1/-1;height:5px;border-radius:3px;background:var(--ns-line);overflow:hidden}
+.ns-daily .bar i{display:block;height:100%;background:var(--ns-teal)}
+.ns-daily li.ok span{color:var(--ns-mut);text-decoration:line-through}
+.rt-card .rt-btns .ns-btn{min-height:54px;font:800 17px var(--display)}
+.ns-pips{display:flex;gap:4px;margin-top:3px}
+.ns-pips i{width:18px;height:6px;border-radius:3px;background:var(--ns-line)}
+.ns-pips i.on{background:var(--ns-acc)}
+.ns-fuel{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ns-fuel>span{flex:1;font:700 14px var(--body);min-width:110px}
+.ns-fuel>span small{color:var(--ns-mut);font-weight:600}
+.ns-fuel .ns-btn{min-height:40px;border-radius:12px;font:700 13px var(--body);padding:0 12px}
+.ns-sub{margin:0;font:700 12px var(--body);color:var(--ns-mut);letter-spacing:.06em;text-transform:uppercase}
+.ns-empty{margin:0;color:var(--ns-mut);font:600 13px var(--body)}
+.ns-foot{margin:0;text-align:center;font:600 12px var(--body);color:var(--ns-mut)}
+/* 1.0.3 yatay telefon: açılış ekranı iki sütun */
+
+
+/* 1.0.3 büyük ekran (iPad / Mac) açılış */
+
+
+.ns-lmsg{font-size:13px;line-height:1.45;padding:10px 12px;border-radius:12px;background:rgba(232,90,79,.12);color:inherit;text-align:left}
+.ns-lmsg button{margin-top:8px;font:inherit;font-weight:700;padding:7px 12px;border-radius:10px;border:1px solid currentColor;background:transparent;color:inherit;cursor:pointer}
+.ns-ev{background:#fff4dc!important;color:#5c3a00}
+.ns-ev h3,.ns-ev li span,.ns-ev em{color:#5c3a00!important}
+.ch-a .ns-btn{min-width:140px}
+#start.start.ns{position:absolute;inset:0;z-index:30;overflow-y:auto;background:var(--ns-bg)}
+#start.start.ns[hidden]{display:none}
+.ns-kick{font:800 11px var(--body);letter-spacing:.14em;color:var(--ns-mut)}
+.ns-hero .fl-logo{width:150px;height:150px}
+.ns-hero h1 span{color:var(--ns-teal)}
+.ns-tag{margin:0;color:var(--ns-mut);font:500 15px var(--body);text-align:center;max-width:300px}
+.ns-seg.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.ns-btn small{display:block;font:600 12px var(--body);opacity:.75;margin-top:2px}
+.ns-btn.pri,.ns-btn.sec{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ns-note{font-size:12.5px;color:#b4232a;text-align:center;margin:0}
+/* oyun içi üst bar */
+.fh-row{display:flex;gap:8px;align-items:stretch;pointer-events:auto}
+.hud.fh{flex:1;display:grid;grid-template-columns:1.3fr 1fr .8fr 1fr;background:var(--ns-glass);border:0;border-radius:22px;padding:8px 6px;box-shadow:0 6px 18px rgba(0,0,0,.16)}
+.hud.fh .stat{display:flex;flex-direction:column;align-items:center;gap:1px;border:0!important;padding:0 2px;min-width:0}
+.hud.fh .v{font:800 16px var(--display);color:var(--ns-ink);white-space:nowrap}.hud.fh #vCash{color:#a07400}.hud.fh #vCash.neg{color:#c8372d}
+.hud.fh .k{font:600 10.5px var(--body);color:var(--ns-mut);text-transform:none;letter-spacing:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.fh-b{flex:none;width:48px;border:0;border-radius:22px;background:var(--ns-glass);color:var(--ns-ink);font:800 14px var(--display);box-shadow:0 6px 18px rgba(0,0,0,.16);cursor:pointer;display:flex;align-items:center;justify-content:center}
+#spB{width:52px;background:var(--ns-acc)}
+.goal{border:0!important;border-radius:16px!important;background:var(--ns-glass)!important;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.tabs{border:0!important;border-radius:22px!important;background:var(--ns-glass)!important;box-shadow:0 6px 18px rgba(0,0,0,.16);padding:4px}
+.tabs button{border:0!important;border-radius:18px;display:flex;flex-direction:column;align-items:center;gap:2px;font:700 11.5px var(--body)!important;padding:6px 2px!important;color:var(--ns-mut)!important}
+.tabs button[aria-pressed="true"],.tabs button.on{background:var(--ns-acc)!important;color:var(--ns-acc-ink)!important}
+.tabs .ti{width:20px;height:20px}
+.pm-box{background:var(--ns-bg);border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:10px;color:var(--ns-ink)}
+.pm-box h2{font:800 24px var(--display);margin:0 0 4px}
+.pm-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-weight:700}
+.how-step{display:flex;flex-direction:column;gap:8px}.how-step .hi{font-size:42px;text-align:center}.how-step h3{font:800 20px var(--display);margin:0;text-align:center}.how-step p{margin:0;color:var(--ns-mut);text-align:center;line-height:1.45}
+.how-dots{display:flex;justify-content:center;gap:6px;margin:6px 0}.how-dots i{width:8px;height:8px;border-radius:50%;background:var(--ns-line)}.how-dots i.on{background:var(--ns-teal)}
+.how-a{display:flex;gap:8px}
+#pm .pm-box,#how .pm-box{max-width:400px;width:min(100%,400px);background:var(--ns-bg);padding:20px;border-radius:24px;gap:12px}
+#pm .pm-box div,#how .pm-box div{background:none;border-radius:0;padding:0;max-width:none;gap:6px}
+#pm .pm-row{display:flex;flex-direction:row;justify-content:space-between;align-items:center}
+#pm .seg{display:flex;flex-direction:row;background:var(--ns-card);border:0;border-radius:20px;padding:3px}
+#pm .seg button{border:0;border-radius:16px;padding:7px 11px;font:700 13px var(--body)}#pm .seg button[aria-pressed="true"]{background:var(--ns-acc);color:var(--ns-acc-ink)}
+#how .how-dots{display:flex;flex-direction:row;justify-content:center}#how .how-a{display:flex;flex-direction:row}
+#how .how-step{display:flex;flex-direction:column;align-items:center}.how-a .ns-btn{flex:1}
+
+#pm,#how{z-index:40}#pm:not([hidden])~.ui .demB{display:none}
+.demB{z-index:4!important}
+.sheet{border:0!important;border-radius:24px!important;box-shadow:0 10px 30px rgba(0,0,0,.2)!important;background:var(--ns-bg)!important}
+.sheet h2{font:800 22px var(--display)!important}
+.card{border:0!important;border-radius:20px!important;box-shadow:0 6px 18px rgba(0,0,0,.16)!important}
+.btn{border-radius:12px!important;min-height:40px;font-family:var(--body)!important;font-weight:700!important}
+.btn.pri{background:var(--ns-acc)!important;color:var(--ns-acc-ink)!important;border-color:transparent!important}
+select{border-radius:12px!important;min-height:40px}
+.news{border-radius:14px!important}
 </style>
 
 <div id="app">
   <canvas id="c" aria-label="İstanbul Boğazı haritası: iskeleler, hatlar ve tekneler"></canvas>
   <div class="ui">
-    <header class="hud">
-      <div class="stat"><span class="k" data-tr="Kasa" data-en="Cash">Kasa</span><span class="v" id="vCash">₺400 B</span></div>
-      <div class="stat"><span class="k" id="vDay">1. gün</span><span class="v" id="vClock">06:00</span></div>
-      <div class="stat"><span class="k" data-tr="İtibar" data-en="Reputation">İtibar</span><span class="v" id="vRep">50</span></div>
-      <div class="stat"><span class="k" data-tr="Bugün" data-en="Today">Bugün</span><span class="v" id="vToday">₺0</span></div>
-    </header>
-    <div class="bar2">
-      <div class="seg" id="speed" role="group" data-tra="Oyun hızı" data-ena="Game speed" aria-label="Oyun hızı">
-        <button data-s="0" id="sp0" data-tr="Dur" data-en="Pause">Dur</button><button data-s="1" id="sp1">1x</button><button data-s="2" id="sp2">2x</button><button data-s="4" id="sp4">4x</button><button data-s="8" id="sp8">8x</button>
-      </div>
-      <div class="seg" role="group"><button id="menuB" data-tr="Menü" data-en="Menu">Menü</button></div>
-      <div class="seg" id="lang" role="group" aria-label="Dil / Language"><button data-l="tr" id="lTR">TR</button><button data-l="en" id="lEN">EN</button></div>
-      <div class="seg" role="group" data-tra="Yakınlaştırma" data-ena="Zoom" aria-label="Yakınlaştırma"><button id="zin" data-tra="Yakınlaştır" data-ena="Zoom in" aria-label="Yakınlaştır">+</button><button id="zout" data-tra="Uzaklaştır" data-ena="Zoom out" aria-label="Uzaklaştır">−</button></div>
+    <div class="fh-row">
+      <header class="hud fh">
+        <div class="stat"><span class="v" id="vCash">₺400 B</span><span class="k" data-tr="Kasa" data-en="Cash">Kasa</span></div>
+        <div class="stat"><span class="v" id="vClock">06:00</span><span class="k" id="vDay">1. gün</span></div>
+        <div class="stat"><span class="v">★ <span id="vRep">50</span></span><span class="k" data-tr="İtibar" data-en="Reputation">İtibar</span></div>
+        <div class="stat"><span class="v" id="vToday">₺0</span><span class="k" data-tr="Bugün" data-en="Today">Bugün</span></div>
+      </header>
+      <button class="fh-b" id="spB" type="button" data-tra="Oyun hızı" data-ena="Game speed" aria-label="Oyun hızı">1x</button>
+      <button class="fh-b" id="pzB" type="button" data-tra="Duraklat ve menü" data-ena="Pause and menu" aria-label="Duraklat ve menü"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1.5" fill="currentColor"/><rect x="14" y="5" width="4" height="14" rx="1.5" fill="currentColor"/></svg></button>
     </div>
     <div class="goal" id="goal"></div>
     <button id="demB" class="demB" aria-pressed="false" data-tra="Talep haritası" data-ena="Demand map" aria-label="Talep haritası">🔥 <span data-tr="Talep" data-en="Demand">Talep</span></button>
@@ -216,10 +359,22 @@ select{font:600 12.5px var(--body);padding:6px 8px;border-radius:9px;border:1px 
     <div class="card" id="info" hidden></div>
     <section class="sheet" id="sheet" hidden></section>
     <nav class="tabs" id="tabs" data-tra="Yönetim" data-ena="Management" aria-label="Yönetim">
-      <button data-t="filo" id="tFilo"><span data-tr="Filo" data-en="Fleet">Filo</span></button><button data-t="hat" id="tHat"><span data-tr="Hatlar" data-en="Lines">Hatlar</span></button><button data-t="is" id="tIs"><span data-tr="İşler" data-en="Jobs">İşler</span><sup id="jobN"></sup></button><button data-t="fin" id="tFin"><span data-tr="Finans" data-en="Finance">Finans</span></button><button data-t="kar" id="tKar"><span data-tr="Kariyer" data-en="Career">Kariyer</span></button>
+      <button data-t="filo" id="tFilo"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15l2 4h14l2-4H3zm3-2V8h8l3 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span data-tr="Filo" data-en="Fleet">Filo</span></button><button data-t="hat" id="tHat"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="17" r="2.2" fill="currentColor"/><circle cx="19" cy="7" r="2.2" fill="currentColor"/><path d="M6.5 15.5C10 9 14 13 17.5 8.5" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-tr="Hatlar" data-en="Lines">Hatlar</span></button><button data-t="is" id="tIs"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="7" width="16" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 7V5h6v2" fill="none" stroke="currentColor" stroke-width="2"/></svg><span data-tr="İşler" data-en="Jobs">İşler</span><sup id="jobN"></sup></button><button data-t="fin" id="tFin"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V11M10 19V6M16 19v-9M22 19H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span data-tr="Finans" data-en="Finance">Finans</span></button><button data-t="kar" id="tKar"><svg class="ti" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg><span data-tr="Kariyer" data-en="Career">Kariyer</span></button>
     </nav>
   </div>
-  <div id="start" hidden role="dialog" aria-modal="true" aria-labelledby="stTitle"><div class="st-box" id="stBox"></div></div>
+  <div class="modal pm" id="pm" hidden role="dialog" aria-modal="true" aria-labelledby="pmT"><div class="pm-box">
+    <h2 id="pmT" data-tr="Duraklatıldı" data-en="Paused">Duraklatıldı</h2>
+    <div class="pm-row"><span data-tr="Oyun hızı" data-en="Game speed">Oyun hızı</span><div class="seg" id="speed" role="group" data-tra="Oyun hızı" data-ena="Game speed" aria-label="Oyun hızı">
+        <button data-s="0" id="sp0" data-tr="Dur" data-en="Pause">Dur</button><button data-s="1" id="sp1">1x</button><button data-s="2" id="sp2">2x</button><button data-s="4" id="sp4">4x</button><button data-s="8" id="sp8">8x</button>
+      </div></div>
+    <div class="pm-row"><span data-tr="Dil" data-en="Language">Dil</span><div class="seg" id="lang" role="group" aria-label="Dil / Language"><button data-l="tr" id="lTR">TR</button><button data-l="en" id="lEN">EN</button></div></div>
+    <div class="pm-row"><span data-tr="Yakınlaştırma" data-en="Zoom">Yakınlaştırma</span><div class="seg" role="group"><button id="zin" aria-label="+">+</button><button id="zout" aria-label="−">−</button></div></div>
+    <button class="ns-btn pri" id="pmGo" type="button" data-tr="Devam et" data-en="Resume">Devam et</button>
+    <button class="ns-btn sec" id="pmHow" type="button" data-tr="Nasıl oynanır?" data-en="How to play">Nasıl oynanır?</button>
+    <button class="ns-btn" id="menuB" type="button" data-tr="Ana menü" data-en="Main menu">Ana menü</button>
+  </div></div>
+  <div class="modal pm" id="how" hidden role="dialog" aria-modal="true" aria-labelledby="howT"><div class="pm-box" id="howBox"></div></div>
+  <div id="start" class="start ns" hidden role="dialog" aria-modal="true" aria-labelledby="stTitle"><div class="ns-wrap" id="stBox"></div></div>
   <div class="modal" id="bw" hidden role="dialog" aria-modal="true" aria-labelledby="bwT"><div id="bwBox" class="pick"></div></div>
   <div class="modal" id="pick" hidden role="dialog" aria-modal="true"><div id="pickBox" class="pick"></div></div>
   <div class="modal" id="modal" hidden><div><h2 id="mTitle"></h2><p id="mText"></p><button class="btn pri" id="mBtn" data-tr="Yeniden başla" data-en="Start over">Yeniden başla</button></div></div>
@@ -859,7 +1014,7 @@ $('mBtn').addEventListener('click',()=>{$('modal').hidden=true;openStart()});
 let hudK='';
 function hud(force){const inc=opInc(S.today.inc),k=[S.contracts.length,S.surges.length,(S.jobs[S.jobs.length-1]||{}).id,Math.round(S.cash/100),Math.floor(S.t/60),Math.round(S.rep),Math.round(inc/100),speed,S.goal,S.jobs.length,S.events.length,LANG].join();if(k===hudK&&!force)return;hudK=k;
   $('vCash').textContent=tlc(S.cash);$('vCash').classList.toggle('neg',S.cash<0);$('vDay').textContent=t((Math.floor(S.t/DAY)+1)+'. gün','Day '+(Math.floor(S.t/DAY)+1))+' · '+L2(DOWN[dow()]);$('vClock').textContent=clock(S.t);$('vRep').textContent=Math.round(S.rep);$('vToday').textContent=tlc(inc);
-  document.querySelectorAll('#speed button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.s===speed));document.querySelectorAll('#lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LANG));$('jobN').textContent=(S.jobs.length+S.contracts.length)||'';
+  document.querySelectorAll('#speed button').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.s===speed));{const sb=$('spB');if(sb)sb.textContent=speed?speed+'x':'❚❚'}document.querySelectorAll('#lang button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===LANG));$('jobN').textContent=(S.jobs.length+S.contracts.length)||'';
   const g=GOALS[S.goal];$('goal').innerHTML=S.mode==='serbest'?`<b>${t('Serbest mod','Sandbox')}</b> · ${t('hedef yok, iflas yok — şirketini istediğin gibi büyüt','no goals, no bankruptcy — grow your company your way')}`:g?`<b>${t('Hedef','Goal')} ${S.goal+1}/${GOALS.length}:</b> ${L2(g.t)} <span>· ${g.p()}</span>`:`<b>${t('Tüm hedefler tamamlandı.','All goals complete.')}</b> ${t('Boğaz’ın patronusun.','You run the Bosphorus.')}`;
   const bn=$('banner');if(S.events.length){bn.hidden=false;bn.textContent=S.events.map(e=>L2(EV.find(x=>x.k===e.k).n)+' ('+dur(e.end-S.t)+')').join(' · ')}else bn.hidden=true;
   const as=S.surges.filter(s=>S.t>=s.start&&S.t<s.end);if(as.length){bn.hidden=false;bn.textContent=(S.events.length?bn.textContent+' · ':'')+as.map(s=>L2(SURGES.find(x=>x.k===s.k).n)+': '+PIERS[s.a].name+' – '+PIERS[s.b].name+' ('+dur(s.end-S.t)+')').join(' · ')}}
@@ -1083,26 +1238,45 @@ addEventListener('keydown',e=>{if(e.key==='Escape'&&bwId)closeBW()});
 let stDiff='orta',stArm=false,stHasSave=false,stPrevSpeed=1;
 function openStart(){stMode=S.mode||'kariyer';stHasSave=!S.dead&&(S.t>21600+600||S.lines.length>0||S.boats.length>1);stDiff=S.diff||'orta';stArm=false;if(speed)stPrevSpeed=speed;speed=0;$('start').hidden=false;renderStart();hud(true)}
 function closeStart(){$('start').hidden=true;speed=stPrevSpeed||1;hud(true)}
-function renderStart(){const d=DIFF[stDiff],cur=DIFF[S.diff]||DIFF.orta,pct=v=>(v>=1?'+':'−')+Math.round(Math.abs(v-1)*100)+'%';
-  let h=`<div class="st-top"><div><div class="st-ticket"><span>${t('İstanbul','Istanbul')}</span><span>·</span><span>${t('Boğaz ve Haliç','Bosphorus & Golden Horn')}</span></div>
-    <h1 id="stTitle">${t('Boğaz Filosu','Bosphorus Fleet')}</h1><p class="st-sub">${t('Kendi deniz taşımacılığı şirketini kur: hatlar aç, tekne al, kaptan tut, sözleşmeleri yetiştir ve rakibinden yolcu kap.','Build your own ferry company: open lines, buy boats, hire captains, deliver contracts and win riders from your rival.')}</p></div>
-    <div class="seg" role="group" aria-label="Dil / Language"><button data-sl="tr" aria-pressed="${LANG==='tr'}" ${LANG==='tr'?'class="on"':''}>TR</button><button data-sl="en" aria-pressed="${LANG==='en'}" ${LANG==='en'?'class="on"':''}>EN</button></div></div>`;
-  h+=`<div class="st-h">${t('Mod','Mode')}</div><div class="seg st-mode" role="group"><button data-md="kariyer" aria-pressed="${stMode==='kariyer'}" ${stMode==='kariyer'?'class="on"':''}>${t('Kariyer','Career')}</button><button data-md="serbest" aria-pressed="${stMode==='serbest'}" ${stMode==='serbest'?'class="on"':''}>${t('Serbest','Sandbox')}</button></div><p class="st-info">${stMode==='kariyer'?t('Sırayla açılan hedefler; kasa üst üste ekside kapanırsa iflas.','Goals unlock one by one; nights in the red mean bankruptcy.'):t('Hedef yok, iflas yok, iki kat sermaye. Talep sistemini serbestçe dene.','No goals, no bankruptcy, double capital. Explore the demand system freely.')}</p>`;
-  h+=`<div class="st-h">${t('Zorluk','Difficulty')}</div><div class="diffs">`;
-  for(const k in DIFF){const q=DIFF[k];h+=`<button class="diff ${k}" data-d="${k}" aria-pressed="${k===stDiff}"><b>${L2(q.n)}</b><span>${L2(q.d)}</span><i>${t('Sermaye','Capital')} ${tl(q.cash)}</i></button>`}
-  h+=`</div><p class="st-info">${t('Kazanç','Earnings')} <b>${d.pay===1?'±0%':pct(d.pay)}</b> · ${t('Masraflar','Costs')} <b>${d.cost===1?'±0%':pct(d.cost)}</b> · ${t('Yıpranma','Wear')} <b>${d.wear===1?'±0%':pct(d.wear)}</b> · ${t('Tekne atama süresi','Time to assign')} <b>${String(d.grace/3600).replace('.',LANG==='tr'?',':'.')} ${t('sa','h')}</b> · ${t('İflas','Bankrupt after')} <b>${d.neg} ${t('gece eksi',d.neg>1?'nights in the red':'night in the red')}</b></p>`;
-  h+=`<div class="st-btns">`;
-  if(stHasSave)h+=`<button class="btn pri" id="stCont">${t('Devam et','Continue')} · ${t((Math.floor(S.t/DAY)+1)+'. gün','Day '+(Math.floor(S.t/DAY)+1))} · ${L2(cur.n)} · ${tlc(S.cash)}</button>`;
-  h+=`<button class="btn ${stHasSave?'':'pri'}" id="stNew">${stArm?t('Eminim, yeni oyuna başla','Yes, start a new game'):t('Yeni oyun','New game')} · ${L2(d.n)}</button>`;
-  if(stArm)h+=`<p class="st-note">${t('Kayıtlı oyunun silinecek. Rozetlerin kalır.','Your saved game will be erased. Badges are kept.')}</p>`;
-  h+=`</div>`;$('stBox').innerHTML=h}
+function renderStart(){const d=DIFF[stDiff],cur=DIFF[S.diff]||DIFF.orta;
+  let h=`<div class="ns-top"><span class="ns-kick">${t('İSTANBUL · BOĞAZ VE HALİÇ','ISTANBUL · BOSPHORUS')}</span><div class="ns-tr"><button class="ns-ic" type="button" data-sl="${LANG==='tr'?'en':'tr'}" aria-label="Dil / Language">${LANG==='tr'?'EN':'TR'}</button></div></div>
+   <div class="ns-hero"><svg class="fl-logo" viewBox="0 0 160 160" aria-hidden="true"><circle cx="80" cy="80" r="76" fill="#0e5a73"/><path d="M4 96h152v20a76 76 0 0 1-152 0z" fill="#0b4a5f"/>
+<path d="M14 108c10 5 20 5 30 0s20-5 30 0 20 5 30 0 20-5 30 0 12 4 16 2" fill="none" stroke="#5fd6df" stroke-width="3" stroke-linecap="round" opacity=".7"/>
+<path d="M30 92h100l-12 16H42z" fill="#14283c"/><rect x="40" y="70" width="80" height="22" rx="4" fill="#fbfbf6" stroke="#14283c" stroke-width="3"/>
+<rect x="56" y="54" width="48" height="16" rx="3" fill="#fbfbf6" stroke="#14283c" stroke-width="3"/><rect x="74" y="36" width="12" height="18" fill="#facc15" stroke="#14283c" stroke-width="3"/><rect x="74" y="36" width="12" height="5" fill="#14283c"/>
+<g fill="#00808a"><rect x="47" y="76" width="8" height="7" rx="1.5"/><rect x="60" y="76" width="8" height="7" rx="1.5"/><rect x="73" y="76" width="8" height="7" rx="1.5"/><rect x="86" y="76" width="8" height="7" rx="1.5"/><rect x="99" y="76" width="8" height="7" rx="1.5"/></g></svg><h1 id="stTitle">${t('Boğaz <span>Filosu</span>','Bosphorus <span>Fleet</span>')}</h1><p class="ns-tag">${t('Kendi vapur şirketini kur. Talebe bak, hat aç, tekne al, rakibini geç.','Run your own ferry company. Read demand, open lines, buy boats, beat your rival.')}</p></div>
+   <div class="ns-act">`;
+  if(stHasSave&&!stArm)h+=`<button class="ns-btn pri" id="stCont" type="button"><span>${t('Devam et','Continue')}</span><small>${t((Math.floor(S.t/DAY)+1)+'. gün','Day '+(Math.floor(S.t/DAY)+1))} · ${L2(cur.n)} · ${tlc(S.cash)}</small></button>`;
+  h+=`<div class="ns-seg two" role="group" aria-label="${t('Mod','Mode')}"><button type="button" data-md="kariyer" aria-pressed="${stMode==='kariyer'}">${t('Kariyer','Career')}</button><button type="button" data-md="serbest" aria-pressed="${stMode==='serbest'}">${t('Serbest','Sandbox')}</button></div>
+   <div class="ns-seg" role="group" aria-label="${t('Zorluk','Difficulty')}">${Object.keys(DIFF).map(k=>`<button type="button" data-d="${k}" aria-pressed="${k===stDiff}">${L2(DIFF[k].n).replace('İstanbul kaosu','Kaos').replace('Istanbul chaos','Chaos')}</button>`).join('')}</div>
+   <p class="ns-meta">${stMode==='serbest'?t('Hedef yok, iflas yok, iki kat sermaye.','No goals, no bankruptcy, double capital.'):t('Hedefler sırayla açılır; kasa ekside kalırsa iflas.','Goals unlock one by one; stay in the red and you go bankrupt.')} · ${L2(d.d)} · ${t('Sermaye','Capital')} ${tl(d.cash*(stMode==='serbest'?2:1))}</p>
+   <button class="ns-btn ${stHasSave&&!stArm?'sec':'pri'}" id="stNew" type="button"><span>${stArm?t('Eminim, yeni oyuna başla','Yes, start a new game'):t('Yeni oyun','New game')}</span></button>`;
+  if(stArm)h+=`<p class="ns-note">${t('Kayıtlı oyunun silinecek. Rozetlerin kalır.','Your saved game will be erased. Badges are kept.')}</p>`;
+  h+=`</div><div class="ns-links"><button class="ns-link" type="button" id="stHow">${t('Nasıl oynanır?','How to play')}</button><a class="ns-link" href="bogaz_taksi.html">${t('Boğaz Taksi’yi oyna','Play Boğaz Taksi')}</a></div>`;
+  $('stBox').innerHTML=h}
 $('stBox').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.sl){LANG=b.dataset.sl;try{localStorage.setItem('bogaz-filosu-lang',LANG)}catch(_){}applyLang();renderStart();render();hud(true);return}
   if(b.dataset.md){stMode=b.dataset.md;stArm=false;renderStart();return}
   if(b.dataset.d){stDiff=b.dataset.d;stArm=false;renderStart();const n=$('stBox').querySelector(`[data-d="${stDiff}"]`);if(n)n.focus();return}
   if(b.dataset.sl){LANG=b.dataset.sl;try{localStorage.setItem('bogaz-filosu-lang',LANG)}catch(_){}applyLang();render();hud(true);return}
   if(b.id==='stCont'){closeStart();return}
-  if(b.id==='stNew'){if(stHasSave&&!stArm){stArm=true;renderStart();return}restart(stDiff,stMode);closeStart();speed=1;hud(true)}});
-$('menuB').addEventListener('click',openStart);
+  if(b.id==='stHow'){openHow(0);return}
+  if(b.id==='stNew'){if(stHasSave&&!stArm){stArm=true;renderStart();return}restart(stDiff,stMode);closeStart();speed=1;hud(true);if(!localStorage.getItem('bf-how'))openHow(0)}});
+$('menuB').addEventListener('click',()=>{$('pm').hidden=true;openStart()});
+const SPDS=[1,2,4,8];let pmPrev=1;
+$('spB').addEventListener('click',()=>{if(S.dead)return;const i=SPDS.indexOf(speed);speed=SPDS[(i+1)%SPDS.length];hud(true)});
+$('pzB').addEventListener('click',()=>{pmPrev=speed||pmPrev||1;speed=0;$('pm').hidden=false;hud(true)});
+$('pmGo').addEventListener('click',()=>{$('pm').hidden=true;speed=pmPrev||1;hud(true)});
+$('pmHow').addEventListener('click',()=>{$('pm').hidden=true;openHow(0)});
+const HOW=[['🏙️',['Talep','Demand'],['Her iskele çiftinin saate ve güne göre değişen bir yolcu talebi var. Sabah Anadolu’dan Avrupa’ya iş, akşam tersi; hafta sonu turistik iskeleler dolar.','Every pier pair has rider demand that changes by hour and day: commuters in the morning and evening, tourists at weekends.']],
+ ['🔥',['Talep haritası','Demand map'],['Sağdaki 🔥 Talep düğmesine bas. Kalın kırmızı kesikli çizgi: çok yolcu var ama kimse hizmet vermiyor. Önce oraya hat kur.','Tap the 🔥 Demand button. A thick red dashed line means many riders and nobody serving them. Open a line there first.']],
+ ['🧭',['Hat kur','Open a line'],['Alttan Hatlar → Yeni hat. Haritada iskelelere dokunarak durakları seç (2–5 durak) ve “Hattı kur”a bas. Boştaki teknen otomatik atanır.','Lines → New line. Tap piers on the map to pick 2–5 stops and press “Open line”. A free boat is assigned automatically.']],
+ ['⛴️',['Filonu büyüt','Grow your fleet'],['Filo’dan tekne al, kaptan tut. Hat “kalabalık” diyorsa tekne ekle. Finans’ta kaçan yolcuları ve en kârlı hatları gör. Rakibin boş bıraktığı güzergâhları kap.','Buy boats and hire captains in Fleet. If a line says “crowded”, add a boat. Finance shows missed riders. Grab routes your rival leaves open.']]];
+let howI=0,howPrev=1;
+function openHow(i){howI=i;if(speed){howPrev=speed;speed=0}const q=HOW[i];$('howBox').innerHTML=`<div class="how-step"><div class="hi">${q[0]}</div><h3 id="howT">${L2(q[1])}</h3><p>${L2(q[2])}</p></div>
+  <div class="how-dots">${HOW.map((_,k)=>`<i class="${k===i?'on':''}"></i>`).join('')}</div>
+  <div class="how-a">${i>0?`<button class="ns-btn" type="button" data-hw="-1">${t('Geri','Back')}</button>`:`<button class="ns-btn" type="button" data-hw="x">${t('Atla','Skip')}</button>`}<button class="ns-btn pri" type="button" data-hw="${i<HOW.length-1?1:'x'}">${i<HOW.length-1?t('İleri','Next'):t('Başla','Start')}</button></div>`;$('how').hidden=false;hud(true)}
+$('howBox').addEventListener('click',e=>{const b=e.target.closest('[data-hw]');if(!b)return;const a=b.dataset.hw;if(a==='x'){$('how').hidden=true;try{localStorage.setItem('bf-how','1')}catch(_){}if($('start').hidden)speed=howPrev||1;hud(true);return}openHow(howI+ +a)});
 
 /* ---------- Başlat ---------- */
 load();theme();resize();
