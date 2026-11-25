@@ -29,9 +29,9 @@ export class Traffic {
     const wheels = (zs: number[], xw: number) => zs.flatMap((z) => [-xw, xw].map((x) => wheelGeometry().translate(x, 0.34, z)));
     this.carMesh = new THREE.InstancedMesh(mergeGeometries([carBodyGeometry('#ffffff'), ...wheels([1.35, -1.35], 0.86)])!, mat, nCar);
     this.busMesh = new THREE.InstancedMesh(mergeGeometries([carBodyGeometry('#ffffff', false, 'bus'), ...wheels([3.8, -3.6], 1.1)])!, mat, Math.max(2, Math.ceil(nCar / 10)));
-    const lightG = (z: number) => mergeGeometries([new THREE.BoxGeometry(0.4, 0.14, 0.05).translate(-0.62, 0.86, z), new THREE.BoxGeometry(0.4, 0.14, 0.05).translate(0.62, 0.86, z)])!;
-    this.headMesh = new THREE.InstancedMesh(lightG(2.22), new THREE.MeshBasicMaterial({ color: '#fff4d6' }), nCar + 4);
-    this.tailMesh = new THREE.InstancedMesh(lightG(-2.22), new THREE.MeshBasicMaterial({ color: '#c01a10' }), nCar + 4);
+    const lightG = (z: number, y: number) => mergeGeometries([new THREE.BoxGeometry(0.36, 0.11, 0.06).translate(-0.6, y, z), new THREE.BoxGeometry(0.36, 0.11, 0.06).translate(0.6, y, z)])!;
+    this.headMesh = new THREE.InstancedMesh(lightG(2.24, 0.7), new THREE.MeshBasicMaterial({ color: '#fff4d6' }), nCar + 4);
+    this.tailMesh = new THREE.InstancedMesh(lightG(-2.25, 0.78), new THREE.MeshBasicMaterial({ color: '#c01a10' }), nCar + 4);
     // yaya: gövde+baş, bacaklar ayrı (yürürken sallanır)
     const col = (g: THREE.BufferGeometry, c: string) => { g = g.toNonIndexed(); const cc = new THREE.Color(c), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) { a[i * 3] = cc.r; a[i * 3 + 1] = cc.g; a[i * 3 + 2] = cc.b; } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
     this.pedBody = new THREE.InstancedMesh(mergeGeometries([col(new THREE.BoxGeometry(0.46, 0.66, 0.26).translate(0, 1.2, 0), '#ffffff'), col(new THREE.SphereGeometry(0.13, 8, 6).translate(0, 1.68, 0), '#e0b896'), col(new THREE.BoxGeometry(0.12, 0.58, 0.12).translate(-0.3, 1.18, 0), '#ffffff'), col(new THREE.BoxGeometry(0.12, 0.58, 0.12).translate(0.3, 1.18, 0), '#ffffff')])!, mat, nPed);

@@ -1,5 +1,5 @@
 // Bina geometrisi arka planda (Web Worker) üretilir; oyun akıcı kalır.
-// Yakın (lod 0): duvarlar + gerçek çatılar (kırma / beşik / mansart / bant) + cephe verisi. Uzak (lod 1): sade kutu.
+// lod 0 (çok yakın): + balkonlar · lod 1 (yakın): duvarlar, gerçek çatılar, saçak, tente, cumba · lod 2 (uzak): sade kutu.
 import { ShapeUtils, Vector2 } from 'three';
 
 type Ring = number[]; type Poly = Ring[];
@@ -152,15 +152,116 @@ function simplify(r: Ring, tol: number): Ring {
 }
 function hash(n: number) { const x = Math.sin(n * 12.9898) * 43758.5453; return x - Math.floor(x); }
 
+// ---------- İstanbul cephe renkleri (pastel apartman tonları) ----------
+const ISTANBUL = ['#efe4cf', '#e9d5ab', '#f0c9a2', '#e6b8a2', '#d9a77e', '#cbd8d2', '#bccddb', '#f4f0e7', '#e8d6df', '#dbc9a9', '#b5c4a6', '#e4c774', '#d6b49a', '#c7c2b8', '#f2dcc0', '#a9bdc9'].map(hex);
+const AWNING = ['#c0392b', '#2f7a50', '#2f6aa3', '#e07b2e', '#8a3a68', '#d4ad2a', '#3e8a8a', '#a8522f'].map(hex);
+const mul = (c: number[], k: number) => c.map((v) => Math.min(1, v * k));
+const mix = (a: number[], c: number[], t: number) => a.map((v, i) => v * (1 - t) + c[i] * t);
+const WHITE = hex('#f6f3ec'), DARK = hex('#3a3d42');
+
+/** dört köşeli yüz; n = istenen dış yön (sarma sırası buna göre düzeltilir) */
+function face(b: B, p0: number[], p1: number[], p2: number[], p3: number[], n: number[], col: number[], kind = 4, uv: number[][] | null = null) {
+  const ux = p1[0] - p0[0], uy = p1[1] - p0[1], uz = p1[2] - p0[2], vx = p2[0] - p0[0], vy = p2[1] - p0[1], vz = p2[2] - p0[2];
+  const cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+  const ok = cx * n[0] + cy * n[1] + cz * n[2] >= 0;
+  const U = uv || [[0, 0], [0, 0], [0, 0], [0, 0]];
+  if (ok) { b.tri(p0, p1, p2, col, false, [U[0], U[1], U[2]], kind); b.tri(p0, p2, p3, col, false, [U[0], U[2], U[3]], kind); }
+  else { b.tri(p0, p2, p1, col, false, [U[0], U[2], U[1]], kind); b.tri(p0, p3, p2, col, false, [U[0], U[3], U[2]], kind); }
+}
+/** dış halkayı duvarlarla aynı yönde gez: her kenar için başlangıç, yön, dış normal, uzunluk ve cephe boyunca konum (run) */
+function edges(ring: Ring) {
+  let r = ring; if (area(r) > 0) { const rr: number[] = []; for (let i = r.length - 2; i >= 0; i -= 2) rr.push(r[i], r[i + 1]); r = rr; }
+  const out: { ax: number; az: number; tx: number; tz: number; nx: number; nz: number; len: number; run: number }[] = []; let run = 0;
+  for (let i = 0; i < r.length; i += 2) {
+    const j = (i + 2) % r.length, dx = r[j] - r[i], dz = r[j + 1] - r[i + 1], len = Math.hypot(dx, dz); if (len < 0.05) continue;
+    const tx = dx / len, tz = dz / len; out.push({ ax: r[i], az: r[i + 1], tx, tz, nx: -tz, nz: tx, len, run }); run += len;
+  }
+  return out;
+}
+type E = ReturnType<typeof edges>[number];
+const at = (e: E, s: number, d: number, y: number) => [e.ax + e.tx * s + e.nx * d, y, e.az + e.tz * s + e.nz * d];
+/** kenar üstünde kutu: s0..s1 boyunca, d0..d1 dışa, y0..y1; hangi yüzler çizilsin */
+function edgeBox(b: B, e: E, s0: number, s1: number, d0: number, d1: number, y0: number, y1: number, col: number[], faces: string, under?: number[]) {
+  const N = [e.nx, 0, e.nz], T = [e.tx, 0, e.tz];
+  if (faces.includes('f')) face(b, at(e, s0, d1, y0), at(e, s1, d1, y0), at(e, s1, d1, y1), at(e, s0, d1, y1), N, col);
+  if (faces.includes('k')) face(b, at(e, s0, d0, y0), at(e, s1, d0, y0), at(e, s1, d0, y1), at(e, s0, d0, y1), [-N[0], 0, -N[2]], col);
+  if (faces.includes('t')) face(b, at(e, s0, d0, y1), at(e, s1, d0, y1), at(e, s1, d1, y1), at(e, s0, d1, y1), [0, 1, 0], col);
+  if (faces.includes('b')) face(b, at(e, s0, d0, y0), at(e, s1, d0, y0), at(e, s1, d1, y0), at(e, s0, d1, y0), [0, -1, 0], under || mul(col, 0.7));
+  if (faces.includes('l')) face(b, at(e, s0, d0, y0), at(e, s0, d1, y0), at(e, s0, d1, y1), at(e, s0, d0, y1), [-T[0], 0, -T[2]], mul(col, 0.92));
+  if (faces.includes('r')) face(b, at(e, s1, d0, y0), at(e, s1, d1, y0), at(e, s1, d1, y1), at(e, s1, d0, y1), T, mul(col, 0.92));
+}
+
+/** cephe süsleri: saçak, dükkân tenteleri, cumba (lod ≤ 1), balkonlar (lod 0) */
+function facade(b: B, o: Bld, wall: number[], lod: number, seed: number) {
+  const h = o.eave - o.base; if (h < 4.5) return;
+  const E = edges(o.p[0][0]); if (!E.length) return;
+  const corn = mix(wall, WHITE, 0.45);
+  // saçak / korniş
+  for (const e of E) if (e.len > 2.2) edgeBox(b, e, -0.12, e.len + 0.12, 0, 0.34, o.eave - 0.3, o.eave, corn, lod === 0 ? 'fb' : 'f');
+  // kat silmesi: zemin kat üstünde ince bant
+  if (h > 7 && lod === 0) for (const e of E) if (e.len > 3) edgeBox(b, e, 0, e.len, 0, 0.12, o.base + 3.55, o.base + 3.72, corn, 'ft');
+  // dükkân tenteleri (zemin kat)
+  if (h > 6.5) for (const e of E) {
+    if (e.len < 4 || hash(seed * 31 + e.run) > 0.6) continue;
+    const n = Math.max(1, Math.round(e.len / 5)), w = e.len / n;
+    for (let k = 0; k < n; k++) {
+      const hh = hash(seed * 7 + e.run + k * 1.3); if (hh < 0.25) continue;
+      const c = AWNING[Math.floor(hh * 97) % AWNING.length], s0 = k * w + 0.35, s1 = (k + 1) * w - 0.35; if (s1 - s0 < 1.6) continue;
+      const y0 = o.base + 3.15, y1 = o.base + 2.6, d = 1.25;
+      face(b, at(e, s0, 0, y0), at(e, s1, 0, y0), at(e, s1, d, y1), at(e, s0, d, y1), [e.nx * 0.4, 1, e.nz * 0.4], c);
+      face(b, at(e, s0, 0, y0 - 0.02), at(e, s1, 0, y0 - 0.02), at(e, s1, d, y1 - 0.02), at(e, s0, d, y1 - 0.02), [-e.nx * 0.4, -1, -e.nz * 0.4], mul(c, 0.7));
+      edgeBox(b, e, s0, s1, d - 0.02, d, y1 - 0.3, y1, mul(c, 0.9), 'fb');
+    }
+  }
+  // cumba (İstanbul'a özgü çıkma): en uzun kenarda, bazı binalarda
+  let cumba: [E, number, number] | null = null;
+  if (h > 8 && h < 26 && hash(seed * 13) < 0.38) {
+    const e = E.reduce((a, c) => (c.len > a.len ? c : a));
+    if (e.len >= 8) {
+      const w = Math.min(4.2, e.len * 0.4), s0 = (e.len - w) / 2, s1 = s0 + w, d = 0.85, y0 = o.base + 3.75, y1 = o.eave - 0.45;
+      const cc = mul(wall, 0.94 + 0.12 * hash(seed * 5));
+      const uv = [[e.run + s0, y0 - o.base], [e.run + s1, y0 - o.base], [e.run + s1, y1 - o.base], [e.run + s0, y1 - o.base]];
+      face(b, at(e, s0, d, y0), at(e, s1, d, y0), at(e, s1, d, y1), at(e, s0, d, y1), [e.nx, 0, e.nz], cc, 1, uv);
+      edgeBox(b, e, s0, s1, 0, d, y0, y1, cc, 'lrbt', mul(cc, 0.62));
+      edgeBox(b, e, s0 - 0.08, s1 + 0.08, 0, d + 0.1, y1, y1 + 0.18, corn, 'ftblr');
+      cumba = [e, s0 - 0.6, s1 + 0.6];
+    }
+  }
+  if (lod > 0) return;
+  // balkonlar: pencere sütunlarıyla hizalı (gölgelendiricideki aralıkla aynı)
+  if (h < 7.5 || h > 34 || hash(seed * 17) > 0.62) return;
+  const sd = Math.floor(seed * 997 + 0.5) / 997, sp = 2.9 + sd * 0.8;
+  const metal = hash(seed * 23) < 0.3, par = metal ? mix(wall, DARK, 0.35) : mix(wall, WHITE, 0.35), slabC = mix(wall, WHITE, 0.25);
+  const every = hash(seed * 29) < 0.5 ? 2 : 3, ph = Math.floor(hash(seed * 41) * every);
+  let count = 0;
+  for (const e of E) {
+    if (e.len < 5.5) continue;
+    const k0 = Math.ceil(e.run / sp), k1 = Math.floor((e.run + e.len) / sp) - 1;
+    for (let kc = k0; kc <= k1; kc++) {
+      if ((kc + ph) % every !== 0) continue;
+      const c = (kc + 0.5) * sp - e.run; if (c < 1.6 || c > e.len - 1.6) continue;
+      if (cumba && cumba[0] === e && c > cumba[1] && c < cumba[2]) continue;
+      for (let f = 1; 3.2 * f + 2.9 < h - 0.3; f++) {
+        if (count++ > 24) return;
+        const y0 = o.base + 3.2 * f + 0.78, s0 = c - 1.2, s1 = c + 1.2, D = 1.0, t = 0.07, top = y0 + 1.05;
+        edgeBox(b, e, s0, s1, 0, D, y0 - 0.15, y0, slabC, 'fbt', mul(slabC, 0.78));            // döşeme
+        edgeBox(b, e, s0, s1, D - t, D, y0, top, par, metal ? 'fkt' : 'fkt');                 // ön korkuluk
+        edgeBox(b, e, s0, s0 + t, 0, D - t, y0, top, par, 'lr');                             // yan korkuluklar
+        edgeBox(b, e, s1 - t, s1, 0, D - t, y0, top, par, 'lr');
+      }
+    }
+  }
+}
+
 function buildChunk(ci: number, lod: number) {
   const { list } = decode(ci);
   const b = new B(); const seg: number[] = [];
   for (const o of list) {
-    b.seed = hash(o.c + o.base * 7.1); b.base = o.base;
-    const wc = WALLS[o.w % WALLS.length], rc = ROOFS[o.r % ROOFS.length], fc = FLATS[o.c % FLATS.length];
-    const jit = 0.92 + 0.16 * hash(o.c * 3.3), wall = wc.map((v) => v * jit), roof = rc.map((v) => v * (0.95 + 0.1 * hash(o.c * 1.7)));
+    const seed = hash(o.c + o.base * 7.1); b.seed = seed; b.base = o.base;
+    const wc = ISTANBUL[Math.floor(hash(o.c * 1.37 + o.base * 0.71) * ISTANBUL.length) % ISTANBUL.length], rc = ROOFS[o.r % ROOFS.length], fc = FLATS[o.c % FLATS.length];
+    const jit = 0.94 + 0.1 * hash(o.c * 3.3), wall = wc.map((v) => v * jit), roof = rc.map((v) => v * (0.95 + 0.1 * hash(o.c * 1.7)));
     const tall = o.eave - o.base > 4;
-    if (lod === 1) {
+    if (lod === 2) {
       for (const poly of o.p) { const r = simplify(poly[0], 2.5); walls(b, r, o.base, o.eave + (o.hip ? o.hip[5] * 0.45 : 0), wall, false, tall); cap(b, [r], o.eave + (o.hip ? o.hip[5] * 0.45 : 0), o.hip ? roof : fc); }
       continue;
     }
@@ -178,6 +279,7 @@ function buildChunk(ci: number, lod: number) {
         if (o.eave - o.base > 6) for (const ring of poly.slice(0, 1)) walls(b, ring, o.eave, o.eave + 0.8, wall, false, false);
       }
     }
+    if (o.p.length && o.p[0].length) facade(b, o, wall, lod, seed);
     // çarpışma: dış duvar parçaları
     if (o.eave - o.base > 2.2) for (const poly of o.p) for (const r of poly) for (let i = 0; i < r.length; i += 2) { const j = (i + 2) % r.length; seg.push(r[i], r[i + 1], r[j], r[j + 1]); }
   }

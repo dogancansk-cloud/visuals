@@ -23,10 +23,10 @@ const MAP = new URL('../istanbul3d/', location.href).href; // modeller haritanı
 // ---------- kalite ----------
 const PHONE = (matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 820) || innerWidth < 700;
 type QName = 'dusuk' | 'orta' | 'yuksek';
-const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; cars: number; peds: number; lights: boolean }> = {
-  dusuk: { pr: 0.85, shadows: false, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
-  orta: { pr: 1.25, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
-  yuksek: { pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
+const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; detail: number; cars: number; peds: number; lights: boolean }> = {
+  dusuk: { detail: 90, pr: 0.85, shadows: false, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
+  orta: { detail: 160, pr: 1.25, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
+  yuksek: { detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
 };
 const qStored = (() => { try { return localStorage.getItem('drv2_q'); } catch { return null; } })();
 const qAuto = !QS.get('q') && (!qStored || qStored === 'oto');
@@ -127,7 +127,7 @@ async function main() {
   const warm = async () => {
     for (let i = 0; i < 60; i++) {
       const left = groundView.update(car.x, car.z, Q.groundNear, Q.far + 400, 40);
-      blds.update(car.x, car.z, Q.near, Q.far);
+      blds.update(car.x, car.z, Q.near, Q.far, Q.detail);
       if (!left && !blds.busy && i > 3) break;
       ltext.textContent = 'Binalar kuruluyor…'; lbar.style.width = `${(5 + Math.min(1, i / 20)) / 6 * 100}%`;
       await new Promise((r) => setTimeout(r, 60));
@@ -187,7 +187,7 @@ async function main() {
     car.sync(input.c, env.night);
     updateCamera(dt);
     // dünya parçaları (her karede biraz)
-    lodT += dt; if (lodT > 0.15) { lodT = 0; groundView.update(car.x, car.z, Q.groundNear, Q.far + 400, 3); blds.update(car.x, car.z, Q.near, Q.far); roads.update(car.x, car.z, Q.far); props.update(car.x, car.z, Q.trees > 1000 ? 380 : 260, Q.lamps > 200 ? 320 : 230); }
+    lodT += dt; if (lodT > 0.15) { lodT = 0; groundView.update(car.x, car.z, Q.groundNear, Q.far + 400, 3); blds.update(car.x, car.z, Q.near, Q.far, Q.detail); roads.update(car.x, car.z, Q.far); props.update(car.x, car.z, Q.trees > 1000 ? 380 : 260, Q.lamps > 200 ? 320 : 230); }
     roads.asphalt.color.setScalar(1 - env.wet * 0.35);
     audio.update({ rpm: car.rpm, throttle: input.c.throttle, speed: car.speed, slip: car.slip, horn: input.c.horn, rain: env.rainAmt, sea: G.kindAt(car.x + car.fwd[0] * 30, car.z + car.fwd[1] * 30) === 1 ? 1 : 0, t });
     hudT += dt; if (hudT > 0.1) {

@@ -24,20 +24,45 @@ float h21(vec2 p){ p = fract(p * vec2(0.1031, 0.1030)); p += dot(p, p.yx + 33.33
     vec2 cell = vec2(floor(u / sp), floor(v / fh));
     float fu = fract(u / sp), fv = fract(v / fh);
     bool ground = v < 3.6;
-    bool win = ground ? (fu > 0.12 && fu < 0.88 && v > 0.5 && v < 3.0) : (fu > 0.3 && fu < 0.7 && fv > 0.3 && fv < 0.82);
-    // pencere pervazı
-    bool sill = !ground && fu > 0.27 && fu < 0.73 && fv > 0.26 && fv < 0.3;
-    if (sill) diffuseColor.rgb *= 1.12;
-    if (win) {
-      float r = h21(cell + sd * 0.137);
-      vec3 glass = mix(vec3(0.16, 0.2, 0.24), vec3(0.32, 0.38, 0.42), r * 0.6);
-      if (ground) glass = vec3(0.12, 0.13, 0.14);
-      diffuseColor.rgb = mix(diffuseColor.rgb, glass, 0.85);
-      float lit = step(0.52, h21(cell * 1.7 + sd * 0.071 + 3.1));
-      glow = (ground ? vec3(1.0, 0.78, 0.45) : mix(vec3(1.0, 0.72, 0.4), vec3(0.85, 0.9, 1.0), step(0.8, r))) * lit * uNight * (ground ? 1.1 : 0.85);
+    float bs = fract(sd * 0.6180339);           // bina tarzı
+    bool shutters = bs < 0.3;                   // panjurlu eski apartman
+    vec3 base = diffuseColor.rgb;
+    if (ground) {
+      // taş kaide + dükkân camekânı
+      diffuseColor.rgb = mix(base, vec3(0.62, 0.58, 0.52), 0.35) * 0.9;
+      bool shop = fu > 0.1 && fu < 0.9 && v > 0.35 && v < 2.9;
+      bool frame = fu > 0.07 && fu < 0.93 && v > 0.25 && v < 3.0 && !shop;
+      if (frame) diffuseColor.rgb = vec3(0.86, 0.84, 0.8);
+      if (shop) {
+        float r = h21(cell + sd * 0.137);
+        vec3 glass = mix(vec3(0.1, 0.12, 0.14), vec3(0.24, 0.3, 0.34), smoothstep(0.4, 2.8, v));
+        bool door = fu > 0.42 && fu < 0.58 && r > 0.6;
+        diffuseColor.rgb = door ? vec3(0.28, 0.2, 0.14) : glass;
+        if (!door && fract(u * 1.3) < 0.04) diffuseColor.rgb = vec3(0.75);
+        float lit = step(0.35, h21(cell * 1.7 + sd * 0.071 + 3.1));
+        glow = vec3(1.0, 0.8, 0.5) * lit * uNight * 1.1;
+      }
+    } else {
+      bool win = fu > 0.3 && fu < 0.7 && fv > 0.3 && fv < 0.82;
+      bool frame = fu > 0.26 && fu < 0.74 && fv > 0.26 && fv < 0.86 && !win;
+      bool shut = shutters && !win && fv > 0.3 && fv < 0.82 && ((fu > 0.17 && fu < 0.29) || (fu > 0.71 && fu < 0.83));
+      if (frame) diffuseColor.rgb = mix(base, vec3(0.97, 0.95, 0.9), 0.75);
+      if (shut) { vec3 sc = bs < 0.1 ? vec3(0.25, 0.4, 0.3) : bs < 0.2 ? vec3(0.5, 0.32, 0.22) : vec3(0.35, 0.4, 0.45); diffuseColor.rgb = sc * (0.85 + 0.15 * step(0.5, fract(v * 6.0))); }
+      if (win) {
+        float r = h21(cell + sd * 0.137);
+        float wy = (fv - 0.3) / 0.52;
+        vec3 glass = mix(vec3(0.14, 0.18, 0.22), vec3(0.42, 0.52, 0.6), wy * 0.8 + r * 0.15);
+        if (r > 0.8) glass = mix(glass, vec3(0.85, 0.82, 0.74), 0.55); // perde
+        diffuseColor.rgb = glass;
+        if (abs(fu - 0.5) < 0.012) diffuseColor.rgb = vec3(0.92);    // orta kayıt
+        float lit = step(0.52, h21(cell * 1.7 + sd * 0.071 + 3.1));
+        glow = mix(vec3(1.0, 0.72, 0.4), vec3(0.85, 0.9, 1.0), step(0.8, r)) * lit * uNight * 0.85;
+      }
+      if (fv < 0.035) diffuseColor.rgb *= 0.94; // kat çizgisi
     }
-    // kat bandı
-    if (!ground && fv < 0.04) diffuseColor.rgb *= 0.93;
+    diffuseColor.rgb *= 0.8 + 0.2 * smoothstep(0.0, 2.2, v); // dip gölgesi
+  } else if (kind == 2.0) {
+    diffuseColor.rgb *= 0.8 + 0.2 * smoothstep(0.0, 2.2, vFac.y);
   } else if (kind == 0.0) {
     float row = fract(vFac.y / 0.42);
     diffuseColor.rgb *= 0.9 + 0.12 * smoothstep(0.0, 0.25, row) - 0.05 * step(0.85, row);
@@ -78,16 +103,16 @@ export class Buildings {
     g.setAttribute('color', new THREE.BufferAttribute(d.col, 3));
     g.setAttribute('fac', new THREE.BufferAttribute(d.fac, 4));
     g.computeBoundingSphere();
-    const m = new THREE.Mesh(g, this.mat); m.matrixAutoUpdate = false; m.castShadow = d.lod === 0; m.receiveShadow = true;
+    const m = new THREE.Mesh(g, this.mat); m.matrixAutoUpdate = false; m.castShadow = d.lod < 2; m.receiveShadow = true;
     this.group.add(m); s.mesh = m; s.lod = d.lod;
-    if (d.lod === 0) { this.colliders.set(d.chunk, d.seg); this.onCollidersChanged?.(); }
+    if (d.lod < 2) { this.colliders.set(d.chunk, d.seg); this.onCollidersChanged?.(); }
   }
   /** yakın / uzak yarıçapına göre parçaları iste */
-  update(px: number, pz: number, near: number, far: number) {
+  update(px: number, pz: number, near: number, far: number, detail = 0) {
     const want: [number, number, number][] = [];
     for (const c of this.chunks) {
       const d = Math.max(0, Math.hypot(c.cx - px, c.cz - pz) - this.CH * 0.71);
-      if (d < far) want.push([c.ci, d < near ? 0 : 1, d]);
+      if (d < far) want.push([c.ci, d < detail ? 0 : d < near ? 1 : 2, d]);
     }
     const keep = new Set(want.map((w) => w[0]));
     for (const [ci, s] of this.slots) if (!keep.has(ci)) {
@@ -101,7 +126,7 @@ export class Buildings {
       if (s && (s.pending !== undefined ? s.lod === lod : s.lod === lod && s.mesh)) continue;
       if (!s) { s = { lod }; this.slots.set(ci, s); }
       s.lod = lod; s.pending = ++this.reqId; this.inflight++;
-      if (lod === 1 && this.colliders.delete(ci)) this.onCollidersChanged?.();
+      if (lod === 2 && this.colliders.delete(ci)) this.onCollidersChanged?.();
       this.w.postMessage({ type: 'build', id: s.pending, chunk: ci, lod });
     }
   }

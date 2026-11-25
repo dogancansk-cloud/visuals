@@ -12,30 +12,64 @@ function box(w: number, h: number, l: number, x: number, y: number, z: number, c
   for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
   g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g;
 }
-/** sedan gövdesi (tekerleksiz), boyut ~1.8 × 4.4 m, burun +z */
-export function carBodyGeometry(paint: string, taxi = false, kind: 'car' | 'bus' | 'van' = 'car') {
-  const P = new THREE.Color(paint), dark = new THREE.Color('#1c1f24'), glass = new THREE.Color('#2a3440'), chrome = new THREE.Color('#9aa0a6'), black = new THREE.Color('#111');
+function paint(g: THREE.BufferGeometry, c: THREE.Color) {
+  if (g.index) g = g.toNonIndexed();
+  const n = g.attributes.position.count, a = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
+  g.setAttribute('color', new THREE.BufferAttribute(a, 3)); g.clearGroups(); return g;
+}
+/** yan profilden (z, y noktaları) yuvarlatılmış kenarlı gövde; genişlik x boyunca */
+function profile(build: (s: THREE.Shape) => void, width: number, bevel: number, c: THREE.Color, y = 0) {
+  const sh = new THREE.Shape(); build(sh);
+  const g = new THREE.ExtrudeGeometry(sh, { depth: width - 2 * bevel, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel, bevelSegments: 2, curveSegments: 10 });
+  g.translate(0, y, -(width - 2 * bevel) / 2).rotateY(-Math.PI / 2);
+  return paint(g, c);
+}
+/** sedan gövdesi (tekerleksiz), boyut ~1.82 × 4.4 m, burun +z. Tekerlek yuvaları gövdeden oyulmuştur. */
+export function carBodyGeometry(paintHex: string, taxi = false, kind: 'car' | 'bus' | 'van' = 'car') {
+  const P = new THREE.Color(paintHex), dark = new THREE.Color('#1c1f24'), glass = new THREE.Color('#25303b'), chrome = new THREE.Color('#b9bec4'), black = new THREE.Color('#111');
   const parts: THREE.BufferGeometry[] = [];
   if (kind === 'bus') {
     parts.push(box(2.5, 2.6, 11, 0, 1.75, 0, P), box(2.52, 0.9, 10.2, 0, 2.3, 0.2, glass), box(2.4, 0.3, 11, 0, 0.45, 0, dark), box(2.3, 1.1, 0.05, 0, 2.2, 5.51, glass));
-  } else if (kind === 'van') {
-    parts.push(box(1.95, 1.5, 4.9, 0, 1.2, 0, P), box(1.9, 0.75, 1.5, 0, 2.3, 1.2, glass), box(1.92, 0.75, 3.2, 0, 2.3, -1.15, P), box(1.95, 0.3, 4.9, 0, 0.45, 0, dark));
-  } else {
-    parts.push(box(1.82, 0.62, 4.4, 0, 0.78, 0, P));                     // alt gövde
-    parts.push(box(1.62, 0.56, 2.25, 0, 1.36, -0.2, glass));             // kabin camları
-    parts.push(box(1.58, 0.06, 2.0, 0, 1.66, -0.25, P));                 // tavan
-    parts.push(box(1.84, 0.22, 4.44, 0, 0.42, 0, dark));                 // etek / tampon
-    parts.push(box(1.5, 0.12, 0.05, 0, 0.78, 2.21, chrome));             // ızgara
-    if (taxi) { parts.push(box(0.75, 0.22, 0.3, 0, 1.8, -0.3, new THREE.Color('#f7f3e8'))); parts.push(box(1.84, 0.1, 4.42, 0, 0.98, 0, black)); } // TAKSİ lambası + damalı şerit yerine siyah bant
+    return mergeGeometries(parts)!;
   }
-  return mergeGeometries(parts)!;
+  if (kind === 'van') {
+    parts.push(box(1.95, 1.5, 4.9, 0, 1.2, 0, P), box(1.9, 0.75, 1.5, 0, 2.3, 1.2, glass), box(1.92, 0.75, 3.2, 0, 2.3, -1.15, P), box(1.95, 0.3, 4.9, 0, 0.45, 0, dark));
+    return mergeGeometries(parts)!;
+  }
+  const AR = 0.43, WZ = 1.35, BOT = 0.3;
+  // alt gövde: tampondan tampona, iki tekerlek yuvası
+  parts.push(profile((s) => {
+    s.moveTo(-2.12, BOT); s.lineTo(-WZ - AR, BOT); s.absarc(-WZ, BOT, AR, Math.PI, 0, true);
+    s.lineTo(WZ - AR, BOT); s.absarc(WZ, BOT, AR, Math.PI, 0, true); s.lineTo(2.1, BOT);
+    s.quadraticCurveTo(2.2, 0.36, 2.18, 0.58); s.quadraticCurveTo(2.16, 0.78, 1.95, 0.84);
+    s.lineTo(1.05, 0.95); s.lineTo(-1.3, 0.97); s.lineTo(-1.95, 0.94);
+    s.quadraticCurveTo(-2.16, 0.9, -2.17, 0.7); s.lineTo(-2.17, 0.42); s.closePath();
+  }, 1.82, 0.07, P));
+  // kabin camları
+  parts.push(profile((s) => {
+    s.moveTo(-1.34, 0.92); s.lineTo(1.0, 0.92); s.quadraticCurveTo(0.62, 1.22, 0.3, 1.39);
+    s.lineTo(-0.92, 1.41); s.quadraticCurveTo(-1.2, 1.2, -1.34, 0.92);
+  }, 1.56, 0.06, glass));
+  // tavan ve orta direk
+  parts.push(profile((s) => { s.moveTo(-0.92, 1.38); s.lineTo(0.3, 1.36); s.lineTo(0.24, 1.44); s.lineTo(-0.86, 1.46); s.closePath(); }, 1.5, 0.05, P));
+  parts.push(box(1.6, 0.46, 0.1, 0, 1.16, -0.3, P));
+  // tamponlar, ızgara, etek, plakalar
+  parts.push(box(1.88, 0.16, 0.14, 0, 0.36, 2.18, dark), box(1.88, 0.16, 0.14, 0, 0.38, -2.19, dark));
+  parts.push(box(0.9, 0.12, 0.05, 0, 0.58, 2.235, black), box(0.52, 0.12, 0.03, 0, 0.44, 2.23, chrome), box(0.52, 0.12, 0.03, 0, 0.56, -2.255, chrome));
+  parts.push(box(1.86, 0.08, 1.7, 0, BOT + 0.04, 0, dark));
+  // aynalar
+  for (const x of [-0.99, 0.99]) parts.push(box(0.16, 0.1, 0.2, x, 1.02, 0.82, P), box(0.04, 0.08, 0.16, x * 1.06, 1.02, 0.84, glass));
+  // kapı çizgileri (koyu ince bant)
+  for (const x of [-0.92, 0.92]) parts.push(box(0.01, 0.55, 0.02, x, 0.66, 0.15, dark), box(0.01, 0.5, 0.02, x, 0.68, -1.0, dark));
+  if (taxi) parts.push(box(0.75, 0.22, 0.3, 0, 1.58, -0.3, new THREE.Color('#f7f3e8')));
+  return mergeGeometries(parts.map((g) => { if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2)); return g; }))!;
 }
 export function wheelGeometry() {
-  const g = new THREE.CylinderGeometry(0.34, 0.34, 0.24, 10).rotateZ(Math.PI / 2).toNonIndexed(); const n = g.attributes.position.count, a = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) { const y = g.attributes.position.getY(i), z = g.attributes.position.getZ(i); const rim = Math.hypot(y, z) < 0.2; a[i * 3] = a[i * 3 + 1] = a[i * 3 + 2] = rim ? 0.55 : 0.08; }
-  g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g;
+  const tire = paint(new THREE.CylinderGeometry(0.34, 0.34, 0.24, 14).rotateZ(Math.PI / 2), new THREE.Color('#141414'));
+  const rim = paint(new THREE.CylinderGeometry(0.2, 0.2, 0.26, 10).rotateZ(Math.PI / 2), new THREE.Color('#a9aeb4'));
+  return mergeGeometries([tire, rim])!;
 }
-
 // ---------- çarpışma: bina duvarları ızgarada ----------
 export class Walls {
   private grid = new Map<number, number[]>(); private segs: Float32Array[] = [];
@@ -87,9 +121,9 @@ export class Car {
     const wg = wheelGeometry();
     for (const [x, z] of [[-0.86, 1.35], [0.86, 1.35], [-0.86, -1.35], [0.86, -1.35]]) { const w = new THREE.Mesh(wg, mat); w.position.set(x, 0.34, z); w.castShadow = true; this.obj.add(w); this.wheels.push(w); }
     this.headMat = new THREE.MeshBasicMaterial({ color: '#fff6dc' }); this.brakeMat = new THREE.MeshBasicMaterial({ color: '#5a0d0d' });
-    for (const s of [-0.62, 0.62]) {
-      const h = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.14, 0.04), this.headMat); h.position.set(s, 0.86, 2.215); this.obj.add(h);
-      const b = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.14, 0.04), this.brakeMat); b.position.set(s, 0.88, -2.215); this.obj.add(b);
+    for (const s of [-0.6, 0.6]) {
+      const h = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.11, 0.06), this.headMat); h.position.set(s, 0.7, 2.24); this.obj.add(h);
+      const b = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.11, 0.06), this.brakeMat); b.position.set(s, 0.78, -2.25); this.obj.add(b);
     }
     if (withLight) {
       const L = new THREE.SpotLight(0xfff0d0, 0, 70, 0.55, 0.5, 1.2); L.position.set(0, 0.9, 2.0); L.target.position.set(0, 0, 20); this.obj.add(L, L.target); this.headlight = L;
