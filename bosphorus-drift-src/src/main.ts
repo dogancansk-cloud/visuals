@@ -21,7 +21,8 @@ import { ICONS, ITEM_NAME, MiniMap, Msg, fmt } from './hud';
 const LAPS = 3;
 const Q = new URLSearchParams(location.search);
 const store0 = (() => { try { return localStorage.getItem('bd.pist'); } catch { return null; } })();
-const PIST: 'galata' | 'kc' = (Q.get('pist') || store0 || 'galata') === 'kc' ? 'kc' : 'galata';
+const PIST: 'galata' | 'kc' = Q.get('pist') === 'kc' ? 'kc' : 'galata'; // açılış her zaman Galata; pist ana ekrandan seçilir
+void store0;
 export const PISTS = { galata: 'Galata Kulesi', kc: 'Kapalıçarşı' } as const;
 const mobile = matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
@@ -91,11 +92,11 @@ if (PIST === 'galata') {
   const bz = new Bazaar(scene, track, tex, mobile);
   world = bz; props = bz;
   itemLayout = {
-    boxes: [60, 250, 540, 760, 940, 1150],
-    simits: [[20, 0, 6], [120, 3, 6], [200, -2, 4], [300, 0, 5], [360, -3, 4], [420, 0, 4], [520, 2, 5], [620, -2, 5], [690, 3, 5], [800, 0, 6], [880, -3, 4], [1000, 2, 5], [1080, -2, 5], [1220, 0, 6]],
-    pads: [{ s0: 150, s1: 157, d: 0, w: 5 }, { s0: 690, s1: 697, d: 0, w: 6 }, { s0: 990, s1: 997, d: 0, w: 5 }, { s0: 1180, s1: 1187, d: 2, w: 5 }],
+    boxes: [60, 250, 600, 830, 1010, 1240],
+    simits: [[20, 0, 6], [120, 3, 6], [200, -2, 4], [300, 0, 5], [380, 0, 5], [445, 0, 4], [510, -3, 5], [545, 3, 5], [620, 2, 5], [690, -2, 5], [745, 3, 5], [860, 0, 6], [940, -3, 4], [1060, 2, 5], [1140, -2, 5], [1300, 0, 6]],
+    pads: [{ s0: 150, s1: 157, d: 0, w: 5 }, { s0: 745, s1: 752, d: 0, w: 6 }, { s0: 1050, s1: 1057, d: 0, w: 5 }, { s0: 1260, s1: 1267, d: 2, w: 5 }],
   };
-  lifeCfg = { cats: 20, vendors: [100, 360, 600, 880, 1100], gulls: 0, ferries: false };
+  lifeCfg = { cats: 20, vendors: [100, 350, 650, 940, 1180], gulls: 0, ferries: false };
   setLoad(0.9, 'Esnaf yerini alıyor…'); await frameWait();
 }
 const fx = new Particles(scene, mobile ? 600 : 1000);
@@ -134,7 +135,7 @@ const items = new Items(scene, track, tex, fx, {
       duduk: ['Vapur düdüğü!', `${v.def.name} düdükle savruldu!`], kedi: ['Kedilere takıldın!', `${v.def.name} kedilere takıldı!`],
     };
     const t = what[by] || ['Vuruldun!', `${v.def.name} vuruldu!`];
-    if (v === player) msg.show(t[0], 'bad'); else if (owner === player) msg.show(t[1], 't1');
+    if (v === player) msg.show(t[0] + (v.lastLoss ? ` −${v.lastLoss} simit` : ''), 'bad'); else if (owner === player) msg.show(t[1], 't1');
   },
   onBlock(k) { if (k === player) { audio.block(); msg.show('Nazar korudu!', 't1'); } },
   onPad(k) { if (k === player) audio.boost(2); },
@@ -212,9 +213,9 @@ function updateCamera(dt: number, time: number) {
   if (!camInit) camYaw = k.yaw;
   let dy = k.yaw - camYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); camYaw += dy * Math.min(1, dt * lag);
   const fx0 = Math.cos(camYaw), fz0 = Math.sin(camYaw);
-  const sp = Math.max(0, k.speed), back = 5.6 + Math.min(1.2, sp * 0.03), up = 2.25 + Math.min(0.5, sp * 0.012);
+  const sp = Math.max(0, k.speed), back = 5.9 + Math.min(1.2, sp * 0.03), up = 2.95 + Math.min(0.5, sp * 0.012);
   const want = new THREE.Vector3(k.pos.x - fx0 * back, k.pos.y + up, k.pos.z - fz0 * back);
-  const look = new THREE.Vector3(k.pos.x + fx0 * 7, k.pos.y + 1.15, k.pos.z + fz0 * 7);
+  const look = new THREE.Vector3(k.pos.x + fx0 * 7, k.pos.y + 1.0, k.pos.z + fz0 * 7);
   if (!camInit) { camPos.copy(want); camLook.copy(look); camInit = true; }
   const kp = 1 - Math.exp(-dt * 14), kl = 1 - Math.exp(-dt * 16);
   camPos.lerp(want, kp); camLook.lerp(look, kl);
@@ -279,8 +280,8 @@ function updateHud(dt: number) {
   hud.simit.textContent = String(k.simit); hud.simitBox.classList.toggle('full', k.simit >= 10);
   hud.itembox.classList.toggle('juiced', k.simit >= 10);
   if (k.rollT > 0) { rollIcon += dt * 14; const keys = Object.keys(ICONS) as (keyof typeof ICONS)[]; hud.item.style.backgroundImage = `url(${ICONS[keys[Math.floor(rollIcon) % keys.length]]})`; hud.item.style.opacity = '0.7'; }
+  else if (k.shieldT > 0) { hud.item.style.backgroundImage = `url(${ICONS.nazar})`; hud.item.style.opacity = String(k.shieldT < 3 ? 0.35 + Math.abs(Math.sin(raceT * 10)) * 0.5 : 0.75 + Math.sin(raceT * 6) * 0.2); hud.item.title = 'Nazarı fırlat'; }
   else if (k.item) { hud.item.style.backgroundImage = `url(${ICONS[k.item]})`; hud.item.style.opacity = '1'; hud.item.title = ITEM_NAME[k.item]; }
-  else if (k.shieldT > 0) { hud.item.style.backgroundImage = `url(${ICONS.nazar})`; hud.item.style.opacity = String(0.55 + Math.sin(raceT * 6) * 0.2); hud.item.title = 'Nazarı fırlat'; }
   else hud.item.style.backgroundImage = 'none';
   hud.drift.classList.toggle('hide', !k.drifting);
   if (k.drifting) {
@@ -313,8 +314,8 @@ function step(dt: number) {
   // kart-kart çarpışması
   for (let i = 0; i < karts.length; i++) for (let j = i + 1; j < karts.length; j++) {
     const a = karts[i], b = karts[j], dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d2 = dx * dx + dz * dz;
-    if (d2 < 3.6 && d2 > 1e-4 && Math.abs(a.pos.y - b.pos.y) < 1.6) {
-      const d = Math.sqrt(d2), o = (1.9 - d) / 2, nx = dx / d, nz = dz / d;
+    if (d2 < 2.4 && d2 > 1e-4 && Math.abs(a.pos.y - b.pos.y) < 1.6) {
+      const d = Math.sqrt(d2), o = (1.55 - d) / 2, nx = dx / d, nz = dz / d;
       a.pos.x -= nx * o; a.pos.z -= nz * o; b.pos.x += nx * o; b.pos.z += nz * o;
       const rv = (b.vel.x - a.vel.x) * nx + (b.vel.z - a.vel.z) * nz;
       if (rv < 0) { a.vel.x += nx * rv * 0.6; a.vel.z += nz * rv * 0.6; b.vel.x -= nx * rv * 0.6; b.vel.z -= nz * rv * 0.6; }
@@ -371,11 +372,16 @@ function makePortraits() {
 function showTitle() {
   state = 'title'; paused = false; setHud(false); weather.clear(); audio.rain(0);
   menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>${PISTS[PIST].toLocaleUpperCase("tr")}</small></div>
+    <div class="seg pist tpist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>
     <div class="row"><button class="btn" id="bPlay">Yarış</button><button class="btn alt" id="bHow">Nasıl oynanır</button></div>
     <button class="btn ghost" id="bMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button></div>`;
   $('#bPlay').onclick = () => { audio.start(); audio.click(); showSelect(); };
   $('#bHow').onclick = () => { audio.start(); audio.click(); showHelp(showTitle); };
   $('#bMute').onclick = () => { toggleMute(); showTitle(); };
+  menu.querySelectorAll<HTMLElement>('.tpist button[data-p]').forEach((b) => (b.onclick = () => {
+    const p = b.dataset.p!; if (p === PIST) return; audio.click();
+    const u = new URL(location.href); u.search = ''; if (p !== 'galata') u.searchParams.set('pist', p); location.href = u.toString();
+  }));
 }
 // ---------- karakter seçimi: kule önünde döner kaide ----------
 const showroom = new THREE.Group(); scene.add(showroom); showroom.visible = false;
@@ -430,15 +436,15 @@ function showHelp(back: () => void) {
   menu.innerHTML = `<div class="panel help"><h2>Nasıl oynanır</h2>
     <p>Galata Kulesi’nin etrafında <b>3 tur</b>. İlk bitiren kazanır.</p>
     <table>
-      <tr><td>Gaz / fren</td><td><kbd>W</kbd> <kbd>↑</kbd> / <kbd>S</kbd> <kbd>↓</kbd> · telefonda gaz kendiliğinden</td></tr>
+      <tr><td>Gaz / fren</td><td><kbd>W</kbd> <kbd>↑</kbd> / <kbd>S</kbd> <kbd>↓</kbd> · telefonda <b>GAZ</b> ve <b>FREN</b> düğmeleri</td></tr>
       <tr><td>Direksiyon</td><td><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd> · telefonda sol yarıda parmağını kaydır</td></tr>
       <tr style="display:none"><td>Drift</td><td><kbd>Boşluk</kbd> / <kbd>Shift</kbd> ya da <b>DRİFT</b> düğmesi · dönerken dokun, kart zıplayıp kaymaya başlar. Direksiyonu bıraksan da hemen bitmez; bitirmek için ters yöne çevir ya da frene bas.</td></tr>
       <tr style="display:none"><td>Drift turbosu</td><td>Drift sırasında çubuk <b>yeşile</b> dönünce (zil sesi, telefonda titreşim) aynı tuşa bir kez daha dokun. Üst üste <b>3 kez</b>: Ultra Turbo!</td></tr>
       <tr><td>Eşya</td><td><kbd>E</kbd> veya <kbd>Enter</kbd></td></tr>
       <tr><td>Diğer</td><td>Mavi oklu pedler ve çıkardığın turbo seni hızlandırır · <kbd>R</kbd> piste dön · <kbd>Esc</kbd> duraklat · <kbd>M</kbd> ses · oyun kolu da çalışır</td></tr>
     </table>
-    <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', 'Kalkan olur. Üstündeyken tekrar basarsan öndekine fırlatırsın.')}${it('turbo', 'Anında hız.')}${it('simit', 'Düz gider, duvardan seker. 10 simitle üçlü.')}${it('duduk', 'Yakındaki kartları savurur.')}${it('kedi', 'Öndeki kartların önüne kediler çıkar.')}</div>
-    <p>Yoldaki <b>simitleri</b> topla: her biri biraz hız verir. 10 simitte eşyalar da güçlenir. Vurulursan 3 simit düşer. Mavi oklu pedler ve sürpriz kutuları <b>?</b> pistin her yerinde.</p>
+    <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', '10 saniye kalkan olur. Tekrar basarsan öndekine fırlatırsın.')}${it('turbo', 'Anında hız.')}${it('simit', 'Düz gider, duvardan seker. 10 simitle üçlü.')}${it('duduk', 'Yakındaki kartları savurur.')}${it('kedi', 'Öndeki kartların önüne kediler çıkar.')}</div>
+    <p>Yoldaki <b>simitleri</b> topla: her biri biraz hız verir. 10 simitte eşyalar da güçlenir. Vurulursan ya da çaya basarsan 4 simit düşer. Mavi oklu pedler ve sürpriz kutuları <b>?</b> pistin her yerinde.</p>
     <div class="row sticky"><button class="btn" id="bOk">Tamam</button></div></div>`;
   $('#bOk').onclick = () => { audio.click(); back(); };
 }
@@ -456,12 +462,16 @@ function showPause() {
 function resume() { paused = false; menu.innerHTML = ''; audio.music(true); last = performance.now(); }
 function showResults() {
   $('#hud').classList.add('hide');
-  const rows = [...karts].sort((a, b) => a.place - b.place).map((k) => `<tr class="${k === player ? 'me' : ''}"><td class="n">${k.place}</td><td>${k.def.name}${k === player ? ' (sen)' : ''}</td><td class="t">${k.finished ? fmt(k.finishTime) : 'yolda'}</td></tr>`).join('');
-  menu.innerHTML = `<div class="panel"><h2>${player.place === 1 ? 'Kazandın! 🏆' : 'Yarış bitti'}</h2><table class="res">${rows}</table>
+  menu.innerHTML = `<div class="panel"><h2>${player.place === 1 ? 'Kazandın! 🏆' : 'Yarış bitti'}</h2><table class="res" id="resT">${resRows()}</table>
     <div class="row"><button class="btn" id="rAgain">Tekrar yarış</button><button class="btn alt" id="rSel">Karakter seç</button></div><div class="credit">© 2026 Doğancan Işık · Bosphorus Drift · ilk sürüm</div></div>`;
   $('#rAgain').onclick = () => { audio.click(); startCountdown(); };
   $('#rSel').onclick = () => { audio.click(); audio.music(false); showSelect(); };
 }
+/** sonuç tablosu: diğerleri bitirdikçe dereceleri yazılır, yoldakiler kalan turu gösterir */
+function resRows() {
+  return [...karts].sort((a, b) => a.place - b.place).map((k) => `<tr class="${k === player ? 'me' : ''}"><td class="n">${k.place}</td><td>${k.def.name}${k === player ? ' (sen)' : ''}</td><td class="t">${k.finished ? fmt(k.finishTime) : `<span class="ongoing">${Math.min(LAPS, k.lap)}. tur…</span>`}</td></tr>`).join('');
+}
+let resLast = '';
 function startCountdown() {
   menu.innerHTML = ''; paused = false; showroom.visible = false;
   setupRace(); state = 'count'; countT = 3.6; lastLap = 0; camInit = false;
@@ -525,7 +535,10 @@ function frame(now: number) {
     if (dt > 0) trails.update(karts, camera.position);
     if (state === 'race' || state === 'count') updateHud(dt);
     audio.engine(player.speed, playerAI ? 1 : input.c.gas, player.drifting && player.grounded, player.boostT > 0, !paused && state !== 'done');
-    if (state === 'done') { doneT += dt; if (doneT > 3 && doneT - dt <= 3) { showResults(); } }
+    if (state === 'done') {
+      doneT += dt; if (doneT > 3 && doneT - dt <= 3) { showResults(); resLast = ''; }
+      const rt = document.getElementById('resT'); if (rt && Math.floor(doneT * 4) !== Math.floor((doneT - dt) * 4)) { const h = resRows(); if (h !== resLast) { rt.innerHTML = h; resLast = h; } }
+    }
   } else audio.engine(0, 0, false, false, false);
   audio.tick();
   fx.update(dt);

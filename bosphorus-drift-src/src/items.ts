@@ -49,9 +49,9 @@ export class Items {
       c.strokeStyle = '#ffffff'; c.lineWidth = 8; rr(c, 6, 6, w - 12, h - 12, 14); c.stroke();
       c.fillStyle = '#ffffff'; c.font = '900 84px ui-rounded, system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('?', w / 2, h / 2 + 6);
     });
-    this.boxMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1.3, 1.3, 1.3), new THREE.MeshLambertMaterial({ map: boxTex, transparent: true, opacity: 0.92 }), this.boxes.length);
+    this.boxMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1.0, 1.0, 1.0), new THREE.MeshLambertMaterial({ map: boxTex, transparent: true, opacity: 0.92 }), this.boxes.length);
     this.boxMesh.castShadow = true; scene.add(this.boxMesh);
-    const sg = new THREE.TorusGeometry(0.42, 0.17, 10, 20);
+    const sg = new THREE.TorusGeometry(0.34, 0.14, 10, 20);
     this.simitMesh = new THREE.InstancedMesh(sg, new THREE.MeshToonMaterial({ color: 0xf0a955 }), this.simits.length);
     this.simitMesh.castShadow = true; scene.add(this.simitMesh);
     // pedler
@@ -112,11 +112,11 @@ export class Items {
 
   use(k: Kart, karts: Kart[]) {
     // kalkan üstündeyken: nazarı öne fırlat
-    if (!k.item && k.shieldT > 0) { k.shieldT = 0; this.throwProj(k, 'nazar', karts, 0); this.ev.onUse?.(k, 'nazar'); return; }
+    if (k.shieldT > 0) { k.shieldT = 0; this.throwProj(k, 'nazar', karts, 0); this.ev.onUse?.(k, 'nazar'); return; }
     const it = k.item; if (!it) return; k.item = null;
     const J = k.juiced;
     if (it === 'turbo') k.boost(J ? 10 : 8.5, J ? 2.6 : 1.9);
-    else if (it === 'nazar') k.shieldT = J ? 14 : 10;
+    else if (it === 'nazar') k.shieldT = 10; // 10 sn; ikinci basışta fırlatılır
     else if (it === 'cay') this.dropTea(k, J);
     else if (it === 'marti') this.launch(k, karts, J);
     else if (it === 'simit') { for (const a of J ? [-0.16, 0, 0.16] : [0]) this.throwProj(k, 'simit', karts, a); }
@@ -335,7 +335,7 @@ export class Items {
       c.legs.forEach((l, n) => (l.rotation.z = Math.sin(time * 18 + n * 1.6) * 0.6));
       if (Math.abs(c.d) > c.w / 2 + 6) c.life = Math.min(c.life, 0);
       for (const k of karts) if (k.slowT <= 0 && k.spinT <= 0 && (k.pos.x - c.pos.x) ** 2 + (k.pos.z - c.pos.z) ** 2 < 2.4) {
-        if (k.shieldT > 0) { k.shieldT = 0; this.ev.onBlock?.(k); } else { k.slowT = 1.3; k.drifting = false; k.vy = 3; k.grounded = false; this.ev.onHit?.(k, 'kedi', c.owner); }
+        if (k.shieldT > 0) { k.shieldT = 0; this.ev.onBlock?.(k); } else { k.slowT = 1.3; k.drifting = false; k.vy = 3; k.grounded = false; k.loseSimit(2); this.ev.onHit?.(k, 'kedi', c.owner); }
         c.life = Math.min(c.life, 0.3);
       }
     }

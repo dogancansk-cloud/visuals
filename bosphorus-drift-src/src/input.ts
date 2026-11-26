@@ -1,4 +1,4 @@
-// Kontroller: klavye, dokunmatik (sol: direksiyon, sağ: drift/eşya/fren, gaz otomatik), oyun kolu.
+// Kontroller: klavye, dokunmatik (sol: direksiyon, sağ: drift/eşya/fren, GAZ düğmesi), oyun kolu.
 import type { Ctl } from './kart';
 
 export class Input {
@@ -7,7 +7,7 @@ export class Input {
   onKey: ((k: string) => void) | null = null;
   private keys = new Set<string>();
   private kSteer = 0; private tSteer = 0; private steerId: number | null = null; private steerX0 = 0;
-  private tDrift = false; private tItem = false; private tBrake = false;
+  private tDrift = false; private tItem = false; private tBrake = false; private tGas = false;
   // çok kısa dokunuşlar kaçmasın: basış anı bir sonraki karede mutlaka görülür
   private dTap = false; private iTap = false;
   private gpPrev: boolean[] = [];
@@ -40,7 +40,7 @@ export class Input {
       const off = () => { set(false); el.classList.remove('on'); };
       el.addEventListener('pointerup', off); el.addEventListener('pointercancel', off); el.addEventListener('lostpointercapture', off);
     };
-    hold('#tDrift', (v) => { this.tDrift = v; if (v) this.dTap = true; }); hold('#tItem', (v) => { this.tItem = v; if (v) this.iTap = true; }); hold('#tBrake', (v) => (this.tBrake = v));
+    hold('#tDrift', (v) => { this.tDrift = v; if (v) this.dTap = true; }); hold('#tItem', (v) => { this.tItem = v; if (v) this.iTap = true; }); hold('#tBrake', (v) => (this.tBrake = v)); hold('#tGas', (v) => (this.tGas = v));
   }
   private has(...k: string[]) { return k.some((x) => this.keys.has(x)); }
   update(dt: number) {
@@ -48,7 +48,7 @@ export class Input {
     const kd = (this.has('d', 'arrowright') ? 1 : 0) - (this.has('a', 'q', 'arrowleft') ? 1 : 0);
     this.kSteer += (kd - this.kSteer) * Math.min(1, dt * (kd !== 0 ? 9 : 14));
     let steer = this.steerId !== null ? this.tSteer : this.kSteer;
-    let gas = this.has('w', 'z', 'arrowup') || (this.touch && !this.tBrake) ? 1 : 0;
+    let gas = this.has('w', 'z', 'arrowup') || (this.tGas && !this.tBrake) ? 1 : 0;
     let brake = this.has('s', 'arrowdown') || this.tBrake ? 1 : 0;
     let drift = this.has(' ', 'shift') || this.tDrift;
     let item = this.has('e', 'enter', 'control', 'f') || this.tItem;

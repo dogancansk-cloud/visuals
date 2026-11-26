@@ -164,7 +164,7 @@ export class Track {
     for (let i = 0; i < this.n; i += 9) {
       const f = T.flags[i];
       if (!(f & F_BRIDGE) || (f & F_SPIRAL)) continue;
-      if (Math.hypot(T.x[i] - T.tower.x, T.z[i] - T.tower.z) < 34) continue;
+      if (T.tower.r > 0 && Math.hypot(T.x[i] - T.tower.x, T.z[i] - T.tower.z) < 34) continue;
       for (const sd of [-1, 1]) {
         const d = sd * (T.w[i] / 2 - 0.5), x = T.x[i] - T.tz[i] * d, z = T.z[i] + T.tx[i] * d, top = T.y[i] - 1.2;
         const h = top + 2; if (h < 1.5) continue;

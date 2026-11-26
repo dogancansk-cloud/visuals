@@ -15,6 +15,7 @@ export function buildBazaarTrack(): TrackData {
   const pts: P[] = [];
   let x = 40, z = 160, y = 2, phi = 0;
   const start = { x, z, y, phi };
+  let lastC = { x: 0, z: 0, y: 0 }, fountain = lastC;
   const ease = (t: number) => t * t * (3 - 2 * t);
   const emit = (w: number, f: number) => pts.push({ x, y, z, w, f });
   const straight = (L: number, dy = 0, w = 11, f = 0) => {
@@ -23,7 +24,7 @@ export function buildBazaarTrack(): TrackData {
   };
   const arc = (r: number, deg: number, dy = 0, w = 11, f = 0) => {
     const a = (deg * Math.PI) / 180, s = Math.sign(a), L = Math.abs(a) * r, n = Math.max(2, Math.round(L));
-    const cx = x - Math.sin(phi) * r * s, cz = z + Math.cos(phi) * r * s, p0 = phi, y0 = y;
+    const cx = x - Math.sin(phi) * r * s, cz = z + Math.cos(phi) * r * s, p0 = phi, y0 = y; lastC = { x: cx, z: cz, y };
     for (let i = 1; i <= n; i++) { const t = i / n; phi = p0 + a * t; x = cx + Math.sin(phi) * r * s; z = cz - Math.cos(phi) * r * s; y = y0 + dy * ease(t); emit(w, f); }
   };
   emit(12, 0);
@@ -32,17 +33,21 @@ export function buildBazaarTrack(): TrackData {
   straight(12, 0.3);
   straight(50, 0.5, 15, F_HALL);              // Sandal Bedesteni
   straight(14, 0.3);
-  straight(38, 0.6);
+  straight(24, 0.6);
   straight(8, 0, 11, F_GATE);                 // çarşıdan hana kapı
-  straight(18, 2.2, 12, F_HAN | F_BRIDGE);    // han avlusu: galeri rampası
-  arc(16, -90, 2.2, 12, F_HAN | F_BRIDGE);
-  straight(24, 1.2, 11, F_HAN | F_GAL | F_BRIDGE); // üst kat galerisi
+  straight(14, 0, 12, F_HAN);                 // han avlusu girişi (doğu kanadı)
+  straight(22, 2.6, 12, F_HAN | F_BRIDGE);    // galeri rampası
+  arc(18, -90, 2.4, 12, F_HAN | F_BRIDGE);
+  straight(30, 1.4, 11, F_HAN | F_GAL | F_BRIDGE); // üst kat galerisi (kuzey)
   straight(6, 0.6, 11, F_HAN | F_GAL | F_BRIDGE | F_RAMP);
-  straight(14, -6.6, 12, F_HAN | F_BRIDGE);   // galeriden avluya sıçrama
-  arc(14, -90, 0, 12, F_HAN);                 // şadırvanın batısı, güneye
-  straight(12, 0, 12, F_HAN);
+  straight(16, -7.0, 12, F_HAN | F_BRIDGE);   // galeriden avluya sıçrama
+  straight(8, 0, 12, F_HAN);
+  arc(20, -90, 0, 12, F_HAN); fountain = lastC; // şadırvanın çevresinden güneye
+  straight(18, 0, 12, F_HAN);
+  arc(16, 35, 0, 12, F_HAN); arc(16, -35, 0, 12, F_HAN); // şadırvan önünde kıvrım
+  straight(10, 0, 12, F_HAN);
   straight(8, 0, 11, F_GATE);                 // handan çarşıya
-  straight(22, -0.3);
+  straight(10, -0.3);
   arc(18, 90, -0.3);                          // batıya
   straight(96, -0.6);                         // Kuyumcular sokağı
   straight(6, 0, 11, F_GATE);
@@ -69,7 +74,7 @@ export function buildBazaarTrack(): TrackData {
   for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i].x - pts[i - 1].x, pts[i].z - pts[i - 1].z));
   const total = cum[cum.length - 1] + Math.hypot(pts[0].x - pts[pts.length - 1].x, pts[0].z - pts[pts.length - 1].z);
   const n = Math.round(total), step = total / n;
-  const T: TrackData = { n, length: total, x: new Float32Array(n), y: new Float32Array(n), z: new Float32Array(n), tx: new Float32Array(n), tz: new Float32Array(n), w: new Float32Array(n), bank: new Float32Array(n), flags: new Uint8Array(n), tower: { x: 0, z: 0, y0: 0, y1: 0, r: 0 } };
+  const T: TrackData = { n, length: total, x: new Float32Array(n), y: new Float32Array(n), z: new Float32Array(n), tx: new Float32Array(n), tz: new Float32Array(n), w: new Float32Array(n), bank: new Float32Array(n), flags: new Uint8Array(n), tower: { x: fountain.x + KC_ORIGIN.x, z: fountain.z + KC_ORIGIN.z, y0: fountain.y, y1: 0, r: 0 } }; // KC: tower = şadırvan merkezi
   let j = 0;
   for (let i = 0; i < n; i++) {
     const s = i * step;

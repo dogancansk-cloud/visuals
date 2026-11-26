@@ -10,7 +10,9 @@ export const G = 25;
 const BASE_MAX = 31;
 export const DRIFT_ZONE = [0.55, 1.0] as const; // turbo penceresi
 export const DRIFT_LATE = 0.18;
-export const DRIFT_ON = false; // drift şimdilik kapalı // pencereden sonra hâlâ kabul edilen pay
+export const DRIFT_ON = false;
+/** kartların görünür boyutu: küçük kartlar = daha geniş alan hissi */
+export const KART_SCALE = 0.7; // drift şimdilik kapalı // pencereden sonra hâlâ kabul edilen pay
 const CHARGE_TIME = 0.75;
 
 export interface KartEvents {
@@ -38,7 +40,7 @@ export class Kart {
   wantItem = false;
   steerVis = 0; lean = 0; driftVis = 0; squash = 0;
   constructor(readonly track: Track, charIdx: number, readonly isPlayer: boolean, public ev: KartEvents = {}) {
-    this.def = CHARS[charIdx]; this.model = buildKart(this.def);
+    this.def = CHARS[charIdx]; this.model = buildKart(this.def); this.model.root.scale.setScalar(KART_SCALE);
   }
 
   place0(s: number, d: number) {
@@ -59,10 +61,13 @@ export class Kart {
     this.speed = Math.max(this.speed, BASE_MAX + power * 0.75);
   }
 
+  /** isabet alınca simit düşer (biriken simit hep öyle kalmasın) */
+  lastLoss = 0;
+  loseSimit(n: number) { this.lastLoss = Math.min(this.simit, n); this.simit -= this.lastLoss; }
   hit() {
     if (this.shieldT > 0) { this.shieldT = 0; return false; }
     if (this.spinT > 0) return false;
-    this.spinT = 1.1; this.drifting = false; this.boostT = 0; this.simit = Math.max(0, this.simit - 3);
+    this.spinT = 1.1; this.drifting = false; this.boostT = 0; this.loseSimit(4);
     this.ev.onHit?.(this); return true;
   }
 

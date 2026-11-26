@@ -407,9 +407,13 @@ export class Bazaar {
     const roof = new THREE.Mesh(new THREE.ConeGeometry(5.2, 2.4, 8), toon(0x7a8c9a)); roof.position.y = 6.3; f.add(roof);
     const dome = new THREE.Mesh(new THREE.SphereGeometry(1.4, 12, 6, 0, Math.PI * 2, 0, Math.PI / 2), toon(0x7a8c9a)); dome.position.y = 7.4; f.add(dome);
     const fin = new THREE.Mesh(new THREE.ConeGeometry(0.18, 1.2, 6), toon(0xf2c14e)); fin.position.y = 9.2; f.add(fin);
-    f.position.set((sx / Math.max(1, sn)) - cx + 4, 0, (sz / Math.max(1, sn)) - cz - 6); f.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; }); grp.add(f);
+    f.position.set(T.tower.x - cx, 0, T.tower.z - cz); f.scale.setScalar(1.45); void sx; void sz; f.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; }); grp.add(f);
     // çınarlar
-    for (const [tx, tz] of [[-W / 2 + 5, -D / 2 + 5], [W / 2 - 5, -D / 2 + 5]]) {
+    const fx0 = T.tower.x - cx, fz0 = T.tower.z - cz;
+    // şadırvanın çevresinde bahçe: çim halka ve çınarlar
+    const lawn = new THREE.Mesh(new THREE.RingGeometry(7.2, 11.6, 40), new THREE.MeshLambertMaterial({ color: 0x8cc66a })); lawn.rotation.x = -Math.PI / 2; lawn.position.set(fx0, 0.03, fz0); grp.add(lawn);
+    const path = new THREE.Mesh(new THREE.RingGeometry(11.6, 12.6, 40), new THREE.MeshLambertMaterial({ color: 0xc9b89c })); path.rotation.x = -Math.PI / 2; path.position.set(fx0, 0.04, fz0); grp.add(path);
+    for (const [tx, tz] of [[-W / 2 + 5, -D / 2 + 5], [W / 2 - 5, -D / 2 + 5], [fx0 + 7, fz0 - 6], [fx0 - 6, fz0 + 7], [fx0 + 20, fz0 + 14], [fx0 + 34, fz0 - 2]]) {
       const tr = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.7, 7, 8), toon(0x8a6a5a)); tr.position.set(tx, 3.5, tz); grp.add(tr);
       for (let k = 0; k < 4; k++) { const c = new THREE.Mesh(new THREE.IcosahedronGeometry(3.4, 0), new THREE.MeshLambertMaterial({ color: [0x5fb873, 0x6cc27a, 0x4fa86a][k % 3], flatShading: true })); c.position.set(tx + Math.cos(k * 2) * 2.2, 8 + (k % 2) * 1.5, tz + Math.sin(k * 2) * 2.2); c.castShadow = true; grp.add(c); }
     }
