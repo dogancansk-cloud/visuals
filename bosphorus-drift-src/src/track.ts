@@ -8,7 +8,7 @@ export class Track {
   readonly T: TrackData;
   readonly n: number;
   readonly L: number;
-  constructor(H: (x: number, z: number) => number) { this.T = buildTrack(H); this.n = this.T.n; this.L = this.T.length; }
+  constructor(src: ((x: number, z: number) => number) | TrackData) { this.T = typeof src === 'function' ? buildTrack(src) : src; this.n = this.T.n; this.L = this.T.length; }
 
   wrap(i: number) { return ((i % this.n) + this.n) % this.n; }
 
@@ -67,7 +67,7 @@ export class Track {
   idxOf(s: number) { return this.wrap(Math.round((s / this.L) * this.n)); }
 
   // ---------- örgü ----------
-  build(scene: THREE.Scene, tex: Textures) {
+  build(scene: THREE.Scene, tex: Textures, style: { road?: THREE.Texture; curb?: THREE.Texture; wall?: THREE.Texture; rail?: THREE.Texture; under?: number } = {}) {
     const T = this.T, n = this.n;
     const road = new Geo(), curb = new Geo(), wall = new Geo(), under = new Geo(), rail = new Geo();
     const P = (i: number, d: number, dy = 0) => { const b = T.bank[i]; return [T.x[i] - T.tz[i] * d, T.y[i] + b * d + dy, T.z[i] + T.tx[i] * d] as const; };
@@ -109,11 +109,11 @@ export class Track {
       v = v2;
     }
     const mk = (g: Geo, m: THREE.Material, shadow = true) => { const me = new THREE.Mesh(g.build(), m); me.receiveShadow = shadow; scene.add(me); return me; };
-    mk(road, new THREE.MeshLambertMaterial({ map: tex.asphalt })).name = 'road';
-    mk(curb, new THREE.MeshLambertMaterial({ map: tex.curb }));
-    mk(wall, new THREE.MeshLambertMaterial({ map: tex.wall }));
-    mk(rail, new THREE.MeshLambertMaterial({ map: tex.rail }));
-    mk(under, new THREE.MeshLambertMaterial({ color: 0xc9c4d8 }));
+    mk(road, new THREE.MeshLambertMaterial({ map: style.road || tex.asphalt })).name = 'road';
+    mk(curb, new THREE.MeshLambertMaterial({ map: style.curb || tex.curb }));
+    mk(wall, new THREE.MeshLambertMaterial({ map: style.wall || tex.wall }));
+    mk(rail, new THREE.MeshLambertMaterial({ map: style.rail || tex.rail }));
+    mk(under, new THREE.MeshLambertMaterial({ color: style.under ?? 0xc9c4d8 }));
     this.buildTunnel(scene, tex);
     this.buildSupports(scene);
     this.buildStartLine(scene, tex);

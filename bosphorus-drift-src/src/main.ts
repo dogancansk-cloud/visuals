@@ -9,7 +9,9 @@ import { Life } from './life';
 import { Weather } from './weather';
 import { Kart, DRIFT_ZONE, DRIFT_LATE } from './kart';
 import { AI } from './ai';
-import { Items } from './items';
+import { Items, GALATA_ITEMS, type ItemLayout } from './items';
+import { buildBazaarTrack, F_HALL } from './kc/kcpath';
+import { Bazaar } from './kc/bazaar';
 import { Particles } from './fx';
 import { Input } from './input';
 import { Audio } from './audio';
@@ -18,6 +20,9 @@ import { ICONS, ITEM_NAME, MiniMap, Msg, fmt } from './hud';
 
 const LAPS = 3;
 const Q = new URLSearchParams(location.search);
+const store0 = (() => { try { return localStorage.getItem('bd.pist'); } catch { return null; } })();
+const PIST: 'galata' | 'kc' = (Q.get('pist') || store0 || 'galata') === 'kc' ? 'kc' : 'galata';
+export const PISTS = { galata: 'Galata Kulesi', kc: 'Kapalıçarşı' } as const;
 const mobile = matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
 const store = { get(k: string) { try { return localStorage.getItem('bd.' + k); } catch { return null; } }, set(k: string, v: string) { try { localStorage.setItem('bd.' + k, v); } catch { /* yok */ } } };
@@ -33,31 +38,66 @@ renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadow
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const ink = new Ink(renderer, mobile ? 0 : 4);
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xd9a7b8, 220, 1400);
 const camera = new THREE.PerspectiveCamera(70, 1, 0.3, 2000);
-// gün batımı: sıcak, alçak güneş; mor-mavi gölgeler
-const hemi = new THREE.HemisphereLight(0xc3cdf5, 0x9a88a8, 1.9); scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xffcf9e, 2.3); sun.castShadow = true;
+let hemi: THREE.HemisphereLight, sun: THREE.DirectionalLight;
+if (PIST === 'galata') {
+  scene.fog = new THREE.Fog(0xd9a7b8, 220, 1400);
+  // gün batımı: sıcak, alçak güneş; mor-mavi gölgeler
+  hemi = new THREE.HemisphereLight(0xc3cdf5, 0x9a88a8, 1.9);
+  sun = new THREE.DirectionalLight(0xffcf9e, 2.3);
+} else {
+  // çarşı içi: sıcak fener ışığı, tepe pencerelerinden gelen yumuşak ışık
+  scene.background = new THREE.Color(0x5a4a44);
+  scene.fog = new THREE.Fog(0x9a8478, 70, 320);
+  hemi = new THREE.HemisphereLight(0xfff3e0, 0x8a7066, 2.5);
+  sun = new THREE.DirectionalLight(0xfff0dc, 1.5);
+}
+scene.add(hemi);
+sun.castShadow = true;
 sun.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
 Object.assign(sun.shadow.camera, { left: -55, right: 55, top: 55, bottom: -55, near: 1, far: 400 });
 sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.06;
 scene.add(sun, sun.target);
+const SUN_FROM = PIST === 'galata' ? SUN_DIR : new THREE.Vector3(0.25, 1, 0.15).normalize();
 
 const loadBar = $('#loading .lbar i'), loadPct = $('#lpct'), loadTxt = $('#ltxt');
 let loadShown = 0;
 const setLoad = (p: number, t?: string) => { loadShown = Math.max(loadShown, p); loadBar.style.width = loadShown * 100 + '%'; loadPct.textContent = `%${Math.round(loadShown * 100)}`; if (t) loadTxt.textContent = t; };
 const frameWait = () => new Promise((r) => requestAnimationFrame(() => r(0)));
-setLoad(0.02, 'Harita indiriliyor…');
-const data = await WorldData.load('./', (p) => setLoad(0.02 + p * 0.38));
-setLoad(0.42, 'Pist çiziliyor…'); await frameWait();
 const tex = new Textures();
-const track = new Track(data.H);
-track.build(scene, tex);
-setLoad(0.48, 'Arazi ve sokaklar…'); await frameWait();
-const world = new World(scene, data, track, mobile);
-await world.build((m, f) => setLoad(0.5 + f * 0.44, m));
-setLoad(0.95, 'Seyirciler yerleşiyor…'); await frameWait();
-const props = new Props(scene, track, world, tex, mobile);
+interface Ground { hAt(x: number, z: number): number; update(t: number): void; skyMats: THREE.ShaderMaterial[] }
+let track: Track, world: Ground, props: { update(dt: number, t: number): void; uPlayer: { value: THREE.Vector3 } };
+let itemLayout: ItemLayout = GALATA_ITEMS, lifeCfg = { cats: 30, vendors: [120, 390, 880, 1290], gulls: 24, ferries: true };
+if (PIST === 'galata') {
+  setLoad(0.02, 'Harita indiriliyor…');
+  const data = await WorldData.load('./', (p) => setLoad(0.02 + p * 0.38));
+  setLoad(0.42, 'Pist çiziliyor…'); await frameWait();
+  track = new Track(data.H);
+  track.build(scene, tex);
+  setLoad(0.48, 'Arazi ve sokaklar…'); await frameWait();
+  const w = new World(scene, data, track, mobile);
+  await w.build((m, f) => setLoad(0.5 + f * 0.44, m));
+  world = w;
+  setLoad(0.95, 'Seyirciler yerleşiyor…'); await frameWait();
+  props = new Props(scene, track, w, tex, mobile);
+} else {
+  setLoad(0.1, 'Çarşı kapıları açılıyor…'); await frameWait();
+  track = new Track(buildBazaarTrack());
+  const stone = tex.make(256, 256, (c, w, h) => { c.fillStyle = '#d6c8b4'; c.fillRect(0, 0, w, h); c.strokeStyle = '#b3a48e'; c.lineWidth = 4; for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) c.strokeRect(k * 64 + (r % 2) * 32, r * 64, 64, 64); c.fillStyle = 'rgba(255,240,210,0.18)'; for (let k = 0; k < 30; k++) c.fillRect((k * 71) % w, (k * 37) % h, 18, 6); c.fillStyle = '#e8d9bf'; c.fillRect(w * 0.035, 0, w * 0.02, h); c.fillRect(w * 0.945, 0, w * 0.02, h); }, true);
+  const carpet = tex.make(64, 64, (c, w, h) => { c.fillStyle = '#9e2b25'; c.fillRect(0, 0, w, h); c.fillStyle = '#e6c15a'; c.fillRect(0, h / 2 - 4, w, 8); c.fillStyle = '#1f3f6e'; c.fillRect(w / 2 - 6, 0, 12, h); }, true);
+  const counter = tex.make(256, 64, (c, w, h) => { c.fillStyle = '#7a4a32'; c.fillRect(0, 0, w, h); ['#c8302c', '#2a5fa8', '#e6a82c', '#2a8a6a', '#8a3a7a', '#e8e0d0'].forEach((col, k) => { c.fillStyle = col; c.fillRect(6 + k * 42, 12, 36, h - 18); c.fillStyle = 'rgba(255,255,255,0.35)'; c.fillRect(6 + k * 42, 12 + (k % 3) * 9, 36, 4); }); c.fillStyle = '#e6c15a'; c.fillRect(0, 0, w, 7); }, true);
+  track.build(scene, tex, { road: stone, curb: carpet, wall: counter, rail: counter, under: 0x6a4a3a });
+  setLoad(0.45, 'Dükkânlar kuruluyor…'); await frameWait();
+  const bz = new Bazaar(scene, track, tex, mobile);
+  world = bz; props = bz;
+  itemLayout = {
+    boxes: [60, 236, 400, 520, 640],
+    simits: [[20, 0, 6], [110, 3, 6], [190, -2, 4], [270, 0, 5], [330, -3, 4], [360, 3, 4], [440, 0, 6], [560, -2.5, 5], [600, 2.5, 5], [700, 0, 6]],
+    pads: [{ s0: 150, s1: 157, d: 0, w: 5 }, { s0: 330, s1: 337, d: 0, w: 6 }, { s0: 690, s1: 697, d: 2, w: 5 }],
+  };
+  lifeCfg = { cats: 20, vendors: [90, 290, 470, 610], gulls: 0, ferries: false };
+  setLoad(0.9, 'Esnaf yerini alıyor…'); await frameWait();
+}
 const fx = new Particles(scene, mobile ? 600 : 1000);
 const trails = new Trails(scene);
 const audio = new Audio();
@@ -98,11 +138,12 @@ const items = new Items(scene, track, tex, fx, {
   },
   onBlock(k) { if (k === player) { audio.block(); msg.show('Nazar korudu!', 't1'); } },
   onPad(k) { if (k === player) audio.boost(2); },
-});
+}, itemLayout);
 const near = (k: Kart) => k === player || k.pos.distanceTo(player.pos) < 35;
-const life = new Life(scene, track, world, items, fx, mobile);
+const life = new Life(scene, track, world, items, fx, mobile, lifeCfg);
 const weather = new Weather(scene, sun, hemi, world.skyMats, mobile);
 weather.onStart = () => msg.show('Yağmur başladı!', 't1');
+if (PIST === 'kc') weather.onStart = null;
 weather.onThunder = () => audio.thunder();
 
 function setupRace() {
@@ -127,6 +168,7 @@ function setupRace() {
   playerAI = auto ? new AI(player, track, 1) : null;
   raceT = 0; doneT = 0; lastBeep = 4; gasEdgeT = -9; startBoostGiven = false;
   weather.plan(); if (Q.has('rain')) weather.startAt = 0.1;
+  if (PIST === 'kc') weather.clear(); // çarşının içinde yağmur yok
   for (const k of karts) k.sync(0, 0);
 }
 
@@ -153,6 +195,10 @@ function updateCamera(dt: number, time: number) {
     camera.lookAt(SR.x, SR.y + (short ? 1.0 : 2.2), SR.z); camera.fov = 50; camera.updateProjectionMatrix(); camInit = false;
     if (srKart) { srKart.root.rotation.y = time * 0.6; srKart.root.position.y = 0.52 + Math.abs(Math.sin(time * 3)) * 0.04; srKart.wheels.forEach((w) => (w.rotation.z -= 0.05)); }
     ink.mat.uniforms.speed.value = 0; return;
+  }
+  if (state === 'title' && PIST === 'kc') {
+    const s = (time * 9) % track.L, p = track.point(s, 0), q = track.point(s + 14, 0);
+    camera.position.set(p.x, p.y + 3.4, p.z); camera.lookAt(q.x, q.y + 2.2, q.z); camera.fov = 62; camera.updateProjectionMatrix(); camInit = false; return;
   }
   if (state === 'title') {
     const tw = track.T.tower, a = time * 0.06 + 2.2;
@@ -329,7 +375,7 @@ function makePortraits() {
 
 function showTitle() {
   state = 'title'; paused = false; setHud(false); weather.clear(); audio.rain(0);
-  menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>GALATA KULESİ</small></div>
+  menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>${PISTS[PIST].toLocaleUpperCase("tr")}</small></div>
     <div class="row"><button class="btn" id="bPlay">Yarış</button><button class="btn alt" id="bHow">Nasıl oynanır</button></div>
     <button class="btn ghost" id="bMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button></div>`;
   $('#bPlay').onclick = () => { audio.start(); audio.click(); showSelect(); };
@@ -338,7 +384,9 @@ function showTitle() {
 }
 // ---------- karakter seçimi: kule önünde döner kaide ----------
 const showroom = new THREE.Group(); scene.add(showroom); showroom.visible = false;
-const SR_S = 698, SR = track.point(SR_S, 0), srRight = new THREE.Vector3(SR.x - track.T.tower.x, 0, SR.z - track.T.tower.z).normalize(); // kule çıkışındaki köprü: arkada Galata Kulesi
+const SR_S = PIST === 'galata' ? 698 : 226, SR = track.point(SR_S, 0);
+// Galata: kule çıkışındaki köprü, arkada kule · Kapalıçarşı: Sandal Bedesteni salonu
+const srRight = PIST === 'galata' ? new THREE.Vector3(SR.x - track.T.tower.x, 0, SR.z - track.T.tower.z).normalize() : new THREE.Vector3(track.T.tx[track.idxOf(SR_S)], 0, track.T.tz[track.idxOf(SR_S)]);
 {
   const ped = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.6, 0.5, 40), new THREE.MeshLambertMaterial({ color: 0x3f6fd6 })); ped.position.y = 0.25; ped.receiveShadow = true; showroom.add(ped);
   const rim = new THREE.Mesh(new THREE.TorusGeometry(2.45, 0.12, 8, 48), new THREE.MeshLambertMaterial({ color: 0xf2c94c })); rim.rotation.x = Math.PI / 2; rim.position.y = 0.5; showroom.add(rim);
@@ -367,13 +415,18 @@ function showSelect() {
     <button class="selArrow l" id="sPrev" aria-label="Önceki">‹</button><button class="selArrow r" id="sNext" aria-label="Sonraki">›</button>
     <div class="selBottom">
       <div class="chips">${CHARS.map((ch, i) => `<button class="chip${i === charIdx ? ' sel' : ''}" data-i="${i}" style="--c:#${ch.color.toString(16).padStart(6, '0')}"><img src="${portraits[i]}" alt="${ch.name}"></button>`).join('')}</div>
-      <div class="selRow"><div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
+      <div class="selRow"><div class="seg pist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div><div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
       <button class="btn ghost" id="bBack">Geri</button><button class="btn" id="bGo">Başla</button></div>
     </div></div>`;
   const pick = (i: number) => { charIdx = (i + 6) % 6; store.set('char', String(charIdx)); audio.click(); showSelect(); };
   menu.querySelectorAll<HTMLElement>('.chip').forEach((b) => (b.onclick = () => pick(Number(b.dataset.i))));
   $('#sPrev').onclick = () => pick(charIdx - 1); $('#sNext').onclick = () => pick(charIdx + 1);
-  menu.querySelectorAll<HTMLElement>('.seg button').forEach((b) => (b.onclick = () => { diff = b.dataset.d as typeof diff; store.set('diff', diff); audio.click(); showSelect(); }));
+  menu.querySelectorAll<HTMLElement>('.seg button[data-d]').forEach((b) => (b.onclick = () => { diff = b.dataset.d as typeof diff; store.set('diff', diff); audio.click(); showSelect(); }));
+  menu.querySelectorAll<HTMLElement>('.seg button[data-p]').forEach((b) => (b.onclick = () => {
+    const p = b.dataset.p!; if (p === PIST) return;
+    store.set('pist', p); audio.click();
+    const u = new URL(location.href); u.searchParams.set('pist', p); u.searchParams.set('sel', '1'); location.href = u.toString();
+  }));
   $('#bBack').onclick = () => { audio.click(); showroom.visible = false; showTitle(); };
   $('#bGo').onclick = () => { audio.click(); startCountdown(); };
 }
@@ -492,14 +545,14 @@ function frame(now: number) {
   }
   updateCamera(dt, time);
   // gölge kamerası oyuncuyu izler
-  const focus = state === 'title' ? new THREE.Vector3(track.T.tower.x, track.T.tower.y0 + 10, track.T.tower.z) : state === 'select' ? SR : player.pos;
-  sun.position.copy(focus).addScaledVector(SUN_DIR, 220); sun.target.position.copy(focus);
+  const focus = state === 'title' ? (PIST === 'kc' ? camera.position : new THREE.Vector3(track.T.tower.x, track.T.tower.y0 + 10, track.T.tower.z)) : state === 'select' ? SR : player.pos;
+  sun.position.copy(focus).addScaledVector(SUN_FROM, 220); sun.target.position.copy(focus);
   ink.render(scene, camera);
 }
 
 setLoad(1, 'Hazır!');
 setTimeout(() => $('#loading').remove(), 250);
-showTitle();
+if (Q.has('sel')) { audio.start(); showSelect(); } else showTitle();
 if (Q.has('skip')) { audio.muted = true; startCountdown(); }
 requestAnimationFrame(frame);
 (window as unknown as Record<string, unknown>).__bd = { get player() { return player; }, get karts() { return karts; }, get state() { return state; }, track, camera, scene, renderer, get raceT() { return raceT; } };

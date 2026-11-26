@@ -17,6 +17,13 @@ interface Puddle { obj: THREE.Group; pos: THREE.Vector3; life: number; r: number
 
 export interface ItemEvents { onTarget?(victim: Kart, by: ItemKind): void; onPickup?(k: Kart, kind: 'box' | 'simit'): void; onUse?(k: Kart, it: ItemKind): void; onHit?(victim: Kart, by: ItemKind, owner: Kart | null): void; onBlock?(k: Kart): void; onPad?(k: Kart): void }
 
+export interface ItemLayout { boxes: number[]; simits: [number, number, number][]; pads: { s0: number; s1: number; d: number; w: number }[] }
+export const GALATA_ITEMS: ItemLayout = {
+  boxes: [70, 300, 440, 800, 990, 1250],
+  simits: [[30, 0, 6], [150, 3.5, 5], [230, -3, 6], [360, 0, 6], [520, -2, 6], [600, 2, 6], [660, 0, 4], [780, 0, 5], [850, -3.5, 5], [920, 3.5, 5], [1060, 0, 6], [1170, 0, 5], [1280, -3, 5]],
+  pads: [{ s0: 255, s1: 262, d: 0, w: 5 }, { s0: 712, s1: 720, d: 0, w: 6 }, { s0: 1224, s1: 1231, d: -2.5, w: 5 }],
+};
+
 export class Items {
   boxes: Box[] = []; simits: Simit[] = []; pads: Pad[] = []; gulls: Gull[] = []; puddles: Puddle[] = [];
   projs: Proj[] = []; cats: Cat[] = []; waves: Wave[] = []; loose: Loose[] = [];
@@ -26,15 +33,15 @@ export class Items {
   private gullGeo: { body: THREE.BufferGeometry; wing: THREE.BufferGeometry; beak: THREE.BufferGeometry };
   private puddleMat: THREE.MeshBasicMaterial; private glassMat: THREE.Material;
   private shieldMat: THREE.MeshBasicMaterial;
-  constructor(private scene: THREE.Scene, private track: Track, tex: Textures, private fx: Particles, public ev: ItemEvents = {}) {
+  constructor(private scene: THREE.Scene, private track: Track, tex: Textures, private fx: Particles, public ev: ItemEvents = {}, layout: ItemLayout = GALATA_ITEMS) {
     const L = track.L;
     // sürpriz kutuları: sıralar halinde
-    for (const s of [70, 300, 440, 800, 990, 1250]) for (const d of [-4.5, -1.5, 1.5, 4.5]) this.boxes.push({ s, d, pos: track.point(s, d * (track.T.w[track.idxOf(s)] / 13)), t: 0 });
+    for (const s of layout.boxes) for (const d of [-4.5, -1.5, 1.5, 4.5]) this.boxes.push({ s, d, pos: track.point(s, d * (track.T.w[track.idxOf(s)] / 13)), t: 0 });
     // simitler: şeritler halinde
-    const lines: [number, number, number][] = [[30, 0, 6], [150, 3.5, 5], [230, -3, 6], [360, 0, 6], [520, -2, 6], [600, 2, 6], [660, 0, 4], [780, 0, 5], [850, -3.5, 5], [920, 3.5, 5], [1060, 0, 6], [1170, 0, 5], [1280, -3, 5]];
+    const lines = layout.simits;
     for (const [s0, d, c] of lines) for (let k = 0; k < c; k++) this.simits.push({ pos: track.point((s0 + k * 4) % L, d).add(new THREE.Vector3(0, 0.9, 0)), t: 0 });
     // turbo pedleri
-    this.pads = [{ s0: 255, s1: 262, d: 0, w: 5 }, { s0: 712, s1: 720, d: 0, w: 6 }, { s0: 1224, s1: 1231, d: -2.5, w: 5 }];
+    this.pads = layout.pads;
 
     const boxTex = tex.make(128, 128, (c, w, h) => {
       const g = c.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#9fd8f2'); g.addColorStop(1, '#c7b3f0');

@@ -1,7 +1,8 @@
 // Canlı çevre: kaçan sokak kedileri, simit atan simitçiler, martı sürüleri, vapurlar, bitişte havai fişek.
 import * as THREE from 'three';
 import type { Track } from './track';
-import type { World } from './world/world';
+interface Ground { hAt(x: number, z: number): number }
+export interface LifeCfg { cats: number; vendors: number[]; gulls: number; ferries: boolean }
 import type { Items } from './items';
 import type { Kart } from './kart';
 import type { Particles } from './fx';
@@ -16,11 +17,11 @@ interface Ferry { g: THREE.Group; x0: number; z0: number; x1: number; z1: number
 export class Life {
   cats: StreetCat[] = []; vendors: Vendor[] = []; gulls: Gull[] = []; ferries: Ferry[] = [];
   private fireT = 0; private fireAt = new THREE.Vector3();
-  constructor(private scene: THREE.Scene, private track: Track, private world: World, private items: Items, private fx: Particles, mobile: boolean) {
-    this.makeCats(mobile ? 18 : 30);
-    this.makeVendors();
-    this.makeGulls(mobile ? 14 : 24);
-    this.makeFerries();
+  constructor(private scene: THREE.Scene, private track: Track, private world: Ground, private items: Items, private fx: Particles, mobile: boolean, cfg: LifeCfg = { cats: 30, vendors: [120, 390, 880, 1290], gulls: 24, ferries: true }) {
+    this.makeCats(Math.round(cfg.cats * (mobile ? 0.6 : 1)));
+    this.makeVendors(cfg.vendors);
+    if (cfg.gulls) this.makeGulls(Math.round(cfg.gulls * (mobile ? 0.6 : 1)));
+    if (cfg.ferries) this.makeFerries();
   }
 
   private side(i: number, d: number) { const T = this.track.T, x = T.x[i] - T.tz[i] * d, z = T.z[i] + T.tx[i] * d; return new THREE.Vector3(x, this.world.hAt(x, z), z); }
@@ -43,9 +44,9 @@ export class Life {
     }
   }
 
-  private makeVendors() {
+  private makeVendors(list: number[]) {
     const T = this.track.T;
-    for (const s of [120, 390, 880, 1290]) {
+    for (const s of list) {
       const i = this.track.idxOf(s); if (T.flags[i] & F_BRIDGE) continue;
       const sd = s % 2 ? 1 : -1, p = this.side(i, sd * (T.w[i] / 2 + 3.4)), g = new THREE.Group();
       // tezgâh arabası
