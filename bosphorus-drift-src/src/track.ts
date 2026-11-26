@@ -254,7 +254,9 @@ export class Textures {
     if (!t) {
       t = this.make(512, 112, (c, w, h) => {
         c.fillStyle = bg; rr(c, 2, 2, w - 4, h - 4, 26); c.fill();
-        c.fillStyle = fg; c.font = `900 ${text.length > 8 ? 64 : 76}px ui-rounded, "SF Pro Rounded", system-ui, sans-serif`; c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillStyle = fg; let fs = 76; const font = () => `900 ${fs}px ui-rounded, "SF Pro Rounded", system-ui, sans-serif`; c.font = font();
+        while (fs > 24 && c.measureText(text).width > w - 48) { fs -= 4; c.font = font(); }
+        c.textAlign = 'center'; c.textBaseline = 'middle';
         c.fillText(text, w / 2, h / 2 + 4);
       });
       this.signs.set(key, t);
