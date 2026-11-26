@@ -12,6 +12,8 @@ import { AI } from './ai';
 import { Items, GALATA_ITEMS, type ItemLayout } from './items';
 import { buildBazaarTrack, F_HALL } from './kc/kcpath';
 import { Bazaar } from './kc/bazaar';
+import { buildBosphorusTrack, F_WOOD, F_GAP } from './bg/bgpath';
+import { Bosphorus, BG_SUN } from './bg/bosphorus';
 import { Particles } from './fx';
 import { Input } from './input';
 import { Audio } from './audio';
@@ -21,9 +23,9 @@ import { ICONS, ITEM_NAME, MiniMap, Msg, fmt } from './hud';
 const LAPS = 3;
 const Q = new URLSearchParams(location.search);
 const store0 = (() => { try { return localStorage.getItem('bd.pist'); } catch { return null; } })();
-const PIST: 'galata' | 'kc' = Q.get('pist') === 'kc' ? 'kc' : 'galata'; // açılış her zaman Galata; pist ana ekrandan seçilir
+const PIST: 'galata' | 'kc' | 'bg' = Q.get('pist') === 'kc' ? 'kc' : Q.get('pist') === 'bg' ? 'bg' : 'galata'; // açılış her zaman Galata; pist ana ekrandan seçilir
 void store0;
-export const PISTS = { galata: 'Galata Kulesi', kc: 'Kapalıçarşı' } as const;
+export const PISTS = { galata: 'Galata Kulesi', kc: 'Kapalıçarşı', bg: 'Boğaz' } as const;
 const mobile = matchMedia('(pointer: coarse)').matches || /Android|iPhone|iPad/i.test(navigator.userAgent);
 const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
 const store = { get(k: string) { try { return localStorage.getItem('bd.' + k); } catch { return null; } }, set(k: string, v: string) { try { localStorage.setItem('bd.' + k, v); } catch { /* yok */ } } };
@@ -38,6 +40,7 @@ renderer.setPixelRatio(1);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const ink = new Ink(renderer, mobile ? 0 : 4);
+ink.mat.uniforms.vivid.value = PIST === 'bg' ? 0.5 : 0.75; // canlı renkler
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(70, 1, 0.3, 2000);
 let hemi: THREE.HemisphereLight, sun: THREE.DirectionalLight;
@@ -46,6 +49,12 @@ if (PIST === 'galata') {
   // gün batımı: sıcak, alçak güneş; mor-mavi gölgeler
   hemi = new THREE.HemisphereLight(0xc3cdf5, 0x9a88a8, 1.9);
   sun = new THREE.DirectionalLight(0xffcf9e, 2.3);
+} else if (PIST === 'bg') {
+  // Boğaz: parlak öğle, masmavi gök
+  scene.background = new THREE.Color(0x8fd0ff);
+  scene.fog = new THREE.Fog(0xc4e8ff, 320, 1750);
+  hemi = new THREE.HemisphereLight(0xe6f4ff, 0xa8d49a, 2.3);
+  sun = new THREE.DirectionalLight(0xfff4dc, 2.7);
 } else {
   // çarşı içi: sıcak fener ışığı, tepe pencerelerinden gelen yumuşak ışık
   scene.background = new THREE.Color(0x5a4a44);
@@ -59,7 +68,7 @@ sun.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
 Object.assign(sun.shadow.camera, { left: -55, right: 55, top: 55, bottom: -55, near: 1, far: 400 });
 sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.06;
 scene.add(sun, sun.target);
-const SUN_FROM = PIST === 'galata' ? SUN_DIR : new THREE.Vector3(0.25, 1, 0.15).normalize();
+const SUN_FROM = PIST === 'galata' ? SUN_DIR : PIST === 'bg' ? BG_SUN : new THREE.Vector3(0.25, 1, 0.15).normalize();
 
 const loadBar = $('#loading .lbar i'), loadPct = $('#lpct'), loadTxt = $('#ltxt');
 let loadShown = 0;
@@ -81,6 +90,21 @@ if (PIST === 'galata') {
   world = w;
   setLoad(0.95, 'Seyirciler yerleşiyor…'); await frameWait();
   props = new Props(scene, track, w, tex, mobile);
+} else if (PIST === 'bg') {
+  setLoad(0.1, 'Vapurlar iskeleye yanaşıyor…'); await frameWait();
+  track = new Track(buildBosphorusTrack());
+  const T = track.T;
+  track.build(scene, tex, { hide: (i) => !!(T.flags[i] & (F_WOOD | F_GAP)), supports: false, under: 0xd9dfe8 });
+  setLoad(0.4, 'Boğaz dolduruluyor…'); await frameWait();
+  const bg = new Bosphorus(scene, track, tex, mobile);
+  world = bg; props = bg;
+  itemLayout = {
+    boxes: [80, 250, 480, 700, 900, 1160, 1480],
+    simits: [[30, 0, 6], [120, 3, 5], [200, 0, 5], [270, -2, 5], [340, 0, 4], [395, 0, 4], [460, 3, 5], [560, -3, 6], [620, 3, 5], [720, 0, 6], [800, -3, 5], [860, 3, 5], [960, 0, 5], [1060, -4, 6], [1140, 4, 6], [1230, 0, 6], [1400, -2, 5], [1470, 2, 5], [1540, -2, 5], [1620, 0, 6]],
+    pads: [{ s0: 60, s1: 67, d: 0, w: 6 }, { s0: 585, s1: 592, d: 0, w: 6 }, { s0: 1095, s1: 1102, d: 0, w: 7 }, { s0: 1175, s1: 1182, d: 0, w: 7 }, { s0: 1600, s1: 1607, d: 0, w: 5 }],
+  };
+  lifeCfg = { cats: 22, vendors: [40, 500, 760, 880, 1560], gulls: 34, ferries: false };
+  setLoad(0.9, 'Martılar havalanıyor…'); await frameWait();
 } else {
   setLoad(0.1, 'Çarşı kapıları açılıyor…'); await frameWait();
   track = new Track(buildBazaarTrack());
@@ -385,7 +409,7 @@ function showTitle() {
 }
 // ---------- karakter seçimi: kule önünde döner kaide ----------
 const showroom = new THREE.Group(); scene.add(showroom); showroom.visible = false;
-const SR_S = PIST === 'galata' ? 698 : 300, SR = track.point(SR_S, 0);
+const SR_S = PIST === 'galata' ? 698 : PIST === 'bg' ? 70 : 300, SR = track.point(SR_S, 0);
 // Galata: kule çıkışındaki köprü, arkada kule · Kapalıçarşı: Sandal Bedesteni salonu
 const srRight = PIST === 'galata' ? new THREE.Vector3(SR.x - track.T.tower.x, 0, SR.z - track.T.tower.z).normalize() : new THREE.Vector3(track.T.tx[track.idxOf(SR_S)], 0, track.T.tz[track.idxOf(SR_S)]);
 {
@@ -434,7 +458,7 @@ function showSelect() {
 function showHelp(back: () => void) {
   const it = (k: keyof typeof ICONS, t: string) => `<div><img src="${ICONS[k]}" alt=""><span><b>${ITEM_NAME[k]}</b><br>${t}</span></div>`;
   menu.innerHTML = `<div class="panel help"><h2>Nasıl oynanır</h2>
-    <p>Galata Kulesi’nin etrafında <b>3 tur</b>. İlk bitiren kazanır.</p>
+    <p>${PISTS[PIST]} pistinde <b>3 tur</b>. İlk bitiren kazanır.</p>
     <table>
       <tr><td>Gaz / fren</td><td><kbd>W</kbd> <kbd>↑</kbd> / <kbd>S</kbd> <kbd>↓</kbd> · telefonda <b>GAZ</b> ve <b>FREN</b> düğmeleri</td></tr>
       <tr><td>Direksiyon</td><td><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd> · telefonda sol yarıda parmağını kaydır</td></tr>

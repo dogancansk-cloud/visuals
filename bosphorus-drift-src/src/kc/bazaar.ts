@@ -63,7 +63,7 @@ export class Bazaar {
     for (let i = 0; i < T.n; i += 3) { const d = (x - T.x[i]) ** 2 + (z - T.z[i]) ** 2; if (d < bd) { bd = d; bi = i; } }
     return T.y[bi];
   }
-  update(time: number) { this.uTime.value = time; }
+  update(a: number, b?: number) { this.uTime.value = b ?? a; }
 
   // ---------- yardımcılar ----------
   private P(i: number, d: number, dy = 0) { const T = this.T, k = ((i % T.n) + T.n) % T.n; return [T.x[k] - T.tz[k] * d, T.y[k] + dy, T.z[k] + T.tx[k] * d] as const; }

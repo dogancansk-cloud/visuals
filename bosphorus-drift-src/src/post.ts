@@ -13,11 +13,11 @@ export class Ink {
       uniforms: {
         tColor: { value: this.rt.texture }, tDepth: { value: this.rt.depthTexture },
         res: { value: new THREE.Vector2(1, 1) }, near: { value: 0.3 }, far: { value: 2000 },
-        ink: { value: new THREE.Color(0x1d2550) }, width: { value: 1 }, speed: { value: 0 }, time: { value: 0 },
+        ink: { value: new THREE.Color(0x1d2550) }, width: { value: 1 }, speed: { value: 0 }, time: { value: 0 }, vivid: { value: 0 },
       },
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
       fragmentShader: `
-        uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float near; uniform float far; uniform vec3 ink; uniform float width; uniform float speed; uniform float time;
+        uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float near; uniform float far; uniform vec3 ink; uniform float width; uniform float speed; uniform float time; uniform float vivid;
         varying vec2 vUv;
         float lin(vec2 uv){ float d = texture2D(tDepth, uv).x; return (near * far) / (far - d * (far - near)); }
         float hash(float n){ return fract(sin(n) * 43758.5453); }
@@ -35,6 +35,11 @@ export class Ink {
           e *= mix(1.0, 0.25, smoothstep(120.0, 600.0, c)); // uzakta incelir
           if (c > far * 0.9) e *= 0.0;
           vec3 col = texture2D(tColor, vUv).rgb;
+          // canlılık: doygunluk ve hafif kontrast (çizgi film gibi)
+          float lum = dot(col, vec3(0.299, 0.587, 0.114));
+          col = mix(vec3(lum), col, 1.0 + 0.42 * vivid);
+          vec3 gc = pow(max(col, 0.0), vec3(0.4545)); gc = mix(gc, gc * gc * (3.0 - 2.0 * gc), 0.3 * vivid); col = pow(gc, vec3(2.2));
+          col = clamp(col, 0.0, 1.0);
           col = mix(col, ink, clamp(e, 0.0, 1.0) * 0.92);
           // hız çizgileri (ekran kenarlarında, ışınsal)
           if (speed > 0.01) {

@@ -67,7 +67,7 @@ export class Track {
   idxOf(s: number) { return this.wrap(Math.round((s / this.L) * this.n)); }
 
   // ---------- örgü ----------
-  build(scene: THREE.Scene, tex: Textures, style: { road?: THREE.Texture; curb?: THREE.Texture; wall?: THREE.Texture; rail?: THREE.Texture; under?: number } = {}) {
+  build(scene: THREE.Scene, tex: Textures, style: { road?: THREE.Texture; curb?: THREE.Texture; wall?: THREE.Texture; rail?: THREE.Texture; under?: number; hide?: (i: number) => boolean; supports?: boolean } = {}) {
     const T = this.T, n = this.n;
     const road = new Geo(), curb = new Geo(), wall = new Geo(), under = new Geo(), rail = new Geo();
     const P = (i: number, d: number, dy = 0) => { const b = T.bank[i]; return [T.x[i] - T.tz[i] * d, T.y[i] + b * d + dy, T.z[i] + T.tx[i] * d] as const; };
@@ -75,6 +75,7 @@ export class Track {
     for (let k = 0; k < n; k++) {
       const i = k, j = (k + 1) % n, wi = T.w[i] / 2, wj = T.w[j] / 2, ds = this.L / n, v2 = v + ds / 12;
       const fl = T.flags[i] | T.flags[j];
+      if (style.hide && (style.hide(i) || style.hide(j))) { v = v2; continue; }
       // yol
       road.quad(P(i, -wi), P(j, -wj), P(j, wj), P(i, wi), [0, v], [0, v2], [1, v2], [1, v]);
       // bordür (1 m)
@@ -115,7 +116,7 @@ export class Track {
     mk(rail, new THREE.MeshLambertMaterial({ map: style.rail || tex.rail }));
     mk(under, new THREE.MeshLambertMaterial({ color: style.under ?? 0xc9c4d8 }));
     this.buildTunnel(scene, tex);
-    this.buildSupports(scene);
+    if (style.supports !== false) this.buildSupports(scene);
     this.buildStartLine(scene, tex);
   }
 
