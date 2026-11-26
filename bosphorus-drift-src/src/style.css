@@ -58,8 +58,8 @@ button { font-family: var(--font); cursor: pointer; }
 #touch button { position: absolute; pointer-events: auto; touch-action: none; border-radius: 50%; border: 4px solid #fff; color: #fff; font-weight: 900; text-shadow: 0 2px 0 rgba(60, 58, 71, .35); box-shadow: 0 5px 0 rgba(60, 58, 71, .25); }
 #touch button.on { transform: translateY(3px) scale(.96); box-shadow: 0 2px 0 rgba(60, 58, 71, .25); filter: brightness(1.1); }
 #tDrift { right: calc(22px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom)); width: 112px; height: 112px; font-size: 20px; background: rgba(239, 138, 128, .88); }
-#tItem { right: calc(146px + env(safe-area-inset-right)); bottom: calc(30px + env(safe-area-inset-bottom)); width: 80px; height: 80px; font-size: 16px; background: rgba(142, 197, 240, .9); }
-#tBrake { right: calc(150px + env(safe-area-inset-right)); bottom: calc(126px + env(safe-area-inset-bottom)); width: 66px; height: 66px; font-size: 14px; background: rgba(60, 58, 71, .5); }
+#tItem { right: calc(24px + env(safe-area-inset-right)); bottom: calc(28px + env(safe-area-inset-bottom)); width: 108px; height: 108px; font-size: 19px; background: rgba(142, 197, 240, .9); }
+#tBrake { right: calc(150px + env(safe-area-inset-right)); bottom: calc(34px + env(safe-area-inset-bottom)); width: 66px; height: 66px; font-size: 14px; background: rgba(60, 58, 71, .5); }
 
 /* menüler */
 #menu { position: absolute; inset: 0; pointer-events: none; display: grid; place-items: center; padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }

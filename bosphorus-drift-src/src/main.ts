@@ -91,11 +91,11 @@ if (PIST === 'galata') {
   const bz = new Bazaar(scene, track, tex, mobile);
   world = bz; props = bz;
   itemLayout = {
-    boxes: [60, 236, 400, 520, 640],
-    simits: [[20, 0, 6], [110, 3, 6], [190, -2, 4], [270, 0, 5], [330, -3, 4], [360, 3, 4], [440, 0, 6], [560, -2.5, 5], [600, 2.5, 5], [700, 0, 6]],
-    pads: [{ s0: 150, s1: 157, d: 0, w: 5 }, { s0: 330, s1: 337, d: 0, w: 6 }, { s0: 690, s1: 697, d: 2, w: 5 }],
+    boxes: [60, 250, 540, 760, 940, 1150],
+    simits: [[20, 0, 6], [120, 3, 6], [200, -2, 4], [300, 0, 5], [360, -3, 4], [420, 0, 4], [520, 2, 5], [620, -2, 5], [690, 3, 5], [800, 0, 6], [880, -3, 4], [1000, 2, 5], [1080, -2, 5], [1220, 0, 6]],
+    pads: [{ s0: 150, s1: 157, d: 0, w: 5 }, { s0: 690, s1: 697, d: 0, w: 6 }, { s0: 990, s1: 997, d: 0, w: 5 }, { s0: 1180, s1: 1187, d: 2, w: 5 }],
   };
-  lifeCfg = { cats: 20, vendors: [90, 290, 470, 610], gulls: 0, ferries: false };
+  lifeCfg = { cats: 20, vendors: [100, 360, 600, 880, 1100], gulls: 0, ferries: false };
   setLoad(0.9, 'Esnaf yerini alıyor…'); await frameWait();
 }
 const fx = new Particles(scene, mobile ? 600 : 1000);
@@ -308,11 +308,6 @@ function step(dt: number) {
   if (state === 'count' && g && !prevGas) gasEdgeT = countT;
   prevGas = g;
   const pc = playerAI ? (playerAI.update(dt, karts, player, true), playerAI.ctl) : input.c;
-  // dokunmatikte hafif direksiyon yardımı: parmak ortadayken kart pist yönüne kendiliğinden hizalanır
-  if (!playerAI && input.touch && !player.drifting && Math.abs(pc.steer) < 0.12 && player.grounded) {
-    const i = track.wrap(player.f.i + 8); let e = Math.atan2(track.T.tz[i], track.T.tx[i]) - player.yaw; e = Math.atan2(Math.sin(e), Math.cos(e));
-    if (Math.abs(e) < 0.7) pc.steer += Math.max(-0.3, Math.min(0.3, e * 0.9));
-  }
   player.step(dt, pc, raceOn);
   for (const a of ais) { a.update(dt, karts, player); a.k.step(dt, a.ctl, raceOn); }
   // kart-kart çarpışması
@@ -384,7 +379,7 @@ function showTitle() {
 }
 // ---------- karakter seçimi: kule önünde döner kaide ----------
 const showroom = new THREE.Group(); scene.add(showroom); showroom.visible = false;
-const SR_S = PIST === 'galata' ? 698 : 226, SR = track.point(SR_S, 0);
+const SR_S = PIST === 'galata' ? 698 : 300, SR = track.point(SR_S, 0);
 // Galata: kule çıkışındaki köprü, arkada kule · Kapalıçarşı: Sandal Bedesteni salonu
 const srRight = PIST === 'galata' ? new THREE.Vector3(SR.x - track.T.tower.x, 0, SR.z - track.T.tower.z).normalize() : new THREE.Vector3(track.T.tx[track.idxOf(SR_S)], 0, track.T.tz[track.idxOf(SR_S)]);
 {
@@ -437,10 +432,10 @@ function showHelp(back: () => void) {
     <table>
       <tr><td>Gaz / fren</td><td><kbd>W</kbd> <kbd>↑</kbd> / <kbd>S</kbd> <kbd>↓</kbd> · telefonda gaz kendiliğinden</td></tr>
       <tr><td>Direksiyon</td><td><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd> · telefonda sol yarıda parmağını kaydır</td></tr>
-      <tr><td>Drift</td><td><kbd>Boşluk</kbd> / <kbd>Shift</kbd> ya da <b>DRİFT</b> düğmesi · dönerken dokun, kart zıplayıp kaymaya başlar. Direksiyonu bıraksan da hemen bitmez; bitirmek için ters yöne çevir ya da frene bas.</td></tr>
-      <tr><td>Drift turbosu</td><td>Drift sırasında çubuk <b>yeşile</b> dönünce (zil sesi, telefonda titreşim) aynı tuşa bir kez daha dokun. Üst üste <b>3 kez</b>: Ultra Turbo!</td></tr>
+      <tr style="display:none"><td>Drift</td><td><kbd>Boşluk</kbd> / <kbd>Shift</kbd> ya da <b>DRİFT</b> düğmesi · dönerken dokun, kart zıplayıp kaymaya başlar. Direksiyonu bıraksan da hemen bitmez; bitirmek için ters yöne çevir ya da frene bas.</td></tr>
+      <tr style="display:none"><td>Drift turbosu</td><td>Drift sırasında çubuk <b>yeşile</b> dönünce (zil sesi, telefonda titreşim) aynı tuşa bir kez daha dokun. Üst üste <b>3 kez</b>: Ultra Turbo!</td></tr>
       <tr><td>Eşya</td><td><kbd>E</kbd> veya <kbd>Enter</kbd></td></tr>
-      <tr><td>Diğer</td><td><kbd>R</kbd> piste dön · <kbd>Esc</kbd> duraklat · <kbd>M</kbd> ses · oyun kolu da çalışır</td></tr>
+      <tr><td>Diğer</td><td>Mavi oklu pedler ve çıkardığın turbo seni hızlandırır · <kbd>R</kbd> piste dön · <kbd>Esc</kbd> duraklat · <kbd>M</kbd> ses · oyun kolu da çalışır</td></tr>
     </table>
     <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', 'Kalkan olur. Üstündeyken tekrar basarsan öndekine fırlatırsın.')}${it('turbo', 'Anında hız.')}${it('simit', 'Düz gider, duvardan seker. 10 simitle üçlü.')}${it('duduk', 'Yakındaki kartları savurur.')}${it('kedi', 'Öndeki kartların önüne kediler çıkar.')}</div>
     <p>Yoldaki <b>simitleri</b> topla: her biri biraz hız verir. 10 simitte eşyalar da güçlenir. Vurulursan 3 simit düşer. Mavi oklu pedler ve sürpriz kutuları <b>?</b> pistin her yerinde.</p>

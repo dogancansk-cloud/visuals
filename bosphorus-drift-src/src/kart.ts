@@ -9,7 +9,8 @@ export type ItemKind = 'marti' | 'cay' | 'nazar' | 'turbo' | 'simit' | 'duduk' |
 export const G = 25;
 const BASE_MAX = 31;
 export const DRIFT_ZONE = [0.55, 1.0] as const; // turbo penceresi
-export const DRIFT_LATE = 0.18; // pencereden sonra hâlâ kabul edilen pay
+export const DRIFT_LATE = 0.18;
+export const DRIFT_ON = false; // drift şimdilik kapalı // pencereden sonra hâlâ kabul edilen pay
 const CHARGE_TIME = 0.75;
 
 export interface KartEvents {
@@ -95,7 +96,7 @@ export class Kart {
     const st = ctl.steer;
     // dokununca her zaman zıpla; yön o an ya da havadayken seçilebilir
     const startDrift = (d: number) => { this.drifting = true; this.dir = d; this.charge = 0; this.boosts = 0; this.neutralT = 0; this.oppT = 0; this.pendT = 0; this.ev.onDriftStart?.(this); };
-    if (!this.drifting && driftEdge && this.grounded && this.speed > 4) {
+    if (DRIFT_ON && !this.drifting && driftEdge && this.grounded && this.speed > 4) {
       this.vy = 4.2; this.grounded = false; this.pendT = 0.4;
       if (Math.abs(st) > 0.15 && this.speed > 7) startDrift(Math.sign(st));
     } else if (this.drifting && driftEdge) {
@@ -106,7 +107,7 @@ export class Kart {
         } else { this.ev.onDriftFail?.(this, this.charge > DRIFT_ZONE[1]); this.charge = 0; this.lockT = 0.2; }
       }
     }
-    if (!this.drifting && this.pendT > 0) { this.pendT -= dt; if (Math.abs(st) > 0.15 && this.speed > 7) startDrift(Math.sign(st)); }
+    if (DRIFT_ON && !this.drifting && this.pendT > 0) { this.pendT -= dt; if (Math.abs(st) > 0.15 && this.speed > 7) startDrift(Math.sign(st)); }
     if (this.drifting) {
       if (this.boosts < 3 && this.lockT <= 0) { this.charge += dt / CHARGE_TIME; if (this.charge > DRIFT_ZONE[1] + DRIFT_LATE + 0.15) this.charge = 0; }
       // drift kendiliğinden kolay bitmez: uzun süre düz ya da ters yöne sert direksiyon gerekir

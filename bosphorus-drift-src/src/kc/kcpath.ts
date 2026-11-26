@@ -4,6 +4,8 @@ import { F_BRIDGE, F_RAMP, type TrackData } from '../trackpath';
 
 export const F_HALL = 16; // bedesten salonu (geniş, kubbeli)
 export const F_GATE = 32; // çarşı kapısı / kemerli geçit
+export const F_HAN = 64;  // han avlusu (açık hava)
+export const F_GAL = 128; // han üst kat galerisi (yükseltilmiş)
 
 export const KC_ORIGIN = { x: -1020, z: 1350 }; // yerel (0,0) → harita
 
@@ -24,31 +26,35 @@ export function buildBazaarTrack(): TrackData {
     const cx = x - Math.sin(phi) * r * s, cz = z + Math.cos(phi) * r * s, p0 = phi, y0 = y;
     for (let i = 1; i <= n; i++) { const t = i / n; phi = p0 + a * t; x = cx + Math.sin(phi) * r * s; z = cz - Math.cos(phi) * r * s; y = y0 + dy * ease(t); emit(w, f); }
   };
-  emit(11, 0);
-  straight(170, 0, 12);                 // Kalpakçılar caddesi
-  arc(18, -90, 0.6);                    // sola, kuzeye
-  straight(14, 0.4);
-  straight(44, 0.6, 15, F_HALL);        // Sandal Bedesteni
-  straight(10, 0.3);
-  arc(16, -90, 0.3);                    // batıya
+  emit(12, 0);
+  straight(228, 0, 12);                       // Kalpakçılar caddesi
+  arc(22, -90, 0.5);                          // kuzeye
   straight(12, 0.3);
-  straight(8, 0, 11, F_GATE);
-  straight(22, 1.4, 16, F_HALL);        // Cevahir Bedesteni: halı rampası
-  straight(6, 0.5, 16, F_HALL | F_RAMP);
-  straight(12, -1.9, 16, F_HALL | F_BRIDGE);
-  straight(16, 0, 16, F_HALL);
-  straight(8, 0, 11, F_GATE);
-  straight(24, 0);
-  arc(30, 25); arc(30, -25);            // hafif kıvrım
-  arc(14, -180, -0.6);                  // firkete, doğuya
-  straight(36, -0.4);
-  arc(14, 90, -0.4);                    // güneye
-  straight(14, -0.3);
-  arc(14, 90, -0.3);                    // batıya
-  straight(30, -0.4);
-  arc(26, -30, -0.2); arc(26, 60, -0.3); arc(26, -30, -0.2); // S kıvrımları
-  straight(28, -0.3);
-  arc(16, -90, -0.4);                   // güneye
+  straight(50, 0.5, 15, F_HALL);              // Sandal Bedesteni
+  straight(14, 0.3);
+  straight(38, 0.6);
+  straight(8, 0, 11, F_GATE);                 // çarşıdan hana kapı
+  straight(18, 2.2, 12, F_HAN | F_BRIDGE);    // han avlusu: galeri rampası
+  arc(16, -90, 2.2, 12, F_HAN | F_BRIDGE);
+  straight(24, 1.2, 11, F_HAN | F_GAL | F_BRIDGE); // üst kat galerisi
+  straight(6, 0.6, 11, F_HAN | F_GAL | F_BRIDGE | F_RAMP);
+  straight(14, -6.6, 12, F_HAN | F_BRIDGE);   // galeriden avluya sıçrama
+  arc(14, -90, 0, 12, F_HAN);                 // şadırvanın batısı, güneye
+  straight(12, 0, 12, F_HAN);
+  straight(8, 0, 11, F_GATE);                 // handan çarşıya
+  straight(22, -0.3);
+  arc(18, 90, -0.3);                          // batıya
+  straight(96, -0.6);                         // Kuyumcular sokağı
+  straight(6, 0, 11, F_GATE);
+  straight(48, 0, 16, F_HALL);                // Cevahir Bedesteni
+  straight(6, 0, 11, F_GATE);
+  straight(46, -0.4);
+  arc(30, -45, -0.3); straight(44, -0.4); arc(30, 45, -0.3);   // güneybatıya kıvrım
+  straight(118, -0.5);
+  arc(20, -180, -0.4);                        // firkete, doğuya
+  straight(106, -0.2);
+  arc(26, 40, 0); arc(26, -40, 0);            // S
+  straight(30, 0);
   // kapanış: başlangıca Hermite eğrisi
   const last = pts[pts.length - 1];
   const dx = start.x - last.x, dz = start.z - last.z, d = Math.hypot(dx, dz);

@@ -48,7 +48,7 @@ export class AI {
     const sharp = Math.abs(this.bend(k.f.i, 4, 22));
     if (sharp > 1.1 && k.speed > 22 && !k.drifting) { c.gas = 0; if (k.speed > 25) c.brake = 0.35; }
     // drift başlat
-    if (!k.drifting && k.grounded && sharp > 0.55 && k.speed > 14 && Math.random() < dt * 4 * (0.4 + this.skill)) {
+    if (false && !k.drifting && k.grounded && sharp > 0.55 && k.speed > 14 && Math.random() < dt * 4 * (0.4 + this.skill)) {
       c.steer = Math.sign(curve) || 1; c.drift = true; this.wantBoostAt = Z0 + Math.random() * 0.25;
     }
     // turbo zamanlaması
