@@ -1,7 +1,10 @@
 // Bosphorus Drift — ana döngü, oyun durumu, kamera, menüler.
 import * as THREE from 'three';
 import { Track, Textures } from './track';
-import { Scenery } from './scenery';
+import { World, WorldData, SUN_DIR } from './world/world';
+import { Props } from './props';
+import { Ink } from './post';
+import { Trails } from './trails';
 import { Kart, DRIFT_ZONE } from './kart';
 import { AI } from './ai';
 import { Items } from './items';
@@ -22,24 +25,33 @@ const canvas = $<HTMLCanvasElement>('#view');
 let renderer: THREE.WebGLRenderer;
 try { renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, powerPreference: 'high-performance' }); }
 catch { $('#loading p').textContent = 'Bu cihazda 3B görüntü başlatılamadı.'; throw new Error('webgl'); }
-renderer.setPixelRatio(Math.min(devicePixelRatio, mobile ? 1.5 : 2));
+const PR = Math.min(devicePixelRatio, mobile ? 1.5 : 2);
+renderer.setPixelRatio(1);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+const ink = new Ink(renderer, mobile ? 0 : 4);
 const scene = new THREE.Scene();
-scene.fog = new THREE.Fog(0xf2e4dc, 140, 720);
-const camera = new THREE.PerspectiveCamera(68, 1, 0.3, 2000);
-const hemi = new THREE.HemisphereLight(0xe3f1ff, 0xf3d6bd, 1.75); scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xfff0dc, 2.1); sun.castShadow = true;
+scene.fog = new THREE.Fog(0xd9a7b8, 220, 1400);
+const camera = new THREE.PerspectiveCamera(70, 1, 0.3, 2000);
+// gün batımı: sıcak, alçak güneş; mor-mavi gölgeler
+const hemi = new THREE.HemisphereLight(0xc3cdf5, 0x9a88a8, 1.9); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xffcf9e, 2.3); sun.castShadow = true;
 sun.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
-Object.assign(sun.shadow.camera, { left: -42, right: 42, top: 42, bottom: -42, near: 1, far: 260 });
-sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.04;
+Object.assign(sun.shadow.camera, { left: -55, right: 55, top: 55, bottom: -55, near: 1, far: 400 });
+sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.06;
 scene.add(sun, sun.target);
 
+const loadP = $('#loading p');
+const data = await WorldData.load('./', (p) => (loadP.textContent = `Harita yükleniyor… %${Math.round(p * 60)}`));
 const tex = new Textures();
-const track = new Track();
+const track = new Track(data.H);
 track.build(scene, tex);
-const scenery = new Scenery(scene, track, tex, mobile);
+const world = new World(scene, data, track, mobile);
+loadP.textContent = 'Galata kuruluyor…';
+await world.build((m) => (loadP.textContent = `Galata kuruluyor: ${m}…`));
+const props = new Props(scene, track, world, tex, mobile);
 const fx = new Particles(scene, mobile ? 600 : 1000);
+const trails = new Trails(scene);
 const audio = new Audio();
 const input = new Input($('#ui'));
 const msg = new Msg($('#msg'));
@@ -70,7 +82,7 @@ const near = (k: Kart) => k === player || k.pos.distanceTo(player.pos) < 35;
 
 function setupRace() {
   for (const k of karts) scene.remove(k.model.root);
-  items.reset();
+  items.reset(); trails.reset();
   karts = []; ais = [];
   const order = [0, 1, 2, 3, 4, 5].filter((i) => i !== charIdx);
   const grid = [0, 1, 2, 3, 4, 5]; const pSlot = 3;
@@ -106,27 +118,36 @@ const kartEvents = {
 
 // ---------- kamera ----------
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
-let camFov = 68, camInit = false;
+let camFov = 70, camInit = false, camYaw = 0, shake = 0;
 function updateCamera(dt: number, time: number) {
   if (state === 'title' || state === 'select') {
-    const tw = track.T.tower, a = time * 0.07;
-    const far = camera.aspect < 1 ? 95 / Math.max(0.5, camera.aspect) : 95;
-    camera.position.set(tw.x + Math.cos(a) * far, 48 + (far - 95) * 0.3, tw.z + Math.sin(a) * far);
-    camera.lookAt(tw.x, 26, tw.z); camera.fov = 55; camera.updateProjectionMatrix(); camInit = false; return;
+    const tw = track.T.tower, a = time * 0.06 + 2.2;
+    const far = camera.aspect < 1 ? 150 / Math.max(0.5, camera.aspect) : 150;
+    camera.position.set(tw.x + Math.cos(a) * far, tw.y0 + 52 + (far - 150) * 0.25, tw.z + Math.sin(a) * far);
+    camera.lookAt(tw.x, tw.y0 + 26, tw.z); camera.fov = 50; camera.updateProjectionMatrix(); camInit = false; return;
   }
-  const k = player, fx0 = Math.cos(k.yaw), fz0 = Math.sin(k.yaw);
-  const back = 7.2, up = 3.1;
+  const k = player;
+  // kamera yönü kartı biraz geriden izler: driftte kayış görünür
+  const lag = k.drifting ? 3.2 : k.spinT > 0 ? 1.5 : 6.5;
+  if (!camInit) camYaw = k.yaw;
+  let dy = k.yaw - camYaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); camYaw += dy * Math.min(1, dt * lag);
+  const fx0 = Math.cos(camYaw), fz0 = Math.sin(camYaw);
+  const sp = Math.max(0, k.speed), back = 5.6 + Math.min(1.2, sp * 0.03), up = 2.25 + Math.min(0.5, sp * 0.012);
   const want = new THREE.Vector3(k.pos.x - fx0 * back, k.pos.y + up, k.pos.z - fz0 * back);
-  const look = new THREE.Vector3(k.pos.x + fx0 * 5, k.pos.y + 1.3, k.pos.z + fz0 * 5);
+  const look = new THREE.Vector3(k.pos.x + fx0 * 7, k.pos.y + 1.15, k.pos.z + fz0 * 7);
   if (!camInit) { camPos.copy(want); camLook.copy(look); camInit = true; }
-  const kp = 1 - Math.exp(-dt * (k.spinT > 0 ? 3 : 8)), kl = 1 - Math.exp(-dt * 12);
+  const kp = 1 - Math.exp(-dt * 14), kl = 1 - Math.exp(-dt * 16);
   camPos.lerp(want, kp); camLook.lerp(look, kl);
-  // kameranın yere girmesini engelle
-  if (camPos.y < k.f.h + 1.6) camPos.y = k.f.h + 1.6;
-  camera.position.copy(camPos); camera.lookAt(camLook);
-  const tf = 68 + (k.boostT > 0 ? 10 : 0) + Math.min(6, Math.max(0, k.speed - 20) * 0.6);
-  camFov += (tf - camFov) * Math.min(1, dt * 4);
+  if (camPos.y < k.f.h + 1.3) camPos.y = k.f.h + 1.3;
+  shake = Math.max(shake * Math.exp(-dt * 7), k.squash * 0.35, k.boostT > 0 ? 0.04 : 0);
+  camera.position.copy(camPos).add(new THREE.Vector3((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake));
+  camera.lookAt(camLook);
+  camera.rotateZ(-k.driftVis * 0.035);
+  const tf = 70 + Math.min(9, Math.max(0, sp - 18) * 0.45) + (k.boostT > 0 ? 9 : 0);
+  camFov += (tf - camFov) * Math.min(1, dt * 5);
   camera.fov = camera.aspect < 1 ? Math.min(100, (2 * Math.atan(Math.tan((camFov * Math.PI) / 360) / camera.aspect * 0.62) * 180) / Math.PI) : camFov; camera.updateProjectionMatrix();
+  ink.mat.uniforms.speed.value = state === 'race' ? Math.min(1, Math.max(0, (sp - 30) / 9) + (k.boostT > 0 ? 0.6 : 0)) : 0;
+  ink.mat.uniforms.time.value = time;
 }
 
 // ---------- efektler ----------
@@ -144,28 +165,30 @@ function kartFx(k: Kart) {
     for (const sd of [-1, 1]) {
       const p = local(k, -0.8, 0.15, sd * 0.85);
       if (ready || k.boosts > 0) fx.emit(p.x, p.y, p.z, (Math.random() - 0.5) * 4, Math.random() * 3 + 1, (Math.random() - 0.5) * 4, col, 1, 0.22, 0.35, 12);
-      if (Math.random() < 0.5) fx.emit(p.x, p.y + 0.2, p.z, (Math.random() - 0.5), 1.2, (Math.random() - 0.5), C.white, 0.45, 1.0, 0.6);
+      if (Math.random() < 0.3) fx.emit(p.x, p.y + 0.2, p.z, (Math.random() - 0.5), 1.2, (Math.random() - 0.5), C.white, 0.3, 0.7, 0.45);
     }
   }
   if (k.boostT > 0) for (const e of k.model.exhaust) {
     const p = local(k, e.x, e.y, e.z), b = -12;
     fx.emit(p.x, p.y, p.z, Math.cos(k.yaw) * b * 0.3 + (Math.random() - 0.5), Math.random(), Math.sin(k.yaw) * b * 0.3 + (Math.random() - 0.5), Math.random() < 0.5 ? C.flame : C.flame2, 1, 0.55, 0.22);
-  } else if (k.speed > 2 && Math.random() < 0.25) {
+  } else if (k.speed > 2 && k.speed < 20 && Math.random() < 0.1) {
     const e = k.model.exhaust[0], p = local(k, e.x, e.y, e.z);
-    fx.emit(p.x, p.y, p.z, 0, 0.8, 0, C.white, 0.35, 0.5, 0.5);
+    fx.emit(p.x, p.y, p.z, 0, 0.8, 0, C.white, 0.2, 0.3, 0.4);
   }
   if (k.spinT > 0 && Math.random() < 0.6) { const p = local(k, 0, 1.6, 0); fx.emit(p.x, p.y, p.z, (Math.random() - 0.5) * 3, 2, (Math.random() - 0.5) * 3, C.flame2, 1, 0.3, 0.5); }
 }
 function dust(k: Kart, n: number) { for (let i = 0; i < n; i++) fx.emit(k.pos.x + (Math.random() - 0.5) * 2, k.pos.y + 0.2, k.pos.z + (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 5, Math.random() * 2, (Math.random() - 0.5) * 5, C.dust, 0.8, 1.2, 0.7); }
 
 // ---------- HUD ----------
-const hud = { pos: $('#pos b'), lap: $('#lap'), time: $('#time'), item: $('#item'), itembox: $('#itembox'), simit: $('#simit b'), simitBox: $('#simit'), drift: $('#drift'), fill: $('#drift .fill'), zone: $('#drift .zone'), pips: [...document.querySelectorAll<HTMLElement>('#drift .pips i')], wrong: $('#wrong'), count: $('#count') };
+const hud = { spd: $('#spd b'), pos: $('#pos b'), lap: $('#lap'), time: $('#time'), item: $('#item'), itembox: $('#itembox'), simit: $('#simit b'), simitBox: $('#simit'), drift: $('#drift'), fill: $('#drift .fill'), zone: $('#drift .zone'), pips: [...document.querySelectorAll<HTMLElement>('#drift .pips i')], wrong: $('#wrong'), count: $('#count') };
 const ZW = 1.25;
 hud.zone.style.left = (DRIFT_ZONE[0] / ZW) * 100 + '%'; hud.zone.style.width = ((DRIFT_ZONE[1] + 0.12 - DRIFT_ZONE[0]) / ZW) * 100 + '%';
 let rollIcon = 0, lastPlace = 0, lastLap = 0;
 function updateHud(dt: number) {
   const k = player;
   hud.pos.textContent = String(k.place);
+  hud.spd.textContent = String(Math.max(0, Math.round(k.speed * 3.6 * 1.65)));
+  hud.spd.parentElement!.classList.toggle('boost', k.boostT > 0);
   if (k.place !== lastPlace) { hud.pos.parentElement!.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 250 }); lastPlace = k.place; }
   hud.lap.textContent = `TUR ${Math.min(LAPS, Math.max(1, k.lap))}/${LAPS}`;
   hud.time.textContent = fmt(k.finished ? k.finishTime : raceT);
@@ -197,6 +220,11 @@ function step(dt: number) {
   if (state === 'count' && g && !prevGas) gasEdgeT = countT;
   prevGas = g;
   const pc = playerAI ? (playerAI.update(dt, karts, player, true), playerAI.ctl) : input.c;
+  // dokunmatikte hafif direksiyon yardımı: parmak ortadayken kart pist yönüne kendiliğinden hizalanır
+  if (!playerAI && input.touch && !player.drifting && Math.abs(pc.steer) < 0.12 && player.grounded) {
+    const i = track.wrap(player.f.i + 8); let e = Math.atan2(track.T.tz[i], track.T.tx[i]) - player.yaw; e = Math.atan2(Math.sin(e), Math.cos(e));
+    if (Math.abs(e) < 0.7) pc.steer += Math.max(-0.3, Math.min(0.3, e * 0.9));
+  }
   player.step(dt, pc, raceOn);
   for (const a of ais) { a.update(dt, karts, player); a.k.step(dt, a.ctl, raceOn); }
   // kart-kart çarpışması
@@ -342,8 +370,9 @@ document.addEventListener('visibilitychange', () => { if (document.hidden && (st
 
 // ---------- döngü ----------
 function resize() {
-  const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
-  fx.setScale(h * renderer.getPixelRatio());
+  const w = innerWidth, h = innerHeight; renderer.setSize(Math.floor(w * PR), Math.floor(h * PR), false); canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+  camera.aspect = w / h; camera.updateProjectionMatrix(); ink.setSize(w, h, PR);
+  fx.setScale(h * PR);
 }
 addEventListener('resize', resize); resize();
 
@@ -372,18 +401,19 @@ function frame(now: number) {
     const sub = Math.max(2, Math.ceil(dt / 0.009));
     for (let i = 0; i < sub; i++) step(dt / sub);
     for (const k of karts) { k.sync(dt, time); kartFx(k); }
+    if (dt > 0) trails.update(karts, camera.position);
     if (state === 'race' || state === 'count') updateHud(dt);
     audio.engine(player.speed, playerAI ? 1 : input.c.gas, player.drifting && player.grounded, player.boostT > 0, !paused && state !== 'done');
     if (state === 'done') { doneT += dt; if (doneT > 3 && doneT - dt <= 3) { showResults(); } }
   } else audio.engine(0, 0, false, false, false);
   audio.tick();
   fx.update(dt);
-  scenery.update(dt, time);
+  world.update(time); props.update(dt, time);
   updateCamera(dt, time);
   // gölge kamerası oyuncuyu izler
-  const focus = state === 'title' || state === 'select' ? new THREE.Vector3(track.T.tower.x, 10, track.T.tower.z) : player.pos;
-  sun.position.set(focus.x + 50, focus.y + 90, focus.z + 30); sun.target.position.copy(focus);
-  renderer.render(scene, camera);
+  const focus = state === 'title' || state === 'select' ? new THREE.Vector3(track.T.tower.x, track.T.tower.y0 + 10, track.T.tower.z) : player.pos;
+  sun.position.copy(focus).addScaledVector(SUN_DIR, 220); sun.target.position.copy(focus);
+  ink.render(scene, camera);
 }
 
 $('#loading').remove();

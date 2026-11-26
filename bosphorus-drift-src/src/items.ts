@@ -24,12 +24,12 @@ export class Items {
   constructor(private scene: THREE.Scene, private track: Track, tex: Textures, private fx: Particles, public ev: ItemEvents = {}) {
     const L = track.L;
     // sürpriz kutuları: sıralar halinde
-    for (const s of [70, 215, 330, 640, 760]) for (const d of [-4.5, -1.5, 1.5, 4.5]) this.boxes.push({ s, d, pos: track.point(s, d * (track.T.w[track.idxOf(s)] / 13)), t: 0 });
+    for (const s of [70, 300, 440, 800, 990, 1250]) for (const d of [-4.5, -1.5, 1.5, 4.5]) this.boxes.push({ s, d, pos: track.point(s, d * (track.T.w[track.idxOf(s)] / 13)), t: 0 });
     // simitler: şeritler halinde
-    const lines: [number, number, number][] = [[30, 0, 6], [110, 3.5, 5], [185, -3, 5], [270, 0, 6], [380, -2.5, 6], [470, 2.5, 6], [590, 0, 4], [690, -3.5, 5], [720, 3.5, 5], [800, 0, 6], [860, 0, 4]];
+    const lines: [number, number, number][] = [[30, 0, 6], [150, 3.5, 5], [230, -3, 6], [360, 0, 6], [520, -2, 6], [600, 2, 6], [660, 0, 4], [780, 0, 5], [850, -3.5, 5], [920, 3.5, 5], [1060, 0, 6], [1170, 0, 5], [1280, -3, 5]];
     for (const [s0, d, c] of lines) for (let k = 0; k < c; k++) this.simits.push({ pos: track.point((s0 + k * 4) % L, d).add(new THREE.Vector3(0, 0.9, 0)), t: 0 });
     // turbo pedleri
-    this.pads = [{ s0: 196, s1: 202, d: 0, w: 5 }, { s0: 555, s1: 562, d: 0, w: 6 }, { s0: 845, s1: 851, d: -2.5, w: 5 }];
+    this.pads = [{ s0: 255, s1: 262, d: 0, w: 5 }, { s0: 712, s1: 720, d: 0, w: 6 }, { s0: 1224, s1: 1231, d: -2.5, w: 5 }];
 
     const boxTex = tex.make(128, 128, (c, w, h) => {
       const g = c.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#9fd8f2'); g.addColorStop(1, '#c7b3f0');
@@ -40,7 +40,7 @@ export class Items {
     this.boxMesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1.3, 1.3, 1.3), new THREE.MeshLambertMaterial({ map: boxTex, transparent: true, opacity: 0.92 }), this.boxes.length);
     this.boxMesh.castShadow = true; scene.add(this.boxMesh);
     const sg = new THREE.TorusGeometry(0.42, 0.17, 10, 20);
-    this.simitMesh = new THREE.InstancedMesh(sg, new THREE.MeshToonMaterial({ color: 0xd88f45 }), this.simits.length);
+    this.simitMesh = new THREE.InstancedMesh(sg, new THREE.MeshToonMaterial({ color: 0xf0a955 }), this.simits.length);
     this.simitMesh.castShadow = true; scene.add(this.simitMesh);
     // pedler
     const padTex = tex.make(128, 128, (c, w, h) => {

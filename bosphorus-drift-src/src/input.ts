@@ -19,9 +19,17 @@ export class Input {
     addEventListener('keyup', (e) => this.keys.delete(e.key.toLowerCase()));
     addEventListener('blur', () => this.keys.clear());
     const steer = ui.querySelector<HTMLElement>('#tSteer')!, knob = ui.querySelector<HTMLElement>('#tKnob')!;
-    const W = () => Math.min(innerWidth * 0.16, 90);
+    const W = () => Math.min(innerWidth * 0.13, 72);
     steer.addEventListener('pointerdown', (e) => { this.touch = true; this.steerId = e.pointerId; this.steerX0 = e.clientX; steer.setPointerCapture(e.pointerId); this.tSteer = 0; knob.style.left = e.clientX - steer.getBoundingClientRect().left + 'px'; knob.style.top = e.clientY - steer.getBoundingClientRect().top + 'px'; knob.classList.add('on'); e.preventDefault(); });
-    steer.addEventListener('pointermove', (e) => { if (e.pointerId !== this.steerId) return; this.tSteer = Math.max(-1, Math.min(1, (e.clientX - this.steerX0) / W())); knob.style.setProperty('--dx', this.tSteer * 40 + 'px'); });
+    steer.addEventListener('pointermove', (e) => {
+      if (e.pointerId !== this.steerId) return;
+      // yumuşak eğri: ortada hassas, kenarda tam kilit; parmak çok kayarsa merkez de onunla kayar
+      let dx = e.clientX - this.steerX0; const w = W();
+      if (Math.abs(dx) > w * 1.4) { this.steerX0 = e.clientX - Math.sign(dx) * w * 1.4; dx = e.clientX - this.steerX0; }
+      const r = Math.max(-1, Math.min(1, dx / w)), a = Math.max(0, Math.abs(r) - 0.06) / 0.94;
+      this.tSteer = Math.sign(r) * Math.pow(a, 1.35);
+      knob.style.setProperty('--dx', r * 40 + 'px');
+    });
     const end = (e: PointerEvent) => { if (e.pointerId === this.steerId) { this.steerId = null; this.tSteer = 0; knob.classList.remove('on'); knob.style.setProperty('--dx', '0px'); } };
     steer.addEventListener('pointerup', end); steer.addEventListener('pointercancel', end);
     const hold = (sel: string, set: (v: boolean) => void) => {

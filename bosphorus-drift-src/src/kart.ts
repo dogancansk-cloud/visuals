@@ -7,7 +7,7 @@ export interface Ctl { gas: number; brake: number; steer: number; drift: boolean
 export type ItemKind = 'marti' | 'cay' | 'nazar' | 'turbo';
 
 export const G = 25;
-const BASE_MAX = 26.5;
+const BASE_MAX = 31;
 export const DRIFT_ZONE = [0.7, 1.0] as const; // turbo penceresi
 const CHARGE_TIME = 0.85;
 
@@ -76,7 +76,7 @@ export class Kart {
     const max = this.maxSpeed;
     if (this.grounded) {
       if (ctl.gas > 0 && this.speed >= -0.5) {
-        const a = this.speed < max ? 17 * (1 - Math.max(0, this.speed) / max) + 4 : -(this.speed - max) * 1.6;
+        const a = this.speed < max ? 21 * (1 - Math.max(0, this.speed) / max) + 5 : -(this.speed - max) * 1.6;
         this.speed += a * ctl.gas * dt;
       } else if (ctl.brake > 0) {
         this.speed -= (this.speed > 0 ? 32 : 10) * ctl.brake * dt; this.speed = Math.max(this.speed, -8);
@@ -86,7 +86,7 @@ export class Kart {
       if (this.speed > max && ctl.gas === 0) this.speed -= (this.speed - max) * 1.2 * dt;
       // eğim etkisi (yokuşta yavaşla)
       const slope = (tr.T.y[tr.wrap(this.f.i + 1)] - tr.T.y[this.f.i]);
-      this.speed -= slope * G * 0.35 * dt * Math.sign(fx * this.f.tx + fz * this.f.tz);
+      this.speed -= slope * G * 0.22 * dt * Math.sign(fx * this.f.tx + fz * this.f.tz);
     }
     // ---- drift ----
     const st = ctl.steer;
@@ -110,12 +110,12 @@ export class Kart {
     let yawRate: number;
     const sp = Math.abs(this.speed), sf = Math.min(1, sp / 7);
     if (this.drifting) { yawRate = this.dir * (1.15 + 0.75 * st * this.dir) * sf; this.speed -= 1.2 * dt; }
-    else yawRate = st * (2.1 - 0.55 * Math.min(1, sp / 28)) * sf * Math.sign(this.speed || 1);
+    else yawRate = st * (2.25 - 0.75 * Math.min(1, sp / 34)) * sf * Math.sign(this.speed || 1);
     if (!this.grounded) yawRate *= this.drifting ? 0.9 : 0.45;
     if (this.spinT > 0) yawRate = 0;
     this.yaw += yawRate * dt;
     // ---- yatay hız: kayma ----
-    const grip = this.drifting ? 3.2 : this.grounded ? 9 : 1.2;
+    const grip = this.drifting ? 3.6 : this.grounded ? 12 : 1.2;
     const k = 1 - Math.exp(-grip * dt);
     const tvx = Math.cos(this.yaw) * this.speed, tvz = Math.sin(this.yaw) * this.speed;
     this.vel.x += (tvx - this.vel.x) * k; this.vel.z += (tvz - this.vel.z) * k;
@@ -143,12 +143,12 @@ export class Kart {
       if (vlat * sd > 0) {
         this.vel.x -= rx * vlat * 1.6; this.vel.z -= rz * vlat * 1.6;
         const imp = Math.abs(vlat);
-        this.speed *= Math.max(0.55, 1 - imp * 0.035);
+        this.speed *= Math.max(0.7, 1 - imp * 0.025);
         // burnu pist yönüne çevir
         const ty = Math.atan2(this.f.tz, this.f.tx) * 1, dy = wrapA(ty - this.yaw);
         const fwd = Math.cos(dy) > 0 ? dy : wrapA(dy + Math.PI);
-        this.yaw += fwd * Math.min(1, imp * 0.04);
-        if (imp > 6) { this.drifting = false; this.ev.onWall?.(this, imp); }
+        this.yaw += fwd * Math.min(0.6, imp * 0.05);
+        if (imp > 9) { this.drifting = false; } if (imp > 4) this.ev.onWall?.(this, imp);
       }
       tr.frame(this.pos.x, this.pos.y, this.pos.z, this.f.i, this.f);
     }

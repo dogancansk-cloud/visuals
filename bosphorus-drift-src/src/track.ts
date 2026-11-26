@@ -8,7 +8,7 @@ export class Track {
   readonly T: TrackData;
   readonly n: number;
   readonly L: number;
-  constructor() { this.T = buildTrack(); this.n = this.T.n; this.L = this.T.length; }
+  constructor(H: (x: number, z: number) => number) { this.T = buildTrack(H); this.n = this.T.n; this.L = this.T.length; }
 
   wrap(i: number) { return ((i % this.n) + this.n) % this.n; }
 
@@ -73,7 +73,7 @@ export class Track {
     const P = (i: number, d: number, dy = 0) => { const b = T.bank[i]; return [T.x[i] - T.tz[i] * d, T.y[i] + b * d + dy, T.z[i] + T.tx[i] * d] as const; };
     let v = 0;
     for (let k = 0; k < n; k++) {
-      const i = k, j = (k + 1) % n, wi = T.w[i] / 2, wj = T.w[j] / 2, ds = this.L / n, v2 = v + ds / 8;
+      const i = k, j = (k + 1) % n, wi = T.w[i] / 2, wj = T.w[j] / 2, ds = this.L / n, v2 = v + ds / 12;
       const fl = T.flags[i] | T.flags[j];
       // yol
       road.quad(P(i, -wi), P(j, -wj), P(j, wj), P(i, wi), [0, v], [0, v2], [1, v2], [1, v]);
@@ -96,7 +96,7 @@ export class Track {
           g.quad(P(i, wd, H), P(j, wdj, H), P(j, woj, H), P(i, wo, H), [0, 0], [ds / 3, 0], [ds / 3, 0.15], [0, 0.15]);
         }
         // alt etek
-        const depth = fl & F_BRIDGE ? 1.4 : 6;
+        const depth = fl & F_BRIDGE ? 1.4 : 2.5;
         const e = side * (wi + 1.7), ej = side * (wj + 1.7);
         const top = [P(i, e, -0.2), P(j, ej, -0.2)], bot = [P(i, e, -depth), P(j, ej, -depth)];
         if (side < 0) under.quad(bot[0], bot[1], top[1], top[0], [0, 0], [1, 0], [1, 1], [0, 1]);
@@ -109,11 +109,11 @@ export class Track {
       v = v2;
     }
     const mk = (g: Geo, m: THREE.Material, shadow = true) => { const me = new THREE.Mesh(g.build(), m); me.receiveShadow = shadow; scene.add(me); return me; };
-    mk(road, new THREE.MeshLambertMaterial({ map: tex.cobble }));
+    mk(road, new THREE.MeshLambertMaterial({ map: tex.asphalt }));
     mk(curb, new THREE.MeshLambertMaterial({ map: tex.curb }));
     mk(wall, new THREE.MeshLambertMaterial({ map: tex.wall }));
     mk(rail, new THREE.MeshLambertMaterial({ map: tex.rail }));
-    mk(under, new THREE.MeshLambertMaterial({ color: 0xe8d6bf }));
+    mk(under, new THREE.MeshLambertMaterial({ color: 0xc9c4d8 }));
     this.buildTunnel(scene, tex);
     this.buildSupports(scene);
     this.buildStartLine(scene, tex);
@@ -129,7 +129,7 @@ export class Track {
       for (let k = 0; k < seg; k++) {
         const t0 = (k / seg) * Math.PI, t1 = ((k + 1) / seg) * Math.PI;
         const pt = (ii: number, th: number, rr: number) => { const c = Math.cos(th) * rr, h = Math.sin(th) * rr * 0.85; return [T.x[ii] - T.tz[ii] * c, T.y[ii] + h, T.z[ii] + T.tx[ii] * c] as const; };
-        arch.quad(pt(i, t1, r), pt(i + 1, t1, r), pt(i + 1, t0, r), pt(i, t0, r), [k / seg, 0], [k / seg, 1], [(k + 1) / seg, 1], [(k + 1) / seg, 0]);
+        arch.quad(pt(i, t1, r), pt(i + 1, t1, r), pt(i + 1, t0, r), pt(i, t0, r), [k / seg, i / 4], [k / seg, (i + 1) / 4], [(k + 1) / seg, (i + 1) / 4], [(k + 1) / seg, i / 4]);
         arch.quad(pt(i, t0, r + 0.8), pt(i + 1, t0, r + 0.8), pt(i + 1, t1, r + 0.8), pt(i, t1, r + 0.8), [0, 0], [0, 1], [1, 1], [1, 0]);
       }
     }
@@ -209,7 +209,7 @@ export class Track {
   }
 }
 
-export const TOWER_R = 15;
+export const TOWER_R = 8.6;
 
 /** Basit örgü biriktirici */
 export class Geo {
@@ -229,32 +229,24 @@ export class Geo {
 
 // ---------- dokular (kanvasla çizilir) ----------
 export class Textures {
-  cobble = this.make(256, 256, (c, w, h) => {
-    c.fillStyle = '#cdbfae'; c.fillRect(0, 0, w, h);
-    const rows = 8, cols = 6;
-    for (let r = 0; r < rows; r++) for (let k = 0; k < cols + 1; k++) {
-      const off = r % 2 ? w / cols / 2 : 0, x = k * (w / cols) - off, y = r * (h / rows);
-      const shade = 190 + ((r * 7 + k * 13) % 5) * 7;
-      c.fillStyle = `rgb(${shade + 12},${shade},${shade - 14})`;
-      rr(c, x + 3, y + 3, w / cols - 6, h / rows - 6, 7); c.fill();
-    }
+  asphalt = this.make(256, 512, (c, w, h) => {
+    c.fillStyle = '#787c9e'; c.fillRect(0, 0, w, h);
+    for (let k = 0; k < 900; k++) { const x = (k * 97) % w, y = (k * 53 + (k % 7) * 31) % h; c.fillStyle = k % 3 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.05)'; c.fillRect(x, y, 3, 3); }
+    c.fillStyle = '#f4f2ff'; c.fillRect(w * 0.035, 0, w * 0.022, h); c.fillRect(w * 0.943, 0, w * 0.022, h);
+    c.fillStyle = 'rgba(244,242,255,0.9)'; for (const u of [0.335, 0.665]) c.fillRect(w * u - 3, 0, 6, h * 0.45);
   }, true);
-  curb = this.make(64, 64, (c, w, h) => { c.fillStyle = '#f08f84'; c.fillRect(0, 0, w, h / 2); c.fillStyle = '#fff4e6'; c.fillRect(0, h / 2, w, h / 2); }, true);
+  cobble = this.asphalt;
+  curb = this.make(64, 64, (c, w, h) => { c.fillStyle = '#e8534a'; c.fillRect(0, 0, w, h / 2); c.fillStyle = '#fbf8ff'; c.fillRect(0, h / 2, w, h / 2); }, true);
   wall = this.make(128, 64, (c, w, h) => {
-    c.fillStyle = '#efdcc4'; c.fillRect(0, 0, w, h);
-    c.strokeStyle = '#d8c0a3'; c.lineWidth = 3;
-    for (let r = 0; r < 3; r++) for (let k = 0; k < 4; k++) c.strokeRect(k * 32 + (r % 2) * 16, r * 21, 32, 21);
-    c.fillStyle = '#e3a6a0'; c.fillRect(0, 0, w, 7);
+    c.fillStyle = '#3f6fd6'; c.fillRect(0, 0, w / 2, h); c.fillStyle = '#f7f6ff'; c.fillRect(w / 2, 0, w / 2, h);
+    c.fillStyle = '#f2c94c'; c.fillRect(0, 0, w, 9); c.fillStyle = 'rgba(30,40,90,0.25)'; c.fillRect(0, h - 6, w, 6);
   }, true);
   rail = this.make(128, 64, (c, w, h) => {
-    c.fillStyle = '#f7efe4'; c.fillRect(0, 0, w, h);
-    c.fillStyle = '#9fc3d8'; for (let k = 0; k < 4; k++) { rr(c, k * 32 + 7, 14, 18, 40, 8); c.fill(); }
-    c.fillStyle = '#e3a6a0'; c.fillRect(0, 0, w, 8);
+    c.fillStyle = '#f7f6ff'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#3f6fd6'; for (let k = 0; k < 4; k++) { c.fillRect(k * 32 + 10, 14, 12, 44); }
+    c.fillStyle = '#f2c94c'; c.fillRect(0, 0, w, 9);
   }, true);
-  tunnel = this.make(128, 128, (c, w, h) => {
-    c.fillStyle = '#e8cdb2'; c.fillRect(0, 0, w, h); c.strokeStyle = '#cfae8e'; c.lineWidth = 3;
-    for (let r = 0; r < 8; r++) for (let k = 0; k < 4; k++) c.strokeRect(k * 32 + (r % 2) * 16, r * 16, 32, 16);
-  }, true);
+  tunnel = this.make(128, 128, (c, w, h) => { c.fillStyle = '#cfc6dc'; c.fillRect(0, 0, w, h); c.fillStyle = '#a99fbd'; c.fillRect(0, 0, w, 14); c.fillStyle = '#e4ddef'; c.fillRect(0, 14, w, 6); }, true);
   checker = this.make(128, 32, (c, w, h) => { for (let y = 0; y < 2; y++) for (let x = 0; x < 8; x++) { c.fillStyle = (x + y) % 2 ? '#3c3a47' : '#fbf6ee'; c.fillRect(x * 16, y * 16, 16, 16); } });
   private signs = new Map<string, THREE.Texture>();
   sign(text: string, bg: string, fg: string) {
