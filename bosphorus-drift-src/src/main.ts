@@ -270,7 +270,7 @@ function showSelect() {
   state = 'select'; if (!portraits.length) makePortraits();
   menu.innerHTML = `<div class="panel"><h2>Karakterini seç</h2><div class="chars">${CHARS.map((c, i) => `<button class="char${i === charIdx ? ' sel' : ''}" data-i="${i}"><img src="${portraits[i]}" alt=""><b>${c.name}</b><small>${c.blurb}</small></button>`).join('')}</div>
     <div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
-    <div class="row"><button class="btn ghost" id="bBack">Geri</button><button class="btn" id="bGo">Başla</button></div></div>`;
+    <div class="row sticky"><button class="btn ghost" id="bBack">Geri</button><button class="btn" id="bGo">Başla</button></div></div>`;
   menu.querySelectorAll<HTMLElement>('.char').forEach((b) => (b.onclick = () => { charIdx = Number(b.dataset.i); store.set('char', String(charIdx)); audio.click(); showSelect(); }));
   menu.querySelectorAll<HTMLElement>('.seg button').forEach((b) => (b.onclick = () => { diff = b.dataset.d as typeof diff; store.set('diff', diff); audio.click(); showSelect(); }));
   $('#bBack').onclick = () => { audio.click(); showTitle(); };
@@ -290,7 +290,7 @@ function showHelp(back: () => void) {
     </table>
     <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', 'Bir saldırıyı geri çevirir.')}${it('turbo', 'Anında hız.')}</div>
     <p>Yoldaki <b>simitleri</b> topla: her biri biraz hız verir. 10 simitte eşyalar da güçlenir. Vurulursan 3 simit düşer. Mavi oklu pedler ve sürpriz kutuları <b>?</b> pistin her yerinde.</p>
-    <div class="row"><button class="btn" id="bOk">Tamam</button></div></div>`;
+    <div class="row sticky"><button class="btn" id="bOk">Tamam</button></div></div>`;
   $('#bOk').onclick = () => { audio.click(); back(); };
 }
 function showPause() {
@@ -323,6 +323,13 @@ function setHud(on: boolean) {
   $('#touch').classList.toggle('hide', !(on && (mobile || input.touch)));
 }
 function toggleMute() { audio.setMuted(!audio.muted); store.set('mute', audio.muted ? '1' : '0'); }
+
+// Telefonda yakınlaştırmayı engelle: iki parmak, çift dokunma, iOS jestleri. Menü paneli kaydırılabilir kalır.
+for (const ev of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(ev, (e) => e.preventDefault(), { passive: false } as AddEventListenerOptions);
+document.addEventListener('touchmove', (e) => { const inPanel = (e.target as HTMLElement)?.closest?.('.panel'); if (e.touches.length > 1 || !inPanel) e.preventDefault(); }, { passive: false });
+let lastTap = 0;
+document.addEventListener('touchend', (e) => { const now = performance.now(); if (now - lastTap < 350 && !(e.target as HTMLElement)?.closest?.('button')) e.preventDefault(); lastTap = now; }, { passive: false });
+document.addEventListener('dblclick', (e) => e.preventDefault(), { passive: false });
 
 input.onKey = (k) => {
   audio.start();
