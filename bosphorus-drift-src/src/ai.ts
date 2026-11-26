@@ -1,5 +1,6 @@
 // Rakip sürücü yapay zekâsı: yarış çizgisini izler, virajda drift ve turbo dener, eşya kullanır.
 import { Kart, DRIFT_ZONE, wrapA, type Ctl } from './kart';
+const Z0 = 0.62, Z1 = 0.98;
 import { Track } from './track';
 
 export class AI {
@@ -36,7 +37,7 @@ export class AI {
     if (k.drifting) {
       // drift sırasında açıyı drift yönüne göre ayarla
       c.steer = Math.max(-1, Math.min(1, err * 2.4 * k.dir)) * k.dir;
-      if (Math.abs(curve) < 0.18 && Math.abs(err) < 0.12) c.steer = 0;
+      if (Math.abs(curve) < 0.18 && Math.abs(err) < 0.12) c.steer = -k.dir * 0.7; // drifti bitir
     } else c.steer = Math.max(-1, Math.min(1, err * 2.6));
     // hız ve rubber band
     const gap = player.progress - k.progress;
@@ -48,13 +49,13 @@ export class AI {
     if (sharp > 1.1 && k.speed > 22 && !k.drifting) { c.gas = 0; if (k.speed > 25) c.brake = 0.35; }
     // drift başlat
     if (!k.drifting && k.grounded && sharp > 0.55 && k.speed > 14 && Math.random() < dt * 4 * (0.4 + this.skill)) {
-      c.steer = Math.sign(curve) || 1; c.drift = true; this.wantBoostAt = DRIFT_ZONE[0] + 0.05 + Math.random() * 0.2;
+      c.steer = Math.sign(curve) || 1; c.drift = true; this.wantBoostAt = Z0 + Math.random() * 0.25;
     }
     // turbo zamanlaması
     this.pressT -= dt;
     if (k.drifting && k.boosts < 3 && k.lockT <= 0 && k.charge >= this.wantBoostAt && this.pressT <= 0) {
       const ok = Math.random() < 0.35 + this.skill * 0.55;
-      if (ok || k.charge > DRIFT_ZONE[1] - 0.05) { c.drift = true; this.pressT = 0.1; this.wantBoostAt = DRIFT_ZONE[0] + 0.05 + Math.random() * (ok ? 0.2 : 0.6); }
+      if (ok || k.charge > Z1) { c.drift = true; this.pressT = 0.1; this.wantBoostAt = ok ? Z0 + Math.random() * 0.25 : Math.random() < 0.5 ? 0.3 : Z1 + 0.25; }
     }
     // eşya kullanımı
     this.itemT -= dt;
@@ -65,7 +66,14 @@ export class AI {
       else if (k.item === 'nazar') use = Math.random() < 0.4;
       else if (k.item === 'marti') use = karts.some((o) => o !== k && o.place === k.place - 1 && o.progress - k.progress < 90 && o.progress > k.progress);
       else if (k.item === 'cay') use = karts.some((o) => o !== k && k.progress - o.progress > 3 && k.progress - o.progress < 30) || Math.random() < 0.05;
+      else if (k.item === 'simit') use = karts.some((o) => o !== k && o.progress - k.progress > 4 && o.progress - k.progress < 40 && Math.abs(o.f.d - k.f.d) < 3) || Math.random() < 0.03;
+      else if (k.item === 'duduk') use = karts.filter((o) => o !== k && o.pos.distanceTo(k.pos) < 12).length >= 1;
+      else if (k.item === 'kedi') use = Math.random() < 0.25;
       if (use) c.item = true;
+    } else if (!k.item && k.shieldT > 0 && k.shieldT < 7 && this.itemT <= 0) {
+      // kalkanı öndekine fırlat
+      this.itemT = 0.4;
+      if (karts.some((o) => o !== k && o.place === k.place - 1 && o.progress - k.progress < 30 && o.progress > k.progress) && Math.random() < 0.5) c.item = true;
     }
     // sıkıştıysa geri al
     if (k.stuckT > 2.5 || k.wrongT > 2.5) { k.respawn(); k.stuckT = 0; k.wrongT = 0; }

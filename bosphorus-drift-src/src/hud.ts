@@ -31,8 +31,25 @@ export const ICONS: Record<ItemKind, string> = {
     c.fillStyle = '#f7d774'; c.beginPath(); c.moveTo(64, 40); c.quadraticCurveTo(86, 70, 76, 92); c.quadraticCurveTo(64, 108, 52, 92); c.quadraticCurveTo(42, 70, 64, 40); c.fill();
     c.fillStyle = '#fff8ee'; c.beginPath(); c.arc(64, 90, 9, 0, 7); c.fill();
   }),
+  simit: draw((c) => {
+    c.fillStyle = '#e39a4c'; c.beginPath(); c.arc(64, 64, 46, 0, 7); c.arc(64, 64, 18, 0, 7, true); c.fill();
+    c.strokeStyle = '#3c3a47'; c.lineWidth = 3; c.beginPath(); c.arc(64, 64, 46, 0, 7); c.stroke(); c.beginPath(); c.arc(64, 64, 18, 0, 7); c.stroke();
+    c.fillStyle = '#fff3d6'; for (let k = 0; k < 22; k++) { const a = k * 0.9, r = 26 + (k % 3) * 7; c.beginPath(); c.ellipse(64 + Math.cos(a) * r, 64 + Math.sin(a) * r, 3.5, 2, a, 0, 7); c.fill(); }
+  }),
+  duduk: draw((c) => {
+    c.fillStyle = '#f7f6ff'; c.fillRect(20, 62, 70, 20); c.fillStyle = '#2f4b6e'; c.beginPath(); c.moveTo(12, 82); c.lineTo(98, 82); c.lineTo(88, 100); c.lineTo(22, 100); c.fill();
+    c.fillStyle = '#f2c14e'; c.fillRect(48, 38, 16, 26); c.fillStyle = '#3c3a47'; c.fillRect(48, 34, 16, 7);
+    c.strokeStyle = '#fff'; c.lineWidth = 6; for (let k = 0; k < 3; k++) { c.beginPath(); c.arc(70, 40, 18 + k * 14, -1.1, -0.2); c.stroke(); }
+  }),
+  kedi: draw((c) => {
+    c.fillStyle = '#f3a65a'; c.beginPath(); c.moveTo(24, 50); c.lineTo(34, 14); c.lineTo(56, 38); c.lineTo(72, 38); c.lineTo(94, 14); c.lineTo(104, 50); c.quadraticCurveTo(110, 108, 64, 110); c.quadraticCurveTo(18, 108, 24, 50); c.fill();
+    c.strokeStyle = '#3c3a47'; c.lineWidth = 3; c.stroke();
+    c.fillStyle = '#2b2833'; c.beginPath(); c.ellipse(48, 66, 6, 9, 0, 0, 7); c.ellipse(80, 66, 6, 9, 0, 0, 7); c.fill();
+    c.fillStyle = '#f28fa0'; c.beginPath(); c.moveTo(58, 82); c.lineTo(70, 82); c.lineTo(64, 89); c.fill();
+    c.strokeStyle = '#3c3a47'; c.lineWidth = 2; for (const sd of [-1, 1]) for (const k of [-1, 1]) { c.beginPath(); c.moveTo(64 + sd * 12, 88 + k * 3); c.lineTo(64 + sd * 40, 84 + k * 8); c.stroke(); }
+  }),
 };
-export const ITEM_NAME: Record<ItemKind, string> = { marti: 'Martı', cay: 'Çay', nazar: 'Nazar', turbo: 'Turbo' };
+export const ITEM_NAME: Record<ItemKind, string> = { marti: 'Martı', cay: 'Çay', nazar: 'Nazar', turbo: 'Turbo', simit: 'Simit', duduk: 'Vapur düdüğü', kedi: 'Kedi sürüsü' };
 
 export class MiniMap {
   private bg: HTMLCanvasElement; private c: CanvasRenderingContext2D; private sx = 1; private ox = 0; private oz = 0;

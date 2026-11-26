@@ -5,7 +5,9 @@ import { World, WorldData, SUN_DIR } from './world/world';
 import { Props } from './props';
 import { Ink } from './post';
 import { Trails } from './trails';
-import { Kart, DRIFT_ZONE } from './kart';
+import { Life } from './life';
+import { Weather } from './weather';
+import { Kart, DRIFT_ZONE, DRIFT_LATE } from './kart';
 import { AI } from './ai';
 import { Items } from './items';
 import { Particles } from './fx';
@@ -24,7 +26,7 @@ const store = { get(k: string) { try { return localStorage.getItem('bd.' + k); }
 const canvas = $<HTMLCanvasElement>('#view');
 let renderer: THREE.WebGLRenderer;
 try { renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, powerPreference: 'high-performance' }); }
-catch { $('#loading p').textContent = 'Bu cihazda 3B görüntü başlatılamadı.'; throw new Error('webgl'); }
+catch { $('#ltxt').textContent = 'Bu cihazda 3B görüntü başlatılamadı.'; throw new Error('webgl'); }
 const PR = Math.min(devicePixelRatio, mobile ? 1.5 : 2);
 renderer.setPixelRatio(1);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -41,14 +43,20 @@ Object.assign(sun.shadow.camera, { left: -55, right: 55, top: 55, bottom: -55, n
 sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.06;
 scene.add(sun, sun.target);
 
-const loadP = $('#loading p');
-const data = await WorldData.load('./', (p) => (loadP.textContent = `Harita yükleniyor… %${Math.round(p * 60)}`));
+const loadBar = $('#loading .lbar i'), loadPct = $('#lpct'), loadTxt = $('#ltxt');
+let loadShown = 0;
+const setLoad = (p: number, t?: string) => { loadShown = Math.max(loadShown, p); loadBar.style.width = loadShown * 100 + '%'; loadPct.textContent = `%${Math.round(loadShown * 100)}`; if (t) loadTxt.textContent = t; };
+const frameWait = () => new Promise((r) => requestAnimationFrame(() => r(0)));
+setLoad(0.02, 'Harita indiriliyor…');
+const data = await WorldData.load('./', (p) => setLoad(0.02 + p * 0.38));
+setLoad(0.42, 'Pist çiziliyor…'); await frameWait();
 const tex = new Textures();
 const track = new Track(data.H);
 track.build(scene, tex);
+setLoad(0.48, 'Arazi ve sokaklar…'); await frameWait();
 const world = new World(scene, data, track, mobile);
-loadP.textContent = 'Galata kuruluyor…';
-await world.build((m) => (loadP.textContent = `Galata kuruluyor: ${m}…`));
+await world.build((m, f) => setLoad(0.5 + f * 0.44, m));
+setLoad(0.95, 'Seyirciler yerleşiyor…'); await frameWait();
 const props = new Props(scene, track, world, tex, mobile);
 const fx = new Particles(scene, mobile ? 600 : 1000);
 const trails = new Trails(scene);
@@ -69,16 +77,33 @@ const auto = Q.has('auto');
 
 const items = new Items(scene, track, tex, fx, {
   onPickup(k, kind) { if (k === player) kind === 'simit' ? (audio.simit(), k.simit === 10 && msg.show('SİMİT DOLU!', 't2')) : audio.box(); },
-  onUse(k, it) { if (it === 'marti') { if (near(k)) audio.gull(); } else if (k === player) { if (it === 'nazar') audio.shield(); if (it === 'turbo') audio.boost(3); if (it === 'cay') audio.splash(); } },
+  onUse(k, it) {
+    if (it === 'marti') { if (near(k)) audio.gull(); return; }
+    if (it === 'duduk') { if (near(k)) audio.horn(); return; }
+    if (it === 'kedi') { audio.meow(); return; }
+    if (k !== player) return;
+    if (it === 'nazar') k.shieldT > 0 ? audio.shield() : audio.throwIt();
+    if (it === 'turbo') audio.boost(3); if (it === 'cay') audio.splash(); if (it === 'simit') audio.throwIt();
+  },
+  onTarget(v, by) { if (v === player) { msg.show(by === 'marti' ? 'Martı geliyor!' : 'Dikkat, kediler!', 'bad'); if (by === 'marti') audio.gull(); } },
   onHit(v, by, owner) {
-    if (near(v)) audio.hit();
-    if (v === player) msg.show(by === 'marti' ? 'Martı saldırısı!' : 'Çaya bastın!', 'bad');
-    else if (owner === player) msg.show(by === 'marti' ? `Martı ${v.def.name}’i yakaladı!` : `${v.def.name} çayda kaydı!`, 't1');
+    if (near(v)) by === 'kedi' ? audio.meow() : audio.hit();
+    const what: Record<string, [string, string]> = {
+      marti: ['Martı saldırısı!', `Martı ${v.def.name}’i yakaladı!`], cay: ['Çaya bastın!', `${v.def.name} çayda kaydı!`],
+      simit: ['Simit isabet!', `Simit ${v.def.name}’e çarptı!`], nazar: ['Nazar değdi!', `Nazar ${v.def.name}’e değdi!`],
+      duduk: ['Vapur düdüğü!', `${v.def.name} düdükle savruldu!`], kedi: ['Kedilere takıldın!', `${v.def.name} kedilere takıldı!`],
+    };
+    const t = what[by] || ['Vuruldun!', `${v.def.name} vuruldu!`];
+    if (v === player) msg.show(t[0], 'bad'); else if (owner === player) msg.show(t[1], 't1');
   },
   onBlock(k) { if (k === player) { audio.block(); msg.show('Nazar korudu!', 't1'); } },
   onPad(k) { if (k === player) audio.boost(2); },
 });
 const near = (k: Kart) => k === player || k.pos.distanceTo(player.pos) < 35;
+const life = new Life(scene, track, world, items, fx, mobile);
+const weather = new Weather(scene, sun, hemi, world.skyMats, mobile);
+weather.onStart = () => msg.show('Yağmur başladı!', 't1');
+weather.onThunder = () => audio.thunder();
 
 function setupRace() {
   for (const k of karts) scene.remove(k.model.root);
@@ -94,12 +119,14 @@ function setupRace() {
     const row = Math.floor(slot / 2), side = slot % 2 ? 3.2 : -3.2;
     k.place0(track.L - 8 - row * 7.5, side);
     k.model.root.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; });
+    const st = CHARS[ci].stats; k.stat = { spd: (st[0] - 3) / 2, acc: (st[1] - 3) / 2, han: (st[2] - 3) / 2 };
     scene.add(k.model.root); karts.push(k);
     if (isP) player = k; else { ais.push(new AI(k, track, skills[ai])); ai++; }
   }
   if (Q.has('at')) { player.place0(Number(Q.get('at')), 0); }
   playerAI = auto ? new AI(player, track, 1) : null;
   raceT = 0; doneT = 0; lastBeep = 4; gasEdgeT = -9; startBoostGiven = false;
+  weather.plan(); if (Q.has('rain')) weather.startAt = 0.1;
   for (const k of karts) k.sync(0, 0);
 }
 
@@ -120,7 +147,14 @@ const kartEvents = {
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
 let camFov = 70, camInit = false, camYaw = 0, shake = 0;
 function updateCamera(dt: number, time: number) {
-  if (state === 'title' || state === 'select') {
+  if (state === 'select') {
+    const short = innerHeight < 500, back = camera.aspect < 1 ? 11 : short ? 8.6 : 7.2;
+    camera.position.copy(SR).addScaledVector(srRight, back).add(new THREE.Vector3(0, 1.9, 0)).addScaledVector(new THREE.Vector3(-srRight.z, 0, srRight.x), camera.aspect > 1.3 ? 1.2 : 0);
+    camera.lookAt(SR.x, SR.y + (short ? 1.0 : 2.2), SR.z); camera.fov = 50; camera.updateProjectionMatrix(); camInit = false;
+    if (srKart) { srKart.root.rotation.y = time * 0.6; srKart.root.position.y = 0.52 + Math.abs(Math.sin(time * 3)) * 0.04; srKart.wheels.forEach((w) => (w.rotation.z -= 0.05)); }
+    ink.mat.uniforms.speed.value = 0; return;
+  }
+  if (state === 'title') {
     const tw = track.T.tower, a = time * 0.06 + 2.2;
     const far = camera.aspect < 1 ? 150 / Math.max(0.5, camera.aspect) : 150;
     camera.position.set(tw.x + Math.cos(a) * far, tw.y0 + 52 + (far - 150) * 0.25, tw.z + Math.sin(a) * far);
@@ -151,7 +185,7 @@ function updateCamera(dt: number, time: number) {
 }
 
 // ---------- efektler ----------
-const C = { white: new THREE.Color(0xffffff), grey: new THREE.Color(0xd9d4d0), pink: new THREE.Color(0xff7aa8), l1: new THREE.Color(0x7ec0f0), l2: new THREE.Color(0xf6a65a), l3: new THREE.Color(0xb48ef0), flame: new THREE.Color(0xffb35c), flame2: new THREE.Color(0xfff1a0), dust: new THREE.Color(0xeadfce) };
+const C = { white: new THREE.Color(0xffffff), grey: new THREE.Color(0xd9d4d0), pink: new THREE.Color(0xff7aa8), l1: new THREE.Color(0x7ec0f0), l2: new THREE.Color(0xf6a65a), l3: new THREE.Color(0xb48ef0), flame: new THREE.Color(0xffb35c), flame2: new THREE.Color(0xfff1a0), dust: new THREE.Color(0xeadfce), spray: new THREE.Color(0xdfe6f5) };
 const tmp = new THREE.Vector3();
 function local(k: Kart, lx: number, ly: number, lz: number) {
   const c = Math.cos(k.yaw), s = Math.sin(k.yaw);
@@ -175,15 +209,19 @@ function kartFx(k: Kart) {
     const e = k.model.exhaust[0], p = local(k, e.x, e.y, e.z);
     fx.emit(p.x, p.y, p.z, 0, 0.8, 0, C.white, 0.2, 0.3, 0.4);
   }
+  if (weather.level > 0.4 && k.grounded && k.speed > 8) for (const sd of [-1, 1]) {
+    const p = local(k, -0.9, 0.2, sd * 0.75);
+    fx.emit(p.x, p.y, p.z, -Math.cos(k.yaw) * 3 + (Math.random() - 0.5) * 2, 1.5 + Math.random() * 2, -Math.sin(k.yaw) * 3 + (Math.random() - 0.5) * 2, C.spray, 0.3 * weather.level, 0.26, 0.4, 10);
+  }
   if (k.spinT > 0 && Math.random() < 0.6) { const p = local(k, 0, 1.6, 0); fx.emit(p.x, p.y, p.z, (Math.random() - 0.5) * 3, 2, (Math.random() - 0.5) * 3, C.flame2, 1, 0.3, 0.5); }
 }
 function dust(k: Kart, n: number) { for (let i = 0; i < n; i++) fx.emit(k.pos.x + (Math.random() - 0.5) * 2, k.pos.y + 0.2, k.pos.z + (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 5, Math.random() * 2, (Math.random() - 0.5) * 5, C.dust, 0.8, 1.2, 0.7); }
 
 // ---------- HUD ----------
 const hud = { spd: $('#spd b'), pos: $('#pos b'), lap: $('#lap'), time: $('#time'), item: $('#item'), itembox: $('#itembox'), simit: $('#simit b'), simitBox: $('#simit'), drift: $('#drift'), fill: $('#drift .fill'), zone: $('#drift .zone'), pips: [...document.querySelectorAll<HTMLElement>('#drift .pips i')], wrong: $('#wrong'), count: $('#count') };
-const ZW = 1.25;
-hud.zone.style.left = (DRIFT_ZONE[0] / ZW) * 100 + '%'; hud.zone.style.width = ((DRIFT_ZONE[1] + 0.12 - DRIFT_ZONE[0]) / ZW) * 100 + '%';
-let rollIcon = 0, lastPlace = 0, lastLap = 0;
+const ZW = 1.4;
+hud.zone.style.left = (DRIFT_ZONE[0] / ZW) * 100 + '%'; hud.zone.style.width = ((DRIFT_ZONE[1] + DRIFT_LATE - DRIFT_ZONE[0]) / ZW) * 100 + '%';
+let rollIcon = 0, lastPlace = 0, lastLap = 0, wasReady = false;
 function updateHud(dt: number) {
   const k = player;
   hud.pos.textContent = String(k.place);
@@ -194,13 +232,17 @@ function updateHud(dt: number) {
   hud.time.textContent = fmt(k.finished ? k.finishTime : raceT);
   hud.simit.textContent = String(k.simit); hud.simitBox.classList.toggle('full', k.simit >= 10);
   hud.itembox.classList.toggle('juiced', k.simit >= 10);
-  if (k.rollT > 0) { rollIcon += dt * 14; const keys = Object.keys(ICONS) as (keyof typeof ICONS)[]; hud.item.style.backgroundImage = `url(${ICONS[keys[Math.floor(rollIcon) % 4]]})`; hud.item.style.opacity = '0.7'; }
+  if (k.rollT > 0) { rollIcon += dt * 14; const keys = Object.keys(ICONS) as (keyof typeof ICONS)[]; hud.item.style.backgroundImage = `url(${ICONS[keys[Math.floor(rollIcon) % keys.length]]})`; hud.item.style.opacity = '0.7'; }
   else if (k.item) { hud.item.style.backgroundImage = `url(${ICONS[k.item]})`; hud.item.style.opacity = '1'; hud.item.title = ITEM_NAME[k.item]; }
+  else if (k.shieldT > 0) { hud.item.style.backgroundImage = `url(${ICONS.nazar})`; hud.item.style.opacity = String(0.55 + Math.sin(raceT * 6) * 0.2); hud.item.title = 'Nazarı fırlat'; }
   else hud.item.style.backgroundImage = 'none';
   hud.drift.classList.toggle('hide', !k.drifting);
   if (k.drifting) {
     hud.fill.style.width = Math.min(100, (k.charge / ZW) * 100) + '%';
-    hud.drift.classList.toggle('ready', k.charge >= DRIFT_ZONE[0] && k.charge <= DRIFT_ZONE[1] + 0.12);
+    const ready = k.charge >= DRIFT_ZONE[0] && k.charge <= DRIFT_ZONE[1] + DRIFT_LATE && k.boosts < 3 && k.lockT <= 0;
+    if (ready && !wasReady) { audio.ready(); try { navigator.vibrate?.(18); } catch { /* yok */ } }
+    wasReady = ready;
+    hud.drift.classList.toggle('ready', ready);
     hud.pips.forEach((p, i) => p.classList.toggle('on', i < k.boosts));
   }
   hud.wrong.classList.toggle('hide', !(k.wrongT > 1.2 && !k.finished));
@@ -239,8 +281,7 @@ function step(dt: number) {
   }
   if (!raceOn) return;
   items.update(dt, karts, raceT);
-  for (const k of karts) if (k.wantItem && k.item && k.rollT <= 0 && k.spinT <= 0) items.use(k, karts);
-  if (input.c.item && player.item && !playerAI && player.wantItem) { /* use() yukarıda */ }
+  for (const k of karts) if (k.wantItem && (k.item || k.shieldT > 0) && k.rollT <= 0 && k.spinT <= 0) items.use(k, karts);
   updatePlaces();
   // tur ve bitiş
   for (const k of karts) {
@@ -263,6 +304,7 @@ function onPlayerFinish() {
   const win = player.place === 1;
   audio.finish(win);
   msg.show(win ? 'BİRİNCİSİN!' : `${player.place}. oldun!`, 'big');
+  life.fireworks(track.point(0, 0));
   $('#touch').classList.add('hide');
 }
 
@@ -286,7 +328,7 @@ function makePortraits() {
 }
 
 function showTitle() {
-  state = 'title'; paused = false; setHud(false);
+  state = 'title'; paused = false; setHud(false); weather.clear(); audio.rain(0);
   menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>GALATA KULESİ</small></div>
     <div class="row"><button class="btn" id="bPlay">Yarış</button><button class="btn alt" id="bHow">Nasıl oynanır</button></div>
     <button class="btn ghost" id="bMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button></div>`;
@@ -294,14 +336,45 @@ function showTitle() {
   $('#bHow').onclick = () => { audio.start(); audio.click(); showHelp(showTitle); };
   $('#bMute').onclick = () => { toggleMute(); showTitle(); };
 }
+// ---------- karakter seçimi: kule önünde döner kaide ----------
+const showroom = new THREE.Group(); scene.add(showroom); showroom.visible = false;
+const SR_S = 698, SR = track.point(SR_S, 0), srRight = new THREE.Vector3(SR.x - track.T.tower.x, 0, SR.z - track.T.tower.z).normalize(); // kule çıkışındaki köprü: arkada Galata Kulesi
+{
+  const ped = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.6, 0.5, 40), new THREE.MeshLambertMaterial({ color: 0x3f6fd6 })); ped.position.y = 0.25; ped.receiveShadow = true; showroom.add(ped);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(2.45, 0.12, 8, 48), new THREE.MeshLambertMaterial({ color: 0xf2c94c })); rim.rotation.x = Math.PI / 2; rim.position.y = 0.5; showroom.add(rim);
+  const top = new THREE.Mesh(new THREE.CircleGeometry(2.3, 40), new THREE.MeshLambertMaterial({ map: tex.make(256, 256, (c, w, h) => { for (const [r, col] of [[128, '#2f6fb3'], [92, '#ffffff'], [64, '#7ec0f0'], [34, '#191e2d']] as const) { c.fillStyle = col; c.beginPath(); c.arc(w / 2, h / 2, r, 0, 7); c.fill(); } }) }));
+  top.rotation.x = -Math.PI / 2; top.position.y = 0.51; showroom.add(top);
+  showroom.position.copy(SR);
+}
+let srKart: ReturnType<typeof buildKart> | null = null, srIdx = -1;
+function setShowroomKart(i: number) {
+  if (srIdx === i) return; srIdx = i;
+  if (srKart) showroom.remove(srKart.root);
+  srKart = buildKart(CHARS[i]); srKart.root.position.y = 0.52; srKart.root.scale.setScalar(1.25);
+  srKart.root.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; });
+  showroom.add(srKart.root);
+}
+const STAT_NAMES = ['Hız', 'İvme', 'Yol tutuş'];
 function showSelect() {
   state = 'select'; if (!portraits.length) makePortraits();
-  menu.innerHTML = `<div class="panel"><h2>Karakterini seç</h2><div class="chars">${CHARS.map((c, i) => `<button class="char${i === charIdx ? ' sel' : ''}" data-i="${i}"><img src="${portraits[i]}" alt=""><b>${c.name}</b><small>${c.blurb}</small></button>`).join('')}</div>
-    <div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
-    <div class="row sticky"><button class="btn ghost" id="bBack">Geri</button><button class="btn" id="bGo">Başla</button></div></div>`;
-  menu.querySelectorAll<HTMLElement>('.char').forEach((b) => (b.onclick = () => { charIdx = Number(b.dataset.i); store.set('char', String(charIdx)); audio.click(); showSelect(); }));
+  showroom.visible = true; setShowroomKart(charIdx);
+  for (const k of karts) k.model.root.visible = false;
+  const c = CHARS[charIdx];
+  menu.innerHTML = `<div class="cs">
+    <div class="selInfo"><small>KARAKTER ${charIdx + 1}/6</small><h1>${c.name}</h1><p>${c.blurb}</p>
+      ${c.stats.map((v, i) => `<div class="stat"><span>${STAT_NAMES[i]}</span><div class="bars">${[1, 2, 3, 4, 5].map((n) => `<i class="${n <= v ? 'on' : ''}"></i>`).join('')}</div></div>`).join('')}
+    </div>
+    <button class="selArrow l" id="sPrev" aria-label="Önceki">‹</button><button class="selArrow r" id="sNext" aria-label="Sonraki">›</button>
+    <div class="selBottom">
+      <div class="chips">${CHARS.map((ch, i) => `<button class="chip${i === charIdx ? ' sel' : ''}" data-i="${i}" style="--c:#${ch.color.toString(16).padStart(6, '0')}"><img src="${portraits[i]}" alt="${ch.name}"></button>`).join('')}</div>
+      <div class="selRow"><div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
+      <button class="btn ghost" id="bBack">Geri</button><button class="btn" id="bGo">Başla</button></div>
+    </div></div>`;
+  const pick = (i: number) => { charIdx = (i + 6) % 6; store.set('char', String(charIdx)); audio.click(); showSelect(); };
+  menu.querySelectorAll<HTMLElement>('.chip').forEach((b) => (b.onclick = () => pick(Number(b.dataset.i))));
+  $('#sPrev').onclick = () => pick(charIdx - 1); $('#sNext').onclick = () => pick(charIdx + 1);
   menu.querySelectorAll<HTMLElement>('.seg button').forEach((b) => (b.onclick = () => { diff = b.dataset.d as typeof diff; store.set('diff', diff); audio.click(); showSelect(); }));
-  $('#bBack').onclick = () => { audio.click(); showTitle(); };
+  $('#bBack').onclick = () => { audio.click(); showroom.visible = false; showTitle(); };
   $('#bGo').onclick = () => { audio.click(); startCountdown(); };
 }
 function showHelp(back: () => void) {
@@ -311,12 +384,12 @@ function showHelp(back: () => void) {
     <table>
       <tr><td>Gaz / fren</td><td><kbd>W</kbd> <kbd>↑</kbd> / <kbd>S</kbd> <kbd>↓</kbd> · telefonda gaz kendiliğinden</td></tr>
       <tr><td>Direksiyon</td><td><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd> · telefonda sol yarıda parmağını kaydır</td></tr>
-      <tr><td>Drift</td><td><kbd>Boşluk</kbd> veya <kbd>Shift</kbd> · bir yöne dönerken bas, kart zıplayıp kaymaya başlar</td></tr>
-      <tr><td>Drift turbosu</td><td>Drift sırasında çubuk <b>yeşil bölgeye</b> gelince aynı tuşa tekrar bas. Üst üste <b>3 kez</b> tutturursan Ultra Turbo! Erken ya da geç basarsan bir an kilitlenir.</td></tr>
+      <tr><td>Drift</td><td><kbd>Boşluk</kbd> / <kbd>Shift</kbd> ya da <b>DRİFT</b> düğmesi · dönerken dokun, kart zıplayıp kaymaya başlar. Direksiyonu bıraksan da hemen bitmez; bitirmek için ters yöne çevir ya da frene bas.</td></tr>
+      <tr><td>Drift turbosu</td><td>Drift sırasında çubuk <b>yeşile</b> dönünce (zil sesi, telefonda titreşim) aynı tuşa bir kez daha dokun. Üst üste <b>3 kez</b>: Ultra Turbo!</td></tr>
       <tr><td>Eşya</td><td><kbd>E</kbd> veya <kbd>Enter</kbd></td></tr>
       <tr><td>Diğer</td><td><kbd>R</kbd> piste dön · <kbd>Esc</kbd> duraklat · <kbd>M</kbd> ses · oyun kolu da çalışır</td></tr>
     </table>
-    <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', 'Bir saldırıyı geri çevirir.')}${it('turbo', 'Anında hız.')}</div>
+    <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', 'Kalkan olur. Üstündeyken tekrar basarsan öndekine fırlatırsın.')}${it('turbo', 'Anında hız.')}${it('simit', 'Düz gider, duvardan seker. 10 simitle üçlü.')}${it('duduk', 'Yakındaki kartları savurur.')}${it('kedi', 'Öndeki kartların önüne kediler çıkar.')}</div>
     <p>Yoldaki <b>simitleri</b> topla: her biri biraz hız verir. 10 simitte eşyalar da güçlenir. Vurulursan 3 simit düşer. Mavi oklu pedler ve sürpriz kutuları <b>?</b> pistin her yerinde.</p>
     <div class="row sticky"><button class="btn" id="bOk">Tamam</button></div></div>`;
   $('#bOk').onclick = () => { audio.click(); back(); };
@@ -342,7 +415,7 @@ function showResults() {
   $('#rSel').onclick = () => { audio.click(); audio.music(false); showSelect(); };
 }
 function startCountdown() {
-  menu.innerHTML = ''; paused = false;
+  menu.innerHTML = ''; paused = false; showroom.visible = false;
   setupRace(); state = 'count'; countT = 3.6; lastLap = 0; camInit = false;
   setHud(true); audio.start(); audio.music(true);
 }
@@ -409,14 +482,23 @@ function frame(now: number) {
   audio.tick();
   fx.update(dt);
   world.update(time); props.update(dt, time);
+  const racing = state === 'race' || state === 'done';
+  if (dt > 0) {
+    weather.update(dt, racing ? raceT : -1, camera.position);
+    life.update(dt, time, karts, state === 'title' || state === 'select' ? null : player, state === 'race');
+    for (const k of karts) k.grip = weather.level > 0.5 ? 0.88 : 1;
+    audio.rain(paused ? 0 : weather.level);
+    if (player && (racing || state === 'count')) props.uPlayer.value.copy(player.pos);
+  }
   updateCamera(dt, time);
   // gölge kamerası oyuncuyu izler
-  const focus = state === 'title' || state === 'select' ? new THREE.Vector3(track.T.tower.x, track.T.tower.y0 + 10, track.T.tower.z) : player.pos;
+  const focus = state === 'title' ? new THREE.Vector3(track.T.tower.x, track.T.tower.y0 + 10, track.T.tower.z) : state === 'select' ? SR : player.pos;
   sun.position.copy(focus).addScaledVector(SUN_DIR, 220); sun.target.position.copy(focus);
   ink.render(scene, camera);
 }
 
-$('#loading').remove();
+setLoad(1, 'Hazır!');
+setTimeout(() => $('#loading').remove(), 250);
 showTitle();
 if (Q.has('skip')) { audio.muted = true; startCountdown(); }
 requestAnimationFrame(frame);

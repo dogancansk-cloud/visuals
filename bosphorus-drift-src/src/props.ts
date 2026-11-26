@@ -10,7 +10,7 @@ const up = new THREE.Vector3(0, 1, 0);
 
 export class Props {
   private crowdMats: THREE.Material[] = [];
-  private uTime = { value: 0 };
+  private uTime = { value: 0 }; readonly uPlayer = { value: new THREE.Vector3(1e5, 0, 1e5) };
   private bulbs: THREE.InstancedMesh | null = null;
   private flags: THREE.Mesh[] = [];
   constructor(private scene: THREE.Scene, private track: Track, private world: World, private tex: Textures, private mobile: boolean) {
@@ -48,9 +48,9 @@ export class Props {
   private crowdMaterial(color: number) {
     const m = new THREE.MeshLambertMaterial({ color });
     m.onBeforeCompile = (sh) => {
-      sh.uniforms.uTime = this.uTime;
-      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime;')
-        .replace('#include <begin_vertex>', '#include <begin_vertex>\nfloat ph = instanceMatrix[3].x * 0.71 + instanceMatrix[3].z * 1.31;\ntransformed.y += abs(sin(uTime * 5.5 + ph)) * 0.22;\ntransformed.x += sin(uTime * 3.0 + ph) * 0.04;');
+      sh.uniforms.uTime = this.uTime; sh.uniforms.uPlayer = this.uPlayer;
+      sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime; uniform vec3 uPlayer;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nfloat ph = instanceMatrix[3].x * 0.71 + instanceMatrix[3].z * 1.31;\nfloat cheer = 1.0 - smoothstep(10.0, 34.0, distance(instanceMatrix[3].xz, uPlayer.xz));\ntransformed.y += abs(sin(uTime * (5.5 + cheer * 4.0) + ph)) * (0.22 + cheer * 0.55);\ntransformed.x += sin(uTime * 3.0 + ph) * 0.04;');
     };
     this.crowdMats.push(m); return m;
   }
@@ -197,6 +197,7 @@ export class Props {
       c.fillStyle = '#fff'; c.beginPath(); for (let k = 0; k < 10; k++) { const r = k % 2 ? 6 : 15, a = (k / 10) * Math.PI * 2 - Math.PI / 2; c.lineTo(118 + Math.cos(a) * r, 64 + Math.sin(a) * r); } c.fill();
     });
     const fm = new THREE.MeshLambertMaterial({ map: flagTex, side: THREE.DoubleSide });
+    fm.onBeforeCompile = (sh) => { sh.uniforms.uTime = this.uTime; sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime;').replace('#include <begin_vertex>', '#include <begin_vertex>\nfloat wv = position.x / 2.4; transformed.z += sin(position.x * 2.6 - uTime * 7.0 + modelMatrix[3].x) * 0.22 * wv; transformed.y += sin(position.x * 1.7 - uTime * 5.0) * 0.06 * wv;'); };
     const poleM = new THREE.MeshLambertMaterial({ color: 0xe9e8f2 });
     for (const s of [10, 25, 1290, 1310, 470, 760]) {
       const i = this.track.idxOf(s);
@@ -205,7 +206,7 @@ export class Props {
         const p = this.side(i, sd * (T.w[i] / 2 + 3.5));
         const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.09, 8, 6), poleM); pole.position.copy(p).add(new THREE.Vector3(0, 4, 0)); this.scene.add(pole);
         const g = new THREE.PlaneGeometry(2.4, 1.6, 8, 1); g.translate(1.2, 0, 0);
-        const f = new THREE.Mesh(g, fm); f.position.copy(p).add(new THREE.Vector3(0, 7.1, 0)); f.rotation.y = Math.random() * 6; this.scene.add(f); this.flags.push(f);
+        const f = new THREE.Mesh(g, fm); f.position.copy(p).add(new THREE.Vector3(0, 7.1, 0)); f.rotation.y = -Math.atan2(-0.6, 0.8); this.scene.add(f);
       }
     }
     // dev nazar boncuğu (başlangıç kemerinin üstünde) ve dev simit (kule meydanında)
@@ -227,7 +228,7 @@ export class Props {
 
   update(dt: number, time: number) {
     this.uTime.value = time;
-    for (const f of this.flags) { if ((f as THREE.Object3D).type === 'Group') { f.rotation.y += dt * 0.6; continue; } f.rotation.y += Math.sin(time * 1.3 + f.position.x) * dt * 0.4; }
+    for (const f of this.flags) if ((f as THREE.Object3D).type === 'Group') f.rotation.y += dt * 0.6;
     void this.bulbs;
   }
 }

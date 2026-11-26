@@ -9,12 +9,17 @@ interface Box { s: number; d: number; pos: THREE.Vector3; t: number }
 interface Simit { pos: THREE.Vector3; t: number }
 interface Pad { s0: number; s1: number; d: number; w: number }
 interface Gull { obj: THREE.Group; wl: THREE.Object3D; wr: THREE.Object3D; pos: THREE.Vector3; idx: number; owner: Kart; target: Kart | null; life: number; speed: number; d: number }
+interface Proj { kind: 'simit' | 'nazar'; obj: THREE.Object3D; pos: THREE.Vector3; vx: number; vz: number; idx: number; owner: Kart; target: Kart | null; life: number; bounces: number }
+interface Cat { obj: THREE.Group; pos: THREE.Vector3; dir: number; life: number; owner: Kart; s: number; d: number; w: number; legs: THREE.Object3D[] }
+interface Wave { obj: THREE.Mesh; pos: THREE.Vector3; t: number; owner: Kart; hit: Set<Kart> }
+interface Loose { pos: THREE.Vector3; vel: THREE.Vector3; obj: THREE.Mesh; life: number; landed: boolean }
 interface Puddle { obj: THREE.Group; pos: THREE.Vector3; life: number; r: number; owner: Kart; arm: number }
 
-export interface ItemEvents { onPickup?(k: Kart, kind: 'box' | 'simit'): void; onUse?(k: Kart, it: ItemKind): void; onHit?(victim: Kart, by: ItemKind, owner: Kart | null): void; onBlock?(k: Kart): void; onPad?(k: Kart): void }
+export interface ItemEvents { onTarget?(victim: Kart, by: ItemKind): void; onPickup?(k: Kart, kind: 'box' | 'simit'): void; onUse?(k: Kart, it: ItemKind): void; onHit?(victim: Kart, by: ItemKind, owner: Kart | null): void; onBlock?(k: Kart): void; onPad?(k: Kart): void }
 
 export class Items {
   boxes: Box[] = []; simits: Simit[] = []; pads: Pad[] = []; gulls: Gull[] = []; puddles: Puddle[] = [];
+  projs: Proj[] = []; cats: Cat[] = []; waves: Wave[] = []; loose: Loose[] = [];
   private boxMesh: THREE.InstancedMesh; private simitMesh: THREE.InstancedMesh;
   private shields = new Map<Kart, THREE.Mesh>();
   private m4 = new THREE.Matrix4(); private q = new THREE.Quaternion(); private v = new THREE.Vector3(); private sc = new THREE.Vector3();
@@ -80,38 +85,99 @@ export class Items {
     for (const g of this.gulls) this.scene.remove(g.obj); this.gulls = [];
     for (const p of this.puddles) this.scene.remove(p.obj); this.puddles = [];
     for (const m of this.shields.values()) this.scene.remove(m); this.shields.clear();
+    for (const o of [...this.projs, ...this.cats, ...this.waves, ...this.loose]) this.scene.remove(o.obj);
+    this.projs = []; this.cats = []; this.waves = []; this.loose = [];
   }
 
-  /** sıraya göre eşya seç */
+  /** sıraya göre eşya seç; aynı eşya üst üste pek gelmez */
   roll(k: Kart, field: number): ItemKind {
     const p = (k.place - 1) / Math.max(1, field - 1); // 0 = önde, 1 = arkada
-    const w: Record<ItemKind, number> = { cay: 3 - 2 * p, nazar: 2.4 - 1.2 * p, marti: 0.8 + 2.4 * p, turbo: 0.7 + 2.6 * p };
-    if (k.place === 1) w.marti *= 0.4;
+    const w: Record<ItemKind, number> = {
+      cay: 2.6 - 1.6 * p, simit: 2.4 - 0.6 * p, nazar: 1.6 - 1.0 * p, duduk: 1.0 + 0.6 * p,
+      marti: 0.7 + 2.3 * p, turbo: 0.6 + 2.4 * p, kedi: 0.2 + 2.0 * p,
+    };
+    if (k.place === 1) { w.marti *= 0.3; w.kedi = 0; }
+    if (k.lastItem) w[k.lastItem] *= 0.15;
     const tot = Object.values(w).reduce((a, b) => a + b, 0); let r = Math.random() * tot;
-    for (const key of Object.keys(w) as ItemKind[]) { r -= w[key]; if (r <= 0) return key; }
+    for (const key of Object.keys(w) as ItemKind[]) { r -= w[key]; if (r <= 0) { k.lastItem = key; return key; } }
     return 'turbo';
   }
 
   use(k: Kart, karts: Kart[]) {
+    // kalkan üstündeyken: nazarı öne fırlat
+    if (!k.item && k.shieldT > 0) { k.shieldT = 0; this.throwProj(k, 'nazar', karts, 0); this.ev.onUse?.(k, 'nazar'); return; }
     const it = k.item; if (!it) return; k.item = null;
     const J = k.juiced;
     if (it === 'turbo') k.boost(J ? 10 : 8.5, J ? 2.6 : 1.9);
     else if (it === 'nazar') k.shieldT = J ? 14 : 10;
     else if (it === 'cay') this.dropTea(k, J);
     else if (it === 'marti') this.launch(k, karts, J);
+    else if (it === 'simit') { for (const a of J ? [-0.16, 0, 0.16] : [0]) this.throwProj(k, 'simit', karts, a); }
+    else if (it === 'duduk') this.horn(k, J);
+    else if (it === 'kedi') this.catHerd(k, karts, J);
     this.ev.onUse?.(k, it);
+  }
+
+  private throwProj(k: Kart, kind: 'simit' | 'nazar', karts: Kart[], spread: number) {
+    let obj: THREE.Object3D;
+    if (kind === 'simit') { const m = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.18, 8, 16), toon(0xf0a955)); m.castShadow = true; obj = m; }
+    else { const g = new THREE.Group(); for (const [r, c, z] of [[0.8, 0x2f6fb3, 0], [0.55, 0xffffff, 0.04], [0.35, 0x7ec0f0, 0.08], [0.18, 0x191e2d, 0.12]] as const) { const d = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.12, 20), toon(c)); d.rotation.x = Math.PI / 2; d.position.z = z; g.add(d); } obj = g; }
+    const a = k.yaw + spread, sp = Math.max(k.speed + 16, 44);
+    let target: Kart | null = null;
+    if (kind === 'nazar') for (const o of karts) if (o !== k && !o.finished && o.place === k.place - 1 && o.progress - k.progress < 80) target = o;
+    const pos = k.pos.clone().add(new THREE.Vector3(Math.cos(a) * 2.4, 0.7, Math.sin(a) * 2.4));
+    this.scene.add(obj);
+    this.projs.push({ kind, obj, pos, vx: Math.cos(a) * sp, vz: Math.sin(a) * sp, idx: k.f.i, owner: k, target, life: kind === 'simit' ? 3.5 : 4, bounces: 0 });
+  }
+
+  private horn(k: Kart, big: boolean) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(1, 0.12, 6, 40), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false }));
+    ring.rotation.x = Math.PI / 2; this.scene.add(ring);
+    this.waves.push({ obj: ring, pos: k.pos.clone(), t: big ? -0.2 : 0, owner: k, hit: new Set([k]) });
+  }
+
+  private catHerd(k: Kart, karts: Kart[], big: boolean) {
+    const ahead = karts.filter((o) => o !== k && !o.finished && o.progress > k.progress).sort((a, b) => a.progress - b.progress).slice(0, big ? 5 : 3);
+    for (const o of ahead) {
+      this.ev.onTarget?.(o, 'kedi');
+      const s = o.f.s + 38 + Math.random() * 10, i = this.track.idxOf(s), w = this.track.T.w[i];
+      for (let c = 0; c < 3; c++) {
+        const dir = Math.random() < 0.5 ? -1 : 1, d = -dir * (w / 2 + 1 + c * 1.6);
+        const g = this.catModel(c % 2 ? 0xa9a39d : c ? 0xf3a65a : 0x3c3a47);
+        const pos = this.track.point(s + c * 2.5, d); g.position.copy(pos); this.scene.add(g);
+        this.cats.push({ obj: g, pos, dir, life: 6, owner: k, s: s + c * 2.5, d, w, legs: g.userData.legs });
+      }
+    }
+  }
+  catModel(c: number) {
+    const g = new THREE.Group(), legs: THREE.Object3D[] = [];
+    const body = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 8), toon(c)); body.scale.set(1.5, 0.8, 0.8); body.position.y = 0.55; g.add(body);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8), toon(c)); head.position.set(0.62, 0.85, 0); g.add(head);
+    for (const sd of [-1, 1]) { const e = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.22, 4), toon(c)); e.position.set(0.62, 1.15, sd * 0.15); g.add(e); }
+    for (const [x, z] of [[0.35, 0.2], [0.35, -0.2], [-0.35, 0.2], [-0.35, -0.2]]) { const l = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.45, 5), toon(c)); l.position.set(x, 0.22, z); g.add(l); legs.push(l); }
+    const tail = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.7, 5), toon(c)); tail.position.set(-0.75, 0.9, 0); tail.rotation.z = 0.7; g.add(tail);
+    g.scale.setScalar(1.25); g.userData.legs = legs; return g;
+  }
+
+  /** çevreden (simitçiler) piste düşen simit: toplanabilir */
+  tossSimit(from: THREE.Vector3, to: THREE.Vector3) {
+    const m = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.17, 8, 16), toon(0xf0a955)); m.castShadow = true;
+    const t = 0.9, vel = new THREE.Vector3((to.x - from.x) / t, (to.y - from.y) / t + 0.5 * 25 * t, (to.z - from.z) / t);
+    m.position.copy(from); this.scene.add(m);
+    this.loose.push({ pos: from.clone(), vel, obj: m, life: 12, landed: false });
   }
 
   private dropTea(k: Kart, big: boolean) {
     const back = new THREE.Vector3(-Math.cos(k.yaw) * 2.6, 0, -Math.sin(k.yaw) * 2.6);
     const p = k.pos.clone().add(back);
     const f = { ...k.f }; this.track.frame(p.x, p.y, p.z, k.f.i, f); p.y = f.h + 0.04;
-    const g = new THREE.Group(), r = big ? 2.2 : 1.6;
+    const g = new THREE.Group(), r = big ? 2.8 : 2.1;
     const disc = new THREE.Mesh(new THREE.CircleGeometry(r, 20), this.puddleMat); disc.rotation.x = -Math.PI / 2; disc.scale.set(1, 0.8, 1); g.add(disc);
     const glass = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.11, 0.4, 10, 1, true), this.glassMat); glass.rotation.z = Math.PI / 2; glass.position.set(0.3, 0.12, 0.2); g.add(glass);
     const saucer = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.04, 14), toon(0xe57373)); saucer.position.set(-0.4, 0.03, -0.3); g.add(saucer);
     g.position.copy(p); g.rotation.y = Math.random() * 6; this.scene.add(g);
     this.puddles.push({ obj: g, pos: p, life: 30, r, owner: k, arm: 0.5 });
+    for (let n = 0; n < 18; n++) this.fx.emit(p.x, p.y + 0.4, p.z, (Math.random() - 0.5) * 6, Math.random() * 4 + 1, (Math.random() - 0.5) * 6, TEA, 1, 0.3, 0.6, 14);
   }
 
   private launch(k: Kart, karts: Kart[], strong: boolean) {
@@ -126,6 +192,7 @@ export class Items {
     const b = new THREE.Mesh(this.gullGeo.wing, toon(0xc9d0d8)); b.rotation.y = Math.PI; wl.add(b);
     g.add(wl, wr); g.scale.setScalar(1.3); this.scene.add(g);
     const pos = k.pos.clone().add(new THREE.Vector3(Math.cos(k.yaw) * 2.5, 1.2, Math.sin(k.yaw) * 2.5));
+    if (target) this.ev.onTarget?.(target, 'marti');
     this.gulls.push({ obj: g, wl, wr, pos, idx: k.f.i, owner: k, target, life: strong ? 6 : 4.5, speed: Math.max(k.speed + 14, strong ? 46 : 40), d: k.f.d });
   }
 
@@ -201,6 +268,7 @@ export class Items {
     this.gulls = this.gulls.filter((g) => g.life > 0);
     for (const p of this.puddles) { p.arm -= dt; p.life -= dt; if (p.life <= 0) this.scene.remove(p.obj); }
     this.puddles = this.puddles.filter((p) => p.life > 0);
+    this.updateExtras(dt, karts, time, f);
     // kalkanlar
     for (const k of karts) {
       const on = k.shieldT > 0;
@@ -208,6 +276,77 @@ export class Items {
       else { const m = this.shields.get(k); if (m) m.visible = false; }
     }
     this.sync(time);
+  }
+
+  private hitKart(k: Kart, by: ItemKind, owner: Kart | null) {
+    if (k.shieldT > 0) { k.shieldT = 0; this.ev.onBlock?.(k); return; }
+    if (k.hit()) this.ev.onHit?.(k, by, owner);
+  }
+
+  private updateExtras(dt: number, karts: Kart[], time: number, f: { i: number; t: number; s: number; d: number; h: number; w: number; tx: number; tz: number; flags: number }) {
+    const tr = this.track;
+    // fırlatılan simit / nazar: duvardan seker
+    for (const p of this.projs) {
+      p.life -= dt;
+      if (p.target && !p.target.finished) {
+        const dx = p.target.pos.x - p.pos.x, dz = p.target.pos.z - p.pos.z, d = Math.hypot(dx, dz), sp = Math.hypot(p.vx, p.vz);
+        if (d < 45) { p.vx += ((dx / d) * sp - p.vx) * Math.min(1, dt * 4); p.vz += ((dz / d) * sp - p.vz) * Math.min(1, dt * 4); }
+      }
+      p.pos.x += p.vx * dt; p.pos.z += p.vz * dt;
+      tr.frame(p.pos.x, p.pos.y, p.pos.z, p.idx, f); p.idx = f.i; p.pos.y = f.h + 0.65;
+      const lim = f.w / 2 + 0.4;
+      if (Math.abs(f.d) > lim) {
+        const rx = -f.tz, rz = f.tx, vl = p.vx * rx + p.vz * rz, sd = Math.sign(f.d);
+        if (vl * sd > 0) { p.vx -= 2 * vl * rx; p.vz -= 2 * vl * rz; p.bounces++; }
+        p.pos.x -= rx * sd * (Math.abs(f.d) - lim); p.pos.z -= rz * sd * (Math.abs(f.d) - lim);
+        if (p.bounces > 4) p.life = 0;
+      }
+      p.obj.position.copy(p.pos);
+      if (p.kind === 'nazar') p.obj.rotation.set(0, time * 6, 0); else p.obj.rotation.set(Math.PI / 2, 0, time * 12);
+      for (const k of karts) {
+        if (k === p.owner && p.life > (p.kind === 'simit' ? 3.2 : 3.7)) continue;
+        if ((k.pos.x - p.pos.x) ** 2 + (k.pos.z - p.pos.z) ** 2 < 2.6 && Math.abs(k.pos.y + 0.6 - p.pos.y) < 1.6) {
+          p.life = 0; this.burst(p.pos, p.kind === 'simit' ? 0xf0a955 : 0x7ec0f0, 14); this.hitKart(k, p.kind === 'simit' ? 'simit' : 'nazar', p.owner); break;
+        }
+      }
+    }
+    for (const p of this.projs) if (p.life <= 0) this.scene.remove(p.obj);
+    this.projs = this.projs.filter((p) => p.life > 0);
+    // vapur düdüğü: büyüyen halka
+    for (const w of this.waves) {
+      w.t += dt; const r = Math.max(0, w.t) * 30;
+      w.obj.position.copy(w.pos).add(new THREE.Vector3(0, 0.8, 0)); w.obj.scale.setScalar(Math.max(0.01, r)); (w.obj.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.8 - w.t * 1.4);
+      if (w.t > 0) for (const k of karts) if (!w.hit.has(k) && k.pos.distanceTo(w.pos) < r + 1 && r < 16) { w.hit.add(k); this.hitKart(k, 'duduk', w.owner); k.vel.addScaledVector(k.pos.clone().sub(w.pos).setY(0).normalize(), 9); }
+    }
+    for (const w of this.waves) if (w.t > 0.6) this.scene.remove(w.obj);
+    this.waves = this.waves.filter((w) => w.t <= 0.6);
+    // kedi sürüsü: yolun bir yanından öbürüne koşar
+    for (const c of this.cats) {
+      c.life -= dt; c.d += c.dir * 5.5 * dt;
+      tr.point(c.s, c.d, c.pos); c.obj.position.copy(c.pos);
+      const hd = tr.heading(c.s); c.obj.rotation.y = -(hd + (c.dir > 0 ? Math.PI / 2 : -Math.PI / 2));
+      c.legs.forEach((l, n) => (l.rotation.z = Math.sin(time * 18 + n * 1.6) * 0.6));
+      if (Math.abs(c.d) > c.w / 2 + 6) c.life = Math.min(c.life, 0);
+      for (const k of karts) if (k.slowT <= 0 && k.spinT <= 0 && (k.pos.x - c.pos.x) ** 2 + (k.pos.z - c.pos.z) ** 2 < 2.4) {
+        if (k.shieldT > 0) { k.shieldT = 0; this.ev.onBlock?.(k); } else { k.slowT = 1.3; k.drifting = false; k.vy = 3; k.grounded = false; this.ev.onHit?.(k, 'kedi', c.owner); }
+        c.life = Math.min(c.life, 0.3);
+      }
+    }
+    for (const c of this.cats) if (c.life <= 0) this.scene.remove(c.obj);
+    this.cats = this.cats.filter((c) => c.life > 0);
+    // simitçilerin attığı simitler
+    for (const l of this.loose) {
+      l.life -= dt;
+      if (!l.landed) {
+        l.vel.y -= 25 * dt; l.pos.addScaledVector(l.vel, dt);
+        tr.frameGlobal(l.pos.x, l.pos.y, l.pos.z, f);
+        if (l.pos.y < f.h + 0.9 && l.vel.y < 0) { l.landed = true; l.pos.y = f.h + 0.9; }
+      }
+      l.obj.position.copy(l.pos); l.obj.rotation.set(l.landed ? 0 : time * 8, time * 2.5, 0);
+      for (const k of karts) if (l.landed && (k.pos.x - l.pos.x) ** 2 + (k.pos.z - l.pos.z) ** 2 < 2.8 && Math.abs(k.pos.y + 0.6 - l.pos.y) < 1.8) { l.life = 0; k.simit = Math.min(10, k.simit + 1); this.ev.onPickup?.(k, 'simit'); break; }
+    }
+    for (const l of this.loose) if (l.life <= 0) this.scene.remove(l.obj);
+    this.loose = this.loose.filter((l) => l.life > 0);
   }
 
   private burst(p: THREE.Vector3, c: number, n: number) {
@@ -233,4 +372,4 @@ export class Items {
     this.simitMesh.instanceMatrix.needsUpdate = true;
   }
 }
-const WHITE = new THREE.Color(0xffffff);
+const WHITE = new THREE.Color(0xffffff), TEA = new THREE.Color(0xc8662d);

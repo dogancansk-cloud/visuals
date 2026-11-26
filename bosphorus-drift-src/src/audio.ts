@@ -58,6 +58,32 @@ export class Audio {
   simit() { this.tone(988, 0.08, 'triangle', 0.18); this.tone(1318, 0.12, 'triangle', 0.16, 0, 0.06); }
   box() { [523, 659, 784, 1046].forEach((f, i) => this.tone(f, 0.09, 'triangle', 0.12, 0, i * 0.04)); }
   boost(level: number) { this.burst(0.5, 900 + level * 300, 0.35, 0.8); this.tone(220 + level * 110, 0.35, 'sawtooth', 0.08, 2.2); }
+  horn() { // vapur düdüğü
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    for (const f of [146.8, 220]) { const o = this.ctx.createOscillator(), g = this.ctx.createGain(); o.type = 'sawtooth'; o.frequency.value = f; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.06); g.gain.setValueAtTime(0.12, t + 0.7); g.gain.exponentialRampToValueAtTime(0.001, t + 0.95); o.connect(g); g.connect(this.sfx); o.start(t); o.stop(t + 1); }
+  }
+  meow() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime, o = this.ctx.createOscillator(), g = this.ctx.createGain(), f = this.ctx.createBiquadFilter();
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(520, t); o.frequency.linearRampToValueAtTime(780, t + 0.12); o.frequency.linearRampToValueAtTime(430, t + 0.38);
+    f.type = 'bandpass'; f.frequency.value = 1300; f.Q.value = 2;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.14, t + 0.05); g.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+    o.connect(f); f.connect(g); g.connect(this.sfx); o.start(t); o.stop(t + 0.42);
+  }
+  throwIt() { this.burst(0.18, 1400, 0.2, 1.2); this.tone(500, 0.12, 'triangle', 0.08, 1.8); }
+  private rainG?: GainNode;
+  rain(level: number) {
+    if (!this.ctx) return;
+    if (!this.rainG) {
+      const ns = this.ctx.createBufferSource(); ns.buffer = this.noise; ns.loop = true;
+      const f = this.ctx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 900;
+      this.rainG = this.ctx.createGain(); this.rainG.gain.value = 0; ns.connect(f); f.connect(this.rainG); this.rainG.connect(this.sfx); ns.start();
+    }
+    this.rainG.gain.setTargetAtTime(level * 0.11, this.ctx.currentTime, 0.3);
+  }
+  thunder() { this.burst(2.2, 90, 0.7, 0.4); this.burst(1.4, 160, 0.4, 0.5, 0.15); }
+  ready() { this.tone(1568, 0.06, 'triangle', 0.1); }
   fail() { this.tone(180, 0.18, 'square', 0.1, 0.6); }
   hop() { this.tone(300, 0.08, 'triangle', 0.08, 1.6); }
   hit() { this.burst(0.35, 300, 0.5, 0.7); this.tone(160, 0.4, 'sawtooth', 0.12, 0.4); }

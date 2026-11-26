@@ -109,7 +109,7 @@ export class Track {
       v = v2;
     }
     const mk = (g: Geo, m: THREE.Material, shadow = true) => { const me = new THREE.Mesh(g.build(), m); me.receiveShadow = shadow; scene.add(me); return me; };
-    mk(road, new THREE.MeshLambertMaterial({ map: tex.asphalt }));
+    mk(road, new THREE.MeshLambertMaterial({ map: tex.asphalt })).name = 'road';
     mk(curb, new THREE.MeshLambertMaterial({ map: tex.curb }));
     mk(wall, new THREE.MeshLambertMaterial({ map: tex.wall }));
     mk(rail, new THREE.MeshLambertMaterial({ map: tex.rail }));

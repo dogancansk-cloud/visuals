@@ -1,14 +1,14 @@
 // Karakterler ve kartlar: tamamen ilkel şekillerden, pastel çizgi film tarzı. Model +x yönüne bakar.
 import * as THREE from 'three';
 
-export interface CharDef { id: string; name: string; color: number; accent: number; blurb: string }
+export interface CharDef { id: string; name: string; color: number; accent: number; blurb: string; stats: [number, number, number] }
 export const CHARS: CharDef[] = [
-  { id: 'marti', name: 'Martı', color: 0x8ec9ef, accent: 0xf2b84b, blurb: 'Simit kapmada usta' },
-  { id: 'kedi', name: 'Sokak Kedisi', color: 0xf4978e, accent: 0xf3a65a, blurb: 'Dar sokakların kralı' },
-  { id: 'simitci', name: 'Simitçi', color: 0xf7d774, accent: 0xd9534f, blurb: 'Tablası hiç düşmez' },
-  { id: 'kaptan', name: 'Vapur Kaptanı', color: 0x86a6dc, accent: 0x2f4b6e, blurb: 'Boğaz’ın eski kurdu' },
-  { id: 'balikci', name: 'Balıkçı', color: 0xc5b3e8, accent: 0xf4c430, blurb: 'Oltası hep hazır' },
-  { id: 'tekir', name: 'Tekir', color: 0x9ed9b6, accent: 0x8f8a86, blurb: 'Sessiz ve hızlı' },
+  { id: 'marti', name: 'Martı', color: 0x8ec9ef, accent: 0xf2b84b, blurb: 'Simit kapmada usta', stats: [3, 4, 4] },
+  { id: 'kedi', name: 'Sokak Kedisi', color: 0xf4978e, accent: 0xf3a65a, blurb: 'Dar sokakların kralı', stats: [3, 3, 5] },
+  { id: 'simitci', name: 'Simitçi', color: 0xf7d774, accent: 0xd9534f, blurb: 'Tablası hiç düşmez', stats: [4, 4, 3] },
+  { id: 'kaptan', name: 'Vapur Kaptanı', color: 0x86a6dc, accent: 0x2f4b6e, blurb: 'Boğaz’ın eski kurdu', stats: [5, 3, 3] },
+  { id: 'balikci', name: 'Balıkçı', color: 0xc5b3e8, accent: 0xf4c430, blurb: 'Oltası hep hazır', stats: [4, 3, 4] },
+  { id: 'tekir', name: 'Tekir', color: 0x9ed9b6, accent: 0x8f8a86, blurb: 'Sessiz ve hızlı', stats: [2, 5, 4] },
 ];
 
 let grad: THREE.Texture | null = null;

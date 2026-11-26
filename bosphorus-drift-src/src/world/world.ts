@@ -43,7 +43,7 @@ export class World {
   readonly fine: Grid = { x0: -1100, z0: -800, step: 5, nx: 301, nz: 341 };
   readonly hm: Float32Array; // düzeltilmiş arazi (5 m)
   private hash = new Map<string, number[]>();
-  sea!: THREE.Mesh; sky!: THREE.Mesh;
+  sea!: THREE.Mesh; sky!: THREE.Mesh; skyMats: THREE.ShaderMaterial[] = [];
   readonly landmarks = new THREE.Group();
   private worker?: Worker;
   constructor(readonly scene: THREE.Scene, readonly data: WorldData, readonly track: Track, readonly mobile: boolean) {
@@ -87,19 +87,21 @@ export class World {
     return (h[j * n + i] * (1 - u) + h[j * n + i + 1] * u) * (1 - v) + (h[(j + 1) * n + i] * (1 - u) + h[(j + 1) * n + i + 1] * u) * v;
   }
 
-  build(onStep: (msg: string) => void) {
-    this.buildSky(); this.buildSea(); this.buildTerrain(); onStep('sokaklar');
-    this.buildRoads(); this.buildTrees(); onStep('binalar');
-    return Promise.all([this.buildBuildings(), this.loadLandmarks()]);
+  async build(onStep: (msg: string, frac: number) => void) {
+    const wait = () => new Promise((r) => setTimeout(r, 0));
+    this.buildSky(); this.buildSea(); this.buildTerrain(); onStep('Sokaklar çiziliyor…', 0.12); await wait();
+    this.buildRoads(); this.buildTrees(); onStep('Binalar yükseliyor…', 0.22); await wait();
+    let lm = 0, bd = 0; const tell = () => onStep(bd < 1 ? `Binalar yükseliyor… ` : 'Galata Kulesi yerleşiyor…', 0.22 + bd * 0.68 + lm * 0.1);
+    await Promise.all([this.buildBuildings((f) => { bd = f; tell(); }), this.loadLandmarks((f) => { lm = f; tell(); })]);
   }
 
   private buildSky() {
     const g = new THREE.SphereGeometry(1800, 40, 20);
     const m = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false,
-      uniforms: { sun: { value: SUN_DIR } },
+      uniforms: { sun: { value: SUN_DIR }, rain: { value: 0 } },
       vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position,1.0); gl_Position = p.xyww; }',
-      fragmentShader: `uniform vec3 sun; varying vec3 vP;
+      fragmentShader: `uniform vec3 sun; uniform float rain; varying vec3 vP;
         void main(){
           float h = vP.y; float s = max(0.0, dot(normalize(vP), sun));
           vec3 top = vec3(0.20, 0.27, 0.55), mid = vec3(0.56, 0.52, 0.78), low = vec3(0.98, 0.66, 0.55), hor = vec3(1.0, 0.80, 0.55);
@@ -107,9 +109,11 @@ export class World {
           c = mix(c, hor, smoothstep(0.08, -0.02, h) * 0.8);
           c += vec3(1.0, 0.55, 0.25) * pow(s, 6.0) * 0.55 + vec3(1.0, 0.85, 0.6) * pow(s, 90.0) * 1.2;
           if (h < -0.02) c = mix(hor, vec3(0.55, 0.5, 0.7), smoothstep(-0.02, -0.2, h));
+          c = mix(c, vec3(0.47, 0.5, 0.6) * (0.85 + 0.25 * h), rain * 0.88);
           gl_FragColor = vec4(c, 1.0);
         }`,
     });
+    this.skyMats.push(m);
     this.sky = new THREE.Mesh(g, m); this.sky.renderOrder = -10; this.sky.frustumCulled = false; this.scene.add(this.sky);
     // pembe-turuncu bulutlar (düz, çizgi film)
     const parts: THREE.BufferGeometry[] = [];
@@ -119,10 +123,11 @@ export class World {
       for (let b = 0; b < 6; b++) { const sg = new THREE.SphereGeometry(s * (0.6 + rnd() * 0.6), 9, 6); sg.scale(1.7, 0.55, 1.1); sg.translate(cx + (b - 3) * s * 0.8, y + rnd() * s * 0.3, cz + (rnd() - 0.5) * s); parts.push(sg); }
     }
     const cm = new THREE.ShaderMaterial({
-      fog: false, uniforms: { sun: { value: SUN_DIR } },
+      fog: false, uniforms: { sun: { value: SUN_DIR }, rain: { value: 0 } },
       vertexShader: 'varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix) * normal); vW = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vW,1.0); }',
-      fragmentShader: 'uniform vec3 sun; varying vec3 vN; varying vec3 vW; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.55, l) * 0.5 + step(0.8, l) * 0.5; vec3 c = mix(vec3(0.62, 0.55, 0.80), vec3(1.0, 0.72, 0.62), t); c = mix(c, vec3(1.0, 0.9, 0.75), step(0.93, l) * 0.6); gl_FragColor = vec4(c, 1.0); }',
+      fragmentShader: 'uniform vec3 sun; uniform float rain; varying vec3 vN; varying vec3 vW; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.55, l) * 0.5 + step(0.8, l) * 0.5; vec3 c = mix(vec3(0.62, 0.55, 0.80), vec3(1.0, 0.72, 0.62), t); c = mix(c, vec3(1.0, 0.9, 0.75), step(0.93, l) * 0.6); c = mix(c, mix(vec3(0.36, 0.38, 0.47), vec3(0.56, 0.58, 0.66), t), rain); gl_FragColor = vec4(c, 1.0); }',
     });
+    this.skyMats.push(cm);
     const clouds = new THREE.Mesh(mergeGeometries(parts), cm); clouds.renderOrder = -9; this.scene.add(clouds);
   }
 
@@ -219,7 +224,7 @@ export class World {
     this.scene.add(cm, tm);
   }
 
-  private buildBuildings() {
+  private buildBuildings(onProgress: (f: number) => void) {
     const D = this.data, T = this.track.T, trk = new Float32Array(T.n * 3), tw = T.tower;
     let n = 0;
     for (let i = 0; i < T.n; i += 2) { trk[n * 3] = T.x[i]; trk[n * 3 + 1] = T.z[i]; trk[n * 3 + 2] = T.w[i] / 2 + 3.5 + (T.flags[i] & F_BRIDGE ? 2 : 0); n++; }
@@ -243,13 +248,14 @@ export class World {
           g.computeBoundingSphere();
           const m = new THREE.Mesh(g, mat); m.matrixAutoUpdate = false; m.castShadow = d.lod < 2 && !this.mobile; m.receiveShadow = true; this.scene.add(m);
         }
+        onProgress(1 - (pending - 1) / chunks.length);
         if (--pending === 0) { w.terminate(); res(); }
       };
       for (const c of chunks) w.postMessage({ type: 'build', id: c.ci, chunk: c.ci, lod: lodOf(c.cx, c.cz) });
     });
   }
 
-  private async loadLandmarks() {
+  private async loadLandmarks(onProgress: (f: number) => void) {
     const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
     for (const L of this.data.meta.landmarks) {
@@ -261,6 +267,7 @@ export class World {
         node.position.set(L.x, y, L.z); node.rotation.y = L.ry; node.scale.setScalar(L.s);
         this.landmarks.add(node);
       } catch (e) { console.warn('model', L.id, e); }
+      onProgress((this.data.meta.landmarks.indexOf(L) + 1) / this.data.meta.landmarks.length);
     }
     this.scene.add(this.landmarks);
   }

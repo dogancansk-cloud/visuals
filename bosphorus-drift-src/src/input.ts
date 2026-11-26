@@ -8,11 +8,13 @@ export class Input {
   private keys = new Set<string>();
   private kSteer = 0; private tSteer = 0; private steerId: number | null = null; private steerX0 = 0;
   private tDrift = false; private tItem = false; private tBrake = false;
+  // çok kısa dokunuşlar kaçmasın: basış anı bir sonraki karede mutlaka görülür
+  private dTap = false; private iTap = false;
   private gpPrev: boolean[] = [];
   constructor(ui: HTMLElement) {
     addEventListener('keydown', (e) => {
       const k = e.key.toLowerCase();
-      if (!this.keys.has(k)) this.onKey?.(k);
+      if (!this.keys.has(k)) { this.onKey?.(k); if (k === ' ' || k === 'shift') this.dTap = true; if (['e', 'enter', 'control', 'f'].includes(k)) this.iTap = true; }
       this.keys.add(k);
       if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', ' '].includes(k)) e.preventDefault();
     });
@@ -38,7 +40,7 @@ export class Input {
       const off = () => { set(false); el.classList.remove('on'); };
       el.addEventListener('pointerup', off); el.addEventListener('pointercancel', off); el.addEventListener('lostpointercapture', off);
     };
-    hold('#tDrift', (v) => (this.tDrift = v)); hold('#tItem', (v) => (this.tItem = v)); hold('#tBrake', (v) => (this.tBrake = v));
+    hold('#tDrift', (v) => { this.tDrift = v; if (v) this.dTap = true; }); hold('#tItem', (v) => { this.tItem = v; if (v) this.iTap = true; }); hold('#tBrake', (v) => (this.tBrake = v));
   }
   private has(...k: string[]) { return k.some((x) => this.keys.has(x)); }
   update(dt: number) {
@@ -61,6 +63,7 @@ export class Input {
       const st = !!gp.buttons[9]?.pressed; if (st && !this.gpPrev[9]) this.onKey?.('escape');
       this.gpPrev[9] = st;
     }
-    c.steer = steer; c.gas = gas; c.brake = brake; c.drift = drift; c.item = item;
+    c.steer = steer; c.gas = gas; c.brake = brake; c.drift = drift || this.dTap; c.item = item || this.iTap;
+    this.dTap = false; this.iTap = false;
   }
 }
