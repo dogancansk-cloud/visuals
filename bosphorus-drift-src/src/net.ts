@@ -26,7 +26,12 @@ export const FB_CONFIG = {
   authDomain: 'bogaz-taksi-bda1d.firebaseapp.com',
   projectId: 'bogaz-taksi-bda1d',
   databaseURL: 'https://bogaz-taksi-bda1d-default-rtdb.europe-west1.firebasedatabase.app',
+  appId: '1:875844678581:web:04a8db0c0e332f1c82dffc',
+  measurementId: 'G-DRKJXJMG0D',
 };
+/** tek Firebase uygulaması: online ve istatistik aynısını kullanır */
+let appP: Promise<import('firebase/app').FirebaseApp> | null = null;
+export function fbApp() { return appP ??= import('firebase/app').then(({ initializeApp }) => initializeApp(FB_CONFIG, 'bd')); }
 
 export async function connect(kind: 'firebase' | 'local'): Promise<Backend> {
   if (kind === 'local') { const b = new LocalBackend(); await b.ready; return b; }
@@ -34,8 +39,7 @@ export async function connect(kind: 'firebase' | 'local'): Promise<Backend> {
 }
 
 async function firebaseBackend(): Promise<Backend> {
-  const [{ initializeApp }, auth, db] = await Promise.all([import('firebase/app'), import('firebase/auth'), import('firebase/database')]);
-  const app = initializeApp(FB_CONFIG, 'bd');
+  const [app, auth, db] = await Promise.all([fbApp(), import('firebase/auth'), import('firebase/database')]);
   const cred = await auth.signInAnonymously(auth.getAuth(app));
   const d = db.getDatabase(app), R = (p: string) => db.ref(d, `${ROOT}/${p}`);
   let offset = 0; db.onValue(db.ref(d, '.info/serverTimeOffset'), (s) => { offset = Number(s.val()) || 0; });

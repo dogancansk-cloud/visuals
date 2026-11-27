@@ -19,6 +19,7 @@ import { F_GATE } from './kc/kcpath';
 import { Crowd } from './crowd';
 import { Street, TRAM, inTram } from './street';
 import { connect, type Backend } from './net';
+import { ev } from './stats';
 import { Room, pack, type Meta, type NetEvent, type PlayerInfo } from './online';
 import { Bosphorus, BG_SUN } from './bg/bosphorus';
 import { Particles } from './fx';
@@ -388,6 +389,7 @@ function step(dt: number) {
 
 function onPlayerFinish() {
   state = 'done'; doneT = 0;
+  ev(onMeta ? 'online_finish' : 'finish', { pist: PIST, place: player.place }); if (player.place === 1) ev(onMeta ? 'online_win' : 'win');
   playerAI = new AI(player, track, 0.7);
   const win = player.place === 1;
   audio.finish(win);
@@ -499,8 +501,9 @@ function showOnline(note = '') {
       const r = await within(how === 'quick' ? Room.quick(n, p, PIST) : how === 'new' ? Room.create(n, p, PIST, false) : Room.join(n, code, p));
       if (r === 'none') { say('Bu kodla bir oda yok.'); return; }
       if (r === 'full') { say('Oda dolu (8 kişi).'); return; }
+      ev(how === 'quick' ? 'room_quick' : how === 'new' ? 'room_create' : 'room_join');
       enterRoom(r);
-    } catch (e) { console.warn(e); say('Bağlanılamadı. İnternetini kontrol edip tekrar dene.'); }
+    } catch (e) { console.warn(e); ev('online_fail'); say('Bağlanılamadı. İnternetini kontrol edip tekrar dene.'); }
   };
   $('#oQuick').onclick = () => void go('quick'); $('#oNew').onclick = () => void go('new'); $('#oJoin').onclick = () => void go('join');
   $('#oBack').onclick = () => { audio.click(); showTitle(); };
@@ -567,6 +570,7 @@ function nameTag(text: string) {
 function startOnlineRace(m: Meta) {
   const r = room; if (!r || !m.grid) return;
   onMeta = m; view = 'title'; menu.innerHTML = ''; paused = false; showroom.visible = false;
+  ev('online_start', { players: m.grid.filter((g) => !g.bot).length }); ev('pist_' + PIST); ev('char_' + CHARS[charIdx].id);
   for (const k of karts) scene.remove(k.model.root);
   items.reset(); trails.reset(); karts = []; ais = []; botSkill.clear();
   m.grid.forEach((g, slot) => {
@@ -727,6 +731,7 @@ let resLast = '';
 function startCountdown() {
   onMeta = null; menu.innerHTML = ''; paused = false; showroom.visible = false;
   setupRace(); state = 'count'; countT = 3.6; lastLap = 0; camInit = false;
+  ev('start'); ev('pist_' + PIST); ev('char_' + CHARS[charIdx].id);
   setHud(true); audio.start(); audio.music(true);
 }
 function setHud(on: boolean) {
@@ -832,7 +837,7 @@ setLoad(1, 'Hazır!');
 setTimeout(() => $('#loading').remove(), 250);
 if (Q.has('sel')) { audio.start(); showSelect(); } else if (Q.has('oda')) showOnline(myName() ? '' : 'Odaya katılmak için takma adını yaz, sonra “Kodla katıl”a dokun.'); else showTitle();
 // pist değişimi sonrası odaya kendiliğinden geri dön
-if (Q.has('oda') && myName()) void (async () => { try { const n = await within(ensureNet()), r = await within(Room.join(n, Q.get('oda')!, { name: myName(), char: charIdx, t: 0 })); if (r instanceof Room) enterRoom(r); else showOnline(r === 'full' ? 'Oda dolu (8 kişi).' : 'Bu kodla bir oda yok.'); } catch { showOnline('Bağlanılamadı. İnternetini kontrol edip tekrar dene.'); } })();
+if (Q.has('oda') && myName()) void (async () => { try { const n = await within(ensureNet()), r = await within(Room.join(n, Q.get('oda')!, { name: myName(), char: charIdx, t: 0 })); if (r instanceof Room) { ev('room_link'); enterRoom(r); } else showOnline(r === 'full' ? 'Oda dolu (8 kişi).' : 'Bu kodla bir oda yok.'); } catch { showOnline('Bağlanılamadı. İnternetini kontrol edip tekrar dene.'); } })();
 if (Q.has('skip')) { audio.muted = true; startCountdown(); }
 requestAnimationFrame(frame);
 (window as unknown as Record<string, unknown>).__bd = { items, get room() { return room; }, get player() { return player; }, get karts() { return karts; }, get state() { return state; }, track, camera, scene, renderer, get raceT() { return raceT; } };
