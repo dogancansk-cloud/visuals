@@ -10,7 +10,10 @@ interface Simit { pos: THREE.Vector3; t: number }
 interface Pad { s0: number; s1: number; d: number; w: number }
 interface Gull { obj: THREE.Group; wl: THREE.Object3D; wr: THREE.Object3D; pos: THREE.Vector3; idx: number; owner: Kart; target: Kart | null; life: number; speed: number; d: number }
 interface Proj { kind: 'simit' | 'nazar'; obj: THREE.Object3D; pos: THREE.Vector3; vx: number; vz: number; idx: number; owner: Kart; target: Kart | null; life: number; bounces: number }
-interface Cat { obj: THREE.Group; pos: THREE.Vector3; dir: number; life: number; owner: Kart; s: number; d: number; w: number; legs: THREE.Object3D[] }
+interface Cat { obj: THREE.Group; pos: THREE.Vector3; from: THREE.Vector3; phase: 'jump' | 'ride' | 'off' | 'gone'; t: number; target: Kart; slot: number; side: number; owner: Kart; legs: THREE.Object3D[] }
+const CAT_RIDE = 2.2;
+/** kart gövdesinde kedi yerleri: kaput (sürücüye bakar), arka kanat, yan duba */
+const CAT_SLOTS: [number, number, number, number][] = [[1.0, 0.7, 0, Math.PI], [-1.25, 1.36, 0, 0], [-0.1, 0.7, 0.74, -Math.PI / 2]];
 interface Wave { obj: THREE.Mesh; pos: THREE.Vector3; t: number; owner: Kart; hit: Set<Kart> }
 interface Loose { pos: THREE.Vector3; vel: THREE.Vector3; obj: THREE.Mesh; life: number; landed: boolean }
 interface Puddle { obj: THREE.Group; pos: THREE.Vector3; life: number; r: number; owner: Kart; arm: number }
@@ -26,6 +29,7 @@ export const GALATA_ITEMS: ItemLayout = {
 
 export class Items {
   boxes: Box[] = []; simits: Simit[] = []; pads: Pad[] = []; gulls: Gull[] = []; puddles: Puddle[] = [];
+  private tmpV = new THREE.Vector3();
   projs: Proj[] = []; cats: Cat[] = []; waves: Wave[] = []; loose: Loose[] = [];
   private boxMesh: THREE.InstancedMesh; private simitMesh: THREE.InstancedMesh;
   private shields = new Map<Kart, THREE.Mesh>();
@@ -92,7 +96,7 @@ export class Items {
     for (const g of this.gulls) this.scene.remove(g.obj); this.gulls = [];
     for (const p of this.puddles) this.scene.remove(p.obj); this.puddles = [];
     for (const m of this.shields.values()) this.scene.remove(m); this.shields.clear();
-    for (const o of [...this.projs, ...this.cats, ...this.waves, ...this.loose]) this.scene.remove(o.obj);
+    for (const o of [...this.projs, ...this.cats, ...this.waves, ...this.loose]) o.obj.parent?.remove(o.obj);
     this.projs = []; this.cats = []; this.waves = []; this.loose = [];
   }
 
@@ -143,16 +147,17 @@ export class Items {
     this.waves.push({ obj: ring, pos: k.pos.clone(), t: big ? -0.2 : 0, owner: k, hit: new Set([k]) });
   }
 
+  /** kedi sürüsü: kaldırımdan koşup öndeki kartlara atlar; kucağa ve kaputa oturur, sürücü yalpalar. Kimse ezilmez. */
   private catHerd(k: Kart, karts: Kart[], big: boolean) {
     const ahead = karts.filter((o) => o !== k && !o.finished && o.progress > k.progress).sort((a, b) => a.progress - b.progress).slice(0, big ? 5 : 3);
     for (const o of ahead) {
       this.ev.onTarget?.(o, 'kedi');
-      const s = o.f.s + 38 + Math.random() * 10, i = this.track.idxOf(s), w = this.track.T.w[i];
+      const i = this.track.idxOf(o.f.s + 10), w = this.track.T.w[i];
       for (let c = 0; c < 3; c++) {
-        const dir = Math.random() < 0.5 ? -1 : 1, d = -dir * (w / 2 + 1 + c * 1.6);
-        const g = this.catModel(c % 2 ? 0xa9a39d : c ? 0xf3a65a : 0x3c3a47);
-        const pos = this.track.point(s + c * 2.5, d); g.position.copy(pos); this.scene.add(g);
-        this.cats.push({ obj: g, pos, dir, life: 6, owner: k, s: s + c * 2.5, d, w, legs: g.userData.legs });
+        const sd = c % 2 ? -1 : 1;
+        const g = this.catModel(c % 2 ? 0xa7a3a0 : c ? 0xff9a3c : 0x3c3a47); g.scale.setScalar(0.95);
+        const from = this.track.point(o.f.s + 9 + c * 3, sd * (w / 2 + 1.2)); g.position.copy(from); this.scene.add(g);
+        this.cats.push({ obj: g, pos: from.clone(), from, phase: 'jump', t: -c * 0.12, target: o, slot: c, side: sd, owner: k, legs: g.userData.legs });
       }
     }
   }
@@ -327,20 +332,40 @@ export class Items {
     }
     for (const w of this.waves) if (w.t > 0.6) this.scene.remove(w.obj);
     this.waves = this.waves.filter((w) => w.t <= 0.6);
-    // kedi sürüsü: yolun bir yanından öbürüne koşar
+    // kedi sürüsü: atla → kartta otur → in
     for (const c of this.cats) {
-      c.life -= dt; c.d += c.dir * 5.5 * dt;
-      tr.point(c.s, c.d, c.pos); c.obj.position.copy(c.pos);
-      const hd = tr.heading(c.s); c.obj.rotation.y = -(hd + (c.dir > 0 ? Math.PI / 2 : -Math.PI / 2));
-      c.legs.forEach((l, n) => (l.rotation.z = Math.sin(time * 18 + n * 1.6) * 0.6));
-      if (Math.abs(c.d) > c.w / 2 + 6) c.life = Math.min(c.life, 0);
-      for (const k of karts) if (k.slowT <= 0 && k.spinT <= 0 && (k.pos.x - c.pos.x) ** 2 + (k.pos.z - c.pos.z) ** 2 < 2.4) {
-        if (k.shieldT > 0) { k.shieldT = 0; this.ev.onBlock?.(k); } else { k.slowT = 1.3; k.drifting = false; k.vy = 3; k.grounded = false; k.loseSimit(2); this.ev.onHit?.(k, 'kedi', c.owner); }
-        c.life = Math.min(c.life, 0.3);
+      const k = c.target; c.t += dt;
+      if (c.phase === 'jump') {
+        if (c.t < 0) continue;
+        const u = Math.min(1, c.t / 0.75), to = this.tmpV.copy(k.pos); to.y += 0.9;
+        c.pos.lerpVectors(c.from, to, u); c.pos.y += Math.sin(u * Math.PI) * 2.4; c.obj.position.copy(c.pos);
+        c.obj.rotation.y = -Math.atan2(to.z - c.from.z, to.x - c.from.x); c.obj.rotation.z = (0.5 - u) * 1.2;
+        c.legs.forEach((l, n) => (l.rotation.z = (n < 2 ? 1 : -1) * 0.9));
+        if (u >= 1) {
+          if (k.shieldT > 0) { if (c.slot === 0) { k.shieldT = 0; this.ev.onBlock?.(k); } c.phase = 'off'; c.t = 0; c.from.copy(c.pos); }
+          else {
+            if (k.catT <= 0) this.ev.onHit?.(k, 'kedi', c.owner);
+            k.catT = CAT_RIDE; k.slowT = Math.max(k.slowT, CAT_RIDE); k.drifting = false;
+            c.phase = 'ride'; c.t = 0; k.model.body.add(c.obj); c.obj.scale.setScalar(0.62); c.obj.rotation.set(0, 0, 0);
+            const [x, y, z, ry] = CAT_SLOTS[c.slot % CAT_SLOTS.length]; c.obj.position.set(x, y, z); c.obj.rotation.y = ry;
+            c.legs.forEach((l) => (l.rotation.z = 0));
+          }
+        }
+      } else if (c.phase === 'ride') {
+        c.obj.position.y = CAT_SLOTS[c.slot % CAT_SLOTS.length][1] + Math.abs(Math.sin(time * 9 + c.slot * 2)) * 0.08;
+        c.obj.rotation.z = Math.sin(time * 7 + c.slot) * 0.12;
+        if (k.catT <= 0 || k.finished) { c.obj.getWorldPosition(c.from); this.scene.add(c.obj); c.obj.scale.setScalar(0.95); c.phase = 'off'; c.t = 0; }
+      } else {
+        // kaldırıma zıplayıp uzaklaşır
+        const u = Math.min(1, c.t / 0.8), i = this.track.idxOf(k.f.s), to = tr.point(k.f.s - 3, c.side * (this.track.T.w[i] / 2 + 2.2), this.tmpV);
+        c.pos.lerpVectors(c.from, to, u); c.pos.y += Math.sin(u * Math.PI) * 1.8; c.obj.position.copy(c.pos);
+        c.obj.rotation.set(0, -Math.atan2(to.z - c.from.z, to.x - c.from.x), 0);
+        c.legs.forEach((l, n) => (l.rotation.z = Math.sin(time * 18 + n * 1.6) * 0.6));
+        if (u >= 1) c.phase = 'gone';
       }
     }
-    for (const c of this.cats) if (c.life <= 0) this.scene.remove(c.obj);
-    this.cats = this.cats.filter((c) => c.life > 0);
+    for (const c of this.cats) if (c.phase === 'gone') c.obj.parent?.remove(c.obj);
+    this.cats = this.cats.filter((c) => c.phase !== 'gone');
     // simitçilerin attığı simitler
     for (const l of this.loose) {
       l.life -= dt;

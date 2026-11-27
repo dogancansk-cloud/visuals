@@ -38,6 +38,8 @@ export class Kart {
   drifting = false; dir = 0; charge = 0; boosts = 0; neutralT = 0; lockT = 0; pendT = 0; oppT = 0;
   // durum
   boostT = 0; boostP = 0; spinT = 0; shieldT = 0; simit = 0; item: ItemKind | null = null; rollT = 0; lastItem: ItemKind | null = null; slowT = 0;
+  /** kedi binmiş: direksiyon yalpalar */
+  catT = 0;
   wrongT = 0; stuckT = 0; respawnT = 0;
   private prevDrift = false; private prevItem = false;
   wantItem = false;
@@ -102,7 +104,8 @@ export class Kart {
       this.speed -= slope * G * 0.22 * dt * Math.sign(fx * this.f.tx + fz * this.f.tz);
     }
     // ---- drift: tuşa basılı tut, kart kayar; bırakınca tutma süresine göre turbo ----
-    const st = ctl.steer;
+    this.catT = Math.max(0, this.catT - dt);
+    const st = this.catT > 0 ? Math.max(-1, Math.min(1, ctl.steer * 0.6 + Math.sin(this.catT * 8.5) * 0.55)) : ctl.steer;
     if (DRIFT_ON) {
       if (!this.drifting) {
         if (driftEdge && this.grounded && this.speed > 8) { this.vy = 3.4; this.grounded = false; this.pendT = 0.45; this.ev.onDriftStart?.(this); }

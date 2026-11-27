@@ -525,7 +525,7 @@ function showHelp(back: () => void) {
       <tr><td>Eşya</td><td><kbd>E</kbd> veya <kbd>Enter</kbd></td></tr>
       <tr><td>Diğer</td><td>Mavi oklu pedler ve çıkardığın turbo seni hızlandırır · <kbd>R</kbd> piste dön · <kbd>Esc</kbd> duraklat · <kbd>M</kbd> ses · oyun kolu da çalışır</td></tr>
     </table>
-    <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', '10 saniye kalkan olur. Tekrar basarsan öndekine fırlatırsın.')}${it('turbo', 'Anında hız.')}${it('simit', 'Düz gider, duvardan seker. 10 simitle üçlü.')}${it('duduk', 'Yakındaki kartları savurur.')}${it('kedi', 'Öndeki kartların önüne kediler çıkar.')}</div>
+    <div class="items">${it('marti', 'Öndeki karta kilitlenir.')}${it('cay', 'Arkana çay dökersin, basan kayar.')}${it('nazar', '10 saniye kalkan olur. Tekrar basarsan öndekine fırlatırsın.')}${it('turbo', 'Anında hız.')}${it('simit', 'Düz gider, duvardan seker. 10 simitle üçlü.')}${it('duduk', 'Yakındaki kartları savurur.')}${it('kedi', 'Kediler öndekilerin kartına atlayıp oturur; 2 saniye yalpalar ve yavaşlarlar. Kimse ezilmez.')}</div>
     <p>Yoldaki <b>simitleri</b> topla: her biri biraz hız verir. 10 simitte eşyalar da güçlenir. Vurulursan ya da çaya basarsan 4 simit düşer. Mavi oklu pedler ve sürpriz kutuları <b>?</b> pistin her yerinde.</p>
     <div class="row sticky"><button class="btn" id="bOk">Tamam</button></div></div>`;
   $('#bOk').onclick = () => { audio.click(); back(); };
@@ -661,4 +661,4 @@ setTimeout(() => $('#loading').remove(), 250);
 if (Q.has('sel')) { audio.start(); showSelect(); } else showTitle();
 if (Q.has('skip')) { audio.muted = true; startCountdown(); }
 requestAnimationFrame(frame);
-(window as unknown as Record<string, unknown>).__bd = { get player() { return player; }, get karts() { return karts; }, get state() { return state; }, track, camera, scene, renderer, get raceT() { return raceT; } };
+(window as unknown as Record<string, unknown>).__bd = { items, get player() { return player; }, get karts() { return karts; }, get state() { return state; }, track, camera, scene, renderer, get raceT() { return raceT; } };
