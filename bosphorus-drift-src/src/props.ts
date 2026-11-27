@@ -5,6 +5,8 @@ import type { Track, Textures } from './track';
 import type { World } from './world/world';
 import { F_BRIDGE, F_TUNNEL, F_SPIRAL } from './trackpath';
 import { toon } from './characters';
+import { TRAM, inTram } from './street';
+import { critterGeos } from './critters';
 
 const up = new THREE.Vector3(0, 1, 0);
 
@@ -32,13 +34,13 @@ export class Props {
     const T = this.track.T, poles: THREE.Matrix4[] = [], heads: THREE.Matrix4[] = [], m = new THREE.Matrix4();
     for (let i = 8; i < T.n; i += 26) {
       if (T.flags[i] & F_TUNNEL) continue;
-      const sd = (i / 26) % 2 < 1 ? 1 : -1, br = T.flags[i] & F_BRIDGE;
+      let sd = (i / 26) % 2 < 1 ? 1 : -1; const br = T.flags[i] & F_BRIDGE; if (sd === TRAM.side && inTram(i)) sd = -sd;
       const d = sd * (T.w[i] / 2 + (br ? 1.4 : 2.6));
       const p = br ? this.track.point(i * (this.track.L / T.n), d).setY(T.y[i] + T.bank[i] * d + 1.0) : this.side(i, d);
       m.compose(p.clone().add(new THREE.Vector3(0, 3, 0)), new THREE.Quaternion(), new THREE.Vector3(1, 6, 1)); poles.push(m.clone());
       m.compose(p.clone().add(new THREE.Vector3(0, 6.2, 0)), new THREE.Quaternion(), new THREE.Vector3(1, 1, 1)); heads.push(m.clone());
     }
-    const pole = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.11, 0.15, 1, 6), new THREE.MeshLambertMaterial({ color: 0x2c3566 }), poles.length);
+    const pole = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.11, 0.15, 1, 6), new THREE.MeshLambertMaterial({ color: 0x2f6b4a }), poles.length);
     poles.forEach((mm, k) => pole.setMatrixAt(k, mm)); this.scene.add(pole);
     const hg = new THREE.SphereGeometry(0.42, 10, 8);
     const head = new THREE.InstancedMesh(hg, new THREE.MeshBasicMaterial({ color: 0xffe6a8 }), heads.length);
@@ -58,19 +60,7 @@ export class Props {
   private crowds() {
     const T = this.track.T, L = this.track.L;
     // seyirci geometrileri (≈1 m)
-    const sp = (r: number, x: number, y: number, z: number, sx = 1, sy = 1, sz = 1, w = 9, h = 6) => { const g = new THREE.SphereGeometry(r, w, h); g.scale(sx, sy, sz); g.translate(x, y, z); return g; };
-    const eyesG = (x: number, y: number, z: number, r: number) => mergeGeometries([-1, 1].map((sd) => sp(r, x, y, sd * z, 0.6, 1.2, 1, 6, 5)));
-    // iri kafalı, gözlü çizgi film seyirciler (+x'e bakar)
-    const gull = mergeGeometries([sp(0.36, 0, 0.42, 0, 0.9, 1, 0.82), sp(0.31, 0.03, 1.0, 0, 1, 0.95, 1, 10, 7)]);
-    const beak = mergeGeometries([((g) => { g.rotateZ(-Math.PI / 2 - 0.1); g.translate(0.42, 0.95, 0); return g; })(new THREE.ConeGeometry(0.1, 0.36, 7))]);
-    const wing = mergeGeometries([-1, 1].map((sd) => { const g = new THREE.SphereGeometry(0.2, 7, 5); g.scale(0.7, 0.28, 1.25); g.rotateX(sd * 0.95); g.translate(-0.02, 0.62, sd * 0.42); return g; }));
-    const cat = mergeGeometries([
-      sp(0.34, 0, 0.4, 0, 0.9, 1, 0.85), sp(0.33, 0.03, 0.97, 0, 0.95, 0.9, 1.12, 10, 7),
-      ...[-1, 1].map((sd) => { const g = new THREE.ConeGeometry(0.13, 0.28, 4); g.rotateY(Math.PI / 4); g.rotateX(sd * 0.3); g.translate(0, 1.3, sd * 0.2); return g; }),
-      ...[0, 1, 2, 3].map((k) => sp(0.075, -0.3 - Math.sin(k * 0.6) * 0.14, 0.2 + k * 0.17, 0, 1, 1.2, 1, 6, 5)),
-    ]);
-    const catWhite = mergeGeometries([sp(0.2, 0.17, 0.4, 0, 0.6, 1.1, 0.9, 7, 5), ...[-1, 1].map((sd) => sp(0.1, 0.27, 0.88, sd * 0.07, 0.8, 0.7, 1, 6, 5))]);
-    const gullEyes = eyesG(0.27, 1.07, 0.13, 0.05), catEyes = eyesG(0.29, 1.03, 0.14, 0.06);
+    const { gull, beak, wing, gullEyes, cat, catWhite, catEyes } = critterGeos();
     const spots: { p: THREE.Vector3; yaw: number; kind: number }[] = [];
     const facing = (p: THREE.Vector3, i: number) => Math.atan2(T.z[i] - p.z, T.x[i] - p.x);
     // tribünler: start düzlüğünde (deniz tarafı) ve sıçrama inişinde
@@ -101,7 +91,7 @@ export class Props {
     }
     for (let i = 30; i < T.n; i += 57) {
       if (T.flags[i] & (F_BRIDGE | F_TUNNEL)) continue;
-      const sd = (i / 57) % 2 < 1 ? -1 : 1;
+      const sd = (i / 57) % 2 < 1 ? -1 : 1; if (sd === TRAM.side && inTram(i, 10)) continue;
       for (let k = 0; k < 6; k++) { const p = this.side((i + k * 2) % T.n, sd * (T.w[i] / 2 + 3 + (k % 2) * 1.3)); spots.push({ p, yaw: facing(p, i), kind: k % 3 }); }
     }
     const kinds = [{ g: gull, c: 0xffffff }, { g: cat, c: 0xff9a3c }, { g: cat, c: 0xa7a3a0 }];

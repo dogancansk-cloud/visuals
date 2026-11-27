@@ -1,4 +1,5 @@
 // Gerçek Galata–Karaköy: arazi (pist çevresinde düzeltilmiş), sokaklar, binalar, ağaçlar, simge yapılar, deniz, gün batımı göğü.
+import { inTram } from '../street';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
@@ -11,7 +12,7 @@ import { F_BRIDGE } from '../trackpath';
 interface Grid { x0: number; z0: number; step: number; nx: number; nz: number }
 interface Meta { grid: Grid; chunk: number; chunks: number[][]; palette: { walls: string[]; roofs: string[]; flats: string[] }; landmarks: { id: string; model: string; x: number; z: number; y: number; ry: number; s: number }[] }
 
-export const SUN_DIR = new THREE.Vector3(-0.78, 0.2, 0.59).normalize(); // gün batımı: batı-güneybatı, alçak
+export const SUN_DIR = new THREE.Vector3(-0.5, 0.74, 0.46).normalize(); // parlak öğle: güneybatıdan, yüksek
 
 export class WorldData {
   constructor(readonly meta: Meta, readonly ground: DataView, readonly buildings: ArrayBuffer, readonly trees: DataView, readonly roads: [number, number, number[]][]) {}
@@ -104,11 +105,11 @@ export class World {
       fragmentShader: `uniform vec3 sun; uniform float rain; varying vec3 vP;
         void main(){
           float h = vP.y; float s = max(0.0, dot(normalize(vP), sun));
-          vec3 top = vec3(0.20, 0.27, 0.55), mid = vec3(0.56, 0.52, 0.78), low = vec3(0.98, 0.66, 0.55), hor = vec3(1.0, 0.80, 0.55);
+          vec3 top = vec3(0.07, 0.36, 0.92), mid = vec3(0.26, 0.62, 1.0), low = vec3(0.66, 0.88, 1.0), hor = vec3(0.80, 0.94, 1.0);
           vec3 c = mix(low, mid, smoothstep(0.02, 0.22, h)); c = mix(c, top, smoothstep(0.22, 0.75, h));
           c = mix(c, hor, smoothstep(0.08, -0.02, h) * 0.8);
-          c += vec3(1.0, 0.55, 0.25) * pow(s, 6.0) * 0.55 + vec3(1.0, 0.85, 0.6) * pow(s, 90.0) * 1.2;
-          if (h < -0.02) c = mix(hor, vec3(0.55, 0.5, 0.7), smoothstep(-0.02, -0.2, h));
+          c += vec3(1.0, 0.97, 0.85) * pow(s, 10.0) * 0.22 + vec3(1.0, 0.98, 0.9) * pow(s, 260.0) * 1.6;
+          if (h < -0.02) c = mix(hor, vec3(0.45, 0.72, 0.95), smoothstep(-0.02, -0.2, h));
           c = mix(c, vec3(0.47, 0.5, 0.6) * (0.85 + 0.25 * h), rain * 0.88);
           gl_FragColor = vec4(c, 1.0);
         }`,
@@ -125,7 +126,7 @@ export class World {
     const cm = new THREE.ShaderMaterial({
       fog: false, uniforms: { sun: { value: SUN_DIR }, rain: { value: 0 } },
       vertexShader: 'varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix) * normal); vW = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vW,1.0); }',
-      fragmentShader: 'uniform vec3 sun; uniform float rain; varying vec3 vN; varying vec3 vW; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.55, l) * 0.5 + step(0.8, l) * 0.5; vec3 c = mix(vec3(0.62, 0.55, 0.80), vec3(1.0, 0.72, 0.62), t); c = mix(c, vec3(1.0, 0.9, 0.75), step(0.93, l) * 0.6); c = mix(c, mix(vec3(0.36, 0.38, 0.47), vec3(0.56, 0.58, 0.66), t), rain); gl_FragColor = vec4(c, 1.0); }',
+      fragmentShader: 'uniform vec3 sun; uniform float rain; varying vec3 vN; varying vec3 vW; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.55, l) * 0.5 + step(0.8, l) * 0.5; vec3 c = mix(vec3(0.74, 0.84, 0.97), vec3(0.95, 0.97, 1.0), t); c = mix(c, vec3(1.0, 1.0, 1.0), step(0.93, l) * 0.8); c = mix(c, mix(vec3(0.36, 0.38, 0.47), vec3(0.56, 0.58, 0.66), t), rain); gl_FragColor = vec4(c, 1.0); }',
     });
     this.skyMats.push(cm);
     const clouds = new THREE.Mesh(mergeGeometries(parts), cm); clouds.renderOrder = -9; this.scene.add(clouds);
@@ -142,10 +143,10 @@ export class World {
         void main(){
           vec3 V = normalize(cameraPosition - vW); vec3 R = reflect(-V, vec3(0.0,1.0,0.0));
           float w = sin(vW.x*0.09 + t*0.8)*sin(vW.z*0.12 - t*0.6) + 0.5*sin(vW.x*0.27 - vW.z*0.2 + t*1.6);
-          vec3 c = mix(vec3(0.33, 0.48, 0.80), vec3(0.45, 0.62, 0.90), smoothstep(-0.6, 1.0, w));
+          vec3 c = mix(vec3(0.05, 0.42, 0.78), vec3(0.12, 0.62, 0.90), smoothstep(-0.6, 1.0, w));
           float glint = pow(max(0.0, dot(R, sun)), 40.0);
-          c = mix(c, vec3(1.0, 0.72, 0.45), clamp(glint * 1.4, 0.0, 0.85));
-          c = mix(c, vec3(1.0, 0.92, 0.78), step(1.25, w + glint * 0.8) * 0.8);
+          c = mix(c, vec3(1.0, 0.98, 0.9), clamp(glint * 1.4, 0.0, 0.85));
+          c = mix(c, vec3(0.9, 0.97, 1.0), step(1.25, w + glint * 0.8) * 0.7);
           gl_FragColor = vec4(c, 1.0);
         #include <fog_fragment>
         }`,
@@ -158,7 +159,7 @@ export class World {
     const g = new THREE.PlaneGeometry((F.nx - 1) * F.step, (F.nz - 1) * F.step, F.nx - 1, F.nz - 1);
     g.rotateX(-Math.PI / 2); g.translate(F.x0 + ((F.nx - 1) * F.step) / 2, 0, F.z0 + ((F.nz - 1) * F.step) / 2);
     const pos = g.attributes.position as THREE.BufferAttribute, col = new Float32Array(pos.count * 3), c = new THREE.Color();
-    const land = new THREE.Color(0xd8d6e4), park = new THREE.Color(0xa9d8a8), plaza = new THREE.Color(0xe9e6ee), shore = new THREE.Color(0xe8dcc8);
+    const land = new THREE.Color(0xddd3bf), park = new THREE.Color(0x86dc6e), plaza = new THREE.Color(0xf3ead8), shore = new THREE.Color(0xf0dfb8);
     for (let k = 0; k < pos.count; k++) {
       const x = pos.getX(k), z = pos.getZ(k), i = Math.round((x - F.x0) / F.step), j = Math.round((z - F.z0) / F.step);
       const h = this.hm[j * F.nx + i]; pos.setY(k, h);
@@ -194,7 +195,7 @@ export class World {
     const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals();
     // ters sarmalı yüzleri yukarı çevir
     const nor = g.attributes.normal as THREE.BufferAttribute; for (let k = 0; k < nor.count; k++) if (nor.getY(k) < 0) nor.setXYZ(k, -nor.getX(k), -nor.getY(k), -nor.getZ(k));
-    const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0x8a8fae, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
+    const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ color: 0x8b92a3, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
     m.receiveShadow = true; this.scene.add(m);
   }
 
@@ -207,12 +208,12 @@ export class World {
       if (T.flags[i] & (F_BRIDGE | 2)) continue;
       const sd = rnd() < 0.5 ? -1 : 1, d = sd * (T.w[i] / 2 + 5 + rnd() * 3); pts.push([T.x[i] - T.tz[i] * d, T.z[i] + T.tx[i] * d, 1]);
     }
-    const ok = pts.filter(([x, z]) => { const nb = this.nearest(x, z); return !(nb.i >= 0 && nb.d < T.w[nb.i] / 2 + 3.2) && this.data.kind(x, z) !== 1; });
+    const ok = pts.filter(([x, z]) => { const nb = this.nearest(x, z); return !(nb.i >= 0 && nb.d < T.w[nb.i] / 2 + (inTram(nb.i) ? 6.6 : 3.2)) && this.data.kind(x, z) !== 1; });
     const canopy = mergeGeometries([0, 1, 2, 3].map((k) => { const s = new THREE.IcosahedronGeometry(1, 0); const a = k * 2.1; s.scale(k === 3 ? 1.1 : 0.85, k === 3 ? 0.95 : 0.8, k === 3 ? 1.1 : 0.85); s.translate(k === 3 ? 0 : Math.cos(a) * 0.8, k === 3 ? 0.9 : 0.35, k === 3 ? 0 : Math.sin(a) * 0.8); return s; }));
     const trunk = new THREE.CylinderGeometry(0.16, 0.26, 3.2, 6); trunk.translate(0, 1.6, 0);
     const cm = new THREE.InstancedMesh(canopy, new THREE.MeshLambertMaterial({ color: 0xffffff, flatShading: true }), ok.length);
     const tm = new THREE.InstancedMesh(trunk, new THREE.MeshLambertMaterial({ color: 0x8a6a5a }), ok.length);
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), c = new THREE.Color(), greens = [0x5fb873, 0x6cc27a, 0x4fa86a, 0x7acb83];
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), c = new THREE.Color(), greens = [0x3fc45a, 0x56d466, 0x2fae4e, 0x74dc62];
     ok.forEach(([x, z, s0], k) => {
       const s = (1.6 + rnd() * 0.9) * Math.max(0.8, Math.min(1.4, s0 || 1)), y = this.hAt(x, z);
       q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rnd() * 6);
@@ -227,7 +228,7 @@ export class World {
   private buildBuildings(onProgress: (f: number) => void) {
     const D = this.data, T = this.track.T, trk = new Float32Array(T.n * 3), tw = T.tower;
     let n = 0;
-    for (let i = 0; i < T.n; i += 2) { trk[n * 3] = T.x[i]; trk[n * 3 + 1] = T.z[i]; trk[n * 3 + 2] = T.w[i] / 2 + 3.5 + (T.flags[i] & F_BRIDGE ? 2 : 0); n++; }
+    for (let i = 0; i < T.n; i += 2) { trk[n * 3] = T.x[i]; trk[n * 3 + 1] = T.z[i]; trk[n * 3 + 2] = T.w[i] / 2 + (T.flags[i] & F_BRIDGE ? 5.5 : 6.4); n++; }
     // kule meydanı
     for (let k = 0; k < 24; k++) { const a = (k / 24) * Math.PI * 2; for (const r of [8, 22, 34]) { if (n * 3 + 2 >= trk.length) break; trk[n * 3] = tw.x + Math.cos(a) * r; trk[n * 3 + 1] = tw.z + Math.sin(a) * r; trk[n * 3 + 2] = 14; n++; } }
     const F = this.fine;

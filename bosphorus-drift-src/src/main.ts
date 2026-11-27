@@ -17,6 +17,7 @@ import { F_RAMP, F_BRIDGE, F_TUNNEL, F_SPIRAL } from './trackpath';
 import { F_SEA } from './bg/bgpath';
 import { F_GATE } from './kc/kcpath';
 import { Crowd } from './crowd';
+import { Street, TRAM, inTram } from './street';
 import { Bosphorus, BG_SUN } from './bg/bosphorus';
 import { Particles } from './fx';
 import { Input } from './input';
@@ -50,10 +51,10 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(70, 1, 0.3, 2000);
 let hemi: THREE.HemisphereLight, sun: THREE.DirectionalLight;
 if (PIST === 'galata') {
-  scene.fog = new THREE.Fog(0xd9a7b8, 220, 1400);
-  // gün batımı: sıcak, alçak güneş; mor-mavi gölgeler
-  hemi = new THREE.HemisphereLight(0xc3cdf5, 0x9a88a8, 1.9);
-  sun = new THREE.DirectionalLight(0xffcf9e, 2.3);
+  scene.fog = new THREE.Fog(0xcdeaff, 260, 1500);
+  // parlak öğle: beyaz güneş, mavi gök ışığı, sıcak zemin yansıması
+  hemi = new THREE.HemisphereLight(0xe2f1ff, 0xd8c4a4, 2.2);
+  sun = new THREE.DirectionalLight(0xfff3da, 2.8);
 } else if (PIST === 'bg') {
   // Boğaz: parlak öğle, masmavi gök
   { // gök: tepede koyu mavi, ufka doğru açılır
@@ -87,7 +88,8 @@ const frameWait = () => new Promise((r) => requestAnimationFrame(() => r(0)));
 const tex = new Textures();
 interface Ground { hAt(x: number, z: number): number; update(t: number): void; skyMats: THREE.ShaderMaterial[] }
 let track: Track, world: Ground, props: { update(dt: number, t: number): void; uPlayer: { value: THREE.Vector3 } };
-let itemLayout: ItemLayout = GALATA_ITEMS, lifeCfg = { cats: 30, vendors: [120, 390, 880, 1290], gulls: 24, ferries: true };
+let street: Street | null = null;
+let itemLayout: ItemLayout = GALATA_ITEMS, lifeCfg = { cats: 30, vendors: [120, 446, 880, 1290], gulls: 24, ferries: true };
 if (PIST === 'galata') {
   setLoad(0.02, 'Harita indiriliyor…');
   const data = await WorldData.load('./', (p) => setLoad(0.02 + p * 0.38));
@@ -100,6 +102,7 @@ if (PIST === 'galata') {
   world = w;
   setLoad(0.95, 'Seyirciler yerleşiyor…'); await frameWait();
   props = new Props(scene, track, w, tex, mobile);
+  street = new Street(scene, track, w, tex, mobile);
 } else if (PIST === 'bg') {
   setLoad(0.1, 'Vapurlar iskeleye yanaşıyor…'); await frameWait();
   track = new Track(buildBosphorusTrack());
@@ -143,8 +146,8 @@ if (PIST === 'galata') {
 const crowd = (() => {
   const F = track.T.flags;
   if (PIST === 'bg') return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_SEA | F_BRIDGE | F_GAP)), near: 2.4, far: 6.0, every: 2, walkers: 44 }, mobile);
-  if (PIST === 'kc') return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_BRIDGE | F_GATE)), near: 2.0, far: 3.4, every: 3, walkers: 28 }, mobile);
-  return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_BRIDGE | F_TUNNEL | F_SPIRAL)), near: 2.5, far: 4.6, every: 3, walkers: 30, yAt: (x, z) => world.hAt(x, z) }, mobile);
+  if (PIST === 'kc') return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_BRIDGE | F_GATE)), near: 2.0, far: 3.0, every: 2, walkers: 72, carriers: true }, mobile);
+  return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_BRIDGE | F_TUNNEL | F_SPIRAL)), near: 2.5, far: 4.1, every: 3, walkers: 34, yAt: (x, z) => world.hAt(x, z), okSide: (i, sd) => !(sd === TRAM.side && inTram(i, 10)) }, mobile);
 })();
 const fx = new Particles(scene, mobile ? 600 : 1000);
 const trails = new Trails(scene);
@@ -637,6 +640,7 @@ function frame(now: number) {
   audio.tick();
   fx.update(dt);
   world.update(time); props.update(dt, time); crowd.update(dt, time, player && state !== 'title' && state !== 'select' ? player.pos : null);
+  world.update(time); props.update(dt, time); street?.update(dt, time, player && state !== 'title' && state !== 'select' ? player.pos : null);
   const racing = state === 'race' || state === 'done';
   if (dt > 0) {
     weather.update(dt, racing ? raceT : -1, camera.position);

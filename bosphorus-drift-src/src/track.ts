@@ -231,7 +231,7 @@ export class Geo {
 // ---------- dokular (kanvasla çizilir) ----------
 export class Textures {
   asphalt = this.make(256, 512, (c, w, h) => {
-    c.fillStyle = '#787c9e'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#767d94'; c.fillRect(0, 0, w, h);
     for (let k = 0; k < 900; k++) { const x = (k * 97) % w, y = (k * 53 + (k % 7) * 31) % h; c.fillStyle = k % 3 ? 'rgba(255,255,255,0.035)' : 'rgba(0,0,0,0.05)'; c.fillRect(x, y, 3, 3); }
     c.fillStyle = '#f4f2ff'; c.fillRect(w * 0.035, 0, w * 0.022, h); c.fillRect(w * 0.943, 0, w * 0.022, h);
     c.fillStyle = 'rgba(244,242,255,0.9)'; for (const u of [0.335, 0.665]) c.fillRect(w * u - 3, 0, 6, h * 0.45);
@@ -247,7 +247,7 @@ export class Textures {
     c.fillStyle = '#3f6fd6'; for (let k = 0; k < 4; k++) { c.fillRect(k * 32 + 10, 14, 12, 44); }
     c.fillStyle = '#f2c94c'; c.fillRect(0, 0, w, 9);
   }, true);
-  tunnel = this.make(128, 128, (c, w, h) => { c.fillStyle = '#cfc6dc'; c.fillRect(0, 0, w, h); c.fillStyle = '#a99fbd'; c.fillRect(0, 0, w, 14); c.fillStyle = '#e4ddef'; c.fillRect(0, 14, w, 6); }, true);
+  tunnel = this.make(128, 128, (c, w, h) => { c.fillStyle = '#dccfb8'; c.fillRect(0, 0, w, h); c.fillStyle = '#b39f84'; c.fillRect(0, 0, w, 14); c.fillStyle = '#efe6d4'; c.fillRect(0, 14, w, 6); }, true);
   checker = this.make(128, 32, (c, w, h) => { for (let y = 0; y < 2; y++) for (let x = 0; x < 8; x++) { c.fillStyle = (x + y) % 2 ? '#3c3a47' : '#fbf6ee'; c.fillRect(x * 16, y * 16, 16, 16); } });
   private signs = new Map<string, THREE.Texture>();
   sign(text: string, bg: string, fg: string) {

@@ -30,11 +30,17 @@ float h21(vec2 p){ p = fract(p * vec2(0.1031, 0.1030)); p += dot(p, p.yx + 33.33
       bool shop = fu > 0.1 && fu < 0.9 && v > 0.35 && v < 2.9;
       bool frame = fu > 0.07 && fu < 0.93 && v > 0.25 && v < 3.0 && !shop;
       if (frame) diffuseColor.rgb = vec3(0.86, 0.84, 0.8);
+      // çizgili tente
+      float aw = h21(cell * 3.1 + sd * 0.21);
+      if (v > 2.95 && v < 3.5 && fu > 0.04 && fu < 0.96 && aw > 0.3) { vec3 ac = 0.5 + 0.5 * cos(6.2831 * (aw * 3.0 + vec3(0.0, 0.33, 0.67))); ac = mix(ac, vec3(dot(ac, vec3(0.33))), -0.5); diffuseColor.rgb = mix(clamp(ac, 0.0, 1.0), vec3(1.0), step(0.5, fract(u * 3.0))) * (0.8 + 0.2 * smoothstep(2.95, 3.3, v)); }
       if (shop) {
         float r = h21(cell + sd * 0.137);
         vec3 glass = mix(vec3(0.1, 0.12, 0.14), vec3(0.24, 0.3, 0.34), smoothstep(0.4, 2.8, v));
         bool door = fu > 0.42 && fu < 0.58 && r > 0.6;
-        diffuseColor.rgb = door ? vec3(0.28, 0.2, 0.14) : glass;
+        // vitrin: alt yarıda renkli mallar
+        vec3 ware = 0.55 + 0.45 * cos(6.2831 * (h21(vec2(floor(u * 2.6), cell.x) + sd * 0.3) + vec3(0.0, 0.33, 0.67)));
+        if (v < 1.5 && v > 0.55 && fract(u * 2.6) > 0.18) glass = mix(glass, ware, 0.62);
+        diffuseColor.rgb = door ? vec3(0.36, 0.22, 0.12) : glass;
         if (!door && fract(u * 1.3) < 0.04) diffuseColor.rgb = vec3(0.75);
         float lit = step(0.35, h21(cell * 1.7 + sd * 0.071 + 3.1));
         glow = vec3(1.0, 0.8, 0.5) * lit * uNight * 1.1;

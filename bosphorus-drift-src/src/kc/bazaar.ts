@@ -1,6 +1,8 @@
 // Kapalıçarşı (v0.5, baştan): gerçeğe yakın çarşı sokakları.
 // 5 m'lik kemer açıklıkları: her açıklıkta bir dükkân, kırmızı-krem taşlı kemer, süslü krem tonoz, tepe pencereleri.
 // 3B dükkânlar (tabela, camekân, dışarıda sergilenen mallar), ara sokaklar, bedesten salonları, açık hava han avlusu ve üst kat galerisi.
+import { critterGeos } from '../critters';
+import { Bag, box, cyl, sph, type Part } from '../street';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Geo, rr, type Track, type Textures } from '../track';
@@ -41,6 +43,7 @@ export class Bazaar {
   private lampPos: { p: THREE.Vector3; c: number }[] = [];
   private platePos: THREE.Matrix4[] = []; private sackPos: { m: THREE.Matrix4; c: number }[] = [];
   private hang = new Geo(); // asılı halı ve şallar (doku atlası)
+  private rich = new Map<number, Bag>(); // dükkân önü malları: 100 m'lik parçalar hâlinde (görüş dışı olanlar çizilmez)
   private boxes: THREE.BufferGeometry[] = []; private boxCols: number[] = [];
   constructor(private scene: THREE.Scene, private track: Track, private tex: Textures, private mobile: boolean) {
     this.T = track.T;
@@ -160,8 +163,12 @@ export class Bazaar {
       // kapı söveleri (ahşap) ve kaide
       this.boxAt(i0 + 0.6, d0 + side * 0.15, 1.6, 0.18, 3.2, 0.5, wood); this.boxAt(i1 - 0.6, d1 + side * 0.15, 1.6, 0.18, 3.2, 0.5, wood);
       this.boxAt(im, (d0 + d1) / 2 + side * 0.15, 0.27, BAY - 1, 0.55, 0.5, stoneC);
+      // tabela altında dükkân renginde saçak ve mozaik lambalar
+      this.boxAt(im, (d0 + d1) / 2 - side * 0.22, 3.06, BAY - 1.3, 0.24, 0.07, parseInt(sh.bg.slice(1), 16));
+      { const cols = [0xff5a5a, 0x4fb8ff, 0xffd23a, 0x5fe08a, 0xd07bff, 0xff9a3a]; for (const t of [0.3, 0.7]) this.lampPos.push({ p: this.V(i0 + (i1 - i0) * t, (d0 + d1) / 2 - side * 0.55, 2.62), c: cols[(i0 + Math.round(t * 10) + b.shop) % cols.length] }); }
       // dışarıda sergilenen mallar
       this.displayGoods(sh.goods, i0, i1, side, d0, d1);
+      this.richGoods(sh.goods, im, (d0 + d1) / 2 - side * 0.78, side, i0 + b.shop);
     }
     const mk = (g: Geo, m: THREE.Material) => { const me = new THREE.Mesh(g.build(), m); me.receiveShadow = true; this.scene.add(me); return me; };
     mk(wall, new THREE.MeshLambertMaterial({ color: cream, side: THREE.DoubleSide }));
@@ -185,10 +192,10 @@ export class Bazaar {
       this.boxAt(im, dm - side * 0.6, 1.8, 3.2, 0.08, 0.6, 0x6a4030);
       const m = new THREE.Matrix4(), q = new THREE.Quaternion();
       for (let k = 0; k < 10; k++) { const t = (k % 5 + 0.5) / 5, i = i0 + 0.9 + (i1 - i0 - 1.8) * t, p = this.V(i, dm - side * 0.6, k < 5 ? 1.3 : 2.1); q.setFromEuler(new THREE.Euler(Math.PI / 2 - 0.25 * side, 0, -this.yaw(Math.round(i)), 'YXZ')); m.compose(p, q, new THREE.Vector3(1, 1, 1)); this.platePos.push(m.clone()); }
-    } else if (g === 'spice' || g === 'tea' || g === 'candy') { // yerde çuvallar / kutular
-      const cols = g === 'spice' ? [0xd9461c, 0xf2b31c, 0x7a3a1c, 0xc7a01c, 0x9a2c1c] : g === 'tea' ? [0x3a6a2a, 0x7a3a1c, 0xc8662d, 0x2a4a2a] : [0xff8fb1, 0xffe08a, 0xa8e6cf, 0xffffff];
+    } else if (g === 'tea') { // yerde çuvallar
+      const cols = [0x3a8a2a, 0x9a4a1c, 0xe07a2d, 0x2a6a3a];
       const m = new THREE.Matrix4();
-      for (let k = 0; k < 4; k++) { const t = (k + 0.5) / 4, i = i0 + 0.6 + (i1 - i0 - 1.2) * t; m.makeTranslation(...this.P(i, dm - side * 0.7, 0)); this.sackPos.push({ m: m.clone(), c: cols[k % cols.length] }); }
+      for (let k = 0; k < 2; k++) { const t = k ? 0.9 : 0.1, i = i0 + 0.6 + (i1 - i0 - 1.2) * t; m.makeTranslation(...this.P(i, dm - side * 0.7, 0)); this.sackPos.push({ m: m.clone(), c: cols[k % cols.length] }); }
     }
   }
 
@@ -462,9 +469,57 @@ export class Bazaar {
   }
 
   /** dışarıdaki mallar: fenerler, tabaklar, çuvallar, asılı halılar, raflar */
+  /** dükkân önünde üç boyutlu mallar: halı ruloları, altın vitrini, baharat tepeleri, lokum, kumaş topları, bakır kazanlar, semaver */
+  private richGoods(g: Goods, i: number, d: number, side: number, k: number) {
+    const P: Part[] = [], t = -side, WOOD = 0x7a4a2c, pick = <T,>(a: T[], n: number) => a[((n % a.length) + a.length) % a.length];
+    const CARPET = [0xc8322c, 0x2456b8, 0xe0962c, 0x8a2c7a, 0x1f9a6a, 0xe8553a], BRIGHT = [0xff3b4e, 0xffc21a, 0x1e9bff, 0x2fc46b, 0xb06bff, 0xff7ab0, 0xff8a1f, 0x23c7c0];
+    const lying = (r: number, L: number, x: number, y: number, z: number, c: number) => { const q = new THREE.CylinderGeometry(r, r, L, 7); q.rotateZ(Math.PI / 2); q.translate(x, y, z); P.push([q, c]); };
+    if (g === 'carpet') {
+      for (let n = 0; n < 6; n++) { const row = n < 3 ? 0 : n < 5 ? 1 : 2, col = n < 3 ? n : n < 5 ? n - 3 : 0; lying(0.2, 1.7, -0.95, 0.2 + row * 0.35, (col - (2 - row) / 2) * 0.4 * 1 + t * 0.1, pick(CARPET, k + n)); }
+      for (let n = 0; n < 4; n++) P.push([cyl(0.15, 0.15, 1.9, 0.75 + n * 0.36, 0.95, -t * 0.25 + (n % 2) * 0.12, 7), pick(CARPET, k + n + 2)], [cyl(0.16, 0.16, 0.08, 0.75 + n * 0.36, 1.9, -t * 0.25 + (n % 2) * 0.12, 7), 0xf6e0b0]);
+    } else if (g === 'gold') {
+      P.push([box(3.4, 0.85, 0.62, 0, 0.42, 0), 0x4a2c1c], [box(3.3, 0.34, 0.56, 0, 1.02, 0), 0xbfeaff], [box(3.44, 0.05, 0.66, 0, 1.2, 0), 0xffd84a], [box(3.44, 0.05, 0.66, 0, 0.86, 0), 0xffd84a]);
+      for (let n = 0; n < 9; n++) { const x = -1.4 + n * 0.35; if (n % 3 === 1) { const r = new THREE.TorusGeometry(0.09, 0.03, 5, 9); r.rotateX(1.1); r.translate(x, 1.0, 0); P.push([r, 0xffd21a]); } else P.push([sph(0.075, x, 0.98, t * 0.05, 1, 0.7, 1, 6, 4), n % 3 ? 0xffd21a : pick([0xff3b4e, 0x23c7c0, 0xb06bff], n + k)]); }
+      for (const x of [-1.2, 1.2]) { const cone = new THREE.ConeGeometry(0.2, 0.55, 8); cone.translate(x, 1.5, -t * 0.08); const n2 = new THREE.TorusGeometry(0.14, 0.03, 5, 10); n2.rotateX(1.2); n2.translate(x, 1.5, 0); P.push([cone, 0x5a1f3a], [n2, 0xffd21a], [sph(0.05, x, 1.38, t * 0.13), 0xff3b4e]); }
+    } else if (g === 'spice') {
+      const SP = [0xe8401c, 0xffb81c, 0x8a4a1c, 0xd9c01c, 0xb82c1c, 0x4a9a2c, 0xe87a1c];
+      P.push([box(3.5, 0.55, 0.8, 0, 0.3, 0), WOOD], [box(3.6, 0.1, 0.9, 0, 0.6, 0), 0x9a6a3c]);
+      for (let n = 0; n < 7; n++) { const x = -1.5 + n * 0.5, c = pick(SP, n + k); const cone = new THREE.ConeGeometry(0.25, 0.46, 8); cone.translate(x, 0.98, 0); P.push([cyl(0.25, 0.22, 0.14, x, 0.7, 0, 8), 0xe8d8b8], [cone, c]); }
+      for (let n = 0; n < 8; n++) P.push([sph(0.07, -1.6 + n * 0.12, 2.5 - n * 0.14, -t * 0.4, 1, 1.5, 1, 5, 4), 0xd9201c], [sph(0.07, 1.6 - n * 0.12, 2.5 - n * 0.14, -t * 0.4, 1, 1.5, 1, 5, 4), n % 2 ? 0xffd21a : 0xd9201c]);
+    } else if (g === 'candy') {
+      for (let r = 0; r < 3; r++) {
+        P.push([box(3.2, 0.08, 0.5, 0, 0.5 + r * 0.42, -t * r * 0.22), 0xffffff], [box(0.08, 0.5 + r * 0.42, 0.08, -1.5, (0.5 + r * 0.42) / 2, -t * r * 0.22), 0xd9a23a], [box(0.08, 0.5 + r * 0.42, 0.08, 1.5, (0.5 + r * 0.42) / 2, -t * r * 0.22), 0xd9a23a]);
+        for (let n = 0; n < 9; n++) P.push([box(0.22, 0.14 + ((n + r) % 3) * 0.06, 0.26, -1.36 + n * 0.34, 0.62 + r * 0.42, -t * r * 0.22), pick([0xff8fb1, 0xffe14a, 0x8fe6c0, 0xffffff, 0xff5a7a, 0xb8f06a, 0xc79bff], n * 2 + r + k)]);
+      }
+    } else if (g === 'cloth') {
+      P.push([box(2.2, 0.5, 0.7, -0.6, 0.25, 0), WOOD]);
+      for (let n = 0; n < 8; n++) P.push([cyl(0.14, 0.14, 1.5 + (n % 3) * 0.2, -1.5 + n * 0.26, 1.0 + (n % 3) * 0.1, ((n % 2) - 0.5) * 0.3, 7), pick(BRIGHT, n + k)]);
+      for (let n = 0; n < 4; n++) lying(0.15, 1.2, 1.2, 0.16 + (n >> 1) * 0.3, ((n % 2) - 0.5) * 0.34, pick(BRIGHT, n + k + 3));
+    } else if (g === 'copper') {
+      const CU = 0xe8833a, CU2 = 0xffb060;
+      for (const [x, r] of [[-1.3, 0.42], [-0.3, 0.3], [1.2, 0.36]] as const) { const rim = new THREE.TorusGeometry(r * 0.92, 0.045, 5, 12); rim.rotateX(Math.PI / 2); rim.translate(x, r * 1.25, 0); P.push([sph(r, x, r * 0.72, 0, 1, 0.75, 1, 8, 5), CU], [rim, CU2]); }
+      P.push([cyl(0.1, 0.16, 0.5, 0.45, 0.25, t * 0.2, 7), CU2], [cyl(0.05, 0.1, 0.22, 0.45, 0.6, t * 0.2, 6), CU]);
+      for (let n = 0; n < 5; n++) { const pan = new THREE.CylinderGeometry(0.24 - (n % 2) * 0.05, 0.24 - (n % 2) * 0.05, 0.04, 10); pan.rotateX(Math.PI / 2); pan.translate(-1.5 + n * 0.75, 2.45 - (n % 2) * 0.2, -t * 0.42); P.push([pan, n % 2 ? CU2 : CU]); }
+    } else if (g === 'tea') {
+      P.push([cyl(0.36, 0.36, 0.06, 0, 0.62, 0, 10), 0xd9a23a], [cyl(0.05, 0.2, 0.6, 0, 0.3, 0, 6), WOOD]);
+      P.push([cyl(0.17, 0.2, 0.42, 0, 0.88, 0, 8), 0xffc23a], [sph(0.15, 0, 1.14, 0, 1, 0.8, 1, 7, 4), 0xffc23a], [cyl(0.09, 0.11, 0.18, 0, 1.3, 0, 7), 0xffffff]);
+      for (const [x, z] of [[0.24, 0.12], [-0.22, 0.14], [0.05, -0.26]] as const) P.push([cyl(0.05, 0.04, 0.1, x, 0.7, z * t, 6), 0xd9301c]);
+      for (const x of [-0.8, 0.8]) P.push([cyl(0.2, 0.2, 0.06, x, 0.42, t * 0.15, 8), 0xe8401c], [cyl(0.04, 0.14, 0.4, x, 0.2, t * 0.15, 5), WOOD]);
+      for (let n = 0; n < 6; n++) P.push([box(0.4, 0.26, 0.34, 1.5 - (n % 2) * 0.02, 0.13 + (n >> 1) * 0.27, ((n % 2) - 0.5) * 0.4), pick([0x2fa84a, 0xe8401c, 0xffc21a, 0x1e7ad0], n + k)]);
+    } else if (g === 'plate') {
+      for (const [x, c] of [[-1.55, 0x1e6fd0], [1.55, 0x23b7c0], [0, 0xffffff]] as const) P.push([sph(0.3, x, 0.34, 0, 1, 1.1, 1, 8, 5), c], [cyl(0.1, 0.16, 0.3, x, 0.78, 0, 7), c], [cyl(0.15, 0.1, 0.07, x, 0.96, 0, 7), 0xffd21a]);
+    } else if (g === 'lamp') {
+      for (const x of [-1.5, 1.5]) { P.push([cyl(0.04, 0.2, 1.7, x, 0.85, 0, 6), 0xb08a4a]); for (let n = 0; n < 3; n++) P.push([sph(0.17, x + (n - 1) * 0.3, 1.75 - Math.abs(n - 1) * 0.25, 0, 1, 1.25, 1, 7, 5), pick(BRIGHT, n + k)]); }
+    }
+    if (!P.length) return;
+    const key = Math.floor(i / 100); let bag = this.rich.get(key); if (!bag) this.rich.set(key, (bag = new Bag()));
+    bag.put(P, this.V(i, d, 0), this.yaw(i));
+  }
+
   private goodsMeshes() {
+    for (const bag of this.rich.values()) { const me = bag.mesh(false); this.scene.add(me); }
     if (this.lampPos.length) {
-      const g = new THREE.SphereGeometry(0.28, 10, 8); g.scale(1, 1.25, 1);
+      const g = new THREE.SphereGeometry(0.26, 7, 5); g.scale(1, 1.25, 1);
       const byCol = new Map<number, THREE.Vector3[]>(); for (const l of this.lampPos) (byCol.get(l.c) || byCol.set(l.c, []).get(l.c)!).push(l.p);
       const m = new THREE.Matrix4();
       for (const [c, list] of byCol) { const im = new THREE.InstancedMesh(g, new THREE.MeshBasicMaterial({ color: c }), list.length); list.forEach((p, k) => { m.makeTranslation(p.x, p.y, p.z); im.setMatrixAt(k, m); }); this.scene.add(im); }
@@ -508,15 +563,20 @@ export class Bazaar {
         spots.push({ p: new THREE.Vector3(p[0], p[1], p[2]), yaw: Math.atan2(-T.tx[i] * sd, T.tz[i] * sd), k: (i + (sd > 0 ? 1 : 0)) % 3 });
       }
     }
-    const body = new THREE.SphereGeometry(0.36, 8, 5); body.scale(0.85, 1, 0.75); body.translate(0, 0.45, 0);
-    const head = new THREE.SphereGeometry(0.26, 7, 5); head.translate(0, 0.98, 0);
-    const ears = [-1, 1].map((sd) => { const e = new THREE.ConeGeometry(0.09, 0.2, 4); e.translate(0, 1.22, sd * 0.15); return e; });
-    const cat = mergeGeometries([body, head, ...ears]), gull = mergeGeometries([body.clone(), head.clone(), ((g) => { g.rotateZ(-Math.PI / 2); g.translate(0.3, 0.95, 0); return g; })(new THREE.ConeGeometry(0.07, 0.25, 6))]);
+    const G = critterGeos();
     const mat = (c: number) => { const m = new THREE.MeshLambertMaterial({ color: c }); m.onBeforeCompile = (sh) => { sh.uniforms.uTime = this.uTime; sh.uniforms.uPlayer = this.uPlayer; sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nuniform float uTime; uniform vec3 uPlayer;').replace('#include <begin_vertex>', '#include <begin_vertex>\nfloat ph = instanceMatrix[3].x * 0.71 + instanceMatrix[3].z * 1.31; float cheer = 1.0 - smoothstep(8.0, 26.0, distance(instanceMatrix[3].xz, uPlayer.xz));\ntransformed.y += abs(sin(uTime * (4.0 + cheer * 5.0) + ph)) * (0.12 + cheer * 0.5);'); }; return m; };
-    [[gull, 0xffffff], [cat, 0xf3a65a], [cat, 0xa9a39d]].forEach(([g, c], ki) => {
-      const list = spots.filter((s) => s.k === ki), im = new THREE.InstancedMesh(g as THREE.BufferGeometry, mat(c as number), list.length), m = new THREE.Matrix4(), q = new THREE.Quaternion();
-      list.forEach((s, k) => { q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -s.yaw); m.compose(s.p, q, new THREE.Vector3(1, 1, 1)); im.setMatrixAt(k, m); });
-      im.castShadow = !this.mobile; this.scene.add(im);
+    const kinds: [THREE.BufferGeometry, number][][] = [
+      [[G.gull, 0xffffff], [G.beak, 0xffb300], [G.wing, 0xaab6c6], [G.gullEyes, 0x1f1a26]],
+      [[G.cat, 0xff9a3c], [G.catWhite, 0xfff6e8], [G.catEyes, 0x1f1a26]],
+      [[G.cat, 0xa7a3a0], [G.catWhite, 0xfff6e8], [G.catEyes, 0x1f1a26]],
+    ];
+    kinds.forEach((parts, ki) => {
+      const list = spots.filter((s) => s.k === ki), m = new THREE.Matrix4(), q = new THREE.Quaternion();
+      for (const [g, c] of parts) {
+        const im = new THREE.InstancedMesh(g, mat(c), list.length);
+        list.forEach((s, k) => { q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -s.yaw); m.compose(s.p, q, new THREE.Vector3(1, 1, 1)); im.setMatrixAt(k, m); });
+        im.castShadow = !this.mobile; this.scene.add(im);
+      }
     });
     void F_GAL;
   }
