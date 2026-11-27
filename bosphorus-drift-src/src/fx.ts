@@ -18,7 +18,7 @@ export class Particles {
       transparent: true, depthWrite: false,
       uniforms: { scale: { value: 600 } },
       vertexShader: 'attribute float size; attribute vec4 color; varying vec4 vC; uniform float scale; void main(){ vC = color; vec4 mv = modelViewMatrix * vec4(position,1.0); gl_PointSize = size * scale / -mv.z; gl_Position = projectionMatrix * mv; }',
-      fragmentShader: 'varying vec4 vC; void main(){ vec2 p = gl_PointCoord - 0.5; float d = length(p); if (d > 0.5) discard; float a = smoothstep(0.5, 0.25, d); gl_FragColor = vec4(vC.rgb, vC.a * a); }',
+      fragmentShader: 'varying vec4 vC; void main(){ vec2 p = gl_PointCoord - 0.5; float d = length(p); if (d > 0.5) discard; float a = smoothstep(0.5, 0.25, d); float sat = max(vC.r, max(vC.g, vC.b)) - min(vC.r, min(vC.g, vC.b)); gl_FragColor = vec4(vC.rgb * (1.0 + 1.6 * sat), vC.a * a); }',
     });
     this.points = new THREE.Points(g, m); this.points.frustumCulled = false; scene.add(this.points);
   }

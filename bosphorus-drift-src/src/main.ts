@@ -39,12 +39,13 @@ const canvas = $<HTMLCanvasElement>('#view');
 let renderer: THREE.WebGLRenderer;
 try { renderer = new THREE.WebGLRenderer({ canvas, antialias: !mobile, powerPreference: 'high-performance' }); }
 catch { $('#ltxt').textContent = 'Bu cihazda 3B görüntü başlatılamadı.'; throw new Error('webgl'); }
-const PR = Math.min(devicePixelRatio, mobile ? 1.5 : 2);
+let PR = Math.min(devicePixelRatio, 2);
 renderer.setPixelRatio(1);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 const ink = new Ink(renderer, mobile ? 0 : 4);
-ink.mat.uniforms.vivid.value = PIST === 'bg' ? 0.5 : 0.75; // canlı renkler
+ink.mat.uniforms.vivid.value = PIST === 'bg' ? 0.7 : 1.05; // canlı renkler
+ink.bloomStrength = PIST === 'kc' ? 0.7 : 0.5;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(70, 1, 0.3, 2000);
 let hemi: THREE.HemisphereLight, sun: THREE.DirectionalLight;
@@ -55,7 +56,12 @@ if (PIST === 'galata') {
   sun = new THREE.DirectionalLight(0xffcf9e, 2.3);
 } else if (PIST === 'bg') {
   // Boğaz: parlak öğle, masmavi gök
-  scene.background = new THREE.Color(0x8fd0ff);
+  { // gök: tepede koyu mavi, ufka doğru açılır
+    const cv = document.createElement('canvas'); cv.width = 4; cv.height = 256; const c = cv.getContext('2d')!;
+    const g = c.createLinearGradient(0, 0, 0, 256); g.addColorStop(0, '#1f86ff'); g.addColorStop(0.45, '#5cc0ff'); g.addColorStop(0.62, '#c9efff'); g.addColorStop(1, '#c9efff');
+    c.fillStyle = g; c.fillRect(0, 0, 4, 256);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; scene.background = t;
+  }
   scene.fog = new THREE.Fog(0xc4e8ff, 320, 1750);
   hemi = new THREE.HemisphereLight(0xe6f4ff, 0xa8d49a, 2.3);
   sun = new THREE.DirectionalLight(0xfff4dc, 2.7);
@@ -68,7 +74,7 @@ if (PIST === 'galata') {
 }
 scene.add(hemi);
 sun.castShadow = true;
-sun.shadow.mapSize.set(mobile ? 1024 : 2048, mobile ? 1024 : 2048);
+sun.shadow.mapSize.set(mobile ? 1536 : 2048, mobile ? 1536 : 2048);
 Object.assign(sun.shadow.camera, { left: -55, right: 55, top: 55, bottom: -55, near: 1, far: 400 });
 sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.06;
 scene.add(sun, sun.target);
@@ -150,7 +156,7 @@ const mini = new MiniMap($<HTMLCanvasElement>('#mini'), track);
 // ---------- durum ----------
 type State = 'title' | 'select' | 'count' | 'race' | 'done';
 let state: State = 'title', paused = false;
-let charIdx = Math.max(0, Math.min(5, Number(store.get('char') ?? 0) || 0));
+let charIdx = Math.max(0, Math.min(CHARS.length - 1, Number(Q.get('char') ?? store.get('char') ?? 0) || 0));
 let diff = (store.get('diff') as 'kolay' | 'normal' | 'zor') || 'normal';
 audio.muted = store.get('mute') === '1';
 let karts: Kart[] = [], ais: AI[] = [], player!: Kart, playerAI: AI | null = null;
@@ -192,9 +198,9 @@ function setupRace() {
   for (const k of karts) scene.remove(k.model.root);
   items.reset(); trails.reset();
   karts = []; ais = [];
-  const order = [0, 1, 2, 3, 4, 5].filter((i) => i !== charIdx);
-  const grid = [0, 1, 2, 3, 4, 5]; const pSlot = 3;
-  const skills = diff === 'kolay' ? [0.2, 0.3, 0.35, 0.4, 0.45] : diff === 'zor' ? [0.8, 0.85, 0.9, 0.95, 1.0] : [0.5, 0.55, 0.62, 0.68, 0.75];
+  const order = CHARS.map((_, i) => i).filter((i) => i !== charIdx);
+  const grid = CHARS.map((_, i) => i); const pSlot = 5;
+  const skills = diff === 'kolay' ? [0.2, 0.25, 0.3, 0.34, 0.38, 0.42, 0.45] : diff === 'zor' ? [0.8, 0.83, 0.86, 0.9, 0.93, 0.96, 1.0] : [0.5, 0.53, 0.56, 0.6, 0.64, 0.7, 0.75];
   let ai = 0;
   for (const slot of grid) {
     const isP = slot === pSlot, ci = isP ? charIdx : order[ai];
@@ -236,7 +242,7 @@ function updateCamera(dt: number, time: number) {
     const short = innerHeight < 500, back = camera.aspect < 1 ? 11 : short ? 8.6 : 7.2;
     camera.position.copy(SR).addScaledVector(srRight, back).add(new THREE.Vector3(0, 1.9, 0)).addScaledVector(new THREE.Vector3(-srRight.z, 0, srRight.x), camera.aspect > 1.3 ? 1.2 : 0);
     camera.lookAt(SR.x, SR.y + (short ? 1.0 : 2.2), SR.z); camera.fov = 50; camera.updateProjectionMatrix(); camInit = false;
-    if (srKart) { srKart.root.rotation.y = time * 0.6; srKart.root.position.y = 0.52 + Math.abs(Math.sin(time * 3)) * 0.04; srKart.wheels.forEach((w) => (w.rotation.z -= 0.05)); }
+    if (srKart) { srKart.root.rotation.y = time * 0.6; srKart.root.position.y = 0.52 + Math.abs(Math.sin(time * 3)) * 0.04; srKart.wheels.forEach((w) => (w.rotation.z -= 0.05)); for (const a of srKart.anim) a(time, 14, Math.sin(time * 0.8) * 0.5); }
     ink.mat.uniforms.speed.value = 0; return;
   }
   if (state === 'title' && PIST === 'kc') {
@@ -389,6 +395,39 @@ function onPlayerFinish() {
   $('#touch').classList.add('hide');
 }
 
+// ---------- tam ekran ----------
+type FsEl = HTMLElement & { webkitRequestFullscreen?: () => Promise<void> | void };
+type FsDoc = Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => void };
+const fsEl = document.documentElement as FsEl, fsDoc = document as FsDoc;
+const fsCan = !!(fsEl.requestFullscreen || fsEl.webkitRequestFullscreen);
+/** ana ekrandan uygulama gibi açılmış mı (adres çubuğu yok) */
+const standalone = matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+const fsOn = () => !!(document.fullscreenElement || fsDoc.webkitFullscreenElement);
+async function setFull(on: boolean) {
+  try {
+    if (on && !fsOn()) {
+      await (fsEl.requestFullscreen ? fsEl.requestFullscreen({ navigationUI: 'hide' }) : fsEl.webkitRequestFullscreen?.());
+    } else if (!on && fsOn()) await (document.exitFullscreen ? document.exitFullscreen() : fsDoc.webkitExitFullscreen?.());
+  } catch { /* izin verilmedi */ }
+}
+const fsBtnHtml = (id: string) => standalone ? '' : `<button class="btn ghost" id="${id}">${fsOn() ? 'Tam ekrandan çık' : '⛶ Tam ekran'}</button>`;
+function bindFs(id: string, back: () => void) {
+  const b = document.getElementById(id); if (!b) return;
+  b.onclick = async () => {
+    audio.start(); audio.click();
+    if (!fsCan) { showInstall(back); return; }
+    const on = !fsOn(); store.set('fs', on ? '1' : '0'); await setFull(on); back();
+  };
+}
+/** iPhone: Safari sitelere tam ekran izni vermez; ana ekrana ekleyince adres çubuğu olmadan açılır */
+function showInstall(back: () => void) {
+  menu.innerHTML = `<div class="panel"><h2>Tam ekran oyna</h2><div class="help"><p>iPhone’da Safari, sitelerin tam ekran olmasına izin vermiyor. Oyunu ana ekrana eklersen uygulama gibi, adres çubuğu olmadan açılır:</p>
+    <ol><li>Safari’de alttaki <b>Paylaş</b> düğmesine dokun (kare ve yukarı ok).</li><li>Listeden <b>Ana Ekrana Ekle</b>’yi seç.</li><li>Ana ekrandaki <b>Bosphorus Drift</b> simgesinden aç.</li></ol>
+    <p>Telefonu yan çevirirsen ekran daha da genişler.</p></div><div class="row"><button class="btn" id="iOk">Tamam</button></div></div>`;
+  $('#iOk').onclick = () => { audio.click(); back(); };
+}
+for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(ev, () => { resize(); if (state === 'title') showTitle(); else if (paused) showPause(); });
+
 // ---------- menüler ----------
 const menu = $('#menu');
 let portraits: string[] = [];
@@ -396,7 +435,7 @@ function makePortraits() {
   const rt = new THREE.WebGLRenderTarget(256, 256, { colorSpace: THREE.SRGBColorSpace } as THREE.RenderTargetOptions);
   const sc = new THREE.Scene(); sc.background = new THREE.Color(0xfff3e6);
   sc.add(new THREE.HemisphereLight(0xffffff, 0xf3d6bd, 2.2)); const dl = new THREE.DirectionalLight(0xffffff, 1.6); dl.position.set(3, 5, 4); sc.add(dl);
-  const cam = new THREE.PerspectiveCamera(32, 1, 0.1, 50); cam.position.set(3.2, 2.2, 3.6); cam.lookAt(0, 0.85, 0);
+  const cam = new THREE.PerspectiveCamera(34, 1, 0.1, 50); cam.position.set(3.5, 2.5, 3.9); cam.lookAt(-0.1, 1.12, 0);
   const buf = new Uint8Array(256 * 256 * 4), cv = document.createElement('canvas'); cv.width = cv.height = 256; const c2 = cv.getContext('2d')!;
   for (const d of CHARS) {
     const m = buildKart(d); m.root.rotation.y = -0.5; sc.add(m.root);
@@ -413,8 +452,9 @@ function showTitle() {
   menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>${PISTS[PIST].toLocaleUpperCase("tr")}</small></div>
     <div class="seg pist tpist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>
     <div class="row"><button class="btn" id="bPlay">Yarış</button><button class="btn alt" id="bHow">Nasıl oynanır</button></div>
-    <button class="btn ghost" id="bMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button></div>`;
-  $('#bPlay').onclick = () => { audio.start(); audio.click(); showSelect(); };
+    </div><div class="corner l"><button class="btn ghost" id="bMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button></div><div class="corner r">${fsBtnHtml('bFs')}</div>`;
+  bindFs('bFs', showTitle);
+  $('#bPlay').onclick = () => { audio.start(); audio.click(); if (mobile && fsCan && store.get('fs') === '1') void setFull(true); showSelect(); };
   $('#bHow').onclick = () => { audio.start(); audio.click(); showHelp(showTitle); };
   $('#bMute').onclick = () => { toggleMute(); showTitle(); };
   menu.querySelectorAll<HTMLElement>('.tpist button[data-p]').forEach((b) => (b.onclick = () => {
@@ -449,7 +489,7 @@ function showSelect() {
   for (const k of karts) k.model.root.visible = false;
   const c = CHARS[charIdx];
   menu.innerHTML = `<div class="cs">
-    <div class="selInfo"><small>KARAKTER ${charIdx + 1}/6</small><h1>${c.name}</h1><p>${c.blurb}</p>
+    <div class="selInfo"><small>KARAKTER ${charIdx + 1}/${CHARS.length}</small><h1>${c.name}</h1><p>${c.blurb}</p>
       ${c.stats.map((v, i) => `<div class="stat"><span>${STAT_NAMES[i]}</span><div class="bars">${[1, 2, 3, 4, 5].map((n) => `<i class="${n <= v ? 'on' : ''}"></i>`).join('')}</div></div>`).join('')}
     </div>
     <button class="selArrow l" id="sPrev" aria-label="Önceki">‹</button><button class="selArrow r" id="sNext" aria-label="Sonraki">›</button>
@@ -458,7 +498,7 @@ function showSelect() {
       <div class="selRow"><div class="seg pist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div><div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
       <button class="btn ghost" id="bBack">Geri</button><button class="btn" id="bGo">Başla</button></div>
     </div></div>`;
-  const pick = (i: number) => { charIdx = (i + 6) % 6; store.set('char', String(charIdx)); audio.click(); showSelect(); };
+  const pick = (i: number) => { charIdx = (i + CHARS.length) % CHARS.length; store.set('char', String(charIdx)); audio.click(); showSelect(); };
   menu.querySelectorAll<HTMLElement>('.chip').forEach((b) => (b.onclick = () => pick(Number(b.dataset.i))));
   $('#sPrev').onclick = () => pick(charIdx - 1); $('#sNext').onclick = () => pick(charIdx + 1);
   menu.querySelectorAll<HTMLElement>('.seg button[data-d]').forEach((b) => (b.onclick = () => { diff = b.dataset.d as typeof diff; store.set('diff', diff); audio.click(); showSelect(); }));
@@ -490,7 +530,8 @@ function showHelp(back: () => void) {
 function showPause() {
   paused = true;
   menu.innerHTML = `<div class="panel"><h2>Duraklatıldı</h2><div class="row" style="flex-direction:column;align-items:center">
-    <button class="btn" id="pRes">Devam</button><button class="btn alt" id="pRe">Yeniden başla</button><button class="btn ghost" id="pHow">Nasıl oynanır</button><button class="btn ghost" id="pMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button><button class="btn ghost" id="pMenu">Ana menü</button></div></div>`;
+    <button class="btn" id="pRes">Devam</button><button class="btn alt" id="pRe">Yeniden başla</button><button class="btn ghost" id="pHow">Nasıl oynanır</button><button class="btn ghost" id="pMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button>${fsBtnHtml('pFs')}<button class="btn ghost" id="pMenu">Ana menü</button></div></div>`;
+  bindFs('pFs', showPause);
   $('#pRes').onclick = resume;
   $('#pRe').onclick = () => { paused = false; startCountdown(); };
   $('#pHow').onclick = () => showHelp(showPause);
@@ -547,9 +588,23 @@ function resize() {
 addEventListener('resize', resize); resize();
 
 let last = performance.now(), time = 0;
+// otomatik kalite: yarışta kare hızı düşerse çözünürlük kademeli iner, en sonda parlama kapanır
+const Q_LEVELS = [PR, 1.5, 1.25, 1].filter((v, i) => i === 0 || v < PR);
+let qLevel = 0, qAcc = 0, qN = 0;
+function qualityTick(raw: number) {
+  if (state !== 'race' || paused || raw > 0.2) return;
+  qAcc += raw; qN++;
+  if (qN < 100) return;
+  const avg = qAcc / qN; qAcc = 0; qN = 0;
+  if (avg > 1 / 43 && (qLevel < Q_LEVELS.length - 1 || ink.bloom)) {
+    if (qLevel < Q_LEVELS.length - 1) PR = Q_LEVELS[++qLevel]; else ink.bloom = false;
+    resize();
+  }
+}
 const ts = Number(Q.get('t') || 1), fast = Number(Q.get('fast') || 0);
 function frame(now: number) {
   requestAnimationFrame(frame);
+  if (!fast && !Q.has('noq')) qualityTick((now - last) / 1000);
   let dt = Math.min(0.05, (now - last) / 1000) * ts; last = now;
   if (fast) dt = fast / 60;
   if (paused) dt = 0;

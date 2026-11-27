@@ -1,5 +1,5 @@
 :root {
-  --ink: #3c3a47; --cream: #fff8ee; --coral: #ef8a80; --sky: #8ec5f0; --mint: #9ed9b6; --butter: #f7d774; --lilac: #c5b3e8; --navy: #2f4b6e;
+  --ink: #3c3a47; --cream: #fff8ee; --coral: #ff5d52; --sky: #2ea6ff; --mint: #3fd08a; --butter: #ffd21a; --lilac: #a678ff; --navy: #2f4b6e;
   --font: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, sans-serif;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -132,3 +132,9 @@ h2 { margin: 0 0 12px; font-size: 26px; font-weight: 900; }
 .selRow .seg { margin: 0; background: rgba(255, 248, 238, .85); }
 @media (max-height: 460px) { .selInfo { padding: 8px 12px; top: 8px; width: 230px; } .selInfo h1 { font-size: 24px; } .stat { font-size: 12px; } .stat span { width: 62px; } .bars i { height: 9px; } .selInfo p { display: none; } .stat { margin: 3px 0; } .chip { width: 48px; height: 48px; border-radius: 14px; } .selRow .btn { padding: 8px 18px; font-size: 18px; } .selArrow { top: 36%; } }
 @media (max-width: 560px) and (orientation: portrait) { .selInfo { width: auto; right: 22px; } .selArrow { top: 52%; } .selArrow.l { left: 16px; } }
+
+.corner { position: absolute; bottom: calc(14px + env(safe-area-inset-bottom)); pointer-events: auto; }
+.corner.l { left: calc(14px + env(safe-area-inset-left)); } .corner.r { right: calc(14px + env(safe-area-inset-right)); }
+.corner .btn.ghost { font-size: 15px; padding: 8px 14px; border-width: 3px; background: rgba(29, 37, 80, .55); }
+.help ol { margin: 8px 0 10px; padding-left: 22px; } .help ol li { margin: 6px 0; }
+@media (max-height: 460px) { .title { gap: 12px; } .title .logo { font-size: clamp(40px, 17vh, 84px); } }

@@ -58,17 +58,19 @@ export class Props {
   private crowds() {
     const T = this.track.T, L = this.track.L;
     // seyirci geometrileri (≈1 m)
-    const gull = mergeGeometries([
-      ((g) => { g.scale(0.85, 1, 0.75); g.translate(0, 0.45, 0); return g; })(new THREE.SphereGeometry(0.36, 8, 5)),
-      ((g) => { g.translate(0, 0.98, 0); return g; })(new THREE.SphereGeometry(0.25, 7, 5)),
-    ]);
-    const beak = mergeGeometries([((g) => { g.rotateZ(-Math.PI / 2); g.translate(0.3, 0.95, 0); return g; })(new THREE.ConeGeometry(0.07, 0.25, 6))]);
-    const wing = mergeGeometries([-1, 1].map((sd) => { const g = new THREE.BoxGeometry(0.3, 0.05, 0.42); g.rotateX(sd * 0.9); g.translate(-0.02, 0.62, sd * 0.38); return g; }));
+    const sp = (r: number, x: number, y: number, z: number, sx = 1, sy = 1, sz = 1, w = 9, h = 6) => { const g = new THREE.SphereGeometry(r, w, h); g.scale(sx, sy, sz); g.translate(x, y, z); return g; };
+    const eyesG = (x: number, y: number, z: number, r: number) => mergeGeometries([-1, 1].map((sd) => sp(r, x, y, sd * z, 0.6, 1.2, 1, 6, 5)));
+    // iri kafalı, gözlü çizgi film seyirciler (+x'e bakar)
+    const gull = mergeGeometries([sp(0.36, 0, 0.42, 0, 0.9, 1, 0.82), sp(0.31, 0.03, 1.0, 0, 1, 0.95, 1, 10, 7)]);
+    const beak = mergeGeometries([((g) => { g.rotateZ(-Math.PI / 2 - 0.1); g.translate(0.42, 0.95, 0); return g; })(new THREE.ConeGeometry(0.1, 0.36, 7))]);
+    const wing = mergeGeometries([-1, 1].map((sd) => { const g = new THREE.SphereGeometry(0.2, 7, 5); g.scale(0.7, 0.28, 1.25); g.rotateX(sd * 0.95); g.translate(-0.02, 0.62, sd * 0.42); return g; }));
     const cat = mergeGeometries([
-      ((g) => { g.scale(0.9, 1, 0.8); g.translate(0, 0.42, 0); return g; })(new THREE.SphereGeometry(0.34, 8, 5)),
-      ((g) => { g.translate(0, 0.95, 0); return g; })(new THREE.SphereGeometry(0.27, 7, 5)),
-      ...[-1, 1].map((sd) => { const g = new THREE.ConeGeometry(0.09, 0.2, 4); g.translate(0, 1.22, sd * 0.15); return g; }),
+      sp(0.34, 0, 0.4, 0, 0.9, 1, 0.85), sp(0.33, 0.03, 0.97, 0, 0.95, 0.9, 1.12, 10, 7),
+      ...[-1, 1].map((sd) => { const g = new THREE.ConeGeometry(0.13, 0.28, 4); g.rotateY(Math.PI / 4); g.rotateX(sd * 0.3); g.translate(0, 1.3, sd * 0.2); return g; }),
+      ...[0, 1, 2, 3].map((k) => sp(0.075, -0.3 - Math.sin(k * 0.6) * 0.14, 0.2 + k * 0.17, 0, 1, 1.2, 1, 6, 5)),
     ]);
+    const catWhite = mergeGeometries([sp(0.2, 0.17, 0.4, 0, 0.6, 1.1, 0.9, 7, 5), ...[-1, 1].map((sd) => sp(0.1, 0.27, 0.88, sd * 0.07, 0.8, 0.7, 1, 6, 5))]);
+    const gullEyes = eyesG(0.27, 1.07, 0.13, 0.05), catEyes = eyesG(0.29, 1.03, 0.14, 0.06);
     const spots: { p: THREE.Vector3; yaw: number; kind: number }[] = [];
     const facing = (p: THREE.Vector3, i: number) => Math.atan2(T.z[i] - p.z, T.x[i] - p.x);
     // tribünler: start düzlüğünde (deniz tarafı) ve sıçrama inişinde
@@ -102,12 +104,13 @@ export class Props {
       const sd = (i / 57) % 2 < 1 ? -1 : 1;
       for (let k = 0; k < 6; k++) { const p = this.side((i + k * 2) % T.n, sd * (T.w[i] / 2 + 3 + (k % 2) * 1.3)); spots.push({ p, yaw: facing(p, i), kind: k % 3 }); }
     }
-    const kinds = [{ g: gull, c: 0xffffff }, { g: cat, c: 0xf3a65a }, { g: cat, c: 0xa9a39d }];
+    const kinds = [{ g: gull, c: 0xffffff }, { g: cat, c: 0xff9a3c }, { g: cat, c: 0xa7a3a0 }];
     const m = new THREE.Matrix4(), q = new THREE.Quaternion();
     kinds.forEach((K, ki) => {
       const list = spots.filter((s) => s.kind === ki);
       const meshes = [new THREE.InstancedMesh(K.g, this.crowdMaterial(K.c), list.length)];
-      if (ki === 0) { meshes.push(new THREE.InstancedMesh(beak, this.crowdMaterial(0xf2b84b), list.length)); meshes.push(new THREE.InstancedMesh(wing, this.crowdMaterial(0xc9d0d8), list.length)); }
+      if (ki === 0) { meshes.push(new THREE.InstancedMesh(beak, this.crowdMaterial(0xffb300), list.length)); meshes.push(new THREE.InstancedMesh(wing, this.crowdMaterial(0xaab6c6), list.length)); meshes.push(new THREE.InstancedMesh(gullEyes, this.crowdMaterial(0x1f1a26), list.length)); }
+      else { meshes.push(new THREE.InstancedMesh(catWhite, this.crowdMaterial(0xfff6e8), list.length)); meshes.push(new THREE.InstancedMesh(catEyes, this.crowdMaterial(0x1f1a26), list.length)); }
       list.forEach((s, k) => { q.setFromAxisAngle(up, -s.yaw); m.compose(s.p, q, new THREE.Vector3(1, 1, 1)); for (const me of meshes) me.setMatrixAt(k, m); });
       for (const me of meshes) { me.castShadow = !this.mobile; this.scene.add(me); }
     });

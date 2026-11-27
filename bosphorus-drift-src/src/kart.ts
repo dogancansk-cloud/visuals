@@ -208,6 +208,7 @@ export class Kart {
     for (const fw of m.front) fw.rotation.y = -this.steerVis * 0.4;
     m.driver.rotation.x = -this.steerVis * 0.15;
     m.driver.position.y = 0.9 + Math.abs(Math.sin(time * 9 + this.def.color)) * 0.015 * Math.min(1, this.speed / 10);
+    for (const a of m.anim) a(time + this.def.color % 7, Math.abs(this.speed), this.steerVis);
   }
 }
 
