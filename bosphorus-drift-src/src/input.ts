@@ -40,6 +40,18 @@ export class Input {
       const off = () => { set(false); el.classList.remove('on'); };
       el.addEventListener('pointerup', off); el.addEventListener('pointercancel', off); el.addEventListener('lostpointercapture', off);
     };
+    // parmak GAZ'dan kalkmadan DRİFT'e kayabilir (ve geri): ikisi tek başparmakla kullanılır
+    const gasEl = ui.querySelector<HTMLElement>('#tGas')!, drEl = ui.querySelector<HTMLElement>('#tDrift')!;
+    const inside = (el: HTMLElement, e: PointerEvent, pad = 10) => { const r = el.getBoundingClientRect(); return e.clientX > r.left - pad && e.clientX < r.right + pad && e.clientY > r.top - pad && e.clientY < r.bottom + pad; };
+    const slide = (from: HTMLElement) => from.addEventListener('pointermove', (e) => {
+      const onD = inside(drEl, e), onG = inside(gasEl, e, 4);
+      if (onD && !this.tDrift) { this.tDrift = true; this.dTap = true; drEl.classList.add('on'); }
+      else if (!onD && onG && this.tDrift && from === gasEl) { this.tDrift = false; drEl.classList.remove('on'); }
+      if (from === drEl && onG && !onD) { this.tGas = true; this.tDrift = false; drEl.classList.remove('on'); gasEl.classList.add('on'); }
+    });
+    slide(gasEl); slide(drEl);
+    const offAll = () => { this.tGas = false; this.tDrift = false; gasEl.classList.remove('on'); drEl.classList.remove('on'); };
+    for (const el of [gasEl, drEl]) { el.addEventListener('pointerup', offAll); el.addEventListener('pointercancel', offAll); }
     hold('#tDrift', (v) => { this.tDrift = v; if (v) this.dTap = true; }); hold('#tItem', (v) => { this.tItem = v; if (v) this.iTap = true; }); hold('#tBrake', (v) => (this.tBrake = v)); hold('#tGas', (v) => (this.tGas = v));
   }
   private has(...k: string[]) { return k.some((x) => this.keys.has(x)); }
@@ -48,7 +60,7 @@ export class Input {
     const kd = (this.has('d', 'arrowright') ? 1 : 0) - (this.has('a', 'q', 'arrowleft') ? 1 : 0);
     this.kSteer += (kd - this.kSteer) * Math.min(1, dt * (kd !== 0 ? 9 : 14));
     let steer = this.steerId !== null ? this.tSteer : this.kSteer;
-    let gas = this.has('w', 'z', 'arrowup') || (this.tGas && !this.tBrake) ? 1 : 0;
+    let gas = this.has('w', 'z', 'arrowup') || ((this.tGas || this.tDrift) && !this.tBrake) ? 1 : 0;
     let brake = this.has('s', 'arrowdown') || this.tBrake ? 1 : 0;
     let drift = this.has(' ', 'shift') || this.tDrift;
     let item = this.has('e', 'enter', 'control', 'f') || this.tItem;

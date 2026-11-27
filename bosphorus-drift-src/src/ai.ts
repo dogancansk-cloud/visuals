@@ -1,11 +1,10 @@
 // Rakip sürücü yapay zekâsı: yarış çizgisini izler, virajda drift ve turbo dener, eşya kullanır.
-import { Kart, DRIFT_ZONE, wrapA, type Ctl } from './kart';
-const Z0 = 0.62, Z1 = 0.98;
+import { Kart, wrapA, type Ctl } from './kart';
 import { Track } from './track';
 
 export class AI {
   ctl: Ctl = { gas: 1, brake: 0, steer: 0, drift: false, item: false };
-  private lane = 0; private laneT = 0; private pressT = 0; private itemT = 0; private wantBoostAt = 0.85;
+  private lane = 0; private laneT = 0; private pressT = 0; private itemT = 0; private wantBoostAt = 0.85; private holdT = 0;
   constructor(readonly k: Kart, readonly track: Track, public skill: number) { this.lane = (Math.random() - 0.5) * 6; }
 
   /** viraj keskinliği: önümüzdeki iki noktadaki yön farkı */
@@ -47,15 +46,13 @@ export class AI {
     c.brake = 0;
     const sharp = Math.abs(this.bend(k.f.i, 4, 22));
     if (sharp > 1.1 && k.speed > 22 && !k.drifting) { c.gas = 0; if (k.speed > 25) c.brake = 0.35; }
-    // drift başlat
-    if (false && !k.drifting && k.grounded && sharp > 0.55 && k.speed > 14 && Math.random() < dt * 4 * (0.4 + this.skill)) {
-      c.steer = Math.sign(curve) || 1; c.drift = true; this.wantBoostAt = Z0 + Math.random() * 0.25;
-    }
-    // turbo zamanlaması
-    this.pressT -= dt;
-    if (k.drifting && k.boosts < 3 && k.lockT <= 0 && k.charge >= this.wantBoostAt && this.pressT <= 0) {
-      const ok = Math.random() < 0.35 + this.skill * 0.55;
-      if (ok || k.charge > Z1) { c.drift = true; this.pressT = 0.1; this.wantBoostAt = ok ? Z0 + Math.random() * 0.25 : Math.random() < 0.5 ? 0.3 : Z1 + 0.25; }
+    // drift: keskin virajda tuşu basılı tutar, viraj bitince bırakıp turbo alır
+    if (this.holdT > 0) {
+      this.holdT -= dt; c.drift = true;
+      if (!k.drifting) c.steer = Math.sign(curve) || 1;
+      if (k.drifting && Math.abs(curve) < 0.14 && Math.abs(err) < 0.2) this.holdT = 0;
+    } else if (!k.drifting && k.grounded && sharp > 0.7 && k.speed > 16 && Math.random() < dt * 3 * (0.25 + this.skill)) {
+      this.holdT = 0.7 + Math.random() * (0.6 + this.skill);
     }
     // eşya kullanımı
     this.itemT -= dt;

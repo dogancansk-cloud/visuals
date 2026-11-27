@@ -33,7 +33,7 @@ button { font-family: var(--font); cursor: pointer; }
 #drift .bar { position: relative; width: 210px; height: 18px; border-radius: 10px; background: rgba(60, 58, 71, .45); border: 3px solid #fff; overflow: hidden; }
 #drift .zone { position: absolute; top: 0; bottom: 0; background: rgba(158, 217, 182, .9); }
 #drift .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: #fff; border-radius: 6px; }
-#drift.ready .fill { background: #ef6f9a; }
+
 #drift .pips { display: flex; gap: 8px; }
 #drift .pips i { width: 14px; height: 14px; border-radius: 50%; background: rgba(255, 255, 255, .45); border: 2px solid #fff; }
 #drift .pips i.on:nth-child(1) { background: #7ec0f0; } #drift .pips i.on:nth-child(2) { background: #f6a65a; } #drift .pips i.on:nth-child(3) { background: #b48ef0; }
@@ -57,10 +57,10 @@ button { font-family: var(--font); cursor: pointer; }
 #tKnob.on { opacity: 1; }
 #touch button { position: absolute; pointer-events: auto; touch-action: none; border-radius: 50%; border: 3px solid #fff; color: #fff; font-weight: 900; text-shadow: 0 2px 0 rgba(60, 58, 71, .35); box-shadow: 0 5px 0 rgba(60, 58, 71, .25); }
 #touch button.on { transform: translateY(3px) scale(.96); box-shadow: 0 2px 0 rgba(60, 58, 71, .25); filter: brightness(1.1); }
-#tDrift { right: calc(22px + env(safe-area-inset-right)); bottom: calc(26px + env(safe-area-inset-bottom)); width: 112px; height: 112px; font-size: 20px; background: rgba(239, 138, 128, .88); }
+#tDrift { right: calc(104px + env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); width: 74px; height: 74px; font-size: 14px; background: rgba(239, 138, 128, .9); }
 #tGas { right: calc(18px + env(safe-area-inset-right)); bottom: calc(22px + env(safe-area-inset-bottom)); width: 82px; height: 82px; font-size: 17px; background: rgba(110, 196, 120, .88); }
-#tItem { right: calc(110px + env(safe-area-inset-right)); bottom: calc(20px + env(safe-area-inset-bottom)); width: 64px; height: 64px; font-size: 13px; background: rgba(142, 197, 240, .9); }
-#tBrake { right: calc(28px + env(safe-area-inset-right)); bottom: calc(118px + env(safe-area-inset-bottom)); width: 58px; height: 58px; font-size: 12px; background: rgba(60, 58, 71, .5); }
+#tItem { right: calc(26px + env(safe-area-inset-right)); bottom: calc(114px + env(safe-area-inset-bottom)); width: 62px; height: 62px; font-size: 13px; background: rgba(142, 197, 240, .9); }
+#tBrake { right: calc(104px + env(safe-area-inset-right)); bottom: calc(102px + env(safe-area-inset-bottom)); width: 52px; height: 52px; font-size: 11px; background: rgba(60, 58, 71, .5); }
 .res .ongoing { opacity: .55; font-weight: 600; }
 .title .seg.tpist { margin-bottom: 0; background: rgba(255, 248, 238, .85); }
 

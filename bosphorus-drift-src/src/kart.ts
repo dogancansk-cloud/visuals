@@ -10,7 +10,9 @@ export const G = 25;
 const BASE_MAX = 31;
 export const DRIFT_ZONE = [0.55, 1.0] as const; // turbo penceresi
 export const DRIFT_LATE = 0.18;
-export const DRIFT_ON = false;
+export const DRIFT_ON = true;
+/** basılı tutma süresine göre turbo kademeleri (sn) */
+export const DRIFT_LV = [0.6, 1.3, 2.2] as const;
 /** kartların görünür boyutu: küçük kartlar = daha geniş alan hissi */
 export const KART_SCALE = 0.7; // drift şimdilik kapalı // pencereden sonra hâlâ kabul edilen pay
 const CHARGE_TIME = 0.75;
@@ -19,6 +21,7 @@ export interface KartEvents {
   onBoost?(k: Kart, level: number): void;
   onDriftFail?(k: Kart, late: boolean): void;
   onDriftStart?(k: Kart): void;
+  onDriftLevel?(k: Kart, level: number): void;
   onLand?(k: Kart, v: number): void;
   onWall?(k: Kart, v: number): void;
   onHit?(k: Kart): void;
@@ -84,46 +87,42 @@ export class Kart {
     // ---- hız ----
     const max = this.maxSpeed;
     if (this.grounded) {
-      if (ctl.gas > 0 && this.speed >= -0.5) {
+      const gas = ctl.drift && ctl.brake === 0 ? 1 : ctl.gas; // drift tuşu gazı da tutar
+      if (gas > 0 && this.speed >= -0.5) {
         const a = this.speed < max ? (21 + this.stat.acc * 4) * (1 - Math.max(0, this.speed) / max) + 5 : -(this.speed - max) * 1.6;
-        this.speed += a * ctl.gas * dt;
+        this.speed += a * gas * dt;
       } else if (ctl.brake > 0) {
         this.speed -= (this.speed > 0 ? 32 : 10) * ctl.brake * dt; this.speed = Math.max(this.speed, -8);
       } else {
         this.speed -= Math.sign(this.speed) * Math.min(Math.abs(this.speed), 7 * dt);
       }
-      if (this.speed > max && ctl.gas === 0) this.speed -= (this.speed - max) * 1.2 * dt;
+      if (this.speed > max && gas === 0) this.speed -= (this.speed - max) * 1.2 * dt;
       // eğim etkisi (yokuşta yavaşla)
       const slope = (tr.T.y[tr.wrap(this.f.i + 1)] - tr.T.y[this.f.i]);
       this.speed -= slope * G * 0.22 * dt * Math.sign(fx * this.f.tx + fz * this.f.tz);
     }
-    // ---- drift ----
+    // ---- drift: tuşa basılı tut, kart kayar; bırakınca tutma süresine göre turbo ----
     const st = ctl.steer;
-    // dokununca her zaman zıpla; yön o an ya da havadayken seçilebilir
-    const startDrift = (d: number) => { this.drifting = true; this.dir = d; this.charge = 0; this.boosts = 0; this.neutralT = 0; this.oppT = 0; this.pendT = 0; this.ev.onDriftStart?.(this); };
-    if (DRIFT_ON && !this.drifting && driftEdge && this.grounded && this.speed > 4) {
-      this.vy = 4.2; this.grounded = false; this.pendT = 0.4;
-      if (Math.abs(st) > 0.15 && this.speed > 7) startDrift(Math.sign(st));
-    } else if (this.drifting && driftEdge) {
-      if (this.boosts < 3 && this.lockT <= 0) {
-        if (this.charge >= DRIFT_ZONE[0] && this.charge <= DRIFT_ZONE[1] + DRIFT_LATE) {
-          this.boosts++; const P = [0, 5, 6.5, 8.5][this.boosts], T = [0, 0.8, 1.0, 1.35][this.boosts];
-          this.boost(P, T); this.charge = 0; this.ev.onBoost?.(this, this.boosts);
-        } else { this.ev.onDriftFail?.(this, this.charge > DRIFT_ZONE[1]); this.charge = 0; this.lockT = 0.2; }
+    if (DRIFT_ON) {
+      if (!this.drifting) {
+        if (driftEdge && this.grounded && this.speed > 8) { this.vy = 3.4; this.grounded = false; this.pendT = 0.45; this.ev.onDriftStart?.(this); }
+        this.pendT = Math.max(0, this.pendT - dt);
+        if (ctl.drift && this.speed > 8 && Math.abs(st) > 0.18 && (this.grounded || this.pendT > 0)) { this.drifting = true; this.dir = Math.sign(st); this.charge = 0; this.boosts = 0; }
+      } else if (!ctl.drift) {
+        // bıraktı: turbo
+        if (this.boosts > 0) { this.boost([0, 5, 7, 9.5][this.boosts], [0, 0.8, 1.15, 1.6][this.boosts]); this.ev.onBoost?.(this, this.boosts); }
+        this.drifting = false; this.boosts = 0; this.charge = 0;
+      } else {
+        this.charge += dt;
+        const lv = this.charge >= DRIFT_LV[2] ? 3 : this.charge >= DRIFT_LV[1] ? 2 : this.charge >= DRIFT_LV[0] ? 1 : 0;
+        if (lv > this.boosts) { this.boosts = lv; this.ev.onDriftLevel?.(this, lv); }
+        if (this.speed < 6 || ctl.brake > 0.5 || this.spinT > 0) { this.drifting = false; this.boosts = 0; this.charge = 0; }
       }
-    }
-    if (DRIFT_ON && !this.drifting && this.pendT > 0) { this.pendT -= dt; if (Math.abs(st) > 0.15 && this.speed > 7) startDrift(Math.sign(st)); }
-    if (this.drifting) {
-      if (this.boosts < 3 && this.lockT <= 0) { this.charge += dt / CHARGE_TIME; if (this.charge > DRIFT_ZONE[1] + DRIFT_LATE + 0.15) this.charge = 0; }
-      // drift kendiliğinden kolay bitmez: uzun süre düz ya da ters yöne sert direksiyon gerekir
-      if (Math.abs(st) < 0.12) this.neutralT += dt; else this.neutralT = 0;
-      if (st * this.dir < -0.55) this.oppT += dt; else this.oppT = 0;
-      if (this.neutralT > 0.6 || this.oppT > 0.35 || this.speed < 6 || ctl.brake > 0.5 || this.spinT > 0) this.drifting = false;
     }
     // ---- dönüş ----
     let yawRate: number;
     const sp = Math.abs(this.speed), sf = Math.min(1, sp / 7);
-    if (this.drifting) { yawRate = this.dir * (1.15 + 0.75 * st * this.dir) * sf; this.speed -= 1.2 * dt; }
+    if (this.drifting) yawRate = this.dir * (1.2 + 0.8 * st * this.dir) * sf;
     else yawRate = st * (2.25 + this.stat.han * 0.25 - 0.75 * Math.min(1, sp / 34)) * sf * Math.sign(this.speed || 1);
     if (!this.grounded) yawRate *= this.drifting ? 0.9 : 0.45;
     if (this.spinT > 0) yawRate = 0;

@@ -3,7 +3,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Geo, rr, type Track, type Textures } from '../track';
-import { F_BRIDGE } from '../trackpath';
+import { F_BRIDGE, F_RAMP } from '../trackpath';
 import { F_SEA, F_WOOD, F_GAP, F_BIG, QUAY_Y, BG_MARKS } from './bgpath';
 import { toon } from '../characters';
 
@@ -32,7 +32,7 @@ export class Bosphorus {
     this.sky(); this.water(); this.terrain(); this.quays();
     this.woodRoads(); this.ferries(); this.galataBridge(); this.bigBridge();
     this.kizKulesi(); this.landmarks(); this.yalis(); this.town(); this.trees();
-    this.boats(); this.crowd();
+    this.boats();
     this.flushSolids();
   }
 
@@ -218,7 +218,7 @@ export class Bosphorus {
         if (sd > 0) rail.quad(p0, p1, q1, q0, [i / 3, 0], [(i + 1) / 3, 0], [(i + 1) / 3, 1], [i / 3, 1]); else rail.quad(p1, p0, q0, q1, [(i + 1) / 3, 0], [i / 3, 0], [i / 3, 1], [(i + 1) / 3, 1]);
       }
       // iskele kazıkları (yalnız iskelede; vapurlar gövdenin üstünde)
-      if (i >= BG_MARKS.pier[0] && i <= BG_MARKS.pier[1] && i % 7 === 0) for (const sd of [-1, 1]) {
+      if (!BG_MARKS.ferries.some(([fa, fb]) => i >= fa - 1 && i <= fb + 1) && i % 7 === 0) for (const sd of [-1, 1]) {
         const p = this.P(i, sd * (a - 0.3)), hgt = p[1] + 5;
         this.solid(new THREE.CylinderGeometry(0.32, 0.36, hgt, 7), 0x8a5a30, new THREE.Matrix4().makeTranslation(p[0], p[1] - hgt / 2 + 1.1, p[2]));
         this.solid(new THREE.SphereGeometry(0.42, 7, 5), 0xfff3cf, new THREE.Matrix4().makeTranslation(p[0], p[1] + 1.25, p[2]));
@@ -261,17 +261,19 @@ export class Bosphorus {
   private galataBridge() {
     const T = this.T, [a, b] = BG_MARKS.galata;
     for (let i = a + 4; i < b; i += 10) for (const sd of [-1, 1]) {
+      if (T.flags[i] & F_GAP) continue;
       const p = this.P(i, sd * (T.w[i] / 2 - 1)), h = p[1] + 5;
       this.solid(new THREE.BoxGeometry(2, h, 2), 0xbcc6d6, new THREE.Matrix4().makeTranslation(p[0], p[1] - 1.4 - h / 2, p[2]));
     }
     const mid = Math.floor((a + b) / 2);
-    for (const i of [mid - 8, mid + 8]) for (const sd of [-1, 1]) {
+    for (const i of [a + 30, b - 40]) for (const sd of [-1, 1]) {
       const g = new THREE.Group(); this.box(g, 3, 9, 3, 0xe9eef5, 0, 4.5, 0); this.box(g, 3.6, 0.5, 3.6, 0x1e4f9c, 0, 9.2, 0); g.add(this.mesh(new THREE.ConeGeometry(2.2, 2.2, 4), 0xff4f45, 0, 10.5, 0));
       this.put(g, i, sd * (T.w[i] / 2 + 3.6), T.y[i]);
     }
     const cols = [0xff5a4f, 0x3fa7ff, 0xffc233, 0x41c98a, 0xffffff, 0x9b7bff];
     for (let i = a + 6, k = 0; i < b - 4; i += this.mobile ? 9 : 5, k++) {
       const sd = k % 2 ? 1 : -1, g = new THREE.Group();
+      if (T.flags[i] & (F_GAP | F_RAMP)) continue;
       g.add(this.mesh(new THREE.CylinderGeometry(0.26, 0.3, 1.0, 8), cols[k % cols.length], 0, 0.9, 0));
       g.add(this.mesh(new THREE.SphereGeometry(0.24, 8, 6), 0xf3cfb0, 0, 1.62, 0));
       g.add(this.mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.14, 8), 0x2b2833, 0, 1.84, 0));
@@ -351,28 +353,28 @@ export class Bosphorus {
   private landmarks() {
     const T = this.T, M = BG_MARKS;
     // Yeni Cami (Eminönü)
-    this.put(this.mosque(1.15, 2), M.ferries[1][1] + 34, -(T.w[0] / 2 + 34));
+    this.put(this.mosque(1.15, 2), M.ferries[1][1] + 30, -(T.w[0] / 2 + 34));
     // Galata Kulesi (Karaköy sırtında)
     { const g = new THREE.Group(); g.add(this.mesh(new THREE.CylinderGeometry(7, 8, 34, 14), 0xf3e3c4, 0, 17, 0)); g.add(this.mesh(new THREE.CylinderGeometry(8.6, 8, 2, 14), 0xc9b48a, 0, 33, 0)); g.add(this.mesh(new THREE.CylinderGeometry(6.4, 6.8, 6, 14), 0xf3e3c4, 0, 37, 0)); g.add(this.mesh(new THREE.ConeGeometry(7.6, 14, 14), 0x5b6f9c, 0, 47, 0)); g.add(this.mesh(new THREE.ConeGeometry(0.4, 4, 6), 0xffc233, 0, 56, 0)); this.put(g, M.galata[1] + 56, -86); }
     // Dolmabahçe: uzun beyaz saray, kapı ve saat kulesi
     {
-      const i = M.galata[1] + 185, g = new THREE.Group();
+      const i = M.dolma, g = new THREE.Group();
       this.box(g, 96, 13, 16, 0xfffaf0, 0, 6.5, 0); this.box(g, 98, 1, 17, 0xe6dcc8, 0, 13.5, 0); this.box(g, 26, 19, 19, 0xfffaf0, 0, 9.5, 0); this.box(g, 28, 1.2, 21, 0xffc233, 0, 19.6, 0);
       for (let k = -11; k <= 11; k++) { if (Math.abs(k) < 3) continue; this.box(g, 1.8, 4, 0.2, 0x3fa7ff, k * 4, 8.5, 8.05); this.box(g, 1.8, 3, 0.2, 0x3fa7ff, k * 4, 3, 8.05); }
       for (let k = -2; k <= 2; k++) this.box(g, 2.2, 8, 0.2, 0x3fa7ff, k * 4.6, 9, 9.55);
       this.put(g, i, -(T.w[i] / 2 + 30));
       const ct = new THREE.Group(); this.box(ct, 5, 22, 5, 0xfff6e6, 0, 11, 0); this.box(ct, 6, 1, 6, 0xffc233, 0, 22.5, 0); this.box(ct, 3.6, 7, 3.6, 0xfff6e6, 0, 26.5, 0); ct.add(this.mesh(new THREE.ConeGeometry(3.2, 5, 4), 0x4f8fd6, 0, 32.5, 0));
       for (const r of [0, Math.PI / 2, Math.PI, -Math.PI / 2]) { const f = new THREE.Mesh(new THREE.CircleGeometry(1.5, 16), new THREE.MeshBasicMaterial({ color: 0xffffff })); f.position.set(Math.sin(r) * 1.85, 26.5, Math.cos(r) * 1.85); f.rotation.y = r; ct.add(f); }
-      this.put(ct, i - 62, -(T.w[i] / 2 + 13));
+      this.put(ct, i - 40, -(T.w[i] / 2 + 13));
       // saray kapısı: yolun üstünde tak
       const gate = new THREE.Group(); for (const sd of [-1, 1]) { this.box(gate, 3, 11, 3, 0xfffaf0, 0, 5.5, sd * (T.w[i] / 2 + 3.4)); gate.add(this.mesh(new THREE.ConeGeometry(2.4, 3, 4), 0xffc233, 0, 12.5, sd * (T.w[i] / 2 + 3.4))); }
       this.box(gate, 2.4, 2.6, T.w[i] + 7, 0xfffaf0, 0, 10, 0); this.box(gate, 2.8, 0.5, T.w[i] + 8, 0xffc233, 0, 11.5, 0);
       for (const sd of [-1, 1]) { const s = new THREE.Mesh(new THREE.PlaneGeometry(10, 1.7), new THREE.MeshBasicMaterial({ map: this.tex.sign('DOLMABAHÇE', '#1e4f9c', '#ffffff'), transparent: true })); s.position.set(sd * 1.22, 10, 0); s.rotation.y = sd * Math.PI / 2; gate.add(s); }
-      this.put(gate, i - 40, 0, T.y[i]);
+      this.put(gate, i - 12, 0, T.y[i]);
     }
     // Ortaköy Camii: köprünün dibinde, suyun kenarında taş çıkıntıda
     {
-      const i = M.big[0] - 118, base = new THREE.Group();
+      const i = M.ortakoy + 6, base = new THREE.Group();
       base.add(this.mesh(new THREE.CylinderGeometry(21, 22, 6, 10), 0xefe6d2, 0, -1.5, 0));
       const mq = this.mosque(0.8, 2); mq.position.y = 1.5; base.add(mq);
       this.put(base, i, T.w[i] / 2 + 27, 0);
@@ -385,7 +387,7 @@ export class Bosphorus {
       this.put(g, i, -(T.w[i] / 2 + 24));
     }
     // start: karşıda Kız Kulesi'ni gösteren tabela
-    { const s = new THREE.Mesh(new THREE.PlaneGeometry(13, 2.6), new THREE.MeshBasicMaterial({ map: this.tex.sign('KIZ KULESİ →', '#ff4f45', '#ffffff'), transparent: true, side: THREE.DoubleSide })); const p = this.V(70, -(T.w[70] / 2 + 3), 5.2); s.position.copy(p); s.rotation.y = -this.yaw(70) - Math.PI / 2; this.scene.add(s); for (const dx of [-5.5, 5.5]) { const q = this.V(70 + dx, -(T.w[70] / 2 + 3)); this.solid(new THREE.CylinderGeometry(0.18, 0.18, 4.4, 6), 0xffffff, new THREE.Matrix4().makeTranslation(q.x, q.y + 2.2, q.z)); } }
+    { const s = new THREE.Mesh(new THREE.PlaneGeometry(13, 2.6), new THREE.MeshBasicMaterial({ map: this.tex.sign('KIZ KULESİ →', '#ff4f45', '#ffffff'), transparent: true, side: THREE.DoubleSide })); const p = this.V(40, -(T.w[40] / 2 + 3), 5.2); s.position.copy(p); s.rotation.y = -this.yaw(40) - Math.PI / 2; this.scene.add(s); for (const dx of [-5.5, 5.5]) { const q = this.V(40 + dx, -(T.w[40] / 2 + 3)); this.solid(new THREE.CylinderGeometry(0.18, 0.18, 4.4, 6), 0xffffff, new THREE.Matrix4().makeTranslation(q.x, q.y + 2.2, q.z)); } }
   }
 
   /** yalılar: renkli ahşap konaklar, bahçe takları, iskeleler ve kayıklar */
@@ -401,6 +403,7 @@ export class Bosphorus {
     };
     let k = 0;
     for (let i = a + 26; i < b - 8; i += 24, k++) {
+      if ([i - 12, i, i + 12, i + 20].some((q) => T.flags[this.W(q)] & F_SEA)) continue;
       // karada konak
       this.put(yali(cols[k % cols.length], 13 + (k % 3) * 3), i, -(T.w[i] / 2 + 13 + (k % 2) * 3));
       // denizde kazıklar üstünde küçük yalı ve iskele
@@ -518,7 +521,7 @@ export class Bosphorus {
   }
 
   /** kıyı yolunun solunda coşan seyirciler (martılar ve kediler) */
-  private crowd() {
+  private crowdOld() {
     const T = this.T, spots: { p: THREE.Vector3; yaw: number; k: number }[] = [];
     for (let i = 0; i < T.n; i += this.mobile ? 9 : 5) {
       if (T.flags[i] & (F_SEA | F_BRIDGE | F_GAP)) continue;

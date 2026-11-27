@@ -11,8 +11,8 @@ export const F_BIG = 128;  // Boğaz Köprüsü tabliyesi
 export const SEA_Y = 0, QUAY_Y = 1.6;
 
 /** dünya için işaret noktaları (pist örnek indeksleri) */
-export interface BgMarks { pier: [number, number]; ferries: [number, number][]; galata: [number, number]; big: [number, number]; yali: [number, number]; kiz: { x: number; z: number } }
-export const BG_MARKS: BgMarks = { pier: [0, 0], ferries: [], galata: [0, 0], big: [0, 0], yali: [0, 0], kiz: { x: 0, z: 0 } };
+export interface BgMarks { pier: [number, number]; ferries: [number, number][]; galata: [number, number]; big: [number, number]; yali: [number, number]; ypier: [number, number]; dolma: number; ortakoy: number; kiz: { x: number; z: number } }
+export const BG_MARKS: BgMarks = { pier: [0, 0], ferries: [], galata: [0, 0], big: [0, 0], yali: [0, 0], ypier: [0, 0], dolma: 0, ortakoy: 0, kiz: { x: 0, z: 0 } };
 
 interface P { x: number; y: number; z: number; w: number; f: number }
 
@@ -35,54 +35,64 @@ export function buildBosphorusTrack(): TrackData {
   const mark: Record<string, number> = {};
   const M = (k: string) => (mark[k] = pts.length);
   const PIER = F_SEA | F_WOOD | F_BRIDGE, DECK = F_SEA | F_WOOD | F_BRIDGE, GAP = F_SEA | F_GAP | F_BRIDGE;
-  emit(14, 0);
+  /** sıçrama boşluğu: yol çizilmez, zemin iniş yüksekliğinde */
+  const gap = (L: number, yLand: number, w = 12) => { y = yLand; straight(L, 0, w, GAP); };
+  emit(15, 0);
   // --- Üsküdar: Kız Kulesi'ne karşı bitiş düzlüğü ---
-  straight(110, 0, 15);
+  straight(70, 0, 15);
   arc(38, 90, 0, 14);                          // batıya, denize
-  // --- su üstünde iskele yolu: Kız Kulesi'nin önünden kıvrılır ---
+  // --- su üstünde iskele yolu: Kız Kulesi'nin önünden iki kez kıvrılır ---
   M('pier0');
-  straight(16, 0, 11, PIER);
-  arc(26, -50, 0, 11, PIER); arc(26, 100, 0, 11, PIER); arc(26, -50, 0, 11, PIER);
-  straight(18, 0, 11, PIER);
+  straight(12, 0, 11, PIER);
+  arc(24, -55, 0, 11, PIER); arc(24, 110, 0, 11, PIER); arc(24, -55, 0, 11, PIER);
+  arc(22, 40, 0, 11, PIER); arc(22, -80, 0, 11, PIER); arc(22, 40, 0, 11, PIER);
+  straight(8, 0, 11, PIER);
   straight(14, 3.0, 11, PIER | F_RAMP, true);  // rampa
   M('pier1');
   // --- vapurdan vapura ---
-  const ferry = (name: string, last = false) => {
-    straight(12, 0, 12, GAP); y = 2.6; pts[pts.length - 1].y = y; for (let k = 2; k <= 12; k++) pts[pts.length - k].y = y;
-    M(name + '0'); straight(30, 0, 12, DECK); straight(12, 2.8, 12, DECK | F_RAMP, true); M(name + '1');
-    void last;
-  };
+  const ferry = (name: string) => { gap(12, 2.6); M(name + '0'); straight(30, 0, 12, DECK); straight(12, 2.8, 12, DECK | F_RAMP, true); M(name + '1'); };
   ferry('f1'); ferry('f2');
-  straight(12, 0, 13, GAP); y = QUAY_Y; for (let k = 1; k <= 12; k++) pts[pts.length - k].y = y;
+  gap(12, QUAY_Y, 13);
   // --- Eminönü rıhtımı ---
-  straight(34, 0, 15);
-  arc(34, 90, 0, 14);                          // kuzeye
-  straight(26, 0, 14);
-  // --- Galata Köprüsü (Haliç'in üstünde, hafif kambur) ---
+  straight(26, 0, 15);
+  arc(30, 90, 0, 14);                          // kuzeye
+  straight(14, 0, 14);
+  // --- Galata Köprüsü: ortası açık, kalkmış kanattan sıçranır ---
   M('gk0');
-  straight(50, 2.4, 14, F_BRIDGE | F_SEA); straight(50, -2.4, 14, F_BRIDGE | F_SEA);
+  straight(34, 2.4, 14, F_BRIDGE | F_SEA); straight(10, 2.2, 14, F_BRIDGE | F_SEA | F_RAMP, true);
+  gap(12, QUAY_Y + 2.4, 14);
+  straight(44, -2.4, 14, F_BRIDGE | F_SEA);
   M('gk1');
-  // --- Karaköy → Dolmabahçe → Beşiktaş kıyı yolu ---
-  straight(40, 0, 14);
-  arc(70, 22, 0, 14); arc(70, -22, 0, 14);
-  straight(110, 0, 15);                        // Dolmabahçe önü
-  arc(60, -20, 0, 14); arc(60, 20, 0, 14);
-  straight(70, 0, 14);                         // Beşiktaş → Ortaköy
-  // --- Boğaz Köprüsü: tırmanan viraj, uzun tabliye, inen viraj ---
+  // --- Karaköy → Dolmabahçe → Beşiktaş → Ortaköy: kıvrımlı kıyı yolu ---
+  straight(16, 0, 14);
+  arc(40, 35, 0, 13); arc(40, -70, 0, 13); arc(40, 35, 0, 13);
+  M('dolma'); straight(46, 0, 15);
+  arc(44, -40, 0, 13); arc(44, 80, 0, 13); arc(44, -40, 0, 13);
+  M('ortakoy'); straight(20, 0, 14);
+  arc(30, 60, 0, 13); arc(30, -60, 0, 13);
+  // --- Boğaz Köprüsü: tırmanan viraj, ortasında sıçrama, inen viraj ---
   arc(46, 90, 9, 14, F_BRIDGE);
   M('big0');
-  straight(60, 9, 16, F_BRIDGE | F_BIG | F_SEA);
-  straight(150, 0, 16, F_BRIDGE | F_BIG | F_SEA);
-  straight(60, -9, 16, F_BRIDGE | F_BIG | F_SEA);
+  const BIG = F_BRIDGE | F_BIG | F_SEA;
+  straight(55, 9, 16, BIG); straight(36, 0, 16, BIG); straight(12, 2.4, 16, BIG | F_RAMP, true);
+  gap(14, y - 2.4, 16);
+  straight(46, 0, 16, BIG); straight(55, -9, 16, BIG);
   M('big1');
   arc(46, 90, -9, 14, F_BRIDGE);
-  // --- Beylerbeyi yalıları: bahçelerden ve iskelelerden geçen dar kıvrımlar ---
+  // --- Beylerbeyi yalıları: bahçelerden geçen dar kıvrımlar ve iskeleden iskeleye sıçrama ---
   M('yali0');
-  straight(40, 0, 12);
-  arc(40, 28, 0, 11); arc(40, -56, 0, 11); arc(40, 28, 0, 11);
-  straight(50, 0, 11);
-  arc(36, -30, 0, 11); arc(36, 60, 0, 11); arc(36, -30, 0, 11);
-  straight(40, 0, 12);
+  straight(24, 0, 12);
+  arc(34, 35, 0, 11); arc(34, -70, 0, 11); arc(34, 35, 0, 11);
+  arc(28, 50, 0, 11);
+  M('yp0');
+  straight(12, 0, 11, PIER); straight(10, 2.4, 11, PIER | F_RAMP, true);
+  gap(12, QUAY_Y, 11);
+  straight(14, 0, 11, PIER);
+  M('yp1');
+  arc(28, -100, 0, 11);
+  arc(28, 50, 0, 11);
+  arc(30, -35, 0, 11); arc(30, 70, 0, 11); arc(30, -35, 0, 11);
+  straight(24, 0, 12);
   M('yali1');
   // kapanış: başlangıca Hermite eğrisi
   const last = pts[pts.length - 1];
@@ -121,6 +131,7 @@ export function buildBosphorusTrack(): TrackData {
   BG_MARKS.galata = [idx(mark.gk0), idx(mark.gk1)];
   BG_MARKS.big = [idx(mark.big0), idx(mark.big1)];
   BG_MARKS.yali = [idx(mark.yali0), idx(mark.yali1)];
+  BG_MARKS.ypier = [idx(mark.yp0), idx(mark.yp1)]; BG_MARKS.dolma = idx(mark.dolma) + 23; BG_MARKS.ortakoy = idx(mark.ortakoy);
   BG_MARKS.kiz = { x: T.tower.x, z: T.tower.z };
   return T;
 }

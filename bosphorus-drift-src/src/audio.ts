@@ -19,7 +19,7 @@ export class Audio {
     const d = this.noise.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     // motor
     const o1 = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
-    o1.type = 'sawtooth'; o2.type = 'square'; f.type = 'lowpass'; f.frequency.value = 600; g.gain.value = 0;
+    o1.type = 'triangle'; o2.type = 'sine'; f.type = 'lowpass'; f.frequency.value = 300; // yumuşak, kısık uğultu g.gain.value = 0;
     o1.connect(f); o2.connect(f); f.connect(g); g.connect(this.sfx); o1.start(); o2.start();
     this.eng = { o1, o2, g, f };
     // patinaj
@@ -33,11 +33,11 @@ export class Audio {
   engine(speed: number, gas: number, drifting: boolean, boost: boolean, on: boolean) {
     if (!this.ctx || !this.eng) return;
     const t = this.ctx.currentTime, e = this.eng;
-    const f0 = 55 + Math.abs(speed) * 4.2 + (boost ? 40 : 0);
-    e.o1.frequency.setTargetAtTime(f0, t, 0.05); e.o2.frequency.setTargetAtTime(f0 * 0.5, t, 0.05);
-    e.f.frequency.setTargetAtTime(400 + gas * 900 + (boost ? 700 : 0), t, 0.08);
-    e.g.gain.setTargetAtTime(on ? 0.05 + gas * 0.05 : 0, t, 0.1);
-    this.skid!.g.gain.setTargetAtTime(on && drifting ? 0.07 : 0, t, 0.05);
+    const f0 = 46 + Math.abs(speed) * 1.5 + (boost ? 14 : 0);
+    e.o1.frequency.setTargetAtTime(f0, t, 0.12); e.o2.frequency.setTargetAtTime(f0 * 0.5, t, 0.12);
+    e.f.frequency.setTargetAtTime(210 + gas * 170 + (boost ? 160 : 0), t, 0.15);
+    e.g.gain.setTargetAtTime(on ? 0.05 + gas * 0.035 : 0, t, 0.15);
+    this.skid!.g.gain.setTargetAtTime(on && drifting ? 0.035 : 0, t, 0.05);
     this.skid!.f.frequency.setTargetAtTime(1500 + Math.abs(speed) * 20, t, 0.1);
   }
 
@@ -83,7 +83,7 @@ export class Audio {
     this.rainG.gain.setTargetAtTime(level * 0.11, this.ctx.currentTime, 0.3);
   }
   thunder() { this.burst(2.2, 90, 0.7, 0.4); this.burst(1.4, 160, 0.4, 0.5, 0.15); }
-  ready() { this.tone(1568, 0.06, 'triangle', 0.1); }
+  ready(lv = 1) { this.tone(1046 + lv * 262, 0.07, 'triangle', 0.1); }
   fail() { this.tone(180, 0.18, 'square', 0.1, 0.6); }
   hop() { this.tone(300, 0.08, 'triangle', 0.08, 1.6); }
   hit() { this.burst(0.35, 300, 0.5, 0.7); this.tone(160, 0.4, 'sawtooth', 0.12, 0.4); }

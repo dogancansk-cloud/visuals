@@ -7,12 +7,16 @@ import { Ink } from './post';
 import { Trails } from './trails';
 import { Life } from './life';
 import { Weather } from './weather';
-import { Kart, DRIFT_ZONE, DRIFT_LATE } from './kart';
+import { Kart, DRIFT_LV } from './kart';
 import { AI } from './ai';
 import { Items, GALATA_ITEMS, type ItemLayout } from './items';
 import { buildBazaarTrack, F_HALL } from './kc/kcpath';
 import { Bazaar } from './kc/bazaar';
-import { buildBosphorusTrack, F_WOOD, F_GAP } from './bg/bgpath';
+import { buildBosphorusTrack, F_WOOD, F_GAP, BG_MARKS } from './bg/bgpath';
+import { F_RAMP, F_BRIDGE, F_TUNNEL, F_SPIRAL } from './trackpath';
+import { F_SEA } from './bg/bgpath';
+import { F_GATE } from './kc/kcpath';
+import { Crowd } from './crowd';
 import { Bosphorus, BG_SUN } from './bg/bosphorus';
 import { Particles } from './fx';
 import { Input } from './input';
@@ -98,12 +102,18 @@ if (PIST === 'galata') {
   setLoad(0.4, 'Boğaz dolduruluyor…'); await frameWait();
   const bg = new Bosphorus(scene, track, tex, mobile);
   world = bg; props = bg;
-  itemLayout = {
-    boxes: [80, 250, 480, 700, 900, 1160, 1480],
-    simits: [[30, 0, 6], [120, 3, 5], [200, 0, 5], [270, -2, 5], [340, 0, 4], [395, 0, 4], [460, 3, 5], [560, -3, 6], [620, 3, 5], [720, 0, 6], [800, -3, 5], [860, 3, 5], [960, 0, 5], [1060, -4, 6], [1140, 4, 6], [1230, 0, 6], [1400, -2, 5], [1470, 2, 5], [1540, -2, 5], [1620, 0, 6]],
-    pads: [{ s0: 60, s1: 67, d: 0, w: 6 }, { s0: 585, s1: 592, d: 0, w: 6 }, { s0: 1095, s1: 1102, d: 0, w: 7 }, { s0: 1175, s1: 1182, d: 0, w: 7 }, { s0: 1600, s1: 1607, d: 0, w: 5 }],
-  };
-  lifeCfg = { cats: 22, vendors: [40, 500, 760, 880, 1560], gulls: 34, ferries: false };
+  {
+    // eşya düzeni işaret noktalarından hesaplanır; sıçrama boşluklarına bir şey konmaz
+    const M = BG_MARKS, free = (q: number) => { for (let k = -10; k <= 10; k++) if (T.flags[track.wrap(Math.round(q) + k)] & (F_GAP | F_RAMP)) return false; return true; };
+    const sim: [number, number, number][] = [];
+    for (let q = 30, k = 0; q < track.L - 20; q += 74, k++) if (free(q) && free(q + 20)) sim.push([q, [0, 3, -3, 0, -2, 2][k % 6], 5]);
+    itemLayout = {
+      boxes: [50, (M.pier[0] + M.pier[1]) / 2 - 20, M.ferries[1][1] + 34, M.galata[1] + 60, M.ortakoy - 30, M.big[1] - 30, M.yali[0] + 70, M.yali[1] - 40].filter(free),
+      simits: sim,
+      pads: [M.pier[0] - 30, M.galata[0] + 6, M.dolma, M.big[0] + 30, M.big[1] + 50, M.yali[1] + 20].map((q) => ({ s0: q, s1: q + 7, d: 0, w: 6 })),
+    };
+    lifeCfg = { cats: 22, vendors: [34, M.ferries[1][1] + 46, M.galata[1] + 30, M.dolma + 20, M.yali[0] + 14], gulls: 34, ferries: false };
+  }
   setLoad(0.9, 'Martılar havalanıyor…'); await frameWait();
 } else {
   setLoad(0.1, 'Çarşı kapıları açılıyor…'); await frameWait();
@@ -123,6 +133,13 @@ if (PIST === 'galata') {
   lifeCfg = { cats: 20, vendors: [100, 350, 650, 940, 1180], gulls: 0, ferries: false };
   setLoad(0.9, 'Esnaf yerini alıyor…'); await frameWait();
 }
+// pist kenarındaki insanlar: seyirciler ve yürüyenler
+const crowd = (() => {
+  const F = track.T.flags;
+  if (PIST === 'bg') return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_SEA | F_BRIDGE | F_GAP)), near: 2.4, far: 6.0, every: 2, walkers: 44 }, mobile);
+  if (PIST === 'kc') return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_BRIDGE | F_GATE)), near: 2.0, far: 3.4, every: 3, walkers: 28 }, mobile);
+  return new Crowd(scene, track, { ok: (i) => !(F[i] & (F_BRIDGE | F_TUNNEL | F_SPIRAL)), near: 2.5, far: 4.6, every: 3, walkers: 30, yAt: (x, z) => world.hAt(x, z) }, mobile);
+})();
 const fx = new Particles(scene, mobile ? 600 : 1000);
 const trails = new Trails(scene);
 const audio = new Audio();
@@ -205,6 +222,7 @@ const kartEvents = {
   },
   onDriftFail(k: Kart, late: boolean) { if (k === player) { audio.fail(); msg.show(late ? 'Geç kaldın!' : 'Erken!', 'bad'); } },
   onDriftStart(k: Kart) { if (k === player) audio.hop(); },
+  onDriftLevel(k: Kart, lv: number) { if (k === player) { audio.ready(lv); try { navigator.vibrate?.(14); } catch { /* yok */ } } },
   onLand(k: Kart, v: number) { if (k === player && v > 5) audio.land(); dust(k, v > 9 ? 14 : 6); },
   onWall(k: Kart) { if (k === player) audio.wall(); },
   onHit() { /* items olayında */ },
@@ -265,8 +283,8 @@ function local(k: Kart, lx: number, ly: number, lz: number) {
 function kartFx(k: Kart) {
   const close = k.pos.distanceToSquared(camera.position) < 70 * 70; if (!close) return;
   if (k.drifting && k.grounded) {
-    const ready = k.charge >= DRIFT_ZONE[0];
-    const col = k.boosts >= 3 ? C.l3 : ready ? C.pink : k.boosts === 2 ? C.l2 : k.boosts === 1 ? C.l1 : C.grey;
+    const ready = k.boosts > 0;
+    const col = k.boosts >= 3 ? C.l3 : k.boosts === 2 ? C.l2 : k.boosts === 1 ? C.l1 : C.grey;
     for (const sd of [-1, 1]) {
       const p = local(k, -0.8, 0.15, sd * 0.85);
       if (ready || k.boosts > 0) fx.emit(p.x, p.y, p.z, (Math.random() - 0.5) * 4, Math.random() * 3 + 1, (Math.random() - 0.5) * 4, col, 1, 0.22, 0.35, 12);
@@ -290,9 +308,8 @@ function dust(k: Kart, n: number) { for (let i = 0; i < n; i++) fx.emit(k.pos.x 
 
 // ---------- HUD ----------
 const hud = { spd: $('#spd b'), pos: $('#pos b'), lap: $('#lap'), time: $('#time'), item: $('#item'), itembox: $('#itembox'), simit: $('#simit b'), simitBox: $('#simit'), drift: $('#drift'), fill: $('#drift .fill'), zone: $('#drift .zone'), pips: [...document.querySelectorAll<HTMLElement>('#drift .pips i')], wrong: $('#wrong'), count: $('#count') };
-const ZW = 1.4;
-hud.zone.style.left = (DRIFT_ZONE[0] / ZW) * 100 + '%'; hud.zone.style.width = ((DRIFT_ZONE[1] + DRIFT_LATE - DRIFT_ZONE[0]) / ZW) * 100 + '%';
-let rollIcon = 0, lastPlace = 0, lastLap = 0, wasReady = false;
+hud.zone.style.display = "none";
+let rollIcon = 0, lastPlace = 0, lastLap = 0;
 function updateHud(dt: number) {
   const k = player;
   hud.pos.textContent = String(k.place);
@@ -309,11 +326,9 @@ function updateHud(dt: number) {
   else hud.item.style.backgroundImage = 'none';
   hud.drift.classList.toggle('hide', !k.drifting);
   if (k.drifting) {
-    hud.fill.style.width = Math.min(100, (k.charge / ZW) * 100) + '%';
-    const ready = k.charge >= DRIFT_ZONE[0] && k.charge <= DRIFT_ZONE[1] + DRIFT_LATE && k.boosts < 3 && k.lockT <= 0;
-    if (ready && !wasReady) { audio.ready(); try { navigator.vibrate?.(18); } catch { /* yok */ } }
-    wasReady = ready;
-    hud.drift.classList.toggle('ready', ready);
+    hud.fill.style.width = Math.min(100, (k.charge / DRIFT_LV[2]) * 100) + '%';
+    hud.drift.classList.toggle('ready', k.boosts > 0);
+    hud.fill.style.background = ['#ffffff', '#7ec0f0', '#f6a65a', '#b48ef0'][k.boosts];
     hud.pips.forEach((p, i) => p.classList.toggle('on', i < k.boosts));
   }
   hud.wrong.classList.toggle('hide', !(k.wrongT > 1.2 && !k.finished));
@@ -462,8 +477,8 @@ function showHelp(back: () => void) {
     <table>
       <tr><td>Gaz / fren</td><td><kbd>W</kbd> <kbd>↑</kbd> / <kbd>S</kbd> <kbd>↓</kbd> · telefonda <b>GAZ</b> ve <b>FREN</b> düğmeleri</td></tr>
       <tr><td>Direksiyon</td><td><kbd>A</kbd> <kbd>D</kbd> <kbd>←</kbd> <kbd>→</kbd> · telefonda sol yarıda parmağını kaydır</td></tr>
-      <tr style="display:none"><td>Drift</td><td><kbd>Boşluk</kbd> / <kbd>Shift</kbd> ya da <b>DRİFT</b> düğmesi · dönerken dokun, kart zıplayıp kaymaya başlar. Direksiyonu bıraksan da hemen bitmez; bitirmek için ters yöne çevir ya da frene bas.</td></tr>
-      <tr style="display:none"><td>Drift turbosu</td><td>Drift sırasında çubuk <b>yeşile</b> dönünce (zil sesi, telefonda titreşim) aynı tuşa bir kez daha dokun. Üst üste <b>3 kez</b>: Ultra Turbo!</td></tr>
+      <tr><td>Drift</td><td><kbd>Boşluk</kbd> / <kbd>Shift</kbd> ya da <b>DRİFT</b> düğmesi · virajda dönerken <b>basılı tut</b>, kart kayar. Telefonda DRİFT gazı da tutar: parmağını GAZ’dan DRİFT’e kaydırman yeter, kart yavaşlamaz.</td></tr>
+      <tr><td>Drift turbosu</td><td>Ne kadar uzun kayarsan çubuk o kadar dolar: mavi, turuncu, mor. <b>Bırakınca</b> o kademenin turbosu gelir. Zamanlama yok.</td></tr>
       <tr><td>Eşya</td><td><kbd>E</kbd> veya <kbd>Enter</kbd></td></tr>
       <tr><td>Diğer</td><td>Mavi oklu pedler ve çıkardığın turbo seni hızlandırır · <kbd>R</kbd> piste dön · <kbd>Esc</kbd> duraklat · <kbd>M</kbd> ses · oyun kolu da çalışır</td></tr>
     </table>
@@ -566,7 +581,7 @@ function frame(now: number) {
   } else audio.engine(0, 0, false, false, false);
   audio.tick();
   fx.update(dt);
-  world.update(time); props.update(dt, time);
+  world.update(time); props.update(dt, time); crowd.update(dt, time, player && state !== 'title' && state !== 'select' ? player.pos : null);
   const racing = state === 'race' || state === 'done';
   if (dt > 0) {
     weather.update(dt, racing ? raceT : -1, camera.position);
