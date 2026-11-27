@@ -8,10 +8,10 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <meta name="description" content="Boğaz Taksi 3B: İstanbul Boğazı ve Haliç'te deniz taksisi. Taslak sürüm.">
-<meta property="og:title" content="Boğaz Taksi 3B"><meta property="og:description" content="İstanbul Boğazı ve Haliç'te 3 boyutlu deniz taksisi. Taslak · work in progress."><meta property="og:type" content="website"><meta property="og:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_taksi_3d_thumb.jpg">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%23f2b705'/%3E%3C/svg%3E">
+<meta property="og:title" content="Boğaz Taksi 3B"><meta property="og:description" content="İstanbul Boğazı ve Haliç'te 3 boyutlu deniz taksisi: yolcu, kargo ve VIP görevleri. Taslak · work in progress."><meta property="og:type" content="website"><meta property="og:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_taksi_3d_og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2319c2cc'/%3E%3C/svg%3E">
 <style>
-:root{--panel:rgba(14,26,38,.62);--ink:#fff;--accent:#f2b705}
+:root{--panel:rgba(14,26,38,.62);--ink:#fff;--accent:#2fd6df;--wpanel:rgba(251,251,248,.94);--wink:#0f2a3a;--teal:#0e8f9a}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%;overflow:hidden;background:#d7b9a0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color:var(--ink);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
@@ -26,12 +26,35 @@ html,body{margin:0;height:100%;overflow:hidden;background:#d7b9a0;font-family:-a
 #pier small{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:800}
 #pier b{font-size:19px}
 #pier.hide{opacity:0}
-#hint{position:fixed;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--panel);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:14px;padding:9px 16px;font-weight:700;font-size:14px;z-index:3;pointer-events:none;transition:opacity .8s;white-space:nowrap}
+#hint{position:fixed;left:50%;max-width:calc(100vw - 32px);text-align:center;bottom:calc(120px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--panel);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:14px;padding:9px 16px;font-weight:700;font-size:14px;z-index:3;pointer-events:none;transition:opacity .8s;white-space:nowrap}
 #hint.hide{opacity:0}
 #joy{position:fixed;width:120px;height:120px;margin:-60px 0 0 -60px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(14,26,38,.25);z-index:4;pointer-events:none;display:none}
 #joy i{position:absolute;left:50%;top:50%;width:50px;height:50px;margin:-25px 0 0 -25px;border-radius:50%;background:rgba(255,255,255,.85)}
 #fail{position:fixed;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;background:#d7b9a0;color:#2a1c10;font-weight:600;z-index:10}
 #fail a{color:#2a1c10}
+
+#hud{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:12px;background:var(--wpanel);color:var(--wink);border-radius:20px;padding:6px 6px 6px 16px;z-index:4;box-shadow:0 6px 18px rgba(0,0,0,.18);white-space:nowrap}
+#hMoney{font-weight:800;font-size:17px;color:var(--teal)}.hs{font-weight:700;font-size:13px}.hs small{color:#5c6b78;font-weight:600}
+#gBtn{border:0;border-radius:15px;background:var(--teal);color:#fff;font:800 13px inherit;font-family:inherit;padding:7px 11px;cursor:pointer}
+#pier{top:calc(62px + env(safe-area-inset-top,0px))!important}
+#job{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(calc(100% - 24px),420px);display:flex;align-items:center;gap:12px;background:var(--wpanel);color:var(--wink);border-radius:20px;padding:10px 14px;z-index:4;box-shadow:0 6px 18px rgba(0,0,0,.2);transition:opacity .3s;pointer-events:none}
+#job.hide,#offers.hide,#goals.hide,#toast.hide{opacity:0;pointer-events:none}
+.ja{flex:none;width:44px;height:44px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .1s linear}
+.jt{flex:1;min-width:0;display:flex;flex-direction:column}.jt small{font-size:10.5px;font-weight:800;letter-spacing:.1em;color:var(--teal);text-transform:uppercase}.jt b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.jt span{font-size:12.5px;color:#5c6b78}
+.jc{flex:none;font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}.jc.late{color:#c8372d}
+#offers{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(calc(100% - 24px),420px);background:var(--wpanel);color:var(--wink);border-radius:22px;padding:14px;z-index:5;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .3s;display:flex;flex-direction:column;gap:8px}
+#offers h3{margin:0;font-size:18px}#offers h3 small{display:block;font-size:12px;color:#5c6b78;font-weight:600;margin-top:2px}
+.of{display:flex;align-items:center;gap:10px;border:0;border-radius:16px;background:#eef3f3;color:var(--wink);padding:10px 12px;text-align:left;font:inherit;cursor:pointer;width:100%}
+.of:hover,.of:focus-visible{background:#dff4f5;outline:2px solid var(--teal)}
+.of .oi{font-size:22px}.of .ot{flex:1;min-width:0;display:flex;flex-direction:column}.of .ot b{font-size:14.5px}.of .ot span{font-size:12px;color:#5c6b78}.of .op{font-weight:800;color:var(--teal);font-size:16px}
+#goals{position:fixed;left:50%;top:calc(58px + env(safe-area-inset-top,0px));transform:translateX(-50%);width:min(calc(100% - 24px),380px);background:var(--wpanel);color:var(--wink);border-radius:20px;padding:14px;z-index:6;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:opacity .3s}
+#goals h3{margin:0 0 8px;font-size:17px;display:flex;justify-content:space-between;align-items:center}#goals h3 button{border:0;background:#eef3f3;border-radius:12px;padding:4px 10px;font:700 13px inherit;font-family:inherit;cursor:pointer;color:var(--wink)}
+.gl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}.gl li{background:#eef3f3;border-radius:14px;padding:9px 12px}.gl li.ok{background:#d8f1e2}
+.gl .gr{display:flex;justify-content:space-between;gap:8px;font-size:13.5px;font-weight:700}.gl .gr em{font-style:normal;color:var(--teal)}
+.gl i{display:block;height:6px;border-radius:3px;background:#d3dcdc;margin-top:6px;overflow:hidden}.gl i u{display:block;height:100%;background:var(--teal)}
+#goals p{margin:8px 0 0;font-size:12px;color:#5c6b78}
+#toast{position:fixed;left:50%;top:calc(110px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--teal);color:#fff;font-weight:800;font-size:14px;border-radius:14px;padding:9px 16px;z-index:7;transition:opacity .3s;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
+@media (max-width:420px){#hud{gap:8px;padding-left:12px}.hs small{display:none}}
 </style>
 </head>
 <body>
@@ -41,6 +64,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#d7b9a0;font-family:-a
 <button class="btn" id="lang">EN</button>
 <canvas id="mini"></canvas>
 <div id="pier" class="hide"><small id="pierK">İskele</small><b id="pierN"></b></div>
+<div id="hud"><span id="hMoney">₺0</span><span class="hs"><b id="hDone">0</b> <small id="hDoneK">teslimat</small></span><button id="gBtn" type="button">★ <span id="gBtnT">Görevler</span></button></div>
+<div id="job" class="hide"><div class="ja" id="jArrow">➤</div><div class="jt"><small id="jK"></small><b id="jT"></b><span id="jS"></span></div><div class="jc" id="jC"></div></div>
+<div id="offers" class="hide"></div>
+<div id="goals" class="hide"></div>
+<div id="toast" class="hide"></div>
 <div id="hint" class="hide"></div>
 <div id="joy"><i></i></div>
 <div id="fail"><p id="failT">3B görüntü bu cihazda açılamadı. <a href="bogaz_taksi.html">2B Boğaz Taksi</a> her cihazda çalışır.</p></div>
@@ -53,14 +81,14 @@ import * as THREE from 'three';
 const $=id=>document.getElementById(id);
 let LANG='tr';try{LANG=localStorage.getItem('bt3d-lang')||((navigator.language||'tr').startsWith('tr')?'tr':'en')}catch(_){}
 const TX={
-  tr:{load:'Boğaz yükleniyor…',pier:'İskele',touch:'Sürmek için ekrana dokun ve sürükle',keys:'Ok tuşları veya WASD ile sür',back:'Geri',fail:'3B görüntü bu cihazda açılamadı. <a href="bogaz_taksi.html">2B Boğaz Taksi</a> her cihazda çalışır.'},
-  en:{load:'Loading the Bosphorus…',pier:'Pier',touch:'Touch and drag to steer',keys:'Steer with arrow keys or WASD',back:'Back',fail:'3D view could not start on this device. <a href="bogaz_taksi.html">2D Boğaz Taksi</a> works everywhere.'}
+  tr:{load:'Boğaz yükleniyor…',pier:'İskele',touch:'Sürmek için ekrana dokun ve sürükle. İskelenin beyaz halkasında yavaşla, iş al.',keys:'Ok tuşları veya WASD ile sür. İskelenin beyaz halkasında yavaşla, iş al.',back:'Geri',fail:'3B görüntü bu cihazda açılamadı. <a href="bogaz_taksi.html">2B Boğaz Taksi</a> her cihazda çalışır.'},
+  en:{load:'Loading the Bosphorus…',pier:'Pier',touch:'Touch and drag to steer. Slow down in a pier’s white ring to take a job.',keys:'Steer with arrow keys or WASD. Slow down in a pier’s white ring to take a job.',back:'Back',fail:'3D view could not start on this device. <a href="bogaz_taksi.html">2D Boğaz Taksi</a> works everywhere.'}
 };
 const T=k=>TX[LANG][k];
 const TOUCH=matchMedia('(pointer:coarse)').matches;
 function applyLang(){document.documentElement.lang=LANG;$('lang').textContent=LANG==='tr'?'EN':'TR';$('loadT').textContent=T('load');$('pierK').textContent=T('pier');$('hint').textContent=T(TOUCH?'touch':'keys');$('back').setAttribute('aria-label',T('back'));$('failT').innerHTML=T('fail')}
 applyLang();
-$('lang').onclick=()=>{LANG=LANG==='tr'?'en':'tr';try{localStorage.setItem('bt3d-lang',LANG)}catch(_){}applyLang()};
+$('lang').onclick=()=>{LANG=LANG==='tr'?'en':'tr';try{localStorage.setItem('bt3d-lang',LANG)}catch(_){}applyLang();try{hudUp();renderGoals();renderJob();renderOffers()}catch(_){}};
 
 /* ================= Harita: 2B Boğaz Taksi ile birebir aynı veri (1 birim = 2B oyundaki 1 birim) ================= */
 const TAU=Math.PI*2,clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
@@ -141,7 +169,7 @@ const PD=[
  ['Fener',530,2290,-.62,.78,'E'],['Hasköy',440,2200,.78,-.62,'E'],['Balat',440,2200,-.78,.62,'E'],
  ['Sütlüce',370,2090,.89,-.46,'E'],['Eyüp',320,1970,-1,.15,'E']
 ];
-let PIERS=[],WATER,WMAT,BOAT,WAKE,LABELS=[],RINGS=[];
+let PIERS=[],WATER,WMAT,BOAT,WAKE,LABELS=[],RINGS=[],BEAM;
 const PLAT_L=20;
 
 function lam(c,o={}){return new THREE.MeshLambertMaterial(Object.assign({color:c,flatShading:true},o))}
@@ -307,7 +335,7 @@ function label(text){
   const s=new THREE.Sprite(new THREE.SpriteMaterial({map:t,transparent:true,depthWrite:false,fog:false}));s.scale.set(w/56*7,7,1);return s}
 
 function buildPiers(){
-  const wood=lam('#8a6a48'),post=lam('#4f3d2c'),kiosk=lam('#f3efe6'),roof=lam('#2f5f7a'),ringM=new THREE.MeshBasicMaterial({color:'#f2b705',transparent:true,opacity:.75,depthWrite:false});
+  const wood=lam('#8a6a48'),post=lam('#4f3d2c'),kiosk=lam('#f3efe6'),roof=lam('#2f5f7a'),ringM=new THREE.MeshBasicMaterial({color:'#ffffff',transparent:true,opacity:.75,depthWrite:false});
   const ringG=new THREE.RingGeometry(5.2,6.6,28);ringG.rotateX(-Math.PI/2);
   PIERS=PD.map(d=>{const s=march(d[1],d[2],d[3],d[4]);
     let off=PLAT_L+5,wx,wz;do{wx=s.x-s.dx*off;wz=s.z-s.dz*off;off+=3}while(!nav(wx,wz,5)&&off<80);
@@ -329,15 +357,15 @@ function buildBoat(){
   const g=new THREE.Group(),hull=new THREE.Group();g.add(hull);
   const outline=(k)=>{const s=new THREE.Shape();s.moveTo(-6.6*k,-2.4*k);s.lineTo(2.2*k,-2.5*k);s.quadraticCurveTo(5.6*k,-2*k,7.2*k,0);s.quadraticCurveTo(5.6*k,2*k,2.2*k,2.5*k);s.lineTo(-6.6*k,2.4*k);s.closePath();return s};
   const ex=(k,h,mat,y)=>{const geo=new THREE.ExtrudeGeometry(outline(k),{depth:h,bevelEnabled:false});geo.rotateX(Math.PI/2);geo.translate(0,y+h,0);const o=new THREE.Mesh(geo,mat);hull.add(o);return o};
-  ex(.96,1.2,lam('#1d3b5a'),-1.1);ex(1,1.9,lam('#f6f4ee'),.1);ex(1.01,.45,lam('#f2b705'),.9);ex(.9,.2,lam('#a8794d'),2.0);
+  ex(.96,1.2,lam('#0e8f9a'),-1.1);ex(1,1.9,lam('#fbfbf8'),.1);ex(1.01,.45,lam('#19c2cc'),.9);ex(.9,.2,lam('#e9e4da'),2.0);
   const cab=new THREE.Mesh(new THREE.BoxGeometry(5,2.4,4.2),lam('#f6f4ee'));cab.position.set(-1.2,3.4,0);hull.add(cab);
   const glass=new THREE.Mesh(new THREE.BoxGeometry(5.1,1.1,4.3),lam('#20323f'));glass.position.set(-1.2,3.8,0);hull.add(glass);
   const ws=new THREE.Mesh(new THREE.BoxGeometry(.3,1.5,3.8),lam('#2a4152'));ws.position.set(1.5,3.3,0);ws.rotation.z=-.5;hull.add(ws);
-  const top=new THREE.Mesh(new THREE.BoxGeometry(5.6,.4,4.7),lam('#f2b705'));top.position.set(-1.2,4.8,0);hull.add(top);
-  const sign=new THREE.Mesh(new THREE.BoxGeometry(1.8,.8,.5),new THREE.MeshBasicMaterial({color:'#ffd84a'}));sign.position.set(-1.2,5.4,0);hull.add(sign);
+  const top=new THREE.Mesh(new THREE.BoxGeometry(5.6,.4,4.7),lam('#fbfbf8'));top.position.set(-1.2,4.8,0);hull.add(top);
+  const sign=new THREE.Mesh(new THREE.BoxGeometry(1.8,.8,.5),new THREE.MeshBasicMaterial({color:'#2fd6df'}));sign.position.set(-1.2,5.4,0);hull.add(sign);
   const mast=new THREE.Mesh(new THREE.CylinderGeometry(.08,.08,2.6,4),lam('#cccccc'));mast.position.set(-5.8,3.3,0);hull.add(mast);
   const flag=new THREE.Mesh(new THREE.PlaneGeometry(1.4,.95),new THREE.MeshBasicMaterial({color:'#e30a17',side:THREE.DoubleSide}));flag.position.set(-6.5,4.2,0);hull.add(flag);
-  const motor=new THREE.Mesh(new THREE.BoxGeometry(1.1,2,1.4),lam('#2b2b2b'));motor.position.set(-7,.6,0);hull.add(motor);
+  const motor=new THREE.Mesh(new THREE.BoxGeometry(1.1,2,1.4),lam('#e9e9e9'));motor.position.set(-7,.6,0);hull.add(motor);
   scene.add(g);g.userData.hull=hull;return g;
 }
 function buildWake(){
@@ -360,7 +388,8 @@ function buildMini(){const r=Math.min(devicePixelRatio||1,2),w=84*r,h=176*r;mini
   MBASE=c}
 const m2=(x,z,w,h)=>[(x-MM.x0)/(MM.x1-MM.x0)*w,(z-MM.z0)/(MM.z1-MM.z0)*h];
 function drawMini(){const w=mini.width,h=mini.height,r=w/84;mctx.clearRect(0,0,w,h);mctx.save();mctx.beginPath();mctx.roundRect(0,0,w,h,12*r);mctx.clip();mctx.drawImage(MBASE,0,0);
-  const [bx,by]=m2(boat.x,boat.z,w,h);mctx.translate(bx,by);mctx.rotate(boat.a);mctx.fillStyle='#f2b705';mctx.strokeStyle='#14283c';mctx.lineWidth=1.2*r;
+  {const ti=JOB.target();if(ti>=0){const [tx,ty]=m2(PIERS[ti].wx,PIERS[ti].wz,w,h),pu=1+.35*Math.sin(time*5);mctx.fillStyle='#ff7a45';mctx.strokeStyle='#fff';mctx.lineWidth=1.4*r;mctx.beginPath();mctx.arc(tx,ty,3.6*r*pu,0,TAU);mctx.fill();mctx.stroke()}}
+  const [bx,by]=m2(boat.x,boat.z,w,h);mctx.translate(bx,by);mctx.rotate(boat.a);mctx.fillStyle='#19c2cc';mctx.strokeStyle='#14283c';mctx.lineWidth=1.2*r;
   mctx.beginPath();mctx.moveTo(6*r,0);mctx.lineTo(-4*r,3.6*r);mctx.lineTo(-2*r,0);mctx.lineTo(-4*r,-3.6*r);mctx.closePath();mctx.fill();mctx.stroke();mctx.restore()}
 
 /* ================= Oynanış: sürüş ================= */
@@ -393,11 +422,78 @@ function step(dt){
   let best=-1,bd=1e9;for(let i=0;i<PIERS.length;i++){const p=PIERS[i],d=Math.hypot(p.wx-boat.x,p.wz-boat.z);if(d<bd){bd=d;best=i}}
   const np=bd<30&&Math.abs(boat.v)<24?best:-1;
   if(np!==nearPier){nearPier=np;if(np>=0){$('pierN').textContent=PIERS[np].name;$('pier').classList.remove('hide')}else $('pier').classList.add('hide')}
+  jobStep(dt);jobUiT+=dt;if(jobUiT>.25){jobUiT=0;renderJob()}
   // dümen suyu
   wakeT-=dt;if(wakeT<=0&&Math.abs(boat.v)>6){wakeT=.035;const ca=Math.cos(boat.a),sa=Math.sin(boat.a),sp=Math.abs(boat.v)/MAXV;
     for(const sd of [-1,1]){const w=WAKE.list[WAKE.i];WAKE.i=(WAKE.i+1)%WAKE.N;w.l=1;w.x=boat.x-ca*6.5-sa*sd*2.2;w.z=boat.z-sa*6.5+ca*sd*2.2;w.vx=-sa*sd*4*sp;w.vz=ca*sd*4*sp;w.s=2+sp*2}}
 }
 
+
+/* ================= İşler ve görevler ================= */
+const L2=a=>a[LANG==='en'?1:0];
+const KINDS=[
+  {k:'pax',ic:'🧑‍🤝‍🧑',w:5,items:[['yolcu','passengers'],['öğrenci','students'],['turist','tourists'],['balıkçı','fishermen'],['müzisyen','musicians'],['düğün davetlisi','wedding guests']],n:[2,6]},
+  {k:'cargo',ic:'📦',w:3,items:[['simit tablası','simit trays'],['çay kasası','tea crates'],['balık kasası','fish crates'],['çiçek','flower bunches'],['halı','carpets'],['kitap kolisi','boxes of books']],n:[2,5]},
+  {k:'vip',ic:'⭐',w:1,items:[['ünlü şef','celebrity chef'],['gelin ve damat','bride and groom'],['belediye başkanı','mayor']],n:[1,1]}];
+const JOB={cur:null,offers:null,offPier:-1,money:0,done:0,ontime:0,streak:0,best:0,
+  target(){return this.cur?this.cur.to:-1}};
+const GOALDEF=[{id:'del',g:[3,6,10],tr:n=>n+' teslimat yap',en:n=>'Make '+n+' deliveries',r:[150,300,500]},
+  {id:'on',g:[2,4,7],tr:n=>n+' işi zamanında bitir',en:n=>'Finish '+n+' jobs on time',r:[150,300,500]},
+  {id:'earn',g:[500,1200,2500],tr:n=>'₺'+n.toLocaleString('tr-TR')+' kazan',en:n=>'Earn ₺'+n.toLocaleString('en-US'),r:[150,300,500]},
+  {id:'far',g:[1,2,4],tr:n=>n+' uzun yol işi (2 km+)',en:n=>n+' long-haul jobs (2 km+)',r:[200,350,600]},
+  {id:'vip',g:[1,2,3],tr:n=>n+' VIP misafir taşı',en:n=>'Carry '+n+' VIP guests',r:[200,400,700]}];
+let GOALS=null;
+const SKEY='bt3d-save';
+function saveG(){try{localStorage.setItem(SKEY,JSON.stringify({m:JOB.money,d:JOB.done,o:JOB.ontime,b:JOB.best,g:GOALS}))}catch(_){}}
+function loadG(){try{const v=JSON.parse(localStorage.getItem(SKEY)||'null');if(v){JOB.money=v.m||0;JOB.done=v.d||0;JOB.ontime=v.o||0;JOB.best=v.b||0;GOALS=v.g||null}}catch(_){}if(!GOALS)newGoals(0)}
+function newGoals(tier){const pool=GOALDEF.slice().sort(()=>Math.random()-.5).slice(0,3);GOALS={tier,list:pool.map(d=>({id:d.id,goal:d.g[Math.min(tier,2)],r:d.r[Math.min(tier,2)],v:0,ok:false}))}}
+function goalAdd(id,v){if(!GOALS)return;let any=false;for(const g of GOALS.list){if(g.id!==id||g.ok)continue;g.v=Math.min(g.goal,g.v+v);if(g.v>=g.goal){g.ok=true;JOB.money+=g.r;any=true;toast('★ '+(LANG==='en'?'Goal done! +₺':'Görev tamam! +₺')+g.r)}}
+  if(GOALS.list.every(g=>g.ok)){const t=GOALS.tier+1;setTimeout(()=>{newGoals(t);toast(LANG==='en'?'New goals unlocked ★':'Yeni görevler açıldı ★');renderGoals();saveG()},2200)}
+  if(any){renderGoals();hudUp()}}
+const dist=(a,b)=>Math.hypot(PIERS[a].wx-PIERS[b].wx,PIERS[a].wz-PIERS[b].wz);
+const km=d=>(d*.0042).toLocaleString(LANG==='en'?'en-US':'tr-TR',{maximumFractionDigits:1}); // 1 birim ≈ 4,2 m
+function pickKind(){const tot=KINDS.reduce((a,k)=>a+k.w,0);let r=Math.random()*tot;for(const k of KINDS){if((r-=k.w)<0)return k}return KINDS[0]}
+function genOffer(from,mode){let to=-1,tries=0;const lo=mode==='far'?1500:300,hi=mode==='far'?3200:mode==='near'?900:1700;
+  while(tries++<60){const c=(Math.random()*PIERS.length)|0;if(c===from)continue;const d=dist(from,c);if(d>=lo&&d<=hi){to=c;break}}
+  if(to<0){to=(from+5)%PIERS.length}
+  const K=pickKind(),it=K.items[(Math.random()*K.items.length)|0],n=K.n[0]+((Math.random()*(K.n[1]-K.n[0]+1))|0),d=dist(from,to);
+  const limit=Math.round(14+d/38),pay=Math.round((30+d*.11*(K.k==='vip'?1.8:K.k==='cargo'?1.1:1))/5)*5;
+  return{from,to,k:K.k,ic:K.ic,n,it,d,limit,pay}}
+function offerAt(pi){JOB.offPier=pi;JOB.offers=[genOffer(pi,'near'),genOffer(pi,'mid'),genOffer(pi,'far')];renderOffers()}
+function lbl(o){return (o.n>1?o.n+' ':'')+L2(o.it)}
+function renderOffers(){const el=$('offers');if(!JOB.offers){el.classList.add('hide');return}$('hint').classList.add('hide');
+  el.innerHTML=`<h3>${PIERS[JOB.offPier].name}<small>${LANG==='en'?'Pick a job. The clock starts when you leave.':'Bir iş seç. Süre iskeleden ayrılınca başlar.'}</small></h3>`+JOB.offers.map((o,i)=>`<button class="of" type="button" data-o="${i}"><span class="oi">${o.ic}</span><span class="ot"><b>${lbl(o)} → ${PIERS[o.to].name}</b><span>${km(o.d)} km · ${o.limit} ${LANG==='en'?'s':'sn'}</span></span><span class="op">₺${o.pay}</span></button>`).join('');
+  el.classList.remove('hide')}
+$('offers').addEventListener('click',e=>{const b=e.target.closest('[data-o]');if(!b)return;const o=JOB.offers[+b.dataset.o];JOB.cur={...o,t:o.limit,started:false};JOB.offers=null;renderOffers();renderJob();toast((LANG==='en'?'Head to ':'Hedef: ')+PIERS[o.to].name)});
+function renderJob(){const el=$('job');if(!JOB.cur){el.classList.add('hide');return}const j=JOB.cur;
+  $('jK').textContent=(LANG==='en'?'Deliver to':'Teslim yeri')+' · '+km(Math.hypot(PIERS[j.to].wx-boat.x,PIERS[j.to].wz-boat.z))+' km';$('jT').textContent=PIERS[j.to].name;$('jS').textContent=j.ic+' '+lbl(j)+' · ₺'+j.pay;
+  const c=$('jC');c.textContent=(j.t<0?'-':'')+Math.floor(Math.abs(j.t)/60)+':'+String(Math.floor(Math.abs(j.t))%60).padStart(2,'0');c.classList.toggle('late',j.t<0);el.classList.remove('hide')}
+function deliver(){const j=JOB.cur,on=j.t>=0;let pay=on?j.pay+Math.round(Math.max(0,j.t)/j.limit*j.pay*.3/5)*5:Math.round(j.pay*.5/5)*5;
+  JOB.money+=pay;JOB.done++;if(on){JOB.ontime++;JOB.streak++}else JOB.streak=0;JOB.best=Math.max(JOB.best,JOB.streak);
+  toast((on?(LANG==='en'?'On time! +₺':'Zamanında! +₺'):(LANG==='en'?'Late · +₺':'Geç kaldın · +₺'))+pay);
+  goalAdd('del',1);if(on)goalAdd('on',1);goalAdd('earn',pay);if(j.d*.0042>=2)goalAdd('far',1);if(j.k==='vip')goalAdd('vip',1);
+  JOB.cur=null;renderJob();hudUp();saveG()}
+function hudUp(){$('hMoney').textContent='₺'+JOB.money.toLocaleString(LANG==='en'?'en-US':'tr-TR');$('hDone').textContent=JOB.done;$('hDoneK').textContent=LANG==='en'?'deliveries':'teslimat';$('gBtnT').textContent=LANG==='en'?'Goals':'Görevler'}
+function renderGoals(){const el=$('goals');if(!GOALS)return;const done=GOALS.list.filter(g=>g.ok).length;
+  el.innerHTML=`<h3>★ ${LANG==='en'?'Goals':'Görevler'} · ${done}/3<button type="button" id="gX">${LANG==='en'?'Close':'Kapat'}</button></h3><ul class="gl">${GOALS.list.map(g=>{const d=GOALDEF.find(x=>x.id===g.id);return `<li class="${g.ok?'ok':''}"><div class="gr"><span>${g.ok?'✓ ':''}${(LANG==='en'?d.en:d.tr)(g.goal)}</span><em>₺${g.r}</em></div><i><u style="width:${Math.round(g.v/g.goal*100)}%"></u></i></div></li>`}).join('')}</ul>
+   <p>${LANG==='en'?'Finish all three for a new, harder set. Level ':'Üçünü bitirince yeni ve daha zor görevler açılır. Seviye '}${GOALS.tier+1} · ${LANG==='en'?'best on-time streak ':'en uzun zamanında seri '}${JOB.best}</p>`}
+$('gBtn').addEventListener('click',()=>{renderGoals();$('goals').classList.toggle('hide')});
+$('goals').addEventListener('click',e=>{if(e.target.closest('#gX'))$('goals').classList.add('hide')});
+let toastT=0;function toast(m){const e=$('toast');e.textContent=m;e.classList.remove('hide');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.add('hide'),2400)}
+let dockT=0,lastPier=-1;
+function jobStep(dt){const j=JOB.cur;
+  // iskelede yavaşla: hedefse teslim et, değilse iş tekliflerini göster
+  let ip=-1;for(let i=0;i<PIERS.length;i++){const p=PIERS[i];if(Math.hypot(p.wx-boat.x,p.wz-boat.z)<10){ip=i;break}}
+  const slow=Math.abs(boat.v)<9;
+  if(ip>=0&&slow){dockT+=dt;if(dockT>.45){
+    if(j&&ip===j.to){deliver();offerAt(ip)}
+    else if(!j&&JOB.offPier!==ip){offerAt(ip)}}}
+  else{dockT=0;if(JOB.offers&&(ip<0||Math.abs(boat.v)>14)){JOB.offers=null;JOB.offPier=-1;renderOffers()}}
+  if(ip<0)JOB.offPier=-1;
+  if(j){if(!j.started&&Math.hypot(PIERS[j.from].wx-boat.x,PIERS[j.from].wz-boat.z)>14)j.started=true;if(j.started)j.t-=dt;
+    const tp=PIERS[j.to],ang=Math.atan2(tp.wz-boat.z,tp.wx-boat.x)-boat.a;$('jArrow').style.transform=`rotate(${(ang*180/Math.PI)-90}deg)`;
+    BEAM.visible=true;BEAM.position.set(tp.wx,0,tp.wz);BEAM.material.opacity=.35+.15*Math.sin(time*4)}else BEAM.visible=false}
+let jobUiT=0;
 /* ---------- Kamera ---------- */
 const cam={x:0,y:30,z:0,lx:0,ly:0,lz:0};
 function camStep(dt,snap){const ca=Math.cos(boat.a),sa=Math.sin(boat.a),sp=Math.abs(boat.v)/MAXV,back=30+sp*8,up=11+sp*3;
@@ -422,7 +518,7 @@ function render(dt){
   // iskele adları ve halkalar: yalnızca yakındayken
   for(let i=0;i<PIERS.length;i++){const p=PIERS[i],d=Math.hypot(p.wx-cam.x,p.wz-cam.z);
     LABELS[i].material.opacity=clamp((620-d)/220,0,1);LABELS[i].visible=d<620;
-    const r=RINGS[i];r.visible=d<500;if(r.visible){r.position.y=wave(p.wx,p.wz,time)+.35;r.material.opacity=(i===nearPier?.95:.45+.25*Math.sin(time*3+i))*clamp((500-d)/150,0,1);r.scale.setScalar(i===nearPier?1.15:1)}}
+    const r=RINGS[i];r.visible=d<500;if(r.visible){r.position.y=wave(p.wx,p.wz,time)+.35;const tg=i===JOB.target();r.visible=r.visible||tg;r.material.color.set(tg?'#ff7a45':'#ffffff');r.material.opacity=tg?.9:(i===nearPier?.95:.45+.25*Math.sin(time*3+i))*clamp((500-d)/150,0,1);r.scale.setScalar(tg?1.25+.1*Math.sin(time*5):i===nearPier?1.15:1)}}
   renderer.render(scene,camera);drawMini();
 }
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<h?68:56;camera.updateProjectionMatrix();if(WAKE)WAKE.mat.uniforms.uScale.value=h*renderer.getPixelRatio()/(2*Math.tan(camera.fov*Math.PI/360))}
@@ -435,12 +531,14 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-(las
 setTimeout(()=>{
   buildTerrain();buildWater();buildPiers();BRIDGES.forEach(buildBridge);buildKizKulesi();buildTown();
   BOAT=buildBoat();WAKE=buildWake();buildMini();
+  {const g=new THREE.CylinderGeometry(6,6,140,20,1,true);g.translate(0,70,0);BEAM=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:'#ff7a45',transparent:true,opacity:.4,depthWrite:false,side:THREE.DoubleSide}));BEAM.visible=false;scene.add(BEAM)}
+  loadG();hudUp();renderGoals();
   const s=PIERS.find(p=>p.name==='Karaköy');boat.a=Math.atan2(-s.dz,-s.dx)+.9;boat.x=s.wx-s.dx*14;boat.z=s.wz-s.dz*14;
   resize();camStep(0,true);
   $('load').style.opacity=0;setTimeout(()=>$('load').remove(),700);
   $('hint').classList.remove('hide');setTimeout(()=>firstInput(),9000);
   requestAnimationFrame(frame);
-  window.__bt3d={boat,PIERS,BRIDGES,setCam:()=>camStep(0,true),step,render,renderer};
+  window.__bt3d={boat,PIERS,BRIDGES,JOB,GOALS:()=>GOALS,jobStep,setCam:()=>camStep(0,true),step,render,renderer,camera};
 },30);
 </script>
 <script data-goatcounter="https://dogancansk.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>

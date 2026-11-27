@@ -429,23 +429,19 @@ const hsh=(i,j)=>{const n=Math.sin(i*127.1+j*311.7)*43758.5453;return n-Math.flo
 let LANG='tr';try{const l=localStorage.getItem('bogaz-filosu-lang');if(l==='en'||l==='tr')LANG=l}catch(_){}
 const t=(a,b)=>LANG==='en'?b:a,L2=p=>Array.isArray(p)?(LANG==='en'?p[1]:p[0]):p;
 
-/* ---------- Harita: gerçek koordinatlardan ---------- */
-const LAT0=41.262,LON0=28.925;
-const X=lon=>(lon-LON0)*16800*K,Z=lat=>(LAT0-lat)*22240*K;
-const WX=Math.round(X(29.125)),WZ=Math.round(Z(40.948));
-const conv=N=>N.map(n=>[X(n[1]),Z(n[0]),n[2]/5*K]);
-const B=conv([[41.262,29.16,5200],[41.246,29.14,3000],[41.231,29.128,1700],[41.215,29.120,1300],[41.200,29.108,700],[41.178,29.082,550],[41.160,29.066,1500],[41.137,29.074,1350],[41.119,29.082,850],[41.110,29.072,900],[41.101,29.061,450],[41.084,29.0612,380],[41.076,29.051,560],[41.066,29.050,520],[41.055,29.0445,620],[41.046,29.0355,600],[41.038,29.0185,900],[41.030,29.004,900],[41.020,28.996,950],[41.008,28.998,1100],[40.995,28.995,1900]]);
-const G=conv([[41.0195,28.990,320],[41.0195,28.979,260],[41.0200,28.973,230],[41.0240,28.966,230],[41.0285,28.9585,260],[41.0320,28.952,240],[41.0365,28.948,230],[41.0420,28.944,200],[41.0475,28.9405,210],[41.0550,28.941,160],[41.0620,28.944,110]]);
-const M=conv([[40.975,28.925,2300],[40.980,28.955,2400],[40.985,28.985,2300],[40.978,29.005,2000]]);
+/* ---------- Harita: Boğaz Taksi haritası (×MS ölçek) ---------- */
+const MS=2.8,WX=Math.round(2000*MS),WZ=Math.round(3300*MS);
+const conv=N=>N.map(n=>[n[0]*MS,n[1]*MS,n[2]*MS]);
+const B=conv([[1640,-560,760],[1570,-300,470],[1515,-90,260],[1482,90,165],[1480,150,150],[1420,350,170],[1345,520,185],[1330,700,150],[1380,880,140],[1400,1050,135],[1370,1220,120],[1330,1380,98],[1280,1530,120],[1260,1680,110],[1210,1830,125],[1140,1970,135],[1065,2100,150],[1000,2230,165],[985,2390,190],[1012,2550,212],[1035,2700,280]]);
+const G=conv([[860,2440,75],[740,2410,64],[630,2360,58],[530,2290,55],[440,2200,52],[370,2090,48],[320,1970,42],[295,1860,34]]);
+const M=conv([[-150,3080,300],[250,3020,300],[620,2985,300],[1045,2935,315],[1300,3050,280],[1480,3260,250],[1650,3620,420]]);
 function cr(a,b,c,d,q){return .5*(2*b+(c-a)*q+(2*a-5*b+4*c-d)*q*q+(3*b-a-3*c+d)*q*q*q)}
 function spline(N,step){const o=[];for(let i=0;i<N.length-1;i++){const a=N[Math.max(i-1,0)],b=N[i],c=N[i+1],d=N[Math.min(i+2,N.length-1)];
-  const n=Math.ceil(Math.hypot(c[0]-b[0],c[1]-b[1])/step);for(let k=0;k<n;k++){const q=k/n;o.push([cr(a[0],b[0],c[0],d[0],q),cr(a[1],b[1],c[1],d[1],q),Math.max(18,cr(a[2],b[2],c[2],d[2],q))])}}
+  const n=Math.ceil(Math.hypot(c[0]-b[0],c[1]-b[1])/step);for(let k=0;k<n;k++){const q=k/n;o.push([cr(a[0],b[0],c[0],d[0],q),cr(a[1],b[1],c[1],d[1],q),cr(a[2],b[2],c[2],d[2],q)])}}
   o.push(N[N.length-1].slice());return o}
-// Kıvrımlı açık deniz kıyıları: Karadeniz kuzeyde, Marmara güneyde (düz kenar yerine büyük daireler)
-const SEAS=conv([[41.305,28.925,6600],[41.322,28.965,8400],[41.309,29.01,6300],[41.326,29.055,8600],[41.306,29.1,6100],[41.318,29.15,7400],[40.952,28.94,5200],[40.946,28.985,5000],[40.94,29.04,4300],[40.925,29.1,4600]]);
-const SM=[...spline(B,18),...spline(G,12),...spline(M,60),...SEAS];
-// Açık denizler: Karadeniz (kuzey), Marmara (güney)
-const RECTS=[[-800,-6000,WX+1600,Z(41.275)+6000],[-800,Z(40.94),WX+1600,4000]];
+const SM=[...spline(B,12*MS),...spline(G,8*MS),...spline(M,26*MS)];
+// Açık denizler: Marmara (güney), Karadeniz (kuzey)
+const RECTS=[[-700*MS,3050*MS,2150*MS,1700*MS],[-1000*MS,-2300*MS,4000*MS,1900*MS]];
 const CS=200,bw=Math.ceil(WX/CS),bh=Math.ceil(WZ/CS),bk=[];for(let i=0;i<bw*bh;i++)bk.push([]);
 for(const s of SM){const rc=s[2]+CS*1.5,i0=clamp(Math.floor((s[0]-rc)/CS),0,bw-1),i1=clamp(Math.floor((s[0]+rc)/CS),0,bw-1),j0=clamp(Math.floor((s[1]-rc)/CS),0,bh-1),j1=clamp(Math.floor((s[1]+rc)/CS),0,bh-1);
   for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)bk[j*bw+i].push(s)}
@@ -478,13 +474,30 @@ const PD=[
  ['Fener',41.0300,28.9500,E,2,''],['Balat',41.0340,28.9470,E,2.5,''],['Hasköy',41.0400,28.9510,E,2,''],
  ['Sütlüce',41.0480,28.9440,E,2,''],['Eyüp',41.0470,28.9360,E,4,'t']
 ];
-const PIERS=PD.map(d=>{const s=snap(X(d[2]),Z(d[1]));let off=24,wx,wz;do{wx=s.x-s.dx*off;wz=s.z-s.dz*off;off+=4}while(sdf(wx,wz)>-14&&off<110);
+// Boğaz Taksi iskele yerleri: [başlangıç x,y, kıyıya yön dx,dy]
+const BTP={'Rumeli Kavağı':[1480,150,-1,0],'Sarıyer':[1420,350,-1,0],'Tarabya':[1330,700,-1,0],'Yeniköy':[1380,880,-1,0],'İstinye':[1400,1050,-1,0],'Emirgan':[1370,1220,-1,0],
+ 'Bebek':[1280,1530,-1,0],'Arnavutköy':[1260,1680,-1,0],'Ortaköy':[1140,1970,-1,0],'Beşiktaş':[1065,2100,-1,0],'Kabataş':[1000,2172,-1,0],
+ 'Anadolu Kavağı':[1480,150,1,0],'Beykoz':[1330,700,1,0],'Paşabahçe':[1380,880,1,0],'Çubuklu':[1400,1050,1,0],'Kanlıca':[1370,1220,1,0],'Anadolu Hisarı':[1330,1380,1,0],
+ 'Kandilli':[1280,1530,1,0],'Çengelköy':[1210,1830,1,0],'Beylerbeyi':[1140,1970,1,0],'Kuzguncuk':[1065,2100,1,0],'Üsküdar':[1000,2230,1,0],
+ 'Harem':[990,2550,1,0],'Haydarpaşa':[1000,2700,1,.1],'Kadıköy':[1300,3050,.75,-.66],'Yenikapı':[420,3000,0,-1],
+ 'Karaköy':[788,2420,0,-1],'Eminönü':[772,2450,0,1],'Kasımpaşa':[630,2360,.45,-.89],'Fener':[530,2290,-.62,.78],'Hasköy':[440,2200,.78,-.62],'Balat':[440,2200,-.78,.62],
+ 'Sütlüce':[370,2090,.89,-.46],'Eyüp':[320,1970,-1,.15]};
+function marchW(x,z,dx,dz){const l=Math.hypot(dx,dz);dx/=l;dz/=l;for(let i=0;i<2000&&sdf(x,z)<0;i++){x+=dx*2;z+=dz*2}const g=grad(x,z);return{x,z,dx:g.x,dz:g.z}}
+const PIERS=PD.map(d=>{const b=BTP[d[0]],s=marchW(b[0]*MS,b[1]*MS,b[2],b[3]);let off=24,wx,wz;do{wx=s.x-s.dx*off;wz=s.z-s.dz*off;off+=4}while(sdf(wx,wz)>-14&&off<110);
   return{name:d[0],x:s.x,z:s.z,dx:s.dx,dz:s.dz,wx,wz,side:d[3],pop:d[4],tour:d[5].includes('t'),cargo:d[5].includes('c'),yard:d[5].includes('y')}});
 const P=n=>PIERS.findIndex(p=>p.name===n);
+// Enlem/boylam → harita: iskelelerden afin uyum + mesafe ağırlıklı düzeltme (gerçek konumdaki süsler için)
+const LL=(()=>{const pts=PD.map((d,i)=>[d[2],d[1],PIERS[i].x,PIERS[i].z]);
+  const fit=c=>{const A=[[0,0,0],[0,0,0],[0,0,0]],v=[0,0,0];for(const q of pts){const r=[q[0],q[1],1];for(let i=0;i<3;i++){v[i]+=r[i]*q[c];for(let j=0;j<3;j++)A[i][j]+=r[i]*r[j]}}
+    for(let i=0;i<3;i++){let m=i;for(let k=i+1;k<3;k++)if(Math.abs(A[k][i])>Math.abs(A[m][i]))m=k;[A[i],A[m]]=[A[m],A[i]];[v[i],v[m]]=[v[m],v[i]];
+      for(let k=0;k<3;k++)if(k!==i){const f=A[k][i]/A[i][i];for(let j=0;j<3;j++)A[k][j]-=f*A[i][j];v[k]-=f*v[i]}}return v.map((x,i)=>x/A[i][i])};
+  const cx=fit(2),cz=fit(3),af=(lo,la)=>[cx[0]*lo+cx[1]*la+cx[2],cz[0]*lo+cz[1]*la+cz[2]],res=pts.map(q=>{const a=af(q[0],q[1]);return[q[2]-a[0],q[3]-a[1]]});
+  return(la,lo)=>{const a=af(lo,la);let w=0,rx=0,rz=0;pts.forEach((q,i)=>{const d=Math.hypot((q[0]-lo)*.75,q[1]-la)+.002,k=1/(d*d*d);w+=k;rx+=res[i][0]*k;rz+=res[i][1]*k});return[a[0]+rx/w,a[1]+rz/w]}})();
+const X=(lo,la)=>LL(la,lo)[0],Z=(la,lo)=>LL(la,lo)[1];
 const NODES=PIERS.map(p=>[p.wx,p.wz]);
-const VN=NODES.push([X(29.15),Z(41.257)])-1,VS=NODES.push([X(28.985),Z(40.955)])-1;
+const VN=NODES.push([1515*MS,20*MS])-1,VS=NODES.push([760*MS,3180*MS])-1;
 // Galataport: kıyı noktası, kıyıya paralel yön ve kruvaziyerin hemen dibindeki yanaşma yeri
-const GPC=(()=>{const s=snap(X(28.9838),Z(41.0262));return{x:s.x,z:s.z,nx:s.dx,nz:s.dz,a:Math.atan2(s.dz,s.dx)+Math.PI/2}})();
+const GPC=(()=>{const s=snap(811*MS,2262*MS);return{x:s.x,z:s.z,nx:s.dx,nz:s.dz,a:Math.atan2(s.dz,s.dx)+Math.PI/2}})();
 const GP=NODES.push([GPC.x-GPC.nx*60,GPC.z-GPC.nz*60])-1;
 const berth=slot=>{const along=(slot?-1:1)*62;return{x:GPC.x-GPC.nx*24+Math.cos(GPC.a)*along,z:GPC.z-GPC.nz*24+Math.sin(GPC.a)*along,a:GPC.a}};
 
@@ -518,27 +531,28 @@ function setZone(on){gc=gcBase.slice();if(on&&S.zone){const zr=S.zone.r+6;for(le
   NC=NODES.map(n=>cellOf(n[0],n[1]));trees={};paths={};S.lines.forEach(l=>{l.marks=null})}
 
 /* ---------- Harita süsleri: yapılar, evler, korular, şamandıralar ---------- */
+const BTM={'Galata Kulesi':[735,2252],'Dolmabahçe Sarayı':[858,2122],'Çırağan Sarayı':[928,2028],'Beylerbeyi Sarayı':[1322,2022],'Anadolu Hisarı':[1468,1392],'Topkapı Sarayı':[748,2548],
+ 'Ayasofya':[700,2592],'Sultanahmet Camii':[648,2622],'Süleymaniye':[548,2452],'Rumeli Hisarı':[1190,1392],'Çamlıca Kulesi':[1420,2255],'Eyüp Sultan':[235,1985],'Ortaköy Camii':[958,1934],'Taksim · İstiklal':[755,2175]};
 const MARKS=[['tower','Galata Kulesi',41.0256,28.9768],['port','Galataport',41.0266,28.9822],['palace','Dolmabahçe Sarayı',41.0392,29.0005],['palace','Çırağan Sarayı',41.0440,29.0170],
  ['palace','Beylerbeyi Sarayı',41.0425,29.0395],['station','Haydarpaşa Garı',40.9966,29.0190],['palace','Topkapı Sarayı',41.0115,28.9834],['mosque','Ayasofya',41.0086,28.9802],
  ['mosque','Sultanahmet Camii',41.0054,28.9768],['mosque','Süleymaniye',41.0162,28.9640],['mosque','Ortaköy Camii',41.0473,29.0262],['mosque','Eyüp Sultan',41.0479,28.9338],
  ['castle','Rumeli Hisarı',41.0848,29.0560],['castle','Anadolu Hisarı',41.0822,29.0672],['tram','Taksim · İstiklal',41.0355,28.9810],['spire','Çamlıca Kulesi',41.0320,29.0690],['light','Rumeli Feneri',41.2340,29.1095],['light','Anadolu Feneri',41.2185,29.1520]]
- .map(m=>{if(m[0]==='port')return{k:'port',n:m[1],x:GPC.x+GPC.nx*9,z:GPC.z+GPC.nz*9,a:GPC.a};const p=inland(X(m[3]),Z(m[2]),m[0]==='light'?6:16);return{k:m[0],n:m[1],x:p[0],z:p[1]}});
-const KIZ={x:X(29.0041),z:Z(41.0211)};
+ .map(m=>{if(m[0]==='port')return{k:'port',n:m[1],x:GPC.x+GPC.nx*9,z:GPC.z+GPC.nz*9,a:GPC.a};const bt=BTM[m[1]],q=bt?[bt[0]*MS,bt[1]*MS]:LL(m[2],m[3]),p=inland(q[0],q[1],m[0]==='light'?6:16);return{k:m[0],n:m[1],x:p[0],z:p[1]}});
+const KIZ={x:1125*MS,z:2415*MS};
 const DISTRICTS=[['FATİH',41.0105,28.9500],['BEYOĞLU',41.0400,28.9700],['BEŞİKTAŞ',41.0560,29.0080],['ŞİŞLİ',41.0640,28.9870],['KAĞITHANE',41.0870,28.9700],['EYÜPSULTAN',41.0640,28.9200],
- ['SARIYER',41.1600,29.0450],['ÜSKÜDAR',41.0250,29.0400],['KADIKÖY',40.9870,29.0500],['BEYKOZ',41.1300,29.1050]].map(d=>{const p=inland(X(d[2]),Z(d[1]),220);return{n:d[0],x:p[0],z:p[1]}});
-const BRIDGES=[['15 Temmuz Şehitler Köprüsü','15 July Martyrs Bridge',41.0505,29.0292,41.0386,29.0392,1],['Fatih Sultan Mehmet Köprüsü','Fatih Sultan Mehmet Bridge',41.0915,29.0575,41.0905,29.0690,1],
- ['Yavuz Sultan Selim Köprüsü','Yavuz Sultan Selim Bridge',41.2038,29.1050,41.2012,29.1225,1],['Galata Köprüsü','Galata Bridge',41.0170,28.9718,41.0236,28.9746,0],
- ['Haliç Metro Köprüsü','Golden Horn Metro Bridge',41.0212,28.9668,41.0262,28.9700,0],['Atatürk Köprüsü','Atatürk Bridge',41.0226,28.9612,41.0270,28.9658,0]].map(b=>{
-  const ax=X(b[3]),az=Z(b[2]),bx=X(b[5]),bz=Z(b[4]),l=Math.hypot(bx-ax,bz-az),dx=(bx-ax)/l,dz=(bz-az)/l;let mx=(ax+bx)/2,mz=(az+bz)/2;
-  if(sdf(mx,mz)>0){let best=null;for(let s=-200;s<=200;s+=10){const x=mx+dx*s,z=mz+dz*s;if(sdf(x,z)<0&&(!best||sdf(x,z)<sdf(best[0],best[1])))best=[x,z]}if(!best)return null;[mx,mz]=best}
-  const reach=sg=>{let s=0;while(s<2000&&sdf(mx+dx*s*sg,mz+dz*s*sg)<0)s+=4;return s+(b[6]?26:14)};const r1=reach(1),r0=reach(-1);
+ ['SARIYER',41.1600,29.0450],['ÜSKÜDAR',41.0250,29.0400],['KADIKÖY',40.9870,29.0500],['BEYKOZ',41.1300,29.1050]].map(d=>{const q=LL(d[1],d[2]),p=inland(q[0],q[1],220);return{n:d[0],x:p[0],z:p[1]}});
+const BRIDGES=[['15 Temmuz Şehitler Köprüsü','15 July Martyrs Bridge',1178,1900,1,.1,1],['Fatih Sultan Mehmet Köprüsü','Fatih Sultan Mehmet Bridge',1348,1310,1,0,1],
+ ['Yavuz Sultan Selim Köprüsü','Yavuz Sultan Selim Bridge',1481,120,1,0,1],['Galata Köprüsü','Galata Bridge',726,2415,.33,-.94,0],
+ ['Haliç Metro Köprüsü','Golden Horn Metro Bridge',690,2393,.4,-.92,0],['Atatürk Köprüsü','Atatürk Bridge',655,2372,.45,-.89,0],['Haliç Köprüsü','Haliç Bridge',402,2148,.84,-.54,0]].map(b=>{
+  const l=Math.hypot(b[4],b[5]),dx=b[4]/l,dz=b[5]/l,mx=b[2]*MS,mz=b[3]*MS;if(sdf(mx,mz)>0)return null;
+  const reach=sg=>{let s=0;while(s<4000&&sdf(mx+dx*s*sg,mz+dz*s*sg)<0)s+=4;return s+(b[6]?26:14)};const r1=reach(1),r0=reach(-1);
   return{n:[b[0],b[1]],sus:b[6],x0:mx-dx*r0,z0:mz-dz*r0,x1:mx+dx*r1,z1:mz+dz*r1,w:b[6]?15:10}}).filter(Boolean);
-const HOUSES=(()=>{const o=[],st=17,urb=z=>z>Z(41.065)?1:z>Z(41.11)?.6:.32;
+const HOUSES=(()=>{const o=[],st=17,urb=z=>z>1700*MS?1:z>1150*MS?.6:.32;
   for(let gz=0;gz<WZ/st;gz++)for(let gx=0;gx<WX/st;gx++){const h=hsh(gx,gz),x=gx*st+h*11,z=gz*st+hsh(gz,gx)*11;if(h>.62)continue;const d=sdf(x,z);
     if(d<14||d>300)continue;if(hsh(gx+41,gz+7)>urb(z)*(d<130?.62:.28))continue;if(MARKS.some(m=>Math.abs(m.x-x)<34&&Math.abs(m.z-z)<34))continue;
     o.push([x,z,9+h*7,8+hsh(gx+3,gz)*5,(hsh(gx+9,gz+2)*5)|0])}
   return o.length>9000?o.filter((_,i)=>i%Math.ceil(o.length/9000)===0):o})();
-const PARKS=(()=>{const o=[];for(let i=0;i<70;i++){const x=hsh(i,11)*WX,z=Z(41.24)+hsh(i,17)*(Z(40.99)-Z(41.24)),d=sdf(x,z);if(d>120)o.push([x,z,60+hsh(i,23)*120])}return o})();
+const PARKS=(()=>{const o=[];for(let i=0;i<70;i++){const x=hsh(i,11)*WX,z=200*MS+hsh(i,17)*2800*MS,d=sdf(x,z);if(d>120)o.push([x,z,60+hsh(i,23)*120])}return o})();
 const GULLS=Array.from({length:26},(_,i)=>{const p=PIERS[(i*7)%PIERS.length];return{x:p.wx-p.dx*(30+hsh(i,2)*60),z:p.wz-p.dz*(30+hsh(i,2)*60),r:30+hsh(i,4)*50,ph:hsh(i,5)*TAU,s:.25+hsh(i,6)*.3}});
 
 /* ---------- Tekne sınıfları, kaptanlar ---------- */
@@ -753,7 +767,7 @@ const EV=[
  {k:'ariza'},{k:'denetim'}];
 function fireEvent(){const e=pick(EV);
   if(e.h){if(S.events.some(x=>x.k===e.k))return;S.events.push({k:e.k,end:S.t+e.h*3600});
-    if(e.k==='protokol'){S.zone={x:X(29.0035),z:Z(41.0383),r:150};setZone(true)}
+    if(e.k==='protokol'){S.zone={x:875*MS,z:2140*MS,r:150};setZone(true)}
     log(e.n[0]+': '+e.d[0],e.n[1]+': '+e.d[1],e.k==='sis'||e.k==='lodos'||e.k==='protokol')}
   else if(e.k==='zam'){S.fuelIdx=Math.min(1.6,S.fuelIdx*1.15);log(e.n[0]+': '+e.d[0],e.n[1]+': '+e.d[1],true)}
   else if(e.k==='indirim'){S.fuelIdx=Math.max(.7,S.fuelIdx*.88);log(e.n[0]+': '+e.d[0],e.n[1]+': '+e.d[1])}
@@ -1091,7 +1105,7 @@ function applyLang(){if(!$('start').hidden)renderStart();document.documentElemen
   document.querySelectorAll('[data-tra]').forEach(el=>el.setAttribute('aria-label',LANG==='en'?el.dataset.ena:el.dataset.tra));hud(true);render();renderInfo()}
 
 /* ---------- Kamera ve dokunma ---------- */
-let C={},cw=0,ch=0,dpr=1;const cam={x:X(29.0),y:Z(41.024),z:.3},ptr=new Map();let tap=null,pinch=0;
+let C={},cw=0,ch=0,dpr=1;const cam={x:900*MS,y:2380*MS,z:.3},ptr=new Map();let tap=null,pinch=0;
 function theme(){const cs=getComputedStyle(document.documentElement);for(const k of['water','deep','shallow','quay','land','onwater','ink','muted','panel','accent','crit'])C[k]=cs.getPropertyValue('--'+k).trim();
   C.dark=matchMedia('(prefers-color-scheme: dark)').matches&&document.documentElement.dataset.theme!=='light'||document.documentElement.dataset.theme==='dark'}
 function resize(){cw=cv.clientWidth;ch=cv.clientHeight;dpr=Math.min(devicePixelRatio||1,2);cv.width=cw*dpr;cv.height=ch*dpr;clampCam()}
@@ -1147,10 +1161,10 @@ function draw(){anim+=still?0:.016;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillSty
   ctx.fillStyle=C.quay;trace(ctx,10,v);ctx.fill();ctx.fillStyle=C.shallow;trace(ctx,4,v);ctx.fill();ctx.fillStyle=C.water;trace(ctx,0,v);ctx.fill();ctx.fillStyle=C.deep;trace(ctx,-70,v);ctx.fill();
   ctx.fillStyle='rgba(0,20,40,.12)';trace(ctx,-130,v);ctx.fill();
   // açık deniz: Karadeniz ve Marmara'da derinleşen su
-  for(const[y0,y1,up]of[[Z(41.26),Z(41.24),1],[Z(40.975),Z(40.948),0]]){const g=ctx.createLinearGradient(0,up?y1:y0,0,up?y0-1500:y1+1500);g.addColorStop(0,'rgba(0,25,45,0)');g.addColorStop(1,'rgba(0,25,45,.35)');ctx.fillStyle=g;
+  for(const[y0,y1,up]of[[-60*MS,80*MS,1],[3000*MS,3300*MS,0]]){const g=ctx.createLinearGradient(0,up?y1:y0,0,up?y0-1500:y1+1500);g.addColorStop(0,'rgba(0,25,45,0)');g.addColorStop(1,'rgba(0,25,45,.35)');ctx.fillStyle=g;
     ctx.fillRect(-2000,up?y0-3000:y0,WX+4000,up?(y1-y0+3000):3000)}
-  spaced(t('KARADENİZ','BLACK SEA'),X(29.03),Z(41.256),Math.max(34,15/z),C.onwater,.4);spaced(t('MARMARA DENİZİ','SEA OF MARMARA'),X(28.965),Z(40.958),Math.max(34,15/z),C.onwater,.4);
-  spaced(t('BOĞAZİÇİ','BOSPHORUS'),X(29.06),Z(41.14),22,C.onwater,.28);spaced(t('HALİÇ','GOLDEN HORN'),X(28.958),Z(41.031),16,C.onwater,.3);
+  spaced(t('KARADENİZ','BLACK SEA'),1500*MS,-40*MS,Math.max(34,15/z),C.onwater,.4);spaced(t('MARMARA DENİZİ','SEA OF MARMARA'),400*MS,3220*MS,Math.max(34,15/z),C.onwater,.4);
+  spaced(t('BOĞAZİÇİ','BOSPHORUS'),1330*MS,1000*MS,22,C.onwater,.28);spaced(t('HALİÇ','GOLDEN HORN'),480*MS,2230*MS,16,C.onwater,.3);
   if(!BUOYS){BUOYS=[];const p=centerline().f;for(let d=300;d<p.len;d+=520){const q=posAt(p,d);for(const sd of[1,-1]){const x=q.x-Math.sin(q.ang)*62*sd,zz=q.z+Math.cos(q.ang)*62*sd;if(sdf(x,zz)<-20)BUOYS.push([x,zz,sd])}}}
   BUOYS.forEach((b,i)=>{if(!vis(b[0],b[1],10))return;ctx.fillStyle=b[2]>0?'#ef4444':'#22c55e';ctx.beginPath();ctx.arc(b[0],b[1]+Math.sin(anim*1.6+i)*1.2,4,0,TAU);ctx.fill()});
   // protokol bölgesi
