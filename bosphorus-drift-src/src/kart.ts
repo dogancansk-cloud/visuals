@@ -40,6 +40,8 @@ export class Kart {
   boostT = 0; boostP = 0; spinT = 0; shieldT = 0; simit = 0; item: ItemKind | null = null; rollT = 0; lastItem: ItemKind | null = null; slowT = 0;
   /** kedi binmiş: direksiyon yalpalar */
   catT = 0;
+  /** online: başka bir cihazın sürdüğü kart (fizik çalışmaz, paketlerle konumlanır) */
+  remote = false; netId = ''; label = ''; gone = false;
   wrongT = 0; stuckT = 0; respawnT = 0;
   private prevDrift = false; private prevItem = false;
   wantItem = false;
@@ -70,6 +72,7 @@ export class Kart {
   lastLoss = 0;
   loseSimit(n: number) { this.lastLoss = Math.min(this.simit, n); this.simit -= this.lastLoss; }
   hit() {
+    if (this.remote) return false; // isabeti karşı tarafın cihazı uygular
     if (this.shieldT > 0) { this.shieldT = 0; return false; }
     if (this.spinT > 0) return false;
     this.spinT = 1.1; this.drifting = false; this.boostT = 0; this.loseSimit(4);

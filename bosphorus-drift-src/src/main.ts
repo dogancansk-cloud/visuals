@@ -18,6 +18,8 @@ import { F_SEA } from './bg/bgpath';
 import { F_GATE } from './kc/kcpath';
 import { Crowd } from './crowd';
 import { Street, TRAM, inTram } from './street';
+import { connect, type Backend } from './net';
+import { Room, pack, type Meta, type NetEvent, type PlayerInfo } from './online';
 import { Bosphorus, BG_SUN } from './bg/bosphorus';
 import { Particles } from './fx';
 import { Input } from './input';
@@ -177,16 +179,7 @@ const items = new Items(scene, track, tex, fx, {
     if (it === 'turbo') audio.boost(3); if (it === 'cay') audio.splash(); if (it === 'simit') audio.throwIt();
   },
   onTarget(v, by) { if (v === player) { msg.show(by === 'marti' ? 'Martı geliyor!' : 'Dikkat, kediler!', 'bad'); if (by === 'marti') audio.gull(); } },
-  onHit(v, by, owner) {
-    if (near(v)) by === 'kedi' ? audio.meow() : audio.hit();
-    const what: Record<string, [string, string]> = {
-      marti: ['Martı saldırısı!', `Martı ${v.def.name}’i yakaladı!`], cay: ['Çaya bastın!', `${v.def.name} çayda kaydı!`],
-      simit: ['Simit isabet!', `Simit ${v.def.name}’e çarptı!`], nazar: ['Nazar değdi!', `Nazar ${v.def.name}’e değdi!`],
-      duduk: ['Vapur düdüğü!', `${v.def.name} düdükle savruldu!`], kedi: ['Kedilere takıldın!', `${v.def.name} kedilere takıldı!`],
-    };
-    const t = what[by] || ['Vuruldun!', `${v.def.name} vuruldu!`];
-    if (v === player) msg.show(t[0] + (v.lastLoss ? ` −${v.lastLoss} simit` : ''), 'bad'); else if (owner === player) msg.show(t[1], 't1');
-  },
+  onHit(v, by, owner) { hitNote(v, by, owner); if (onMeta && room && !v.remote) room.send({ k: 'hit', v: v.netId, by, o: owner?.netId || '' }); },
   onBlock(k) { if (k === player) { audio.block(); msg.show('Nazar korudu!', 't1'); } },
   onPad(k) { if (k === player) audio.boost(2); },
 }, itemLayout);
@@ -363,19 +356,24 @@ function step(dt: number) {
   for (let i = 0; i < karts.length; i++) for (let j = i + 1; j < karts.length; j++) {
     const a = karts[i], b = karts[j], dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d2 = dx * dx + dz * dz;
     if (d2 < 2.4 && d2 > 1e-4 && Math.abs(a.pos.y - b.pos.y) < 1.6) {
-      const d = Math.sqrt(d2), o = (1.55 - d) / 2, nx = dx / d, nz = dz / d;
-      a.pos.x -= nx * o; a.pos.z -= nz * o; b.pos.x += nx * o; b.pos.z += nz * o;
+      if (a.remote && b.remote || a.gone || b.gone) continue;
+      // uzaktaki kartlar itilmez: yalnızca bu cihazın sürdüğü kart yer değiştirir
+      const d = Math.sqrt(d2), o = (1.55 - d) / (a.remote || b.remote ? 1 : 2), nx = dx / d, nz = dz / d;
+      if (!a.remote) { a.pos.x -= nx * o; a.pos.z -= nz * o; } if (!b.remote) { b.pos.x += nx * o; b.pos.z += nz * o; }
       const rv = (b.vel.x - a.vel.x) * nx + (b.vel.z - a.vel.z) * nz;
-      if (rv < 0) { a.vel.x += nx * rv * 0.6; a.vel.z += nz * rv * 0.6; b.vel.x -= nx * rv * 0.6; b.vel.z -= nz * rv * 0.6; }
+      if (rv < 0) { if (!a.remote) { a.vel.x += nx * rv * 0.6; a.vel.z += nz * rv * 0.6; } if (!b.remote) { b.vel.x -= nx * rv * 0.6; b.vel.z -= nz * rv * 0.6; } }
     }
   }
   if (!raceOn) return;
   items.update(dt, karts, raceT);
-  for (const k of karts) if (k.wantItem && (k.item || k.shieldT > 0) && k.rollT <= 0 && k.spinT <= 0) items.use(k, karts);
+  for (const k of karts) if (!k.remote && k.wantItem && (k.item || k.shieldT > 0) && k.rollT <= 0 && k.spinT <= 0) {
+    if (onMeta && room) room.send({ k: 'use', id: k.netId, it: k.shieldT > 0 ? 'throw' : k.item!, j: k.juiced ? 1 : 0 });
+    items.use(k, karts);
+  }
   updatePlaces();
   // tur ve bitiş
   for (const k of karts) {
-    if (!k.finished && k.lap > LAPS) {
+    if (!k.finished && !k.remote && k.lap > LAPS) {
       k.finished = true; k.finishTime = raceT;
       if (k === player) onPlayerFinish();
     }
@@ -429,7 +427,7 @@ function showInstall(back: () => void) {
     <p>Telefonu yan çevirirsen ekran daha da genişler.</p></div><div class="row"><button class="btn" id="iOk">Tamam</button></div></div>`;
   $('#iOk').onclick = () => { audio.click(); back(); };
 }
-for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(ev, () => { resize(); if (state === 'title') showTitle(); else if (paused) showPause(); });
+for (const ev of ['fullscreenchange', 'webkitfullscreenchange']) document.addEventListener(ev, () => { resize(); if (state === 'title') { view === 'lobby' ? showLobby() : view === 'online' ? showOnline() : showTitle(); } else if (paused) showPause(); });
 
 // ---------- menüler ----------
 const menu = $('#menu');
@@ -451,20 +449,189 @@ function makePortraits() {
 }
 
 function showTitle() {
-  state = 'title'; paused = false; setHud(false); weather.clear(); audio.rain(0);
+  state = 'title'; view = 'title'; paused = false; setHud(false); weather.clear(); audio.rain(0);
   menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>${PISTS[PIST].toLocaleUpperCase("tr")}</small></div>
     <div class="seg pist tpist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>
-    <div class="row"><button class="btn" id="bPlay">Yarış</button><button class="btn alt" id="bHow">Nasıl oynanır</button></div>
+    <div class="row"><button class="btn" id="bPlay">Yarış</button><button class="btn on" id="bOn">Online</button><button class="btn alt" id="bHow">Nasıl oynanır</button></div>
     </div><div class="corner l"><button class="btn ghost" id="bMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button></div><div class="corner r">${fsBtnHtml('bFs')}</div>`;
   bindFs('bFs', showTitle);
   $('#bPlay').onclick = () => { audio.start(); audio.click(); if (mobile && fsCan && store.get('fs') === '1') void setFull(true); showSelect(); };
   $('#bHow').onclick = () => { audio.start(); audio.click(); showHelp(showTitle); };
+  $('#bOn').onclick = () => { audio.start(); audio.click(); if (mobile && fsCan && store.get('fs') === '1') void setFull(true); showOnline(); };
   $('#bMute').onclick = () => { toggleMute(); showTitle(); };
   menu.querySelectorAll<HTMLElement>('.tpist button[data-p]').forEach((b) => (b.onclick = () => {
     const p = b.dataset.p!; if (p === PIST) return; audio.click();
     const u = new URL(location.href); u.search = ''; if (p !== 'galata') u.searchParams.set('pist', p); location.href = u.toString();
   }));
 }
+
+// ---------- online: oda, lobi, eşleşme ----------
+let net: Backend | null = null, room: Room | null = null, onMeta: Meta | null = null;
+let view: 'title' | 'online' | 'lobby' = 'title', lobbyT = 0, sendAcc = 0;
+const botSkill = new Map<string, number>();
+const nm = (k: Kart) => k.label || k.def.name;
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+const myName = () => (store.get('name') || '').trim();
+/** sunucu 12 sn içinde yanıt vermezse vazgeç */
+const within = <T,>(p: Promise<T>, ms = 12000) => Promise.race([p, new Promise<T>((_, rej) => setTimeout(() => rej(new Error('zaman aşımı')), ms))]);
+async function ensureNet() { if (!net) net = await connect(Q.get('net') === 'local' ? 'local' : 'firebase'); return net; }
+function showOnline(note = '') {
+  state = 'title'; view = 'online';
+  menu.innerHTML = `<div class="panel online"><h2>Online yarış</h2>
+    <label class="fld">Takma adın<input id="oName" maxlength="12" autocomplete="off" value="${esc(myName())}" placeholder="Adını yaz"></label>
+    <div class="row"><button class="btn" id="oQuick">Rastgele eşleş</button><button class="btn alt" id="oNew">Oda kur</button></div>
+    <div class="row join"><input id="oCode" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="KOD" value="${esc((Q.get('oda') || '').toLocaleUpperCase('en').slice(0, 4))}"><button class="btn ghost" id="oJoin">Kodla katıl</button></div>
+    <div class="note" id="oMsg">${note}</div>
+    <div class="row"><button class="btn ghost" id="oBack">Geri</button></div></div>`;
+  const say = (t: string) => { const m = document.getElementById('oMsg'); if (m) m.textContent = t; };
+  const me = (): PlayerInfo | null => {
+    const n = ($<HTMLInputElement>('#oName').value || '').trim().slice(0, 12);
+    if (n.length < 2) { say('Önce en az 2 harfli bir takma ad yaz.'); return null; }
+    store.set('name', n); return { name: n, char: charIdx, t: 0 };
+  };
+  const go = async (how: 'quick' | 'new' | 'join') => {
+    audio.start(); audio.click(); const p = me(); if (!p) return;
+    const code = ($<HTMLInputElement>('#oCode').value || '').trim();
+    if (how === 'join' && code.length !== 4) { say('Oda kodu 4 harf.'); return; }
+    say('Bağlanıyor…');
+    try {
+      const n = await within(ensureNet());
+      const r = await within(how === 'quick' ? Room.quick(n, p, PIST) : how === 'new' ? Room.create(n, p, PIST, false) : Room.join(n, code, p));
+      if (r === 'none') { say('Bu kodla bir oda yok.'); return; }
+      if (r === 'full') { say('Oda dolu (8 kişi).'); return; }
+      enterRoom(r);
+    } catch (e) { console.warn(e); say('Bağlanılamadı. İnternetini kontrol edip tekrar dene.'); }
+  };
+  $('#oQuick').onclick = () => void go('quick'); $('#oNew').onclick = () => void go('new'); $('#oJoin').onclick = () => void go('join');
+  $('#oBack').onclick = () => { audio.click(); showTitle(); };
+}
+function enterRoom(r: Room) {
+  room = r;
+  r.onChange = () => {
+    const m = r.meta; if (!m) return;
+    // pist bu sayfadakinden farklıysa o pisti yükleyip odaya geri dön
+    if (m.pist !== PIST && PISTS[m.pist as keyof typeof PISTS] && !onMeta) { const u = new URL(location.href); u.search = ''; if (m.pist !== 'galata') u.searchParams.set('pist', m.pist); u.searchParams.set('oda', r.code); if (Q.get('net')) u.searchParams.set('net', Q.get('net')!); location.href = u.toString(); return; }
+    if (view === 'lobby') showLobby();
+  };
+  r.onStart = (m) => startOnlineRace(m);
+  r.onEvent = (e) => onNetEvent(e);
+  r.onGone = () => { leaveRoom('Oda kapandı.'); };
+  showLobby();
+}
+function leaveRoom(note = '') {
+  room?.leave(); room = null; onMeta = null; botSkill.clear();
+  for (const k of karts) k.model.root.visible = false;
+  setHud(false); audio.music(false);
+  if (note) showOnline(note); else showTitle();
+}
+function showLobby() {
+  const r = room; if (!r || !r.meta) return;
+  state = 'title'; view = 'lobby'; paused = false; setHud(false);
+  if (!portraits.length) makePortraits();
+  if (onMeta) { onMeta = null; for (const k of karts) k.model.root.visible = false; audio.music(false); }
+  const m = r.meta, ids = Object.keys(r.players).sort((a, b) => r.players[a].t - r.players[b].t), host = r.isHost;
+  const left = m.autoAt ? Math.max(0, Math.ceil((m.autoAt - r.net.now()) / 1000)) : 0;
+  const status = m.state === 'race' ? 'Yarış sürüyor. Bitince yeni yarış başlar.'
+    : m.pub ? (ids.length < 2 ? 'Rakip bekleniyor… Biri gelince yarış başlar.' : `Yarış ${left} sn sonra başlıyor`)
+    : host ? (ids.length < 2 ? 'Kodu arkadaşlarına gönder. Hazır olunca başlat.' : 'Herkes hazırsa başlat.') : 'Oda sahibinin başlatması bekleniyor…';
+  menu.innerHTML = `<div class="panel lobby"><h2>${m.pub ? 'Rastgele eşleşme' : `Oda kodu <span class="code">${r.code}</span>`}</h2>
+    ${m.pub ? '' : '<div class="row"><button class="btn ghost" id="lShare">Kodu paylaş</button></div>'}
+    <div class="plist">${ids.map((id) => { const p = r.players[id]; return `<div class="pl${id === r.uid ? ' me' : ''}"><img src="${portraits[p.char] || ''}" alt=""><b>${esc(p.name)}</b>${id === m.host ? '<i>oda sahibi</i>' : ''}</div>`; }).join('')}<div class="pl empty">${ids.length}/8 oyuncu</div></div>
+    <div class="lbl">Karakterin</div>
+    <div class="chips small">${CHARS.map((ch, i) => `<button class="chip${i === charIdx ? ' sel' : ''}" data-i="${i}" style="--c:#${ch.color.toString(16).padStart(6, '0')}"><img src="${portraits[i]}" alt="${ch.name}"></button>`).join('')}</div>
+    <div class="lbl">Pist${host ? '' : `: ${PISTS[PIST]}`} · Bilgisayar rakipler${host ? '' : `: ${m.bots ? 'var' : 'yok'}`}</div>
+    ${host ? `<div class="selRow"><div class="seg pist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === m.pist ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>
+      <div class="seg"><button data-b="1" class="${m.bots ? 'sel' : ''}">Rakip var</button><button data-b="0" class="${m.bots ? '' : 'sel'}">Yok</button></div></div>` : ''}
+    <div class="note">${status}</div>
+    <div class="row">${host && !m.pub && m.state === 'lobby' ? '<button class="btn" id="lGo">Başlat</button>' : ''}<button class="btn ghost" id="lLeave">Odadan çık</button></div></div>`;
+  menu.querySelectorAll<HTMLElement>('.chip').forEach((b) => (b.onclick = () => { charIdx = Number(b.dataset.i); store.set('char', String(charIdx)); audio.click(); r.setMe({ char: charIdx }); showLobby(); }));
+  menu.querySelectorAll<HTMLElement>('.seg button[data-p]').forEach((b) => (b.onclick = () => { audio.click(); r.setMeta({ pist: b.dataset.p! }); }));
+  menu.querySelectorAll<HTMLElement>('.seg button[data-b]').forEach((b) => (b.onclick = () => { audio.click(); r.setMeta({ bots: b.dataset.b === '1' }); }));
+  const sh = document.getElementById('lShare');
+  if (sh) sh.onclick = async () => {
+    audio.click(); const u = new URL(location.href); u.search = ''; u.searchParams.set('oda', r.code);
+    const text = `Bosphorus Drift'te yarışalım! Oda kodu: ${r.code}`;
+    try { if (navigator.share) await navigator.share({ title: 'Bosphorus Drift', text, url: u.toString() }); else { await navigator.clipboard.writeText(`${text} ${u}`); sh.textContent = 'Kopyalandı'; } } catch { /* vazgeçti */ }
+  };
+  const go = document.getElementById('lGo'); if (go) go.onclick = () => { audio.start(); audio.click(); r.start(); };
+  $('#lLeave').onclick = () => { audio.click(); leaveRoom(); };
+}
+function nameTag(text: string) {
+  const cv = document.createElement('canvas'); cv.width = 256; cv.height = 64; const c = cv.getContext('2d')!;
+  c.font = '900 34px ui-rounded, system-ui, sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+  const w = Math.min(244, c.measureText(text).width + 30); c.fillStyle = 'rgba(29,37,80,.78)'; c.beginPath(); c.roundRect(128 - w / 2, 8, w, 48, 24); c.fill();
+  c.fillStyle = '#fff'; c.fillText(text, 128, 33, 220);
+  const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, depthWrite: false, fog: false })); s.scale.set(4.4, 1.1, 1); s.position.y = 3.7; s.renderOrder = 5; return s;
+}
+function startOnlineRace(m: Meta) {
+  const r = room; if (!r || !m.grid) return;
+  onMeta = m; view = 'title'; menu.innerHTML = ''; paused = false; showroom.visible = false;
+  for (const k of karts) scene.remove(k.model.root);
+  items.reset(); trails.reset(); karts = []; ais = []; botSkill.clear();
+  m.grid.forEach((g, slot) => {
+    const mine = g.id === r.uid, k = new Kart(track, g.char, mine, kartEvents);
+    k.netId = g.id; k.label = g.bot ? '' : g.name; k.remote = !mine && !(g.bot && r.isHost);
+    k.place0(track.L - 8 - Math.floor(slot / 2) * 7.5, slot % 2 ? 3.2 : -3.2);
+    k.model.root.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; });
+    const st = CHARS[g.char].stats; k.stat = { spd: (st[0] - 3) / 2, acc: (st[1] - 3) / 2, han: (st[2] - 3) / 2 };
+    if (!g.bot && !mine) k.model.root.add(nameTag(g.name));
+    if (g.bot) botSkill.set(g.id, g.skill);
+    scene.add(k.model.root); karts.push(k);
+    if (mine) player = k; else if (!k.remote) ais.push(new AI(k, track, g.skill));
+  });
+  playerAI = auto ? new AI(player, track, 1) : null;
+  raceT = 0; doneT = 0; lastBeep = 4; gasEdgeT = -9; startBoostGiven = false; lastLap = 0; camInit = false; sendAcc = 0;
+  weather.clear();
+  for (const k of karts) k.sync(0, 0);
+  state = 'count'; countT = (m.startAt - r.net.now()) / 1000 + 0.6;
+  setHud(true); audio.start(); audio.music(true);
+}
+/** her karede: uzak kartları konumla, kendi durumunu 10 Hz gönder, oda işlerini yürüt */
+function onlineFrame(rawDt: number) {
+  const r = room; if (!r) return;
+  r.tick(rawDt);
+  if (view === 'lobby') { lobbyT += rawDt; if (lobbyT > 1 && r.meta?.autoAt) { lobbyT = 0; showLobby(); } }
+  if (!onMeta) return;
+  const now = r.net.now();
+  for (const k of karts) {
+    if (!k.remote) continue;
+    // oda sahibi ayrıldıysa botları devral
+    if (r.isHost && botSkill.has(k.netId)) { k.remote = false; ais.push(new AI(k, track, botSkill.get(k.netId)!)); continue; }
+    const g = r.ghosts.get(k.netId); if (!g || !g.has) continue;
+    g.apply(k, now);
+    if (!k.finished && !k.gone && state !== 'count' && performance.now() - g.lastAt > 7000) { k.gone = true; k.model.root.visible = false; if (k.label) msg.show(`${k.label} ayrıldı`, 'bad'); }
+  }
+  sendAcc += rawDt;
+  if (sendAcc >= 0.1) {
+    sendAcc = 0; const o: Record<string, number[]> = { [r.uid]: pack(player, now) };
+    for (const a of ais) o[a.k.netId] = pack(a.k, now);
+    r.sendStates(o);
+  }
+}
+function onNetEvent(e: NetEvent) {
+  if (!onMeta) return;
+  if (e.k === 'use') {
+    const k = karts.find((x) => x.netId === e.id); if (!k || !k.remote) return;
+    if (e.it === 'throw') k.shieldT = 1; else { k.shieldT = 0; k.item = e.it; }
+    k.simit = e.j ? Math.max(10, k.simit) : Math.min(9, k.simit);
+    items.use(k, karts);
+  } else {
+    const v = karts.find((x) => x.netId === e.v); if (!v || !v.remote) return;
+    hitNote(v, e.by, karts.find((x) => x.netId === e.o) || null);
+  }
+}
+const HIT_TEXT: Record<string, [string, (n: string) => string]> = {
+  marti: ['Martı saldırısı!', (n) => `Martı ${n}’i yakaladı!`], cay: ['Çaya bastın!', (n) => `${n} çayda kaydı!`],
+  simit: ['Simit isabet!', (n) => `Simit ${n}’e çarptı!`], nazar: ['Nazar değdi!', (n) => `Nazar ${n}’e değdi!`],
+  duduk: ['Vapur düdüğü!', (n) => `${n} düdükle savruldu!`], kedi: ['Kediler kartına bindi!', (n) => `Kediler ${n}’in kartına bindi!`],
+};
+function hitNote(v: Kart, by: string, owner: Kart | null) {
+  if (near(v)) by === 'kedi' ? audio.meow() : audio.hit();
+  const t = HIT_TEXT[by] || ['Vuruldun!', (n: string) => `${n} vuruldu!`];
+  if (v === player) msg.show(t[0] + (v.lastLoss ? ` −${v.lastLoss} simit` : ''), 'bad'); else if (owner === player) msg.show(t[1](nm(v)), 't1');
+}
+
 // ---------- karakter seçimi: kule önünde döner kaide ----------
 const showroom = new THREE.Group(); scene.add(showroom); showroom.visible = false;
 const SR_S = PIST === 'galata' ? 698 : PIST === 'bg' ? 70 : 300, SR = track.point(SR_S, 0);
@@ -537,26 +704,28 @@ function showPause() {
   bindFs('pFs', showPause);
   $('#pRes').onclick = resume;
   $('#pRe').onclick = () => { paused = false; startCountdown(); };
+  if (onMeta) { $('#pRe').style.display = 'none'; $('#pMenu').textContent = 'Odadan çık'; }
   $('#pHow').onclick = () => showHelp(showPause);
   $('#pMute').onclick = () => { toggleMute(); showPause(); };
-  $('#pMenu').onclick = () => { paused = false; audio.music(false); showTitle(); };
+  $('#pMenu').onclick = () => { paused = false; audio.music(false); if (room) leaveRoom(); else showTitle(); };
   audio.music(false);
 }
 function resume() { paused = false; menu.innerHTML = ''; audio.music(true); last = performance.now(); }
 function showResults() {
   $('#hud').classList.add('hide');
   menu.innerHTML = `<div class="panel"><h2>${player.place === 1 ? 'Kazandın! 🏆' : 'Yarış bitti'}</h2><table class="res" id="resT">${resRows()}</table>
-    <div class="row"><button class="btn" id="rAgain">Tekrar yarış</button><button class="btn alt" id="rSel">Karakter seç</button></div><div class="credit">© 2026 Doğancan Işık · Bosphorus Drift · ilk sürüm</div></div>`;
+    <div class="row">${onMeta ? '<button class="btn" id="rLobby">Lobiye dön</button><button class="btn ghost" id="rLeave">Odadan çık</button>' : '<button class="btn" id="rAgain">Tekrar yarış</button><button class="btn alt" id="rSel">Karakter seç</button>'}</div><div class="credit">© 2026 Doğancan Işık · Bosphorus Drift · ilk sürüm</div></div>`;
+  if (onMeta) { $('#rLobby').onclick = () => { audio.click(); room?.backToLobby(); showLobby(); }; $('#rLeave').onclick = () => { audio.click(); leaveRoom(); }; return; }
   $('#rAgain').onclick = () => { audio.click(); startCountdown(); };
   $('#rSel').onclick = () => { audio.click(); audio.music(false); showSelect(); };
 }
 /** sonuç tablosu: diğerleri bitirdikçe dereceleri yazılır, yoldakiler kalan turu gösterir */
 function resRows() {
-  return [...karts].sort((a, b) => a.place - b.place).map((k) => `<tr class="${k === player ? 'me' : ''}"><td class="n">${k.place}</td><td>${k.def.name}${k === player ? ' (sen)' : ''}</td><td class="t">${k.finished ? fmt(k.finishTime) : `<span class="ongoing">${Math.min(LAPS, k.lap)}. tur…</span>`}</td></tr>`).join('');
+  return [...karts].sort((a, b) => a.place - b.place).map((k) => `<tr class="${k === player ? 'me' : ''}"><td class="n">${k.place}</td><td>${esc(nm(k))}${k === player ? ' (sen)' : ''}</td><td class="t">${k.finished ? fmt(k.finishTime) : k.gone ? '<span class="ongoing">ayrıldı</span>' : `<span class="ongoing">${Math.min(LAPS, Math.max(1, k.lap))}. tur…</span>`}</td></tr>`).join('');
 }
 let resLast = '';
 function startCountdown() {
-  menu.innerHTML = ''; paused = false; showroom.visible = false;
+  onMeta = null; menu.innerHTML = ''; paused = false; showroom.visible = false;
   setupRace(); state = 'count'; countT = 3.6; lastLap = 0; camInit = false;
   setHud(true); audio.start(); audio.music(true);
 }
@@ -590,7 +759,7 @@ function resize() {
 }
 addEventListener('resize', resize); resize();
 
-let last = performance.now(), time = 0;
+let last = performance.now(), lastRaw = last, time = 0;
 // otomatik kalite: yarışta kare hızı düşerse çözünürlük kademeli iner, en sonda parlama kapanır
 const Q_LEVELS = [PR, 1.5, 1.25, 1].filter((v, i) => i === 0 || v < PR);
 let qLevel = 0, qAcc = 0, qN = 0;
@@ -610,10 +779,12 @@ function frame(now: number) {
   if (!fast && !Q.has('noq')) qualityTick((now - last) / 1000);
   let dt = Math.min(0.05, (now - last) / 1000) * ts; last = now;
   if (fast) dt = fast / 60;
-  if (paused) dt = 0;
+  const rawDt = Math.min(0.25, (now - lastRaw) / 1000); lastRaw = now;
+  if (paused && !onMeta) dt = 0;
   time += dt;
+  if (room) onlineFrame(rawDt);
   if (state === 'count') {
-    countT -= dt;
+    countT -= dt; if (onMeta && room) countT = (onMeta.startAt - room.net.now()) / 1000 + 0.6;
     const n = Math.ceil(countT - 0.6);
     if (n < lastBeep && n >= 1 && n <= 3) { lastBeep = n; hud.count.innerHTML = `<div>${n}</div>`; audio.beep(false); }
     if (countT <= 0.6 && lastBeep > 0) {
@@ -625,6 +796,7 @@ function frame(now: number) {
     }
   }
   if (state === 'race' || state === 'done') raceT += dt;
+  if (onMeta && room && state !== 'count') raceT = Math.max(0, (room.net.now() - onMeta.startAt) / 1000);
   if (state !== 'title' && state !== 'select') {
     const sub = Math.max(2, Math.ceil(dt / 0.009));
     for (let i = 0; i < sub; i++) step(dt / sub);
@@ -640,7 +812,7 @@ function frame(now: number) {
   audio.tick();
   fx.update(dt);
   world.update(time); props.update(dt, time); crowd.update(dt, time, player && state !== 'title' && state !== 'select' ? player.pos : null);
-  world.update(time); props.update(dt, time); street?.update(dt, time, player && state !== 'title' && state !== 'select' ? player.pos : null);
+  street?.update(dt, time, player && state !== 'title' && state !== 'select' ? player.pos : null);
   const racing = state === 'race' || state === 'done';
   if (dt > 0) {
     weather.update(dt, racing ? raceT : -1, camera.position);
@@ -658,7 +830,9 @@ function frame(now: number) {
 
 setLoad(1, 'Hazır!');
 setTimeout(() => $('#loading').remove(), 250);
-if (Q.has('sel')) { audio.start(); showSelect(); } else showTitle();
+if (Q.has('sel')) { audio.start(); showSelect(); } else if (Q.has('oda')) showOnline(myName() ? '' : 'Odaya katılmak için takma adını yaz, sonra “Kodla katıl”a dokun.'); else showTitle();
+// pist değişimi sonrası odaya kendiliğinden geri dön
+if (Q.has('oda') && myName()) void (async () => { try { const n = await within(ensureNet()), r = await within(Room.join(n, Q.get('oda')!, { name: myName(), char: charIdx, t: 0 })); if (r instanceof Room) enterRoom(r); else showOnline(r === 'full' ? 'Oda dolu (8 kişi).' : 'Bu kodla bir oda yok.'); } catch { showOnline('Bağlanılamadı. İnternetini kontrol edip tekrar dene.'); } })();
 if (Q.has('skip')) { audio.muted = true; startCountdown(); }
 requestAnimationFrame(frame);
-(window as unknown as Record<string, unknown>).__bd = { items, get player() { return player; }, get karts() { return karts; }, get state() { return state; }, track, camera, scene, renderer, get raceT() { return raceT; } };
+(window as unknown as Record<string, unknown>).__bd = { items, get room() { return room; }, get player() { return player; }, get karts() { return karts; }, get state() { return state; }, track, camera, scene, renderer, get raceT() { return raceT; } };

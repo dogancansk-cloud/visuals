@@ -138,3 +138,20 @@ h2 { margin: 0 0 12px; font-size: 26px; font-weight: 900; }
 .corner .btn.ghost { font-size: 15px; padding: 8px 14px; border-width: 3px; background: rgba(29, 37, 80, .55); }
 .help ol { margin: 8px 0 10px; padding-left: 22px; } .help ol li { margin: 6px 0; }
 @media (max-height: 460px) { .title { gap: 12px; } .title .logo { font-size: clamp(40px, 17vh, 84px); } }
+
+/* online */
+.btn.on { background: var(--mint); }
+.panel.online, .panel.lobby { width: min(560px, 94vw); text-align: center; }
+.fld { display: flex; flex-direction: column; gap: 6px; font-weight: 800; color: var(--ink); margin: 4px 0 14px; align-items: center; }
+.fld input, .row.join input { font: inherit; font-weight: 900; font-size: 22px; text-align: center; padding: 10px 14px; border-radius: 16px; border: 3px solid #d9d2c4; background: #fff; color: var(--ink); width: min(300px, 80vw); outline: none; }
+.fld input:focus, .row.join input:focus { border-color: var(--sky); }
+.row.join { margin-top: 12px; align-items: center; } .row.join input { width: 120px; letter-spacing: 6px; text-transform: uppercase; }
+.note { min-height: 22px; margin: 12px 0; font-weight: 800; color: var(--navy); }
+.lobby h2 .code { display: inline-block; background: var(--butter); color: #1d2550; padding: 2px 16px; border-radius: 14px; letter-spacing: 8px; font-size: 1.25em; margin-left: 6px; }
+.plist { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0; }
+.pl { display: flex; align-items: center; gap: 8px; background: #fff; border-radius: 999px; padding: 4px 14px 4px 4px; font-size: 16px; color: var(--ink); box-shadow: 0 3px 0 rgba(60,58,71,.15); }
+.pl img { width: 34px; height: 34px; border-radius: 50%; } .pl i { font-style: normal; font-size: 12px; font-weight: 800; color: #fff; background: var(--coral); border-radius: 999px; padding: 2px 8px; }
+.pl.me { outline: 3px solid var(--sky); } .pl.empty { background: transparent; box-shadow: none; opacity: .7; font-weight: 800; padding: 4px 8px; }
+.lbl { font-size: 13px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: var(--navy); opacity: .8; margin: 12px 0 6px; }
+.lobby .chips.small { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; } .lobby .chips.small .chip { width: 46px; height: 46px; border-radius: 14px; }
+.lobby .selRow { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }

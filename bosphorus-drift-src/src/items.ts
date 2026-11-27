@@ -344,8 +344,8 @@ export class Items {
         if (u >= 1) {
           if (k.shieldT > 0) { if (c.slot === 0) { k.shieldT = 0; this.ev.onBlock?.(k); } c.phase = 'off'; c.t = 0; c.from.copy(c.pos); }
           else {
-            if (k.catT <= 0) this.ev.onHit?.(k, 'kedi', c.owner);
-            k.catT = CAT_RIDE; k.slowT = Math.max(k.slowT, CAT_RIDE); k.drifting = false;
+            if (k.catT <= 0 && !k.remote) this.ev.onHit?.(k, 'kedi', c.owner);
+            if (!k.remote) { k.catT = CAT_RIDE; k.slowT = Math.max(k.slowT, CAT_RIDE); k.drifting = false; }
             c.phase = 'ride'; c.t = 0; k.model.body.add(c.obj); c.obj.scale.setScalar(0.62); c.obj.rotation.set(0, 0, 0);
             const [x, y, z, ry] = CAT_SLOTS[c.slot % CAT_SLOTS.length]; c.obj.position.set(x, y, z); c.obj.rotation.y = ry;
             c.legs.forEach((l) => (l.rotation.z = 0));
@@ -354,7 +354,7 @@ export class Items {
       } else if (c.phase === 'ride') {
         c.obj.position.y = CAT_SLOTS[c.slot % CAT_SLOTS.length][1] + Math.abs(Math.sin(time * 9 + c.slot * 2)) * 0.08;
         c.obj.rotation.z = Math.sin(time * 7 + c.slot) * 0.12;
-        if (k.catT <= 0 || k.finished) { c.obj.getWorldPosition(c.from); this.scene.add(c.obj); c.obj.scale.setScalar(0.95); c.phase = 'off'; c.t = 0; }
+        if (c.t > CAT_RIDE || k.finished) { c.obj.getWorldPosition(c.from); this.scene.add(c.obj); c.obj.scale.setScalar(0.95); c.phase = 'off'; c.t = 0; }
       } else {
         // kaldırıma zıplayıp uzaklaşır
         const u = Math.min(1, c.t / 0.8), i = this.track.idxOf(k.f.s), to = tr.point(k.f.s - 3, c.side * (this.track.T.w[i] / 2 + 2.2), this.tmpV);
