@@ -54,5 +54,9 @@
         <div id="loading"><div class="logo">BOSPHORUS<br />DRIFT</div><div class="lbar"><i></i></div><p><b id="lpct">%0</b> <span id="ltxt">Pist hazırlanıyor…</span></p></div>
       </div>
     </div>
-  </body>
+  <style>#vback{position:fixed;top:calc(6px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:2147483000;font:600 12px/1 system-ui,-apple-system,Segoe UI,sans-serif;color:#111;background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.18);border-radius:999px;padding:6px 11px;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:all .25s;white-space:nowrap}
+#vback.min{top:env(safe-area-inset-top);width:64px;height:16px;padding:0;font-size:0;border:0;background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)) center/40px 5px no-repeat;-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:0}</style>
+<a id="vback" href="../" aria-label="Tüm projeler">← Projeler</a>
+<script>(function(){var a=document.getElementById('vback'),t;function s(){a.classList.remove('min');clearTimeout(t);t=setTimeout(function(){a.classList.add('min')},4000)}a.addEventListener('click',function(e){if(a.classList.contains('min')){e.preventDefault();s()}});a.addEventListener('mouseenter',s);s()})();</script>
+</body>
 </html>
