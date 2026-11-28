@@ -57,8 +57,8 @@ export class Props {
   readonly group = new THREE.Group();
   private trees: Float32Array; private nTrees: number;
   private poolMesh: THREE.InstancedMesh; private poolMat: THREE.MeshBasicMaterial; private treeMesh: THREE.InstancedMesh; private treeNear!: THREE.InstancedMesh; private nearCap = 260; private pineMesh: THREE.InstancedMesh; private lampMesh: THREE.InstancedMesh; private bulbMesh: THREE.InstancedMesh;
-  private last = new THREE.Vector2(1e9, 1e9);
-  constructor(treeBuf: ArrayBuffer, private lamps: number[][], private G: Ground, private maxTrees: number, private maxLamps: number) {
+  private last = new THREE.Vector2(1e9, 1e9); private cityMat: THREE.PointsMaterial;
+  constructor(treeBuf: ArrayBuffer, private lamps: number[][], private G: Ground, private maxTrees: number, private maxLamps: number, extraLights: number[] = []) {
     const dv = new DataView(treeBuf); this.nTrees = treeBuf.byteLength / 10; this.trees = new Float32Array(this.nTrees * 4);
     for (let i = 0; i < this.nTrees; i++) { this.trees[i * 4] = dv.getFloat32(i * 10, true); this.trees[i * 4 + 1] = dv.getFloat32(i * 10 + 4, true); this.trees[i * 4 + 2] = dv.getUint8(i * 10 + 8) / 100; this.trees[i * 4 + 3] = dv.getUint8(i * 10 + 9); }
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
@@ -76,9 +76,15 @@ export class Props {
     this.poolMat = new THREE.MeshBasicMaterial({ map: glowTexture(), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: 0, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -12, fog: true });
     this.poolMesh = new THREE.InstancedMesh(new THREE.PlaneGeometry(16, 16).rotateX(-Math.PI / 2), this.poolMat, maxLamps); this.poolMesh.renderOrder = 4;
     this.group.add(this.poolMesh); this.poolMesh.count = 0; this.poolMesh.frustumCulled = false;
+    // şehir ışıkları: haritadaki bütün sokak lambaları (ve köprü lambaları) uzaktan da ışık noktası olarak görünür
+    { const cp: number[] = []; for (const L of lamps) { const a = L[2] ?? 0; cp.push(L[0] + Math.cos(a) * 1.3, G.H(L[0], L[1]) + 6.85, L[1] - Math.sin(a) * 1.3); } cp.push(...extraLights);
+      const cg = new THREE.BufferGeometry(); cg.setAttribute('position', new THREE.Float32BufferAttribute(cp, 3));
+      this.cityMat = new THREE.PointsMaterial({ map: glowTexture(), size: 4.2, sizeAttenuation: true, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+      const pts = new THREE.Points(cg, this.cityMat); pts.frustumCulled = false; pts.renderOrder = 5; pts.visible = false; this.group.add(pts); this.cityPts = pts; }
     for (const m of [this.treeMesh, this.treeNear, this.pineMesh, this.lampMesh, this.bulbMesh]) { m.count = 0; m.castShadow = m !== this.bulbMesh; m.frustumCulled = false; this.group.add(m); }
   }
-  night(n: number) { this.poolMat.opacity = n * 0.55; this.poolMesh.visible = n > 0.05; }
+  private cityPts!: THREE.Points;
+  night(n: number) { this.poolMat.opacity = n * 0.6; this.poolMesh.visible = n > 0.05; this.cityMat.opacity = n; this.cityPts.visible = n > 0.05; }
   update(px: number, pz: number, rTree: number, rLamp: number) {
     if (this.last.distanceTo(new THREE.Vector2(px, pz)) < 60) return;
     this.last.set(px, pz);

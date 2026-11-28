@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { nightU } from './night';
 
 export interface LM { id: string; name: string; model: string; x: number; z: number; y: number; ry: number; s: number }
 
@@ -19,6 +20,8 @@ function drape(root: THREE.Object3D, H: (x: number, z: number) => number, y0: nu
 export async function loadLandmarks(list: LM[], base: string, group: THREE.Group, H: (x: number, z: number) => number, onEach?: () => void) {
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  // gece: anıtlar alttan sarı projektörle aydınlatılmış gibi kendi renginde ışır
+  mat.onBeforeCompile = (sh) => { sh.uniforms.uNight = nightU; sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uNight;').replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += diffuseColor.rgb * vec3(1.0, 0.72, 0.42) * 0.62 * uNight;'); };
   for (const L of list) {
     try {
       const gltf = await loader.loadAsync(`${base}models/${L.model}`);

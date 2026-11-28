@@ -86,7 +86,10 @@ vec3 facade(vec3 tint){
     c = mix(c, gl, glass);
     float mullion = boxm(bx, 0.5 - 0.012, 0.5 + 0.012, ex) * glass * (1.0 - smoothstep(0.02, 0.06, px));
     c = mix(c, vec3(0.8, 0.79, 0.76), mullion * 0.8);                    // orta kayıt (yalnız yakında)
-    if (uNight > 0.01 && k < 0.3) gEmis += vec3(1.0, 0.55, 0.22) * 0.9 * glass * uNight * (1.0 - fade * 0.6);
+    if (uNight > 0.01) {                                                 // gece: pencerelerin ~%40'ı ışıklı; çoğu sıcak sarı, birkaçı soğuk (televizyon)
+      float lk = h1(bi * 3.1 + f * 9.7 + seed * 2.0);
+      if (lk < 0.42) { vec3 wc = lk < 0.045 ? vec3(0.5, 0.68, 1.0) : mix(vec3(1.0, 0.5, 0.18), vec3(1.0, 0.8, 0.52), h1(lk * 91.0)); gEmis += wc * (0.6 + 0.9 * h1(lk * 37.0)) * glass * uNight * (1.0 - fade * 0.55); }
+    }
     if (res && h1(bi * 5.3 + f * 1.9 + seed * 3.0) < 0.12) {             // bazı pencerelerde çizgili güneşlik
       float aw = boxm(bx, 0.5 - ww / 2.0 - 0.06, 0.5 + ww / 2.0 + 0.06, ex) * boxm(fy, wy1 - 0.2, wy1 + 0.04, ey);
       float stp = step(0.5, fract(u * 2.5));
@@ -117,7 +120,7 @@ vec3 facade(vec3 tint){
     c = mix(c, col * 1.12, boxm(v, wh - 0.5, wh + 2.0, px * 0.75));
     c = mix(c, col * 0.62, boxm(v, wh - 0.68, wh - 0.5, px * 0.75));
   }
-  if (fade > 0.0) gEmis += vec3(1.0, 0.55, 0.22) * 0.25 * wfrac * uNight * fade; // uzakta: ortalama yumuşak ışıltı
+  if (fade > 0.0) gEmis += vec3(1.0, 0.6, 0.27) * 0.42 * wfrac * uNight * fade; // uzakta: ortalama yumuşak ışıltı
   return mix(c, avg, fade);
 }`;
 

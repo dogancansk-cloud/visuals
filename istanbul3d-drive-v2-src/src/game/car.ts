@@ -147,8 +147,10 @@ export class Car {
     const n = this.R.nearest(this.safe.x, this.safe.z, 80, (w) => w.code <= 7);
     if (n) { const yaw = Math.atan2(n.dx, n.dz); this.place(n.px, n.pz, this.vLong < 0 ? yaw + Math.PI : yaw); } else this.place(this.safe.x, this.safe.z, this.safe.yaw);
   }
+  /** rıhtım üstü (shore.ts): zemin oranın altında kalır, araba taşın üstünde gitmeli */
+  extraGround: ((x: number, z: number) => number) | null = null;
   groundY(x: number, z: number, ref: number) {
-    const g = this.G.H(x, z); const d = this.R.deckAt(x, z, ref);
+    let g = this.G.H(x, z); if (this.extraGround && g < 4) g = Math.max(g, this.extraGround(x, z)); const d = this.R.deckAt(x, z, ref);
     return d !== null && d > g - 0.5 ? d + 0.05 : g;
   }
   step(dt: number, c: Controls, obstacles: Obstacle[]) {

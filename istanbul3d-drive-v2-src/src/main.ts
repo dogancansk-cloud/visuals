@@ -19,6 +19,7 @@ import { SkidFx } from './game/fx';
 import { Explore } from './game/explore';
 import { Sea } from './world/sea';
 import { Ferries } from './world/ferries';
+import { Shore, type ShoreData } from './world/shore';
 
 const QS = new URLSearchParams(location.search);
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -41,7 +42,7 @@ const Q = QUAL[qName];
 
 // ---------- yükleme ----------
 const lbar = $('lbar'), ltext = $('ltext');
-let loaded = 0; const TOTAL = 5;
+let loaded = 0; const TOTAL = 6;
 const tick = (t: string) => { loaded++; lbar.style.width = `${(loaded / (TOTAL + 1)) * 100}%`; ltext.textContent = t; };
 async function get<T>(name: string, kind: 'json' | 'bin', label: string): Promise<T> {
   const r = await fetch(DATA + name); if (!r.ok) throw new Error(`${name}: ${r.status}`);
@@ -49,12 +50,13 @@ async function get<T>(name: string, kind: 'json' | 'bin', label: string): Promis
 }
 
 async function main() {
-  const [meta, groundBuf, roadsData, bldBuf, treeBuf] = await Promise.all([
+  const [meta, groundBuf, roadsData, bldBuf, treeBuf, shoreData] = await Promise.all([
     get<{ grid: { x0: number; z0: number; step: number; nx: number; nz: number }; look: { oldZ: number; sa: number[]; gk: number[] }; chunk: number; chunks: number[][]; spawns: { id: string; x: number; z: number; yaw: number; road: string }[]; landmarks: LM[] }>('meta.json', 'json', 'Bilgiler'),
     get<ArrayBuffer>('ground.bin', 'bin', 'Zemin'),
     get<{ ways: (number | number[])[][]; names: Record<string, string>; lamps: number[][] }>('roads.json', 'json', 'Yollar'),
     get<ArrayBuffer>('buildings.bin', 'bin', 'Binalar'),
     get<ArrayBuffer>('trees.bin', 'bin', 'Ağaçlar'),
+    get<ShoreData>('shore.json', 'json', 'Kıyı'),
   ]);
   ltext.textContent = 'Şehir kuruluyor…';
   await new Promise((r) => setTimeout(r, 30));
@@ -79,9 +81,13 @@ async function main() {
   const roads = new Roads(roadsData, G); scene.add(roads.group);
   groundView.painter = makeRoadPainter(roads, Math.min(8, renderer.capabilities.getMaxAnisotropy())); groundView.res = [Q.mask, 192];
   const blds = new Buildings(bldBuf, meta.chunks, meta.look, meta.chunk); scene.add(blds.group);
-  const props = new Props(treeBuf, roads.lamps, G, Q.trees, Q.lamps); scene.add(props.group);
+  // köprü lambaları (yalnız ışık noktası): 35 m'de bir, iki yanda
+  const bridgeLights: number[] = [];
+  for (const w of roads.ways) { if (!w.bridge || !w.ys || w.code > 6) continue; for (let k = 3; k < w.pts.length / 2 - 1; k += 7) { const dx = w.pts[2 * k + 2] - w.pts[2 * k], dz = w.pts[2 * k + 3] - w.pts[2 * k + 1], l = Math.hypot(dx, dz) || 1; for (const s of [-1, 1]) bridgeLights.push(w.pts[2 * k] - dz / l * (w.width / 2 + 0.6) * s, w.ys[k] + 6.5, w.pts[2 * k + 1] + dx / l * (w.width / 2 + 0.6) * s); } }
+  const props = new Props(treeBuf, roads.lamps, G, Q.trees, Q.lamps, bridgeLights); scene.add(props.group);
   const sea = new Sea(PHONE); scene.add(sea.mesh);
-  const ferries = new Ferries(G, meta.spawns); scene.add(ferries.group);
+  const shore = new Shore(shoreData, G, Math.min(8, renderer.capabilities.getMaxAnisotropy())); scene.add(shore.group);
+  const ferries = new Ferries(G, shoreData.piers, roads.ways.filter((w) => w.bridge).map((w) => w.pts)); scene.add(ferries.group);
   const env = new Env(scene, Q.shadows, Q.fog, PHONE);
   const walls = new Walls(); blds.onCollidersChanged = () => { wallsDirty = true; }; let wallsDirty = false;
   const lmGroup = new THREE.Group(); scene.add(lmGroup);
@@ -90,6 +96,7 @@ async function main() {
   const input = new Input($('wheel'), $('steerzone'), $('gas'), $('brake'), $('hb'), $('horn'));
   const audio = new Audio();
   const car = new Car(G, roads, walls, Q.lights); scene.add(car.obj, car.groundFx);
+  car.extraGround = (x, z) => shore.topAt(x, z);
   const signals = new Signals(roads, G, scene);
   const traffic = new Traffic(roads, G, signals, scene, Q.cars, Q.peds, Q.park);
   const minimap = new Minimap($<HTMLCanvasElement>('minimap'), roads, G);
@@ -115,9 +122,12 @@ async function main() {
   addEventListener('keydown', () => audio.start(), { capture: true });
   let camMode = 0; const CAMS = ['Takip', 'Uzak', 'Kaput'];
   const weathers: Weather[] = ['acik', 'bulutlu', 'yagmur', 'sis'];
-  const wIcon: Record<Weather, string> = { acik: '☀︎', bulutlu: '☁︎', yagmur: '🌧', sis: '🌫' };
+  const wIcon: Record<Weather, string> = { acik: '🌤', bulutlu: '☁︎', yagmur: '🌧', sis: '🌫' };
   const nextWeather = () => { const w = weathers[(weathers.indexOf(env.weather) + 1) % weathers.length]; env.setWeather(w); $('b-weather').textContent = wIcon[w]; toast(`Hava: ${WEATHER_TR[w]}`); };
-  const nextHour = () => { env.hour = (Math.floor(env.hour) + 1) % 24; toast(`Saat ${env.hourText()}`, 900); };
+  // saat düğmesi: sabah → öğle → gün batımı → gece
+  const TIMES: [number, string, string][] = [[8, 'Sabah', '🌅'], [14, 'Öğle', '☀️'], [18.3, 'Gün batımı', '🌇'], [22, 'Gece', '🌙']];
+  const timeIcon = () => { const h = env.hour; $('b-time').textContent = h >= 19.2 || h < 6.5 ? '🌙' : h >= 17.5 ? '🌇' : h < 10 ? '🌅' : '☀️'; };
+  const nextHour = () => { const h = env.hour; const nx = TIMES.find(([t]) => t > h + 0.4) || TIMES[0]; env.hour = nx[0]; timeIcon(); toast(`${nx[1]} · ${env.hourText()}`, 1100); };
   const nextCam = () => { camMode = (camMode + 1) % CAMS.length; toast(`Kamera: ${CAMS[camMode]}`, 900); };
   $('b-weather').onclick = nextWeather; $('b-time').onclick = nextHour; $('b-cam').onclick = nextCam;
   $('b-reset').onclick = () => car.resetToRoad();
@@ -134,6 +144,7 @@ async function main() {
     if (k === 'c') nextCam(); else if (k === 'r') car.resetToRoad(); else if (k === 't') nextHour(); else if (k === 'y') nextWeather(); else if (k === 'm') $('minimap').classList.toggle('big');
   };
   if (QS.get('hour')) env.hour = Number(QS.get('hour'));
+  timeIcon();
   if (QS.get('weather') && weathers.includes(QS.get('weather') as Weather)) { env.setWeather(QS.get('weather') as Weather); env.rainAmt = env.weather === 'yagmur' ? 1 : 0; $('b-weather').textContent = wIcon[env.weather]; }
 
   // ---------- ilk yükleme: çevre hazır olana kadar bekle ----------
@@ -142,7 +153,7 @@ async function main() {
       const left = groundView.update(car.x, car.z, Q.groundNear, Q.far + 400, 40);
       blds.update(car.x, car.z, Q.near, Q.far, Q.detail);
       if (!left && !blds.busy && i > 3) break;
-      ltext.textContent = 'Binalar kuruluyor…'; lbar.style.width = `${(5 + Math.min(1, i / 20)) / 6 * 100}%`;
+      ltext.textContent = 'Binalar kuruluyor…'; lbar.style.width = `${(6 + Math.min(1, i / 20)) / 7 * 100}%`;
       await new Promise((r) => setTimeout(r, 60));
     }
     walls.rebuild(blds.colliders.values()); wallsDirty = false;
@@ -202,7 +213,7 @@ async function main() {
     signals.update(dt, car);
     traffic.update(dt, car, env.night);
     env.update(dt, camera.position, car.obj.position);
-    sea.update(t, env, camera.position); props.night(env.night); ferries.update(dt, t);
+    sea.update(t, env, camera.position); props.night(env.night); ferries.update(dt, t); shore.update(car.x, car.z, t); shore.night(env.night);
     car.sync(input.c, env.night, dt); scene.environmentIntensity = 1 - 0.8 * env.night;
     { // lastik izi ve duman: arka tekerlekler kayarken
       const [fx, fz] = car.fwd, rx = -fz, rz = fx, amt = car.airborne ? 0 : THREE.MathUtils.clamp((car.slip - 3.2) / 5, 0, 1) * Math.min(1, car.speed / 5);
@@ -217,7 +228,7 @@ async function main() {
     roads.asphalt.color.setScalar(1 - env.wet * 0.3); groundUniforms.uWet.value = env.wet; groundUniforms.uTime.value = t;
     audio.update({ rpm: car.rpm, throttle: input.c.throttle, speed: car.speed, slip: car.slip, horn: input.c.horn, rain: env.rainAmt, sea: G.kindAt(car.x + car.fwd[0] * 30, car.z + car.fwd[1] * 30) === 1 ? 1 : 0, t });
     hudT += dt; if (hudT > 0.1) {
-      hudT = 0; kmh.textContent = String(Math.round(car.speed * 3.6)); gearEl.textContent = car.vLong < -0.5 ? 'G' : String(car.gear); clockEl.textContent = env.hourText();
+      hudT = 0; kmh.textContent = String(Math.round(car.speed * 3.6)); gearEl.textContent = car.vLong < -0.5 ? 'G' : String(car.gear); clockEl.textContent = env.hourText(); timeIcon();
       minimap.draw(car, null, [], traffic, explore.markers);
       const nr = roads.nearest(car.x, car.z, 12, undefined, car.y); streetEl.textContent = nr?.w.name || '';
     }
@@ -231,7 +242,7 @@ async function main() {
     }
     requestAnimationFrame(frame);
   };
-  (window as unknown as Record<string, unknown>).__drv2 = { groundView, explore, ferries, car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
+  (window as unknown as Record<string, unknown>).__drv2 = { shore, groundView, explore, ferries, car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
   requestAnimationFrame(frame);
 }
 

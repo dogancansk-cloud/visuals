@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { facadeUniforms } from './world/buildings';
 import { lampUniform } from './world/props';
+import { nightU } from './world/night';
 
 export type Weather = 'acik' | 'bulutlu' | 'yagmur' | 'sis';
 export const WEATHER_TR: Record<Weather, string> = { acik: 'Açık', bulutlu: 'Bulutlu', yagmur: 'Yağmur', sis: 'Sis' };
@@ -11,7 +12,7 @@ const C = (s: string) => new THREE.Color(s);
 const SKY = {
   day: { top: C('#b9b6d6'), hor: C('#efc2a8') },
   set: { top: C('#a99cc4'), hor: C('#f0946a') },
-  night: { top: C('#0e1430'), hor: C('#2a3358') },
+  night: { top: C('#060a1c'), hor: C('#1b2346') },
 };
 
 export class Env {
@@ -35,12 +36,15 @@ export class Env {
     scene.add(this.sun, this.sun.target);
     this.skyMat = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false,
-      uniforms: { top: { value: new THREE.Color() }, hor: { value: new THREE.Color() }, sunDir: { value: new THREE.Vector3() }, night: { value: 0 }, cloud: { value: 0 } },
+      uniforms: { top: { value: new THREE.Color() }, hor: { value: new THREE.Color() }, sunDir: { value: new THREE.Vector3() }, moonDir: { value: new THREE.Vector3(0.42, 0.6, 0.68).normalize() }, night: { value: 0 }, cloud: { value: 0 } },
       vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }',
-      fragmentShader: `uniform vec3 top; uniform vec3 hor; uniform vec3 sunDir; uniform float night; uniform float cloud; varying vec3 vD;
+      fragmentShader: `uniform vec3 top; uniform vec3 hor; uniform vec3 sunDir; uniform vec3 moonDir; uniform float night; uniform float cloud; varying vec3 vD;
         void main(){ float h = clamp(vD.y, -0.1, 1.0); vec3 c = mix(hor, top, smoothstep(0.0, 0.6, h));
           float s = max(dot(normalize(vD), sunDir), 0.0); c += vec3(1.0, 0.85, 0.6) * (pow(s, 600.0) * 3.0 + pow(s, 12.0) * 0.25) * (1.0 - night) * (1.0 - cloud * 0.85);
           c = mix(c, vec3(dot(c, vec3(0.33))) * 0.95, cloud * 0.55);
+          float mo = max(dot(normalize(vD), moonDir), 0.0); // ay: parlak teker + hale
+          c += vec3(0.86, 0.9, 1.0) * (smoothstep(0.99955, 0.9997, mo) * 1.6 + pow(mo, 500.0) * 0.35 + pow(mo, 30.0) * 0.06) * night * (1.0 - cloud * 0.8);
+          c += vec3(0.5, 0.3, 0.14) * night * 0.5 * exp(-max(vD.y, 0.0) * 8.0); // ufukta şehir ışığı
           gl_FragColor = vec4(c, 1.0);
           #include <colorspace_fragment>
         }`,
@@ -105,17 +109,17 @@ export class Env {
     // ışıklar: güçlü altın güneş + zayıf serin dolgu → derin, yere oturan gölgeler
     const shade = 1 - Math.max(0, ov - 0.3) * 0.75, N = this.night;
     this.sun.color.set('#ffcf90').lerp(new THREE.Color('#ff9a50'), low * 0.55);
-    this.sun.intensity = (5.5 - low * 1.6) * (1 - 0.85 * N) * shade;
+    this.sun.intensity = (5.5 - low * 1.6) * (1 - 0.8 * N) * shade;
     this.hemi.color.set('#b0a8b8').lerp(new THREE.Color('#d0a585'), low * 0.6).lerp(new THREE.Color('#5565a0'), N);
     this.hemi.groundColor.set('#7a6a5c').lerp(new THREE.Color('#9a7458'), low * 0.6).lerp(new THREE.Color('#2c3454'), N);
     this.hemi.intensity = (1.12 + low * 0.15) * (1 - 0.15 * N) * (1 + (1 - shade) * 0.5);
     if (N > 0.5) this.sun.color.lerp(new THREE.Color('#8fa6d8'), (N - 0.5) * 2);
-    const lightDir = this.sunDir.clone(); if (N > 0) { lightDir.y = Math.max(lightDir.y, 0.55 * N); lightDir.normalize(); } // gece: ay yüksekte
+    const lightDir = this.sunDir.clone().lerp(this.skyMat.uniforms.moonDir.value, THREE.MathUtils.smoothstep(N, 0.35, 0.9)).normalize(); // gece: ışık aydan gelir
     this.sun.position.copy(focus).addScaledVector(lightDir, 300); this.sun.target.position.copy(focus);
     this.sky.position.copy(cam); this.stars.position.copy(cam); this.clouds.position.set(cam.x, 600, cam.z);
     facadeUniforms.uNight.value = THREE.MathUtils.smoothstep(this.night + (this.weather === 'yagmur' || this.weather === 'sis' ? 0.15 : 0), 0.25, 0.8);
     facadeUniforms.uWet.value = this.wet;
-    lampUniform.uNight.value = facadeUniforms.uNight.value;
+    lampUniform.uNight.value = nightU.value = facadeUniforms.uNight.value;
     // yağmur damlaları
     this.rain.visible = this.rainAmt > 0.05;
     if (this.rain.visible) {

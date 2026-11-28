@@ -14,16 +14,16 @@ export class Sea {
   readonly mesh: THREE.Mesh; private mat: THREE.MeshPhongMaterial; private tex: THREE.Texture;
   constructor(phone: boolean) {
     this.tex = noiseNormal(phone ? 128 : 256); this.tex.repeat.set(160, 160);
-    this.mat = new THREE.MeshPhongMaterial({ color: '#3f8ba3', specular: '#cfd8dc', shininess: 90, normalMap: this.tex, normalScale: new THREE.Vector2(0.5, 0.5), transparent: true, opacity: 0.94 });
+    this.mat = new THREE.MeshPhongMaterial({ color: '#3f8ba3', specular: '#cfd8dc', shininess: 170, normalMap: this.tex, normalScale: new THREE.Vector2(0.5, 0.5), transparent: true, opacity: 0.94 });
     this.mesh = new THREE.Mesh(new THREE.PlaneGeometry(16000, 16000).rotateX(-Math.PI / 2), this.mat);
     this.mesh.position.y = 0; this.mesh.receiveShadow = false; this.mesh.renderOrder = 1; this.mesh.name = 'sea';
   }
   update(t: number, env: Env, cam: THREE.Vector3) {
     this.mesh.position.set(Math.round(cam.x / 100) * 100, 0, Math.round(cam.z / 100) * 100);
     this.tex.offset.set((t * 0.004) % 1 + this.mesh.position.x / 100, (t * 0.0025) % 1 + this.mesh.position.z / 100);
-    const day = new THREE.Color('#3f8ba3'), night = new THREE.Color('#0b1622');
+    const day = new THREE.Color('#3f8ba3'), night = new THREE.Color('#081320');
     this.mat.color.copy(day).lerp(night, env.night).lerp(new THREE.Color('#4d5d66'), Math.max(0, env.fogAmt * 0.5));
-    this.mat.specular.setScalar(0.8 * (1 - env.night) * (1 - env.rainAmt * 0.5));
+    this.mat.specular.setScalar((0.24 * (1 - env.night) + 0.22 * env.night) * (1 - env.rainAmt * 0.5)); // gece: ay yakamozu
     this.mat.normalScale.setScalar(0.5 + env.rainAmt * 0.4);
   }
 }

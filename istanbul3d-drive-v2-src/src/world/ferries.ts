@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { KIND_WATER, type Ground } from './ground';
+import { nightU } from './night';
 
 function tint(g: THREE.BufferGeometry, hex: string) {
   if (g.index) g = g.toNonIndexed(); g.deleteAttribute('uv'); const c = new THREE.Color(hex), n = g.attributes.position.count, a = new Float32Array(n * 3);
@@ -23,7 +24,7 @@ interface Boat { path: number[]; cum: number[]; len: number; s: number; dir: 1 |
 
 export class Ferries {
   readonly group = new THREE.Group(); private boats: Boat[] = [];
-  constructor(G: Ground, spawns: { id: string; x: number; z: number }[]) {
+  constructor(G: Ground, piers: { name: string; x: number; z: number; ox: number; oz: number }[], bridges: Float32Array[]) {
     const [x0, z0, x1, z1] = G.bounds, ST = 40, nx = Math.floor((x1 - x0) / ST), nz = Math.floor((z1 - z0) / ST);
     const ok = new Uint8Array(nx * nz);
     for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) { const x = x0 + (i + 0.5) * ST, z = z0 + (j + 0.5) * ST; let w = 1; for (const [a, b] of [[0, 0], [45, 0], [-45, 0], [0, 45], [0, -45], [32, 32], [-32, 32], [32, -32], [-32, -32]]) if (G.kindAt(x + a, z + b) !== KIND_WATER) { w = 0; break; } ok[j * nx + i] = w; }
@@ -33,19 +34,28 @@ export class Ferries {
       return best;
     };
     const bfs = (a: number) => { const prev = new Int32Array(nx * nz).fill(-2); prev[a] = -1; const q = [a]; for (let h = 0; h < q.length; h++) { const c = q[h], i = c % nx, j = (c / nx) | 0; for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [1, -1], [-1, 1], [-1, -1]]) { const ii = i + di, jj = j + dj; if (ii < 0 || jj < 0 || ii >= nx || jj >= nz) continue; const n = jj * nx + ii; if (!ok[n] || prev[n] !== -2) continue; prev[n] = c; q.push(n); } } return { prev, reach: q }; };
-    const S = (id: string) => spawns.find((s) => s.id === id);
-    const E = S('eminonu'), K = S('karakoy'), B = S('besiktas');
-    const routes: [number, number][] = [];
-    const cE = E ? cell(E.x, E.z) : -1, cK = K ? cell(K.x, K.z) : -1, cB = B ? cell(B.x, B.z) : -1;
-    if (cE >= 0 && cB >= 0) routes.push([cE, cB]);
-    if (cK >= 0) { const { reach } = bfs(cK); let far = cK, fx = -1e9, south = cK, sz = -1e9; for (const c of reach) { const i = c % nx, j = (c / nx) | 0; if (i - j * 0.3 > fx) { fx = i - j * 0.3; far = c; } if (j + i * 0.4 > sz) { sz = j + i * 0.4; south = c; } } routes.push([cK, far]); if (cE >= 0) routes.push([cE, south]); }
+    // köprülerin altından geçmesin: köprü çevresi kapalı
+    for (const b of bridges) for (let k = 0; k < b.length; k += 2) { const ci = Math.floor((b[k] - x0) / ST), cj = Math.floor((b[k + 1] - z0) / ST); for (let j = cj - 2; j <= cj + 2; j++) for (let i = ci - 2; i <= ci + 2; i++) if (i >= 0 && j >= 0 && i < nx && j < nz) ok[j * nx + i] = 0; }
+    const S = (name: string) => piers.find((s) => s.name === name);
+    const berth = (p: { x: number; z: number; ox: number; oz: number }): [number, number] => [p.x + p.ox * 51, p.z + p.oz * 51];
+    // hatlar: iskeleden iskeleye; ucu açık olan hat denizin en uzak köşesine gider
+    const routes: [number, number, ([number, number] | null), ([number, number] | null)][] = [];
+    const add = (a?: ReturnType<typeof S>, b?: ReturnType<typeof S>) => {
+      if (!a) return; const ca = cell(...berth(a)); if (ca < 0) return;
+      if (b) { const cb = cell(...berth(b)); if (cb >= 0) routes.push([ca, cb, berth(a), berth(b)]); return; }
+      const { reach } = bfs(ca); let far = ca, fv = -1e9; for (const c of reach) { const i = c % nx, j = (c / nx) | 0, v = i + j * 0.5; if (v > fv) { fv = v; far = c; } } routes.push([ca, far, berth(a), null]);
+    };
+    add(S('KARAKÖY'), S('BEŞİKTAŞ')); add(S('EMİNÖNÜ')); add(S('KASIMPAŞA'), S('BALAT') || S('FENER')); add(S('SİRKECİ'), S('KABATAŞ'));
     const geo = ferryGeom(), mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+    // gece: koyu cam bantları ışıklı
+    mat.onBeforeCompile = (sh) => { sh.uniforms.uNight = nightU; sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nuniform float uNight;').replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\nif (vColor.b > vColor.r * 2.0 && vColor.b < 0.08) totalEmissiveRadiance += vec3(1.0, 0.75, 0.42) * 1.1 * uNight;'); };
     const wcv = document.createElement('canvas'); wcv.width = 32; wcv.height = 128; const wc = wcv.getContext('2d')!; const gr = wc.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); wc.fillStyle = gr; wc.beginPath(); wc.moveTo(10, 0); wc.lineTo(22, 0); wc.lineTo(32, 128); wc.lineTo(0, 128); wc.fill();
     const wakeMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(wcv), transparent: true, depthWrite: false });
-    routes.forEach(([a, b], ri) => {
+    routes.forEach(([a, b, ea, eb], ri) => {
       const { prev } = bfs(a); if (prev[b] === -2) return;
       let pts: number[][] = []; for (let c = b; c >= 0; c = prev[c]) pts.push([x0 + ((c % nx) + 0.5) * ST, z0 + (((c / nx) | 0) + 0.5) * ST]); pts.reverse();
       for (let it = 0; it < 3; it++) { const o = [pts[0]]; for (let i = 0; i < pts.length - 1; i++) { const p = pts[i], q = pts[i + 1]; o.push([p[0] * 0.75 + q[0] * 0.25, p[1] * 0.75 + q[1] * 0.25], [p[0] * 0.25 + q[0] * 0.75, p[1] * 0.25 + q[1] * 0.75]); } o.push(pts[pts.length - 1]); pts = o; }
+      if (ea) pts.unshift(ea); if (eb) pts.push(eb); // iskeleye kadar yanaş
       const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
       if (cum[cum.length - 1] < 300) return;
       const obj = new THREE.Group(); const m = new THREE.Mesh(geo, mat); m.castShadow = true; obj.add(m);
@@ -56,7 +66,7 @@ export class Ferries {
   }
   update(dt: number, t: number) {
     for (const b of this.boats) {
-      if (b.wait > 0) b.wait -= dt; else { b.s += b.dir * 6.5 * dt; if (b.s >= b.len) { b.s = b.len; b.dir = -1; b.wait = 10; } else if (b.s <= 0) { b.s = 0; b.dir = 1; b.wait = 10; } }
+      if (b.wait > 0) b.wait -= dt; else { b.s += b.dir * 6.5 * dt; if (b.s >= b.len) { b.s = b.len; b.dir = -1; b.wait = 14; } else if (b.s <= 0) { b.s = 0; b.dir = 1; b.wait = 14; } }
       let lo = 0, hi = b.cum.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (b.cum[m] <= b.s) lo = m; else hi = m - 1; } const k = Math.min(lo, b.cum.length - 2), u = (b.s - b.cum[k]) / (b.cum[k + 1] - b.cum[k] || 1);
       const ax = b.path[2 * k], az = b.path[2 * k + 1], bx = b.path[2 * k + 2], bz = b.path[2 * k + 3];
       b.obj.position.set(ax + (bx - ax) * u, 0.15 + Math.sin(t * 0.9 + b.ph) * 0.12, az + (bz - az) * u);
