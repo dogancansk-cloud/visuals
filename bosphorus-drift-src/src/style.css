@@ -182,3 +182,18 @@ h2 { margin: 0 0 12px; font-size: 26px; font-weight: 900; }
 .row.col { flex-direction: column; align-items: center; }
 @media (max-height: 520px) and (min-aspect-ratio: 3/2) { .panel.pause { max-width: min(640px, 96vw); padding: 12px 16px; } .panel.pause .row.col { flex-direction: row; flex-wrap: wrap; justify-content: center; gap: 8px; } .panel.pause .btn { font-size: 16px; padding: 9px 16px; } }
 @media (max-height: 460px) { .selBottom { gap: 6px; bottom: calc(8px + env(safe-area-inset-bottom)); } .selBottom .chip { width: 42px; height: 42px; border-radius: 12px; border-width: 3px; } .selRow { gap: 6px; flex-wrap: nowrap; } .selRow .seg button { padding: 6px 9px; font-size: 13px; } .selRow .btn { padding: 7px 14px; font-size: 16px; } .selArrow { top: 34%; width: 46px; height: 46px; line-height: 32px; } .selArrow.l { left: calc(256px + env(safe-area-inset-left)); } }
+
+/* ipucu, rekor, kupa */
+#hint { position: absolute; left: 50%; bottom: 27%; transform: translate(-50%, 12px); max-width: 86vw; background: rgba(29, 37, 80, .78); color: #fff; font-weight: 800; font-size: 17px; padding: 8px 18px; border-radius: 999px; opacity: 0; transition: opacity .3s, transform .3s; pointer-events: none; text-align: center; }
+#hint.on { opacity: 1; transform: translate(-50%, 0); }
+@media (max-height: 460px) { #hint { font-size: 14px; bottom: 34%; padding: 6px 14px; } }
+#pos.up b { animation: posUp .5s; } #pos.down b { animation: posDown .5s; }
+@keyframes posUp { 30% { transform: scale(1.35); color: #a8f0b4; } } @keyframes posDown { 30% { transform: scale(.82); color: #ffb3a8; } }
+#pos b { display: inline-block; }
+.recline { margin: 8px 0 2px; font-weight: 700; font-size: 15px; opacity: .9; } .recline .nr { color: #e0407a; }
+.recs { margin-top: 8px; font-size: 13px; font-weight: 700; opacity: .8; }
+.cupnote { background: rgba(255, 248, 238, .85); border-radius: 999px; padding: 9px 16px; font-weight: 800; color: var(--ink); }
+.res td.pt { text-align: right; white-space: nowrap; font-size: .9em; opacity: .85; padding-right: 10px; }
+@media (max-height: 460px) { .recs { display: none; } .cupnote { padding: 6px 10px; font-size: 13px; } }
+/* kısa ekranda sonuç tablosu kaydırmasız sığsın */
+@media (max-height: 520px) { .panel:has(.res) { padding: 10px 18px 12px; min-width: min(560px, 94vw); } .panel:has(.res) h2 { font-size: 19px; margin: 0 0 4px; } .res { font-size: 14px; margin: 2px 0 6px; } .res td { padding: 3px 8px; border-bottom-width: 1px; } .recline { margin: 2px 0 6px; font-size: 13px; } .panel:has(.res) .btn { font-size: 16px; padding: 8px 18px; } .panel:has(.res) .credit { display: none; } }

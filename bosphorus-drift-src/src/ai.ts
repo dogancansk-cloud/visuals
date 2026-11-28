@@ -5,6 +5,8 @@ import { Track } from './track';
 export class AI {
   ctl: Ctl = { gas: 1, brake: 0, steer: 0, drift: false, item: false };
   private lane = 0; private laneT = 0; private pressT = 0; private itemT = 0; private wantBoostAt = 0.85; private holdT = 0;
+  /** zorluk: geriden yetişme ve öndeyken bekleme çarpanları */
+  catchUp = 1; ease = 1;
   constructor(readonly k: Kart, readonly track: Track, public skill: number) { this.lane = (Math.random() - 0.5) * 6; }
 
   /** viraj keskinliği: önümüzdeki iki noktadaki yön farkı */
@@ -40,7 +42,9 @@ export class AI {
     } else c.steer = Math.max(-1, Math.min(1, err * 2.6));
     // hız ve rubber band
     const gap = player.progress - k.progress;
-    let cap = (0.86 + this.skill * 0.12) * (gap > 60 ? 1.08 : gap < -60 ? 0.93 : 1);
+    // lastik bant: oyuncunun gerisindeyse biraz hızlanır, çok öndeyse yavaşlar; mesafeyle yumuşak artar
+    const rb = gap > 0 ? Math.min(1, gap / 70) * 0.08 * this.catchUp : -Math.min(1, Math.max(0, -gap - 20) / 80) * 0.07 * this.ease;
+    let cap = (0.86 + this.skill * 0.12) * (1 + rb);
     if (auto) cap = 1.0;
     c.gas = k.speed < k.maxSpeed * cap ? 1 : 0;
     c.brake = 0;

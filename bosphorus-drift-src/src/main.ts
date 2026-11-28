@@ -157,6 +157,7 @@ const crowd = (() => {
 const fx = new Particles(scene, mobile ? 600 : 1000);
 const trails = new Trails(scene);
 const podium = new Podium(scene, fx);
+const blinking = new Set<Kart>();
 const audio = new Audio();
 const input = new Input($('#ui'));
 const msg = new Msg($('#msg'));
@@ -168,6 +169,17 @@ let state: State = 'title', paused = false;
 let charIdx = Math.max(0, Math.min(CHARS.length - 1, Number(Q.get('char') ?? store.get('char') ?? 0) || 0));
 let diff = (store.get('diff') as 'kolay' | 'normal' | 'zor') || 'normal';
 audio.muted = store.get('mute') === '1';
+// ---- kupa: üç pist art arda, sıraya göre puan. Pist değişimi sayfayı yenilediği için durum oturumda saklanır.
+interface Cup { order: string[]; i: number; pts: number[]; char: number; diff: string; done: number; last: number[] }
+const CUP_PTS = [10, 8, 6, 5, 4, 3, 2, 1];
+const cupStore = { get(): Cup | null { try { return JSON.parse(sessionStorage.getItem('bd.cup') || 'null'); } catch { return null; } }, set(c: Cup | null) { try { if (c) sessionStorage.setItem('bd.cup', JSON.stringify(c)); else sessionStorage.removeItem('bd.cup'); } catch { /* yok */ } } };
+let cup: Cup | null = Q.has('cup') ? cupStore.get() : null;
+if (cup && cup.order[cup.i] !== PIST) cup = null;
+if (cup) { charIdx = cup.char; diff = cup.diff as typeof diff; }
+let mode: 'tek' | 'kupa' = 'tek';
+// ---- rekorlar (pist başına en iyi yarış ve tur süresi)
+const rec: { lap?: number; race?: number } = (() => { try { return JSON.parse(store.get('rec.' + PIST) || '{}'); } catch { return {}; } })();
+let lapStartT = 0, myBestLap = 0, newRec = false, newLapRec = false, tutStep = store.get('tut') === '1' ? 9 : 0;
 let karts: Kart[] = [], ais: AI[] = [], player!: Kart, playerAI: AI | null = null;
 let raceT = 0, countT = 0, doneT = 0, lastBeep = 4, gasEdgeT = -9, prevGas = false, startBoostGiven = false;
 const auto = Q.has('auto');
@@ -221,11 +233,11 @@ function setupRace() {
     k.model.root.traverse((o) => { if ((o as THREE.Mesh).isMesh) o.castShadow = true; });
     const st = CHARS[ci].stats; k.stat = { spd: (st[0] - 3) / 2, acc: (st[1] - 3) / 2, han: (st[2] - 3) / 2 };
     scene.add(k.model.root); karts.push(k);
-    if (isP) player = k; else { ais.push(new AI(k, track, skills[ai])); ai++; }
+    if (isP) player = k; else { const a = new AI(k, track, skills[ai]); a.catchUp = diff === 'kolay' ? 0.4 : diff === 'zor' ? 1.2 : 1; a.ease = diff === 'kolay' ? 1.5 : diff === 'zor' ? 0.45 : 1; ais.push(a); ai++; }
   }
   if (Q.has('at')) { player.place0(Number(Q.get('at')), 0); }
   playerAI = auto ? new AI(player, track, 1) : null;
-  raceT = 0; doneT = 0; lastBeep = 4; gasEdgeT = -9; startBoostGiven = false;
+  raceT = 0; doneT = 0; lastBeep = 4; gasEdgeT = -9; startBoostGiven = false; lapStartT = 0; myBestLap = 0; newRec = false; newLapRec = false;
   setTod(pickTod(Math.random()));
   weather.plan(); if (Q.has('rain')) weather.startAt = 0.1;
   if (PIST === 'kc') weather.clear(); // çarşının içinde yağmur yok
@@ -347,7 +359,7 @@ hud.zone.style.display = "none";
 let rollIcon = 0, lastPlace = 0, lastLap = 0;
 function updateHud(dt: number) {
   const k = player;
-  hud.pos.textContent = String(k.place);
+  if (hud.pos.textContent !== String(k.place)) { const up = Number(hud.pos.textContent) > k.place; hud.pos.textContent = String(k.place); if (state === 'race') { const el = hud.pos.parentElement!; el.classList.remove('up', 'down'); void el.offsetWidth; el.classList.add(up ? 'up' : 'down'); } }
   hud.spd.textContent = String(Math.max(0, Math.round(k.speed * 3.6 * 1.65)));
   hud.spd.parentElement!.classList.toggle('boost', k.boostT > 0);
   if (k.place !== lastPlace) { hud.pos.parentElement!.animate([{ transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 250 }); lastPlace = k.place; }
@@ -413,15 +425,42 @@ function step(dt: number) {
     }
   }
   if (player.lap !== lastLap && state === 'race') {
+    if (lastLap >= 1 && player.lap > lastLap) lapDone();
     if (player.lap === LAPS) { msg.show('SON TUR!', 'big'); audio.lap(); }
     else if (player.lap > 1 && player.lap < LAPS) { msg.show(`${player.lap}. TUR`, 'big'); audio.lap(); }
     lastLap = player.lap;
   }
+  tutorial();
   if (!playerAI && (player.stuckT > 3 || player.wrongT > 5)) { player.respawn(); player.stuckT = 0; player.wrongT = 0; }
 }
 
+/** oyuncu bir turu bitirdi: süreyi göster, en iyi turu kaydet */
+function lapDone() {
+  const t = raceT - lapStartT; lapStartT = raceT;
+  if (t < 5) return;
+  if (!myBestLap || t < myBestLap) myBestLap = t;
+  const best = !auto && !Q.has('at') && (!rec.lap || t < rec.lap);
+  if (best) { const had = !!rec.lap; rec.lap = t; store.set('rec.' + PIST, JSON.stringify(rec)); newLapRec = had; }
+  hint(`Tur süresi ${fmt(t)}${best && newLapRec ? ' · en iyi turun!' : ''}`, 3);
+}
+let hintEl: HTMLElement | null = null, hintT = 0;
+function hint(text: string, secs: number) {
+  if (!hintEl) { hintEl = document.createElement('div'); hintEl.id = 'hint'; $('#hud').appendChild(hintEl); }
+  hintEl.textContent = text; hintEl.classList.add('on'); hintT = secs;
+}
+/** ilk yarışta üç kısa ipucu */
+function tutorial() {
+  if (tutStep > 2 || auto || onMeta || state !== 'race') return;
+  const touch = mobile || input.touch, at = [0.4, 8, 17][tutStep];
+  if (raceT < at) return;
+  hint([touch ? 'Solda parmağını kaydırarak dön, GAZ’a basılı tut' : 'Ok tuşları ya da WASD ile sür', touch ? 'Virajda DRİFT’e basılı tut. Bırakınca turbo gelir' : 'Virajda Boşluk’a basılı tut. Bırakınca turbo gelir', touch ? '? kutularından eşya al, EŞYA ile kullan' : '? kutularından eşya al, E ile kullan'][tutStep], 5.5);
+  if (++tutStep > 2) store.set('tut', '1');
+}
 function onPlayerFinish() {
   state = 'done'; doneT = 0;
+  if (lastLap >= 1) { const t = raceT - lapStartT; if (t > 5 && (!myBestLap || t < myBestLap)) myBestLap = t; if (t > 5 && !auto && !Q.has('at') && (!rec.lap || t < rec.lap)) rec.lap = t; }
+  if (!auto && !Q.has('at') && !onMeta) { newRec = !!rec.race && raceT < rec.race; if (!rec.race || raceT < rec.race) rec.race = raceT; }
+  store.set('rec.' + PIST, JSON.stringify(rec)); msg.show('BİTTİ!', 'big');
   if (onMeta && room) room.setMe({ fin: onMeta.race });
   ev(onMeta ? 'online_finish' : 'finish', { pist: PIST, place: player.place }); if (player.place === 1) ev(onMeta ? 'online_win' : 'win');
   playerAI = new AI(player, track, 0.7);
@@ -485,6 +524,7 @@ function makePortraits() {
 }
 
 function showTitle() {
+  if (cup) endCup();
   state = 'title'; view = 'title'; paused = false; setHud(false); podium.hide(); setTod(0); weather.clear(); audio.rain(0);
   menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>${PISTS[PIST].toLocaleUpperCase("tr")}</small></div>
     <div class="seg pist tpist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>
@@ -701,13 +741,13 @@ function showSelect() {
   for (const k of karts) k.model.root.visible = false;
   const c = CHARS[charIdx];
   menu.innerHTML = `<div class="cs">
-    <div class="selInfo"><small>KARAKTER ${charIdx + 1}/${CHARS.length}</small><h1>${c.name}</h1><p>${c.blurb}</p>
+    <div class="selInfo"><small>KARAKTER ${charIdx + 1}/${CHARS.length}</small><h1>${c.name}</h1><p>${c.blurb}</p>${rec.race ? `<div class="recs">${PISTS[PIST]} rekorun <b>${fmt(rec.race)}</b>${rec.lap ? ` · tur <b>${fmt(rec.lap)}</b>` : ''}</div>` : ''}
       ${c.stats.map((v, i) => `<div class="stat"><span>${STAT_NAMES[i]}</span><div class="bars">${[1, 2, 3, 4, 5].map((n) => `<i class="${n <= v ? 'on' : ''}"></i>`).join('')}</div></div>`).join('')}
     </div>
     <button class="selArrow l" id="sPrev" aria-label="Önceki">‹</button><button class="selArrow r" id="sNext" aria-label="Sonraki">›</button>
     <div class="selBottom">
       <div class="chips">${CHARS.map((ch, i) => `<button class="chip${i === charIdx ? ' sel' : ''}" data-i="${i}" style="--c:#${ch.color.toString(16).padStart(6, '0')}"><img src="${portraits[i]}" alt="${ch.name}"></button>`).join('')}</div>
-      <div class="selRow"><div class="seg pist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div><div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
+      <div class="selRow"><div class="seg">${(['tek', 'kupa'] as const).map((m) => `<button data-m="${m}" class="${m === mode ? 'sel' : ''}">${m === 'tek' ? 'Tek yarış' : 'Kupa 🏆'}</button>`).join('')}</div>${mode === 'kupa' ? `<div class="cupnote">3 pist art arda${store.get('cup.' + diff) ? ` · en iyin ${store.get('cup.' + diff)}.` : ''}</div>` : `<div class="seg pist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>`}<div class="seg">${(['kolay', 'normal', 'zor'] as const).map((d) => `<button data-d="${d}" class="${d === diff ? 'sel' : ''}">${d[0].toUpperCase() + d.slice(1)}</button>`).join('')}</div>
       <button class="btn ghost" id="bBack">Geri</button><button class="btn" id="bGo">Başla</button></div>
     </div></div>`;
   const pick = (i: number) => { charIdx = (i + CHARS.length) % CHARS.length; store.set('char', String(charIdx)); audio.click(); showSelect(); };
@@ -720,7 +760,50 @@ function showSelect() {
     const u = new URL(location.href); u.searchParams.set('pist', p); u.searchParams.set('sel', '1'); location.href = u.toString();
   }));
   $('#bBack').onclick = () => { audio.click(); showroom.visible = false; showTitle(); };
-  $('#bGo').onclick = () => { audio.click(); startCountdown(); };
+  menu.querySelectorAll<HTMLElement>('.seg button[data-m]').forEach((b) => (b.onclick = () => { mode = b.dataset.m as typeof mode; audio.click(); showSelect(); }));
+  $('#bGo').onclick = () => { audio.click(); if (mode === 'kupa') startCup(); else startCountdown(); };
+}
+// ---------------------------------------------------------------- kupa
+function startCup() {
+  cup = { order: ['galata', 'kc', 'bg'], i: 0, pts: CHARS.map(() => 0), char: charIdx, diff, done: -1, last: CHARS.map(() => 0) };
+  cupStore.set(cup); ev('cup_start'); cupGo();
+}
+function endCup() { cup = null; cupStore.set(null); }
+/** kupanın sıradaki pistine geç (başka pistse sayfa o pistle yeniden açılır) */
+function cupGo() {
+  if (!cup) return;
+  const p = cup.order[cup.i];
+  if (p === PIST) { startCountdown(); return; }
+  const u = new URL(location.href); u.search = ''; if (p !== 'galata') u.searchParams.set('pist', p); u.searchParams.set('cup', '1'); location.href = u.toString();
+}
+/** puan sırası; eşitlikte son yarışta önde biten üstte */
+function cupRank(c: Cup) { return CHARS.map((_, i) => i).sort((a, b) => c.pts[b] - c.pts[a] || c.last[a] - c.last[b]); }
+function cupTable(c: Cup) { return `<table class="res">${cupRank(c).map((ci, n) => `<tr class="${ci === c.char ? 'me' : ''}"><td class="n">${n + 1}</td><td>${CHARS[ci].name}${ci === c.char ? ' (sen)' : ''}</td><td class="t">${c.pts[ci]} puan</td></tr>`).join('')}</table>`; }
+/** sayfa yeni pistle açıldığında: sıradaki yarışın tanıtımı */
+function showCupIntro() {
+  if (!cup) return showTitle();
+  state = 'title'; view = 'title'; setHud(false);
+  menu.innerHTML = `<div class="panel"><h2>Kupa · ${cup.i + 1}/3 · ${PISTS[PIST]}</h2>${cupTable(cup)}
+    <div class="row"><button class="btn" id="cGo">Başla</button><button class="btn ghost" id="cQuit">Kupadan çık</button></div></div>`;
+  $('#cGo').onclick = () => { audio.start(); audio.click(); startCountdown(); };
+  $('#cQuit').onclick = () => { audio.start(); audio.click(); endCup(); showTitle(); };
+}
+/** bu yarışın puanlarını işle (bir kez) */
+function cupCommit() {
+  if (!cup || cup.done >= cup.i) return;
+  for (const k of karts) { const ci = CHARS.indexOf(k.def); cup.pts[ci] += CUP_PTS[k.place - 1] || 0; cup.last[ci] = k.place; }
+  cup.done = cup.i; cupStore.set(cup);
+}
+function showCupFinal() {
+  if (!cup) return;
+  const c = cup, rank = cupRank(c), me = rank.indexOf(c.char) + 1;
+  const best = Number(store.get('cup.' + c.diff) || 9); if (me < best) store.set('cup.' + c.diff, String(me));
+  ev('cup_finish', { place: me }); if (me === 1) ev('cup_win');
+  podium.show(SR, srRight, rank.slice(0, 3), me > 3 ? c.char : null, me); life.fireworks(SR);
+  menu.innerHTML = `<div class="podbar"><h2>${me === 1 ? 'Kupa senin! 🏆' : `Kupa bitti: ${me}. oldun`}</h2>
+    <div class="podnames">${rank.slice(0, 3).map((ci, i) => `<span class="${ci === c.char ? 'me' : ''}"><b>${i + 1}</b>${CHARS[ci].name} · ${c.pts[ci]}</span>`).join('')}</div>
+    <div class="row"><button class="btn" id="cEnd">Bitir</button></div></div>`;
+  $('#cEnd').onclick = () => { audio.click(); audio.music(false); endCup(); showTitle(); };
 }
 function showHelp(back: () => void) {
   const it = (k: keyof typeof ICONS, t: string) => `<div><img src="${ICONS[k]}" alt=""><span><b>${ITEM_NAME[k]}</b><br>${t}</span></div>`;
@@ -747,6 +830,7 @@ function showPause() {
   $('#pRes').onclick = resume;
   $('#pRe').onclick = () => { paused = false; startCountdown(); };
   if (onMeta) { $('#pRe').style.display = 'none'; $('#pMenu').textContent = 'Odadan çık'; }
+  if (cup) $('#pMenu').textContent = 'Kupadan çık';
   $('#pHow').onclick = () => showHelp(showPause);
   $('#pMute').onclick = () => { toggleMute(); showPause(); };
   $('#pMenu').onclick = () => { paused = false; audio.music(false); if (room) leaveRoom(); else showTitle(); };
@@ -766,7 +850,16 @@ function showPodium() {
 }
 function showResults() {
   $('#hud').classList.add('hide');
-  menu.innerHTML = `<div class="panel"><h2>${player.place === 1 ? 'Kazandın! 🏆' : 'Yarış bitti'}</h2><table class="res" id="resT">${resRows()}</table>
+  const recLine = onMeta ? '' : `<div class="recline">${newRec ? '<b class="nr">Yeni rekor!</b> ' : ''}Süren <b>${fmt(player.finishTime)}</b>${myBestLap ? ` · en iyi turun <b>${fmt(myBestLap)}</b>` : ''}${rec.race && !newRec && rec.race < player.finishTime - 0.005 ? ` · rekorun ${fmt(rec.race)}` : ''}</div>`;
+  if (cup && !onMeta) {
+    const last = cup.i >= cup.order.length - 1;
+    menu.innerHTML = `<div class="panel"><h2>Kupa · ${cup.i + 1}/3 · ${PISTS[PIST]}</h2><table class="res" id="resT">${resRows()}</table>${recLine}
+      <div class="row"><button class="btn" id="cNext">${last ? 'Kupa töreni' : `Sonraki: ${PISTS[cup.order[cup.i + 1] as keyof typeof PISTS]}`}</button><button class="btn ghost" id="cQuit">Kupadan çık</button></div></div>`;
+    $('#cNext').onclick = () => { audio.click(); cupCommit(); if (!cup) return; if (last) showCupFinal(); else { cup.i++; cupStore.set(cup); cupGo(); } };
+    $('#cQuit').onclick = () => { audio.click(); audio.music(false); endCup(); showTitle(); };
+    return;
+  }
+  menu.innerHTML = `<div class="panel"><h2>${player.place === 1 ? 'Kazandın! 🏆' : 'Yarış bitti'}</h2><table class="res" id="resT">${resRows()}</table>${recLine}
     <div class="row">${onMeta ? '<button class="btn" id="rLobby">Lobiye dön</button><button class="btn ghost" id="rLeave">Odadan çık</button>' : '<button class="btn" id="rAgain">Tekrar yarış</button><button class="btn alt" id="rSel">Karakter seç</button>'}</div><div class="credit">© 2026 Doğancan Işık · Bosphorus Drift · ilk sürüm</div></div>`;
   if (onMeta) { $('#rLobby').onclick = () => { audio.click(); room?.backToLobby(); showLobby(); }; $('#rLeave').onclick = () => { audio.click(); leaveRoom(); }; return; }
   $('#rAgain').onclick = () => { audio.click(); startCountdown(); };
@@ -774,7 +867,8 @@ function showResults() {
 }
 /** sonuç tablosu: diğerleri bitirdikçe dereceleri yazılır, yoldakiler kalan turu gösterir */
 function resRows() {
-  return [...karts].sort((a, b) => a.place - b.place).map((k) => `<tr class="${k === player ? 'me' : ''}"><td class="n">${k.place}</td><td>${esc(nm(k))}${k === player ? ' (sen)' : ''}</td><td class="t">${k.finished ? fmt(k.finishTime) : k.gone ? '<span class="ongoing">ayrıldı</span>' : `<span class="ongoing">${Math.min(LAPS, Math.max(1, k.lap))}. tur…</span>`}</td></tr>`).join('');
+  const c = cup && !onMeta && cup.done < cup.i ? cup : null; // kupada: bu yarışın puanı ve toplam
+  return [...karts].sort((a, b) => a.place - b.place).map((k) => `<tr class="${k === player ? 'me' : ''}"><td class="n">${k.place}</td><td>${esc(nm(k))}${k === player ? ' (sen)' : ''}</td>${c ? `<td class="pt">+${CUP_PTS[k.place - 1] || 0} → <b>${c.pts[CHARS.indexOf(k.def)] + (CUP_PTS[k.place - 1] || 0)}</b></td>` : ''}<td class="t">${k.finished ? fmt(k.finishTime) : k.gone ? '<span class="ongoing">ayrıldı</span>' : `<span class="ongoing">${Math.min(LAPS, Math.max(1, k.lap))}. tur…</span>`}</td></tr>`).join('');
 }
 let resLast = '';
 function startCountdown() {
@@ -855,7 +949,14 @@ function frame(now: number) {
   if (state !== 'title' && state !== 'select') {
     const sub = Math.max(2, Math.ceil(dt / 0.009));
     for (let i = 0; i < sub; i++) step(dt / sub);
-    for (const k of karts) { k.sync(dt, time); if (podium.on) k.model.root.visible = false; else kartFx(k); }
+    for (const k of karts) {
+      k.sync(dt, time);
+      if (podium.on) { k.model.root.visible = false; continue; }
+      // dokunulmazlık sırasında kart yanıp söner
+      if (k.invT > 0 && k.spinT <= 0) { k.model.root.visible = Math.floor(time * 12) % 2 === 0; blinking.add(k); } else if (blinking.has(k)) { blinking.delete(k); if (!k.gone) k.model.root.visible = true; }
+      kartFx(k);
+    }
+    if (hintT > 0) { hintT -= rawDt; if (hintT <= 0 && hintEl) hintEl.classList.remove('on'); }
     if (dt > 0 && !podium.on) trails.update(karts, camera.position);
     if (state === 'race' || state === 'count') updateHud(dt);
     audio.engine(player.speed, playerAI ? 1 : input.c.gas, player.drifting && player.grounded, player.boostT > 0, !paused && state !== 'done');
@@ -887,7 +988,7 @@ function frame(now: number) {
 
 setLoad(1, 'Hazır!');
 setTimeout(() => $('#loading').remove(), 250);
-if (Q.has('sel')) { audio.start(); showSelect(); } else if (Q.has('oda')) showOnline(myName() ? '' : 'Odaya katılmak için takma adını yaz, sonra “Kodla katıl”a dokun.'); else showTitle();
+if (Q.has('sel')) { audio.start(); showSelect(); } else if (cup) showCupIntro(); else if (Q.has('oda')) showOnline(myName() ? '' : 'Odaya katılmak için takma adını yaz, sonra “Kodla katıl”a dokun.'); else showTitle();
 // pist değişimi sonrası odaya kendiliğinden geri dön
 if (Q.has('oda') && myName()) void (async () => { try { const n = await within(ensureNet()), r = await within(Room.join(n, Q.get('oda')!, { name: myName(), char: charIdx, t: 0 })); if (r instanceof Room) { ev('room_link'); enterRoom(r); } else showOnline(r === 'full' ? 'Oda dolu (8 kişi).' : 'Bu kodla bir oda yok.'); } catch { showOnline('Bağlanılamadı. İnternetini kontrol edip tekrar dene.'); } })();
 if (Q.has('skip')) { audio.muted = true; startCountdown(); }

@@ -70,12 +70,14 @@ export class Kart {
 
   /** isabet alınca simit düşer (biriken simit hep öyle kalmasın) */
   lastLoss = 0;
+  /** isabetten sonra kısa dokunulmazlık (üst üste vurulmayı önler) */
+  invT = 0;
   loseSimit(n: number) { this.lastLoss = Math.min(this.simit, n); this.simit -= this.lastLoss; }
   hit() {
     if (this.remote) return false; // isabeti karşı tarafın cihazı uygular
     if (this.shieldT > 0) { this.shieldT = 0; return false; }
-    if (this.spinT > 0) return false;
-    this.spinT = 1.1; this.drifting = false; this.boostT = 0; this.loseSimit(4);
+    if (this.spinT > 0 || this.invT > 0) return false;
+    this.spinT = 1.1; this.invT = 3.2; this.drifting = false; this.boostT = 0; this.loseSimit(4);
     this.ev.onHit?.(this); return true;
   }
 
@@ -85,7 +87,7 @@ export class Kart {
     const ctl = raceOn && this.spinT <= 0 ? c : { gas: 0, brake: 0, steer: 0, drift: false, item: false };
     const driftEdge = ctl.drift && !this.prevDrift; this.prevDrift = ctl.drift;
     const itemEdge = ctl.item && !this.prevItem; this.prevItem = ctl.item; this.wantItem = itemEdge;
-    this.slowT = Math.max(0, this.slowT - dt); this.boostT = Math.max(0, this.boostT - dt); this.shieldT = Math.max(0, this.shieldT - dt); this.lockT = Math.max(0, this.lockT - dt);
+    this.slowT = Math.max(0, this.slowT - dt); this.boostT = Math.max(0, this.boostT - dt); this.shieldT = Math.max(0, this.shieldT - dt); this.lockT = Math.max(0, this.lockT - dt); this.invT = Math.max(0, this.invT - dt);
     if (this.spinT > 0) { this.spinT -= dt; this.speed *= Math.exp(-dt * 2.6); }
 
     const fx = Math.cos(this.yaw), fz = Math.sin(this.yaw);
