@@ -37,7 +37,8 @@ function signTexture(name: string) {
 
 export class Shore {
   readonly group = new THREE.Group();
-  private bollards: number[] = []; private boats: number[] = []; // x, y, z, yaw
+  private bollards: number[] = []; private boats: number[] = []; private benches: number[] = []; // x, y, z, yaw
+  private benchMesh!: THREE.InstancedMesh;
   private bollMesh: THREE.InstancedMesh; private boatMesh: THREE.InstancedMesh;
   private last = new THREE.Vector2(1e9, 1e9); private glow: THREE.MeshBasicMaterial[] = []; private lit: THREE.MeshLambertMaterial[] = [];
   readonly piers: Pier[];
@@ -86,6 +87,7 @@ export class Shore {
           for (const [ex, ez] of [[0, 0], [1.25, 0], [0, 1.25], [-1.25, 0], [0, -1.25]]) { const key = Math.floor((x + ex) / 2.5) * 100003 + Math.floor((z + ez) / 2.5); if (v + 1.3 < QW && (this.top.get(key) ?? -1e9) < yy) this.top.set(key, yy); }
         }
         // babalar (15 m'de bir) ve arada bir bağlı tekne
+        if (i % 9 === 5 && !data.piers.some((p) => Math.hypot(p.x - P[2 * i], p.z - P[2 * i + 1]) < 26)) this.benches.push(P[2 * i] + O[2 * i] * (QW - 3.4), A.y, P[2 * i + 1] + O[2 * i + 1] * (QW - 3.4), Math.atan2(O[2 * i], O[2 * i + 1])); // denize bakan bank
         if (i % 3 === 0) this.bollards.push(A.mid[0] - O[2 * i] * 0.45, A.y, A.mid[2] - O[2 * i + 1] * 0.45, 0);
         if (rnd() < 0.045 && !data.piers.some((p) => Math.hypot(p.x - P[2 * i], p.z - P[2 * i + 1]) < 70) && G.kindAt(P[2 * i] + O[2 * i] * (QW + 14), P[2 * i + 1] + O[2 * i + 1] * (QW + 14)) === 1)
           this.boats.push(P[2 * i] + O[2 * i] * (QW + 1.9), 0, P[2 * i + 1] + O[2 * i + 1] * (QW + 1.9), Math.atan2(-O[2 * i + 1], O[2 * i]) + (rnd() < 0.5 ? Math.PI : 0) + (rnd() - 0.5) * 0.2);
@@ -97,7 +99,9 @@ export class Shore {
     const iron = new THREE.MeshLambertMaterial({ color: '#2b2d31' });
     this.bollMesh = new THREE.InstancedMesh(mergeGeometries([new THREE.CylinderGeometry(0.15, 0.2, 0.5, 8).translate(0, 0.25, 0), new THREE.CylinderGeometry(0.26, 0.2, 0.14, 8).translate(0, 0.57, 0)])!, iron, 260);
     this.boatMesh = new THREE.InstancedMesh(boatGeom(), new THREE.MeshLambertMaterial({ vertexColors: true }), 48);
-    for (const me of [this.bollMesh, this.boatMesh]) { me.count = 0; me.frustumCulled = false; me.castShadow = true; this.group.add(me); }
+    { const wood = '#8a5a33', ir = '#2b2d31', bp = [tint(new THREE.BoxGeometry(1.7, 0.06, 0.46).translate(0, 0.46, 0), wood), tint(new THREE.BoxGeometry(1.7, 0.36, 0.05).rotateX(-0.18).translate(0, 0.78, -0.25), wood)]; for (const x of [-0.72, 0.72]) bp.push(tint(new THREE.BoxGeometry(0.06, 0.46, 0.4).translate(x, 0.23, 0), ir), tint(new THREE.BoxGeometry(0.06, 0.5, 0.05).rotateX(-0.18).translate(x, 0.72, -0.24), ir));
+      this.benchMesh = new THREE.InstancedMesh(mergeGeometries(bp)!, new THREE.MeshLambertMaterial({ vertexColors: true }), 40); }
+    for (const me of [this.bollMesh, this.boatMesh, this.benchMesh]) { me.count = 0; me.frustumCulled = false; me.castShadow = true; this.group.add(me); }
     for (const p of data.piers) this.buildPier(p);
   }
 
@@ -145,6 +149,7 @@ export class Shore {
     let a = 0; const B = this.bollards, r2 = 260 * 260;
     for (let i = 0; i < B.length && a < 260; i += 4) { const dx = B[i] - px, dz = B[i + 2] - pz; if (dx * dx + dz * dz > r2) continue; p.set(B[i], B[i + 1], B[i + 2]); q.identity(); M.compose(p, q, s); this.bollMesh.setMatrixAt(a++, M); }
     this.bollMesh.count = a; this.bollMesh.instanceMatrix.needsUpdate = true;
+    { let e = 0; const E = this.benches; for (let i = 0; i < E.length && e < 40; i += 4) { const dx = E[i] - px, dz = E[i + 2] - pz; if (dx * dx + dz * dz > r2) continue; p.set(E[i], E[i + 1], E[i + 2]); q.setFromAxisAngle(up, E[i + 3]); M.compose(p, q, s); this.benchMesh.setMatrixAt(e++, M); } this.benchMesh.count = e; this.benchMesh.instanceMatrix.needsUpdate = true; }
     let b = 0; const T = this.boats, rb2 = 700 * 700, PAL = ['#ffffff', '#3a6ea5', '#c0392b', '#2a9d8f', '#f2e9d0', '#1f3a5f'];
     for (let i = 0; i < T.length && b < 48; i += 4) { const dx = T[i] - px, dz = T[i + 2] - pz; if (dx * dx + dz * dz > rb2) continue; p.set(T[i], 0, T[i + 2]); q.setFromAxisAngle(up, T[i + 3]); M.compose(p, q, s); this.boatMesh.setMatrixAt(b, M); this.boatMesh.setColorAt(b, c.set(PAL[(i / 4) % PAL.length])); b++; }
     this.boatMesh.count = b; this.boatMesh.instanceMatrix.needsUpdate = true; if (this.boatMesh.instanceColor) this.boatMesh.instanceColor.needsUpdate = true;

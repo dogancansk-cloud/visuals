@@ -4,19 +4,19 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const sstep = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+export const sstep = (a: number, b: number, x: number) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 /** parçalı doğrusal eğri: [[z, değer], ...] */
-function curve(pts: number[][], z: number) {
+export function curve(pts: number[][], z: number) {
   if (z <= pts[0][0]) return pts[0][1];
   for (let i = 1; i < pts.length; i++) if (z <= pts[i][0]) { const t = (z - pts[i - 1][0]) / (pts[i][0] - pts[i - 1][0]); return lerp(pts[i - 1][1], pts[i][1], t * t * (3 - 2 * t)); }
   return pts[pts.length - 1][1];
 }
 
-interface Section { z: number; w: number; y0: number; y1: number; n: number; taper: number }
+export interface Section { z: number; w: number; y0: number; y1: number; n: number; taper: number }
 type Colorer = (zMid: number, tMid: number, yMid: number) => THREE.Color;
 
 /** kesitleri örerek kapalı kabuk: düzgün (yumuşak) normaller, yüz başına renk */
-function loft(secs: Section[], M: number, colorOf: Colorer, capEnds = true): THREE.BufferGeometry {
+export function loft(secs: Section[], M: number, colorOf: Colorer, capEnds = true): THREE.BufferGeometry {
   const P: number[][][] = secs.map((s) => {
     const ring: number[][] = [];
     for (let k = 0; k < M; k++) {
@@ -62,13 +62,13 @@ function loft(secs: Section[], M: number, colorOf: Colorer, capEnds = true): THR
   }
   return g;
 }
-function part(g: THREE.BufferGeometry, c: THREE.Color) {
+export function part(g: THREE.BufferGeometry, c: THREE.Color) {
   if (g.index) g = g.toNonIndexed(); g.deleteAttribute('uv');
   const n = g.attributes.position.count, a = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
   g.setAttribute('color', new THREE.BufferAttribute(a, 3)); g.clearGroups(); return g;
 }
-const boxp = (w: number, h: number, l: number, x: number, y: number, z: number, c: THREE.Color) => part(new THREE.BoxGeometry(w, h, l).translate(x, y, z), c);
+export const boxp = (w: number, h: number, l: number, x: number, y: number, z: number, c: THREE.Color) => part(new THREE.BoxGeometry(w, h, l).translate(x, y, z), c);
 
 export const CAR = { length: 4.5, halfW: 0.9, wheelR: 0.33, wheelZ: 1.36, wheelX: 0.8 };
 const GLASS = new THREE.Color('#0d1218'), TRIM = new THREE.Color('#0c0d0f'), CHROME = new THREE.Color('#c8ccd2'), TYRE = new THREE.Color('#0b0b0c'), RIM = new THREE.Color('#b9bdc4');

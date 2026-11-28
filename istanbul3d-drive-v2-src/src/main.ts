@@ -19,7 +19,8 @@ import { SkidFx } from './game/fx';
 import { Explore } from './game/explore';
 import { Sea } from './world/sea';
 import { Ferries } from './world/ferries';
-import { Shore, type ShoreData } from './world/shore';
+import { Shore, type ShoreData, QW } from './world/shore';
+import { Trams, Gulls, simitCarts } from './world/life';
 
 const QS = new URLSearchParams(location.search);
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -30,9 +31,9 @@ const MAP = new URL('../istanbul3d/', location.href).href; // modeller haritanı
 const PHONE = (matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 820) || innerWidth < 700;
 type QName = 'dusuk' | 'orta' | 'yuksek';
 const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; detail: number; mask: number; park: number; cars: number; peds: number; lights: boolean }> = {
-  dusuk: { park: 50, mask: 512, detail: 90, pr: 1.25, shadows: true, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
-  orta: { park: 90, mask: 1024, detail: 160, pr: 1.5, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
-  yuksek: { park: 150, mask: 1024, detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
+  dusuk: { park: 50, mask: 512, detail: 90, pr: 1.25, shadows: true, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 45, lights: false },
+  orta: { park: 90, mask: 1024, detail: 160, pr: 1.5, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 90, lights: true },
+  yuksek: { park: 150, mask: 1024, detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 150, lights: true },
 };
 const qStored = (() => { try { return localStorage.getItem('drv2_q'); } catch { return null; } })();
 const qAuto = !QS.get('q') && (!qStored || qStored === 'oto');
@@ -106,7 +107,17 @@ async function main() {
   const skid = new SkidFx(); scene.add(skid.group);
   const explore = new Explore(roads, meta.landmarks, { chip: $('explore'), card: $('card'), cardTitle: $('card-title'), cardText: $('card-text'), chime: () => audio.chime(true) });
   car.onSplash = () => { audio.splash(); toast('Denize düştün!\nYola geri alınıyorsun', 1600); };
-  traffic.onPedHit = () => toast('Yayaya dikkat!', 1200);
+  traffic.onMeow = () => audio.meow(1);
+  // sokak hayatı: tramvaylar, martılar, simitçiler
+  const trams = new Trams((roadsData as unknown as { trams: number[][] }).trams || [], roads, G); scene.add(trams.group);
+  const gulls = new Gulls(G, Q.cars > 50 ? 24 : Q.cars > 30 ? 18 : 10); scene.add(gulls.mesh);
+  { const spots: number[][] = [];
+    for (const p of shoreData.piers) { const x = p.x + p.ox * (QW - 5) - p.oz * 15, z = p.z + p.oz * (QW - 5) + p.ox * 15; spots.push([x, Math.max(G.H(x, z), shore.topAt(x, z)), z, Math.atan2(-p.ox, -p.oz)]); }
+    for (const L of meta.landmarks as { x: number; z: number }[]) { const n = roads.nearest(L.x, L.z, 170, (w) => w.code >= 3 && w.code <= 7 && !w.bridge); if (!n) continue; const s = (L.x - n.px) * -n.dz + (L.z - n.pz) * n.dx > 0 ? 1 : -1, off = roads.halfAt(n.w, n.k, n.t) + 1.9, x = n.px - n.dz * s * off, z = n.pz + n.dx * s * off; spots.push([x, G.H(x, z) + 0.1, z, Math.atan2(n.dz * s, -n.dx * s)]); }
+    scene.add(simitCarts(spots)); }
+  trams.onBell = (d) => audio.tramBell(Math.max(0.15, 1 - d / 170));
+  ferries.onHorn = (x, z) => { const d = Math.hypot(x - car.x, z - car.z); if (d < 900) audio.ferryHorn(Math.max(0.12, 1 - d / 900)); };
+  let gullT = 4, chirpT = 6, hornT = 15;
 
   const spawn = meta.spawns.find((s) => s.id === (QS.get('spawn') || 'eminonu')) || meta.spawns[0];
   if (QS.get('at')) { const [ax, az, ay] = QS.get('at')!.split(',').map(Number); spawn.x = ax; spawn.z = az; spawn.yaw = ay || 0; }
@@ -206,12 +217,18 @@ async function main() {
   const frame = () => {
     const dt = Math.min(0.1, clock.getDelta()); t += dt;
     input.update(dt);
-    acc += dt; let n = 0;
-    while (acc >= FIX && n < 12) { car.step(FIX, input.c, traffic.obstacles); acc -= FIX; n++; } // yavaş cihazda da araba gerçek hızında gitsin
+    acc += dt; let n = 0; const obstacles = trams.obstacles.length ? traffic.obstacles.concat(trams.obstacles) : traffic.obstacles;
+    while (acc >= FIX && n < 12) { car.step(FIX, input.c, obstacles); acc -= FIX; n++; } // yavaş cihazda da araba gerçek hızında gitsin
     if (n === 12) acc = 0;
     if (wallsDirty) { walls.rebuild(blds.colliders.values()); wallsDirty = false; }
     signals.update(dt, car);
-    traffic.update(dt, car, env.night);
+    trams.update(dt, car.x, car.z); traffic.blockers = trams.carPos; traffic.update(dt, car, env.night); gulls.update(dt, t, car.x, car.z, env.night);
+    { // ortam sesleri
+      const day = 1 - env.night; audio.city(0.35 + 0.65 * day, t);
+      gullT -= dt; if (gullT < 0) { gullT = 5 + Math.random() * 9; if (gulls.nearest.d < 260 && day > 0.3) audio.gull(Math.max(0.2, 1 - gulls.nearest.d / 260) * (gulls.nearest.sea ? 1 : 0.5)); }
+      chirpT -= dt; if (chirpT < 0) { chirpT = 3 + Math.random() * 7; if (day > 0.5 && env.rainAmt < 0.2 && [0, 25, -25].some((o) => G.kindAt(car.x + o, car.z + o) === 2 || G.kindAt(car.x - o, car.z + o) === 2)) audio.chirp(car.speed < 8 ? 1 : 0.5); }
+      hornT -= dt; if (hornT < 0) { hornT = 14 + Math.random() * 30; if (day > 0.2) audio.farHorn(0.5 + Math.random() * 0.5); }
+    }
     env.update(dt, camera.position, car.obj.position);
     sea.update(t, env, camera.position); props.night(env.night); ferries.update(dt, t); shore.update(car.x, car.z, t); shore.night(env.night);
     car.sync(input.c, env.night, dt); scene.environmentIntensity = 1 - 0.8 * env.night;
@@ -242,7 +259,7 @@ async function main() {
     }
     requestAnimationFrame(frame);
   };
-  (window as unknown as Record<string, unknown>).__drv2 = { shore, groundView, explore, ferries, car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
+  (window as unknown as Record<string, unknown>).__drv2 = { trams, gulls, shore, groundView, explore, ferries, car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
   requestAnimationFrame(frame);
 }
 

@@ -24,6 +24,8 @@ interface Boat { path: number[]; cum: number[]; len: number; s: number; dir: 1 |
 
 export class Ferries {
   readonly group = new THREE.Group(); private boats: Boat[] = [];
+  /** vapur iskeleden ayrılırken düdük çalar: (x, z) */
+  onHorn: ((x: number, z: number) => void) | null = null;
   constructor(G: Ground, piers: { name: string; x: number; z: number; ox: number; oz: number }[], bridges: Float32Array[]) {
     const [x0, z0, x1, z1] = G.bounds, ST = 40, nx = Math.floor((x1 - x0) / ST), nz = Math.floor((z1 - z0) / ST);
     const ok = new Uint8Array(nx * nz);
@@ -66,7 +68,7 @@ export class Ferries {
   }
   update(dt: number, t: number) {
     for (const b of this.boats) {
-      if (b.wait > 0) b.wait -= dt; else { b.s += b.dir * 6.5 * dt; if (b.s >= b.len) { b.s = b.len; b.dir = -1; b.wait = 14; } else if (b.s <= 0) { b.s = 0; b.dir = 1; b.wait = 14; } }
+      if (b.wait > 0) { b.wait -= dt; if (b.wait <= 0) this.onHorn?.(b.obj.position.x, b.obj.position.z); } else { b.s += b.dir * 6.5 * dt; if (b.s >= b.len) { b.s = b.len; b.dir = -1; b.wait = 14; } else if (b.s <= 0) { b.s = 0; b.dir = 1; b.wait = 14; } }
       let lo = 0, hi = b.cum.length - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (b.cum[m] <= b.s) lo = m; else hi = m - 1; } const k = Math.min(lo, b.cum.length - 2), u = (b.s - b.cum[k]) / (b.cum[k + 1] - b.cum[k] || 1);
       const ax = b.path[2 * k], az = b.path[2 * k + 1], bx = b.path[2 * k + 2], bz = b.path[2 * k + 3];
       b.obj.position.set(ax + (bx - ax) * u, 0.15 + Math.sin(t * 0.9 + b.ph) * 0.12, az + (bz - az) * u);

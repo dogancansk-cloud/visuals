@@ -4,7 +4,7 @@ export class Audio {
   private master!: GainNode;
   private eng1!: OscillatorNode; private eng2!: OscillatorNode; private engF!: BiquadFilterNode; private engG!: GainNode;
   private tireG!: GainNode; private windG!: GainNode; private windF!: BiquadFilterNode; private rainG!: GainNode; private seaG!: GainNode;
-  private hornG!: GainNode; private noise!: AudioBuffer;
+  private hornG!: GainNode; private noise!: AudioBuffer; private cityG!: GainNode;
   start() {
     if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume(); return; }
     const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext; if (!AC) return;
@@ -32,6 +32,8 @@ export class Audio {
     // deniz (dalga: yavaş dalgalanan alçak gürültü)
     const sf = ctx.createBiquadFilter(); sf.type = 'lowpass'; sf.frequency.value = 500; this.seaG = ctx.createGain(); this.seaG.gain.value = 0;
     noiseSrc().connect(sf).connect(this.seaG).connect(this.master);
+    // şehir uğultusu (uzak trafik): alçak, yavaş dalgalanan gürültü
+    const cf = ctx.createBiquadFilter(); cf.type = 'lowpass'; cf.frequency.value = 170; this.cityG = ctx.createGain(); this.cityG.gain.value = 0; noiseSrc().connect(cf).connect(this.cityG).connect(this.master);
     // korna
     this.hornG = ctx.createGain(); this.hornG.gain.value = 0; const hf = ctx.createBiquadFilter(); hf.type = 'lowpass'; hf.frequency.value = 2200;
     for (const f of [415, 494]) { const o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = f; o.connect(hf); o.start(); }
@@ -50,6 +52,27 @@ export class Audio {
     this.seaG.gain.setTargetAtTime(s.sea * (0.05 + 0.04 * Math.sin(s.t * 0.7)), t, 0.3);
     this.hornG.gain.setTargetAtTime(s.horn ? 0.12 : 0, t, 0.01);
   }
+  /** ortam: şehir uğultusu düzeyi 0..1 */
+  city(level: number, t: number) { if (this.ctx) this.cityG.gain.setTargetAtTime(level * (0.1 + 0.03 * Math.sin(t * 0.31)), this.ctx.currentTime, 0.5); }
+  private tone(type: OscillatorType, f: [number, number][], dur: number, vol: number, at = 0, bp = 0) {
+    const ctx = this.ctx!, t = ctx.currentTime + at, o = ctx.createOscillator(), g = ctx.createGain(); o.type = type;
+    f.forEach(([tt, fr], i) => (i ? o.frequency.linearRampToValueAtTime(fr, t + tt * dur) : o.frequency.setValueAtTime(fr, t)));
+    g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + Math.min(0.04, dur * 0.2)); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+    let node: AudioNode = o; if (bp) { const b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = bp; b.Q.value = 2.5; o.connect(b); node = b; }
+    node.connect(g).connect(this.master); o.start(t); o.stop(t + dur + 0.05);
+  }
+  /** martı çığlığı: inen-çıkan kısa bağırışlar */
+  gull(vol: number) { if (!this.ctx) return; const n = 2 + Math.floor(Math.random() * 4), base = 1500 + Math.random() * 500; this.tone('sawtooth', [[0, base * 0.8], [0.25, base * 1.25], [1, base * 0.9]], 0.55, vol * 0.09, 0, 2200); for (let i = 0; i < n; i++) this.tone('sawtooth', [[0, base], [0.3, base * 1.2], [1, base * 0.75]], 0.17, vol * 0.08, 0.62 + i * 0.21, 2400); }
+  /** vapur düdüğü: uzun, pes */
+  ferryHorn(vol: number) { if (!this.ctx) return; for (const fr of [147, 185]) this.tone('sawtooth', [[0, fr], [1, fr * 0.995]], 2.2, vol * 0.11, 0, 420); }
+  /** tramvay zili */
+  tramBell(vol: number) { if (!this.ctx) return; for (const at of [0, 0.32]) { this.tone('sine', [[0, 2090], [1, 2085]], 0.5, vol * 0.1, at); this.tone('sine', [[0, 3140], [1, 3130]], 0.3, vol * 0.05, at); } }
+  /** miyav */
+  meow(vol: number) { if (!this.ctx) return; const b = 620 + Math.random() * 160; this.tone('sawtooth', [[0, b], [0.3, b * 1.45], [1, b * 0.85]], 0.55, vol * 0.09, 0, 1500); }
+  /** kuş cıvıltısı (parklar) */
+  chirp(vol: number) { if (!this.ctx) return; const b = 3200 + Math.random() * 1500; for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) this.tone('sine', [[0, b], [0.5, b * 1.3], [1, b * 0.9]], 0.07, vol * 0.05, i * 0.11 + Math.random() * 0.03); }
+  /** uzaktan korna */
+  farHorn(vol: number) { if (!this.ctx) return; const f = 380 + Math.random() * 120; this.tone('square', [[0, f], [1, f]], 0.25 + Math.random() * 0.3, vol * 0.035, 0, 700); }
   /** çarpma sesi, şiddet 0..1 */
   bump(power: number) {
     if (!this.ctx) return; const ctx = this.ctx, t = ctx.currentTime;
