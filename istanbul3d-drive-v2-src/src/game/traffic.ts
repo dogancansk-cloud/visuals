@@ -12,8 +12,8 @@ const SPEED: Record<number, number> = { 1: 16, 2: 13.5, 3: 11.5, 4: 10, 5: 10, 6
 const PAINT = ['#f2c200', '#f2c200', '#f2c200', '#f4f4f2', '#f4f4f2', '#d0d2d4', '#2a2c30', '#1f3b70', '#8a1c1c', '#7d8a93', '#4a5a3a', '#c9b48a', '#9a9ea3'];
 const CLOTH = ['#2d4a7a', '#7a2d2d', '#3d3d3d', '#d9d2c3', '#5b7a3a', '#a86b2d', '#6b4a8a', '#c94f3d', '#1e1e1e', '#8fa8c8', '#e6e1d6'];
 
-interface Agent { way: Way; dir: 1 | -1; s: number; v: number; lane: number; kind: number; col: THREE.Color; x: number; y: number; z: number; yaw: number; stun: number; honk: number; len: number; alive: boolean; ob: Obstacle; pitch: number }
-interface Ped { way: Way; dir: 1 | -1; s: number; side: number; v: number; dodge: number; x: number; y: number; z: number; yaw: number; ph: number; col: THREE.Color; skin: THREE.Color; alive: boolean; wait: number }
+interface Agent { way: Way; dir: 1 | -1; s: number; v: number; lane: number; kind: number; col: THREE.Color; x: number; y: number; z: number; yaw: number; stun: number; honk: number; len: number; alive: boolean; ob: Obstacle; pitch: number; ox: number; oz: number; sf: number }
+interface Ped { way: Way; dir: 1 | -1; s: number; side: number; v: number; dodge: number; x: number; y: number; z: number; yaw: number; ph: number; col: THREE.Color; skin: THREE.Color; alive: boolean; wait: number; sc: number }
 
 export class Traffic {
   private cars: Agent[] = []; private peds: Ped[] = [];
@@ -23,7 +23,7 @@ export class Traffic {
   private driveWays: Way[]; private walkWays: Way[];
   private tmpM = new THREE.Matrix4(); private q = new THREE.Quaternion(); private e = new THREE.Euler(); private P = new THREE.Vector3(); private S = new THREE.Vector3(1, 1, 1);
   onPedHit: (() => void) | null = null;
-  constructor(private R: Roads, private G: Ground, private sig: Signals, scene: THREE.Scene, private nCar: number, private nPed: number) {
+  constructor(private R: Roads, private G: Ground, private sig: Signals, scene: THREE.Scene, private nCar: number, private nPed: number, private nPark = 90) {
     this.driveWays = R.ways.filter((w) => w.code !== 8 && w.code !== 7 && w.len > 25);
     this.walkWays = R.ways.filter((w) => w.code >= 2 && w.code <= 7 && !w.bridge && w.len > 20);
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
@@ -55,7 +55,14 @@ export class Traffic {
     const y = w.ys ? this.R.yAt(w, k) * (1 - t) + this.R.yAt(w, k + 1) * t : this.G.H(x, z);
     return { x, y, z, dx, dz };
   }
-  private laneOff(w: Way) { return w.oneway ? (w.lanes >= 2 ? (Math.random() < 0.5 ? -1 : 1) * w.width / 4 : 0) : Math.min(w.width / 4, 2.2) * (w.lanes >= 4 ? 1.4 : 1); }
+  /** bu yolda kenara park var mı? 0 yok, 1 tek taraf, 2 iki taraf */
+  private parkSides(w: Way) { if (w.bridge || w.code < 4 || w.code > 6 || w.len < 40) return 0; return (w.oneway ? w.width >= 8 : w.width >= 10) ? 2 : w.oneway && w.width >= 6 ? 1 : 0; }
+  private laneOff(w: Way) {
+    const ps = this.parkSides(w), hw = w.width / 2;
+    if (ps && w.oneway) return ps === 2 ? 0 : -Math.max(0, Math.min(0.6, hw - 2.4)); // park eden araçlara sürtünmesin
+    const base = w.oneway ? (w.lanes >= 2 ? (Math.random() < 0.5 ? -1 : 1) * w.width / 4 : 0) : Math.min(w.width / 4, 2.2) * (w.lanes >= 4 ? 1.4 : 1);
+    return ps ? Math.min(base, hw - 3.2) : base;
+  }
   private spawnCar(a: Agent | null, px: number, pz: number, fx: number, fz: number, initial: boolean) {
     for (let tries = 0; tries < 30; tries++) {
       // yakına yoğun, ana yollara ağırlıklı
@@ -71,7 +78,7 @@ export class Traffic {
       if (this.cars.some((c) => c.alive && c.way === w && c.dir === dir && Math.abs(c.s - s) < 12)) continue;
       const bus = Math.random() < 0.07 && w.code <= 3;
       const ag: Agent = a || ({} as Agent);
-      Object.assign(ag, { way: w, dir, s, v: SPEED[w.code] * 0.7, lane: this.laneOff(w), kind: bus ? 1 : 0, col: new THREE.Color(bus ? (Math.random() < 0.5 ? '#2f6db3' : '#c9372c') : this.rnd(PAINT)), stun: 0, honk: 0, len: bus ? 11 : 4.4, alive: true, x: 0, y: 0, z: 0, yaw: 0, pitch: 0 });
+      Object.assign(ag, { way: w, dir, s, v: SPEED[w.code] * 0.7, lane: this.laneOff(w), kind: bus ? 1 : 0, col: new THREE.Color(bus ? (Math.random() < 0.5 ? '#2f6db3' : '#c9372c') : this.rnd(PAINT)), stun: 0, honk: 0, len: bus ? 11 : 4.4, alive: true, x: 0, y: 0, z: 0, yaw: 0, pitch: 0, ox: 0, oz: 0, sf: 0.85 + Math.random() * 0.3 });
       ag.ob = { x: 0, z: 0, r: bus ? 2.6 : 1.3, vx: 0, vz: 0, hit: () => { ag.stun = 2.5; ag.v = 0; } };
       return ag;
     }
@@ -99,7 +106,7 @@ export class Traffic {
     // hareket
     for (const a of this.cars) {
       if (!a.alive) continue;
-      const w = a.way; let target = SPEED[w.code] ?? 9;
+      const w = a.way; let target = (SPEED[w.code] ?? 9) * a.sf; // her sürücünün hızı biraz farklı
       if (a.stun > 0) { a.stun -= dt; target = 0; }
       // kavşak / ışık
       const rem = w.len - a.s, nodeId = a.dir === 1 ? w.b : w.a;
@@ -121,18 +128,24 @@ export class Traffic {
       if (gapMin < 1e8) { target = Math.min(target, Math.max(0, (gapMin - 3) * 0.9)); if (gapMin < 6 && Math.hypot(px - me.x, pz - me.z) < 9 && car.speed < 1) a.honk += dt; }
       const acc = target > a.v ? 2.6 : 6; a.v += Math.sign(target - a.v) * Math.min(Math.abs(target - a.v), acc * dt);
       a.s += a.v * dt;
-      if (a.s >= w.len) { const extra = a.s - w.len; if (!this.nextWay(a)) { a.alive = false; continue; } a.s = extra; }
+      let turned = false;
+      if (a.s >= w.len) { const extra = a.s - w.len; if (!this.nextWay(a)) { a.alive = false; continue; } a.s = extra; turned = true; }
       const p = this.pose(a.way, a.s, a.dir, a.lane);
-      const yaw = Math.atan2(p.dx, p.dz);
-      // dönüşlerde yumuşat
-      let dy = yaw - a.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); a.yaw += dy * Math.min(1, dt * 8);
-      a.ob.vx = (p.x - a.x) / Math.max(dt, 1e-3); a.ob.vz = (p.z - a.z) / Math.max(dt, 1e-3);
-      a.x = p.x; a.z = p.z;
+      // kavşakta yeni yolun şeridine sıçramak yerine kayarak geç: eski konumla fark zamanla erir
+      if (turned && a.x !== 0) { a.ox = a.x + Math.sin(a.yaw) * a.v * dt - p.x; a.oz = a.z + Math.cos(a.yaw) * a.v * dt - p.z; const l = Math.hypot(a.ox, a.oz); if (l > 9) { a.ox = a.oz = 0; } }
+      const fade = Math.exp(-dt * Math.max(0.8, a.v * 0.28)); a.ox *= fade; a.oz *= fade;
+      const nx = p.x + a.ox, nz = p.z + a.oz, mvx = nx - a.x, mvz = nz - a.z, mv = Math.hypot(mvx, mvz);
+      // burun gidiş yönüne bakar (dönüşlerde yay çizer)
+      const yaw = mv > 0.02 && a.x !== 0 && mv < 3 ? Math.atan2(mvx, mvz) : Math.atan2(p.dx, p.dz);
+      let dy = yaw - a.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy)); a.yaw += dy * Math.min(1, dt * 7);
+      a.ob.vx = mvx / Math.max(dt, 1e-3); a.ob.vz = mvz / Math.max(dt, 1e-3);
+      a.x = nx; a.z = nz;
       const hf = a.way.ys ? p.y : this.G.H(p.x + p.dx * 1.5, p.z + p.dz * 1.5), hb = a.way.ys ? p.y : this.G.H(p.x - p.dx * 1.5, p.z - p.dz * 1.5);
       a.y = a.way.ys ? p.y + 0.05 : (hf + hb) / 2; a.pitch = Math.atan2(hf - hb, 3);
       a.ob.x = a.x; a.ob.z = a.z;
     }
     this.obstacles = this.cars.filter((a) => a.alive && Math.hypot(a.x - px, a.z - pz) < 30).map((a) => a.ob);
+    this.updateParked(px, pz);
     // çizim
     let nc = 0, nb = 0, nl = 0; const m = this.tmpM, q = this.q, P = this.P, S = this.S;
     for (const a of this.cars) {
@@ -152,7 +165,7 @@ export class Traffic {
       if (!n) continue; const d = Math.hypot(n.px - px, n.pz - pz); if (d < (initial ? 15 : 90) || d > 260) continue;
       const w = n.w; const dir: 1 | -1 = Math.random() < 0.5 ? 1 : -1; const sAlong = w.cum[n.k] + (w.cum[n.k + 1] - w.cum[n.k]) * n.t;
       const o = p || ({} as Ped);
-      Object.assign(o, { way: w, dir, s: dir === 1 ? sAlong : w.len - sAlong, side: w.code === 7 ? (Math.random() - 0.5) * w.width : (w.width / 2 + 0.6 + Math.random() * 1.4) * (Math.random() < 0.5 ? -1 : 1), v: 1.1 + Math.random() * 0.6, dodge: 0, x: 0, y: 0, z: 0, yaw: 0, ph: Math.random() * 6, col: new THREE.Color(this.rnd(CLOTH)), skin: new THREE.Color(1, 1, 1), alive: true, wait: 0 });
+      Object.assign(o, { way: w, dir, s: dir === 1 ? sAlong : w.len - sAlong, side: w.code === 7 ? (Math.random() - 0.5) * w.width : (w.width / 2 + 0.6 + Math.random() * 1.4) * (Math.random() < 0.5 ? -1 : 1), v: 1.1 + Math.random() * 0.6, dodge: 0, x: 0, y: 0, z: 0, yaw: 0, ph: Math.random() * 6, col: new THREE.Color(this.rnd(CLOTH)), skin: new THREE.Color(1, 1, 1), alive: true, wait: 0, sc: 0.88 + Math.random() * 0.2 });
       return o;
     }
     return null;
@@ -161,9 +174,9 @@ export class Traffic {
     const px = car.x, pz = car.z;
     while (this.peds.length < this.nPed) { const p = this.spawnPed(null, px, pz, true); if (!p) break; this.peds.push(p); }
     for (const p of this.peds) if (!p.alive || Math.hypot(p.x - px, p.z - pz) > 300) { const r = this.spawnPed(p, px, pz, false); p.alive = !!r; }
-    let n = 0; const m = this.tmpM, q = this.q, P = this.P, S = this.S; const up = new THREE.Vector3(0, 1, 0);
+    let n = 0; const m = this.tmpM, q = this.q, P = this.P, S = new THREE.Vector3(); const up = new THREE.Vector3(0, 1, 0);
     for (const p of this.peds) {
-      if (!p.alive) continue;
+      if (!p.alive) continue; S.setScalar(p.sc);
       // araba üstüne geliyorsa kenara kaç
       const dx = p.x - px, dz = p.z - pz, d = Math.hypot(dx, dz);
       if (d < 9 && car.speed > 2.5) {
@@ -180,12 +193,45 @@ export class Traffic {
       P.set(p.x, p.y + bob, p.z); m.compose(P, q, S); this.pedBody.setMatrixAt(n, m); this.pedBody.setColorAt(n, p.col);
       // bacak: kalçadan salınım
       const sw = p.wait > 0 ? 0 : Math.sin(p.ph) * 0.45; const e = this.e.set(sw, p.yaw, 0, 'YXZ'); const q2 = new THREE.Quaternion().setFromEuler(e);
-      P.set(p.x, p.y + 0.9 + bob, p.z); m.compose(P, q2, S); this.pedLegs.setMatrixAt(n, m);
+      P.set(p.x, p.y + 0.9 * p.sc + bob, p.z); m.compose(P, q2, S); this.pedLegs.setMatrixAt(n, m);
       q2.setFromEuler(e.set(-sw, p.yaw, 0, 'YXZ')); m.compose(P, q2, S); this.pedLegs2.setMatrixAt(n, m);
       n++;
     }
     this.pedBody.count = this.pedLegs.count = this.pedLegs2.count = n;
     this.pedBody.instanceMatrix.needsUpdate = this.pedLegs.instanceMatrix.needsUpdate = this.pedLegs2.instanceMatrix.needsUpdate = true; if (this.pedBody.instanceColor) this.pedBody.instanceColor.needsUpdate = true;
+  }
+  // ---------- park etmiş araçlar: sokak kenarında, her seferinde aynı yerde (yol ve sıra numarasından türetilir) ----------
+  private parkMesh: THREE.InstancedMesh | null = null; private parked: Obstacle[] = []; private parkAt = [1e9, 1e9];
+  private updateParked(px: number, pz: number) {
+    if (!this.parkMesh) {
+      this.parkMesh = new THREE.InstancedMesh(this.carMesh.geometry, this.carMesh.material, this.nPark); this.parkMesh.castShadow = true; this.parkMesh.frustumCulled = false; this.parkMesh.count = 0; this.carMesh.parent!.add(this.parkMesh);
+    }
+    if (Math.hypot(px - this.parkAt[0], pz - this.parkAt[1]) > 50) {
+      this.parkAt = [px, pz]; const R = 230, list: [number, number, number, number, number][] = []; // x, z, yaw, renk, uzaklık
+      const h = (a: number, b: number, c: number) => { const v = Math.sin(a * 12.9898 + b * 78.233 + c * 37.719) * 43758.5453; return v - Math.floor(v); };
+      for (const w of this.R.ways) {
+        const ps = this.parkSides(w); if (!ps) continue; const both = ps === 2;
+        if (Math.hypot(w.pts[0] - px, w.pts[1] - pz) > R + w.len) continue;
+        const SLOT = 6.4, n = Math.floor((w.len - 28) / SLOT);
+        for (let i = 0; i < n; i++) for (const side of both ? [-1, 1] : [1]) {
+          if (h(w.i, i, side) > 0.42) continue;
+          const s = 14 + (i + 0.5) * SLOT, hw = w.width / 2;
+          const p = this.pose(w, s, 1, side * (hw - 1.08)); if (w.hw && this.R.halfAt(w, Math.min(w.hw.length - 2, Math.floor(s / 5))) < hw - 0.2) continue; // daralan yerde park yok
+          const d = Math.hypot(p.x - px, p.z - pz); if (d > R) continue;
+          list.push([p.x, p.z, Math.atan2(p.dx, p.dz) + (side < 0 && !w.oneway ? Math.PI : 0), Math.floor(h(w.i, i, 7) * PAINT.length), d]);
+        }
+      }
+      list.sort((a, b) => a[4] - b[4]); const m = this.tmpM, q = this.q, P = this.P, S = this.S, c = new THREE.Color(); let k = 0; this.parked = [];
+      for (const [x, z, yaw, ci] of list.slice(0, this.nPark)) {
+        const hf = this.G.H(x + Math.sin(yaw) * 1.4, z + Math.cos(yaw) * 1.4), hb = this.G.H(x - Math.sin(yaw) * 1.4, z - Math.cos(yaw) * 1.4);
+        this.e.set(-Math.atan2(hf - hb, 2.8), yaw, 0, 'YXZ'); q.setFromEuler(this.e); P.set(x, (hf + hb) / 2, z); m.compose(P, q, S);
+        this.parkMesh.setMatrixAt(k, m); this.parkMesh.setColorAt(k++, c.set(PAINT[ci] === '#f2c200' ? '#8a8f96' : PAINT[ci]));
+        // çarpışma: boyuna iki daire
+        for (const o of [-1.1, 1.1]) this.parked.push({ x: x + Math.sin(yaw) * o, z: z + Math.cos(yaw) * o, r: -0.25, vx: 0, vz: 0 });
+      }
+      this.parkMesh.count = k; this.parkMesh.instanceMatrix.needsUpdate = true; if (this.parkMesh.instanceColor) this.parkMesh.instanceColor.needsUpdate = true;
+    }
+    for (const o of this.parked) if (Math.abs(o.x - px) < 12 && Math.abs(o.z - pz) < 12) this.obstacles.push(o);
   }
   /** küçük haritada nokta olarak çizmek için */
   dots() { return this.cars.filter((a) => a.alive).map((a) => [a.x, a.z]); }

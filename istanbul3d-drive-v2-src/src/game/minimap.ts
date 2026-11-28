@@ -26,7 +26,7 @@ export class Minimap {
     }
     this.ctx = cv.getContext('2d')!;
   }
-  draw(car: { x: number; z: number; yaw: number }, target: { x: number; z: number } | null, route: number[], traffic: { dots(): number[][] }, _sig: unknown) {
+  draw(car: { x: number; z: number; yaw: number }, target: { x: number; z: number } | null, route: number[], traffic: { dots(): number[][] }, marks: { x: number; z: number; found: boolean; name: string }[] = []) {
     const cv = this.cv, c = this.ctx, big = cv.classList.contains('big');
     const size = big ? 600 : 300; if (cv.width !== size) { cv.width = cv.height = size; }
     const zoom = big ? 0.5 : 1.15; // ekran pikseli / arka plan pikseli
@@ -39,6 +39,15 @@ export class Minimap {
     const P = (x: number, z: number): [number, number] => [(x - this.x0) / MPP - cx, (z - this.z0) / MPP - cy];
     if (route.length >= 4) { c.strokeStyle = '#ffd84a'; c.lineWidth = 3.2 / zoom * 1.6; c.lineJoin = c.lineCap = 'round'; c.beginPath(); for (let i = 0; i < route.length; i += 2) { const [x, y] = P(route[i], route[i + 1]); if (i) c.lineTo(x, y); else c.moveTo(x, y); } c.stroke(); }
     c.fillStyle = '#e8e8e8'; for (const [x, z] of traffic.dots()) { const [a, b] = P(x, z); c.fillRect(a - 1.2, b - 1.2, 2.4, 2.4); }
+    // anıtlar: bulunmuşsa sarı yıldız, bulunmamışsa beyaz soru işareti (büyük haritada adıyla)
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    for (const m of marks) {
+      const [a, b] = P(m.x, m.z); c.save(); c.translate(a, b); if (!big) c.rotate(-(Math.PI + car.yaw)); c.scale(1 / zoom, 1 / zoom);
+      c.font = `bold ${big ? 20 : 15}px system-ui, sans-serif`; c.lineWidth = 3; c.strokeStyle = '#1b1e24'; c.fillStyle = m.found ? '#ffd84a' : '#ffffff';
+      const t = m.found ? '★' : '?'; c.strokeText(t, 0, 0); c.fillText(t, 0, 0);
+      if (big && m.found) { c.font = '12px system-ui, sans-serif'; c.strokeText(m.name, 0, 16); c.fillStyle = '#fff'; c.fillText(m.name, 0, 16); }
+      c.restore();
+    }
     if (target) { const [a, b] = P(target.x, target.z); c.fillStyle = '#ffd84a'; c.strokeStyle = '#1b1e24'; c.lineWidth = 2 / zoom; c.beginPath(); c.arc(a, b, 7 / zoom, 0, Math.PI * 2); c.fill(); c.stroke(); }
     c.restore();
     // hedef ekran dışındaysa kenarda ok gibi göster (küçük haritada)

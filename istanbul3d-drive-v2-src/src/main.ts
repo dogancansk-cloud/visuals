@@ -15,7 +15,10 @@ import { Car, Walls } from './game/car';
 import { Signals } from './game/signals';
 import { Traffic } from './game/traffic';
 import { Minimap } from './game/minimap';
+import { SkidFx } from './game/fx';
+import { Explore } from './game/explore';
 import { Sea } from './world/sea';
+import { Ferries } from './world/ferries';
 
 const QS = new URLSearchParams(location.search);
 const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -25,10 +28,10 @@ const MAP = new URL('../istanbul3d/', location.href).href; // modeller haritanı
 // ---------- kalite ----------
 const PHONE = (matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 820) || innerWidth < 700;
 type QName = 'dusuk' | 'orta' | 'yuksek';
-const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; detail: number; mask: number; cars: number; peds: number; lights: boolean }> = {
-  dusuk: { mask: 512, detail: 90, pr: 1.25, shadows: true, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
-  orta: { mask: 1024, detail: 160, pr: 1.5, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
-  yuksek: { mask: 1024, detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
+const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; detail: number; mask: number; park: number; cars: number; peds: number; lights: boolean }> = {
+  dusuk: { park: 50, mask: 512, detail: 90, pr: 1.25, shadows: true, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
+  orta: { park: 90, mask: 1024, detail: 160, pr: 1.5, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
+  yuksek: { park: 150, mask: 1024, detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
 };
 const qStored = (() => { try { return localStorage.getItem('drv2_q'); } catch { return null; } })();
 const qAuto = !QS.get('q') && (!qStored || qStored === 'oto');
@@ -78,6 +81,7 @@ async function main() {
   const blds = new Buildings(bldBuf, meta.chunks, meta.look, meta.chunk); scene.add(blds.group);
   const props = new Props(treeBuf, roads.lamps, G, Q.trees, Q.lamps); scene.add(props.group);
   const sea = new Sea(PHONE); scene.add(sea.mesh);
+  const ferries = new Ferries(G, meta.spawns); scene.add(ferries.group);
   const env = new Env(scene, Q.shadows, Q.fog, PHONE);
   const walls = new Walls(); blds.onCollidersChanged = () => { wallsDirty = true; }; let wallsDirty = false;
   const lmGroup = new THREE.Group(); scene.add(lmGroup);
@@ -87,10 +91,13 @@ async function main() {
   const audio = new Audio();
   const car = new Car(G, roads, walls, Q.lights); scene.add(car.obj, car.groundFx);
   const signals = new Signals(roads, G, scene);
-  const traffic = new Traffic(roads, G, signals, scene, Q.cars, Q.peds);
+  const traffic = new Traffic(roads, G, signals, scene, Q.cars, Q.peds, Q.park);
   const minimap = new Minimap($<HTMLCanvasElement>('minimap'), roads, G);
   const toast = (t: string, ms = 1800) => { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout((toast as unknown as { h: number }).h); (toast as unknown as { h: number }).h = window.setTimeout(() => el.classList.remove('on'), ms); };
-  car.onHit = (p) => audio.bump(p);
+  let shake = 0; // çarpınca kamera sarsılır
+  car.onHit = (p) => { audio.bump(p); shake = Math.min(1, shake + 0.35 + p * 0.8); };
+  const skid = new SkidFx(); scene.add(skid.group);
+  const explore = new Explore(roads, meta.landmarks, { chip: $('explore'), card: $('card'), cardTitle: $('card-title'), cardText: $('card-text'), chime: () => audio.chime(true) });
   car.onSplash = () => { audio.splash(); toast('Denize düştün!\nYola geri alınıyorsun', 1600); };
   traffic.onPedHit = () => toast('Yayaya dikkat!', 1200);
 
@@ -170,9 +177,14 @@ async function main() {
       const gy = G.H(want.x, want.z) + 1.2; if (want.y < gy) want.y = gy;
       if (!camInit) { camPos.copy(want); camInit = true; }
       camPos.lerp(want, 1 - Math.exp(-dt * 6));
-      camLook.lerp(new THREE.Vector3(car.x + fx * 4, car.y + look, car.z + fz * 4), 1 - Math.exp(-dt * 12));
+      // viraja doğru bak: dönüş hızına göre bakış noktası içe kayar
+      const la = THREE.MathUtils.clamp(car.yawRate * 2.2, -3, 3) * Math.min(1, v / 8);
+      camLook.lerp(new THREE.Vector3(car.x + fx * 4 + fz * la, car.y + look, car.z + fz * 4 - fx * la), 1 - Math.exp(-dt * 10));
     }
     camera.position.copy(camPos); camera.lookAt(camLook);
+    // sarsıntı: çarpma (söner) + yol dışında hafif titreme
+    shake *= Math.exp(-dt * 5); const sk = shake * 0.22 + car.offroad * Math.min(1, v / 10) * 0.025;
+    if (sk > 0.002) { camera.position.x += (Math.random() - 0.5) * sk; camera.position.y += (Math.random() - 0.5) * sk; camera.rotation.z += (Math.random() - 0.5) * sk * 0.06; }
     const fov = (camMode === 2 ? 70 : 58) + (tallScreen ? 16 : 0) + Math.min(14, v * 0.32); if (Math.abs(camera.fov - fov) > 0.1) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
   };
 
@@ -184,22 +196,29 @@ async function main() {
     const dt = Math.min(0.1, clock.getDelta()); t += dt;
     input.update(dt);
     acc += dt; let n = 0;
-    while (acc >= FIX && n < 6) { car.step(FIX, input.c, traffic.obstacles); acc -= FIX; n++; }
-    if (n === 6) acc = 0;
+    while (acc >= FIX && n < 12) { car.step(FIX, input.c, traffic.obstacles); acc -= FIX; n++; } // yavaş cihazda da araba gerçek hızında gitsin
+    if (n === 12) acc = 0;
     if (wallsDirty) { walls.rebuild(blds.colliders.values()); wallsDirty = false; }
     signals.update(dt, car);
     traffic.update(dt, car, env.night);
     env.update(dt, camera.position, car.obj.position);
-    sea.update(t, env, camera.position); props.night(env.night);
-    car.sync(input.c, env.night); scene.environmentIntensity = 1 - 0.8 * env.night;
+    sea.update(t, env, camera.position); props.night(env.night); ferries.update(dt, t);
+    car.sync(input.c, env.night, dt); scene.environmentIntensity = 1 - 0.8 * env.night;
+    { // lastik izi ve duman: arka tekerlekler kayarken
+      const [fx, fz] = car.fwd, rx = -fz, rz = fx, amt = car.airborne ? 0 : THREE.MathUtils.clamp((car.slip - 3.2) / 5, 0, 1) * Math.min(1, car.speed / 5);
+      const wl = [car.x - fx * 1.36 - rx * 0.8, 0, car.z - fz * 1.36 - rz * 0.8], wr = [car.x - fx * 1.36 + rx * 0.8, 0, car.z - fz * 1.36 + rz * 0.8];
+      wl[1] = car.groundY(wl[0], wl[2], car.y); wr[1] = car.groundY(wr[0], wr[2], car.y);
+      skid.update(dt, amt * (1 - car.offroad), [wl, wr], rx, rz);
+    }
+    explore.update(dt, car);
     updateCamera(dt);
     // dünya parçaları (her karede biraz)
     lodT += dt; if (lodT > 0.15) { lodT = 0; groundView.update(car.x, car.z, Q.groundNear, Q.far + 400, 3); blds.update(car.x, car.z, Q.near, Q.far, Q.detail); roads.update(car.x, car.z, Q.far); props.update(car.x, car.z, Q.trees > 1000 ? 380 : 260, Q.lamps > 200 ? 320 : 230); }
-    roads.asphalt.color.setScalar(1 - env.wet * 0.3); groundUniforms.uWet.value = env.wet;
+    roads.asphalt.color.setScalar(1 - env.wet * 0.3); groundUniforms.uWet.value = env.wet; groundUniforms.uTime.value = t;
     audio.update({ rpm: car.rpm, throttle: input.c.throttle, speed: car.speed, slip: car.slip, horn: input.c.horn, rain: env.rainAmt, sea: G.kindAt(car.x + car.fwd[0] * 30, car.z + car.fwd[1] * 30) === 1 ? 1 : 0, t });
     hudT += dt; if (hudT > 0.1) {
       hudT = 0; kmh.textContent = String(Math.round(car.speed * 3.6)); gearEl.textContent = car.vLong < -0.5 ? 'G' : String(car.gear); clockEl.textContent = env.hourText();
-      minimap.draw(car, null, [], traffic, signals);
+      minimap.draw(car, null, [], traffic, explore.markers);
       const nr = roads.nearest(car.x, car.z, 12, undefined, car.y); streetEl.textContent = nr?.w.name || '';
     }
     renderer.render(scene, camera);
@@ -212,7 +231,7 @@ async function main() {
     }
     requestAnimationFrame(frame);
   };
-  (window as unknown as Record<string, unknown>).__drv2 = { groundView, car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
+  (window as unknown as Record<string, unknown>).__drv2 = { groundView, explore, ferries, car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
   requestAnimationFrame(frame);
 }
 

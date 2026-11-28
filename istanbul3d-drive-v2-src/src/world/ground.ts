@@ -45,14 +45,14 @@ const COLS: Record<number, THREE.Color> = {
   [KIND_PARK]: new THREE.Color('#86a63a'),
   [KIND_PLAZA]: new THREE.Color('#a89c8c'),
 };
-export const groundUniforms = { uWet: { value: 0 } };
+export const groundUniforms = { uWet: { value: 0 }, uTime: { value: 0 } };
 const blank = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1); blank.needsUpdate = true;
 
 function compile(sh: THREE.WebGLProgramParametersWithUniforms) {
-  sh.uniforms.uWet = groundUniforms.uWet;
-  sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz;');
+  sh.uniforms.uWet = groundUniforms.uWet; sh.uniforms.uTime = groundUniforms.uTime;
+  sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vWP;\nattribute vec3 kw;\nvarying vec3 vKw;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvWP = (modelMatrix * vec4(transformed, 1.0)).xyz; vKw = kw;');
   sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
-varying vec3 vWP; uniform float uWet;
+varying vec3 vWP; varying vec3 vKw; uniform float uWet; uniform float uTime;
 float hsh(vec2 p){ p = fract(p * vec2(0.1031, 0.1030)); p += dot(p, p.yx + 33.33); return fract((p.x + p.y) * p.x); }
 float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hsh(i), hsh(i+vec2(1,0)), f.x), mix(hsh(i+vec2(0,1)), hsh(i+vec2(1,1)), f.x), f.y); }`)
     // doku renk değil maske: R = asfalt, G = kaldırım, B = yaya taşı
@@ -60,7 +60,32 @@ float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return m
     .replace('#include <color_fragment>', `#include <color_fragment>
   vec4 rm = texture2D(map, vMapUv);
   float px = length(fwidth(vWP.xz));                                  // piksel başına metre
-  vec3 base = diffuseColor.rgb * (0.9 + 0.12 * vn(vWP.xz * 0.35) + 0.06 * vn(vWP.xz * 2.1));
+  float near = 1.0 - smoothstep(0.03, 0.14, px);                       // ince ayrıntılar yalnız yakında
+  float kPark = vKw.x, kPlaza = vKw.y;
+  // toprak / avlu: benekli zemin, yer yer kuru ot öbekleri, yakında çakıl
+  vec3 soil = diffuseColor.rgb * (0.88 + 0.14 * vn(vWP.xz * 0.35) + 0.07 * vn(vWP.xz * 2.1));
+  float tuft = smoothstep(0.5, 0.68, vn(vWP.xz * 0.045) * 0.75 + vn(vWP.xz * 0.21) * 0.35);
+  soil = mix(soil, vec3(0.2, 0.25, 0.09) * (0.75 + 0.5 * vn(vWP.xz * 1.6)), tuft * 0.7);
+  soil *= mix(1.0, 0.9 + 0.2 * hsh(floor(vWP.xz * 7.0)), near);
+  // park: iki tonlu çim, yakında ot dokusu
+  vec3 grass = mix(vec3(0.13, 0.25, 0.055), vec3(0.25, 0.36, 0.085), vn(vWP.xz * 0.07) * 0.6 + vn(vWP.xz * 0.6) * 0.4);
+  grass *= mix(1.0, 0.84 + 0.32 * hsh(floor(vWP.xz * 11.0)), near);
+  // meydan: taş plakalar
+  vec2 sl = vWP.xz / 1.4, sg = abs(fract(sl) - 0.5);
+  vec3 slab = vec3(0.34, 0.31, 0.27) * (0.9 + 0.16 * hsh(floor(sl))) * mix(1.0, 0.82 + 0.18 * (1.0 - smoothstep(0.455, 0.49, max(sg.x, sg.y))), 1.0 - smoothstep(0.05, 0.3, px));
+  vec3 base = mix(mix(soil, grass, kPark), slab, kPlaza);
+  // kıyı: suya inen taş dolgu, ıslak dip, kıyıya vuran köpük
+  float shore = 1.0 - smoothstep(0.5, 0.82, vWP.y);
+  if (shore > 0.0) {
+    vec2 rk = vWP.xz * 0.75; float cell = hsh(floor(rk) + floor(vWP.y * 1.5));
+    vec3 rock = vec3(0.2, 0.195, 0.185) * (0.6 + 0.7 * cell) * (0.8 + 0.3 * vn(vWP.xz * 3.0));
+    vec2 rg = abs(fract(rk) - 0.5); rock *= mix(1.0, 0.55 + 0.45 * (1.0 - smoothstep(0.38, 0.5, max(rg.x, rg.y))), 1.0 - smoothstep(0.05, 0.4, px));
+    rock *= mix(0.55, 1.0, smoothstep(0.05, 0.4, vWP.y));
+    float wave = 0.07 * sin(uTime * 1.2 + (vWP.x + vWP.z) * 0.3) + 0.04 * sin(uTime * 2.1 + vWP.x * 0.7);
+    float foam = smoothstep(-0.22, 0.0, vWP.y - wave) * (1.0 - smoothstep(0.02, 0.2, vWP.y - wave));
+    rock = mix(rock, vec3(0.8, 0.84, 0.86), foam * (0.55 + 0.4 * vn(vWP.xz * 2.5 + uTime * 0.4)));
+    base = mix(base, rock, shore);
+  }
   // kenar keskinliği doku örnekleme sıklığına göre: yakında keskin, uzakta (doku küçülürken) yumuşak; böylece kenar tırtıklanmaz
   float tpp = length(fwidth(vMapUv)) * float(textureSize(map, 0).x);
   float es = clamp(tpp * 0.6, 0.12, 0.5);
@@ -84,7 +109,7 @@ float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return m
 /** karo malzemesi: hepsi aynı programı paylaşır, yalnız yol maskesi dokusu farklıdır */
 function tileMaterial(mask: THREE.Texture | null) {
   const m = new THREE.MeshLambertMaterial({ vertexColors: true, map: mask || blank });
-  m.onBeforeCompile = compile; m.customProgramCacheKey = () => 'ground-v2';
+  m.onBeforeCompile = compile; m.customProgramCacheKey = () => 'ground-v3';
   return m;
 }
 
@@ -102,14 +127,14 @@ export class GroundView {
     const G = this.G, g = G.g, st = lod === 0 ? g.step : g.step * 4;
     const n = Math.round(TILE / st) + 1;
     const x0 = g.x0 + ti * TILE, z0 = g.z0 + tj * TILE;
-    const pos: number[] = [], col: number[] = [], uv: number[] = [], idx: number[] = [];
+    const pos: number[] = [], col: number[] = [], uv: number[] = [], kw: number[] = [], idx: number[] = [];
     const c = new THREE.Color();
     for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) {
       const x = x0 + i * st, z = z0 + j * st, y = G.H(x, z);
       pos.push(x, y, z); uv.push(i / (n - 1), j / (n - 1));
       const k = G.kindAt(x, z); c.copy(COLS[k] ?? COLS[0]);
       if (k === KIND_WATER) c.multiplyScalar(0.8);
-      col.push(c.r, c.g, c.b);
+      col.push(c.r, c.g, c.b); kw.push(k === KIND_PARK ? 1 : 0, k === KIND_PLAZA ? 1 : 0, k === KIND_WATER ? 1 : 0);
     }
     for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) { const a = j * n + i; idx.push(a, a + n, a + 1, a + 1, a + n, a + n + 1); }
     // etek
@@ -119,12 +144,12 @@ export class GroundView {
     for (let i = n - 2; i >= 0; i--) ring.push((n - 1) * n + i);
     for (let j = n - 2; j >= 0; j--) ring.push(j * n);
     const base = pos.length / 3;
-    for (const r of ring) { pos.push(pos[r * 3], pos[r * 3 + 1] - 8, pos[r * 3 + 2]); col.push(col[r * 3], col[r * 3 + 1], col[r * 3 + 2]); uv.push(uv[r * 2], uv[r * 2 + 1]); }
+    for (const r of ring) { pos.push(pos[r * 3], pos[r * 3 + 1] - 8, pos[r * 3 + 2]); col.push(col[r * 3], col[r * 3 + 1], col[r * 3 + 2]); uv.push(uv[r * 2], uv[r * 2 + 1]); kw.push(kw[r * 3], kw[r * 3 + 1], kw[r * 3 + 2]); }
     for (let k = 0; k < ring.length - 1; k++) { const a = ring[k], b = ring[k + 1], a2 = base + k, b2 = base + k + 1; idx.push(a, b, a2, b, b2, a2, a, a2, b, b, a2, b2); }
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+    geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); geo.setAttribute('kw', new THREE.Float32BufferAttribute(kw, 3));
     geo.setIndex(idx); geo.computeVertexNormals(); geo.computeBoundingSphere();
     const mask = this.painter ? this.painter(x0, z0, TILE, res) : null;
     const m = new THREE.Mesh(geo, tileMaterial(mask)); m.receiveShadow = true; m.matrixAutoUpdate = false; m.name = `ground_${ti}_${tj}_${lod}`;

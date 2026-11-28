@@ -111,6 +111,9 @@ export class Car {
   x = 0; z = 0; y = 0; vy = 0; yaw = 0; vx = 0; vz = 0; yawRate = 0; steer = 0;
   rpm = 900; gear = 1; slip = 0; pitch = 0; roll = 0; airborne = false;
   vmax = 36; damage = 0; lastHit = 0; inWater = 0;
+  /** sürüş hissi: boyuna ivme (yumuşatılmış), yol dışı oranı (0-1), gövdenin süspansiyon üstünde dalması/yatması, sarsıntı */
+  aLong = 0; offroad = 0; private offT = 0; private bodyP = 0; private bodyR = 0; private bodyPv = 0; private bodyRv = 0; private rumble = 0;
+  private shell = new THREE.Group();
   safe = { x: 0, z: 0, yaw: 0 }; private safeT = 0;
   readonly obj = new THREE.Group(); private body: THREE.Mesh; private wheels: THREE.Mesh[] = []; private spin = 0;
   private brakeMat: THREE.MeshBasicMaterial; readonly headMat: THREE.MeshBasicMaterial;
@@ -118,11 +121,11 @@ export class Car {
   onHit: ((power: number) => void) | null = null; onSplash: (() => void) | null = null;
   constructor(private G: Ground, private R: Roads, private walls: Walls, withLight: boolean) {
     // görünüm: carmodel.ts (yuvarlak hatlı gövde, parlak boya, jantlı tekerlek)
-    this.body = new THREE.Mesh(sedanBody('#1b4f8f', 1), paintMaterial()); this.body.castShadow = true; this.obj.add(this.body);
+    this.body = new THREE.Mesh(sedanBody('#1b4f8f', 1), paintMaterial()); this.body.castShadow = true; this.obj.add(this.shell); this.shell.add(this.body);
     const wg = wheelGeom(1), wm = wheelMaterial();
     for (const [x, z] of [[-CAR.wheelX, CAR.wheelZ], [CAR.wheelX, CAR.wheelZ], [-CAR.wheelX, -CAR.wheelZ], [CAR.wheelX, -CAR.wheelZ]]) { const w = new THREE.Mesh(wg, wm); w.position.set(x, CAR.wheelR, z); w.castShadow = true; this.obj.add(w); this.wheels.push(w); }
     this.headMat = new THREE.MeshBasicMaterial({ color: '#fff6dc' }); this.brakeMat = new THREE.MeshBasicMaterial({ color: '#5a0d0d' });
-    this.obj.add(new THREE.Mesh(lampGeom(true), this.headMat), new THREE.Mesh(lampGeom(false), this.brakeMat));
+    this.shell.add(new THREE.Mesh(lampGeom(true), this.headMat), new THREE.Mesh(lampGeom(false), this.brakeMat));
     if (withLight) {
       const L = new THREE.SpotLight(0xfff0d0, 0, 70, 0.55, 0.5, 1.2); L.position.set(0, 0.9, 2.0); L.target.position.set(0, 0, 20); this.obj.add(L, L.target); this.headlight = L;
     } else this.headlight = null;
@@ -167,10 +170,17 @@ export class Car {
       if (thr === 0 && brk === 0 && Math.abs(vL) < 0.4) vL *= Math.max(0, 1 - dt * 4);
       // yokuş
       a -= 9.81 * Math.sin(this.pitch) * 0.9;
+      // yol dışı (toprak, çim, kaldırım ötesi): tekerlek gömülür, araba yavaşlar
+      a -= Math.sign(vL) * this.offroad * (1.0 + 0.02 * vL * vL) * (Math.abs(vL) > 0.3 ? 1 : 0); // yol dışında ~50 km/sa üstüne çıkamaz
     }
-    vL += a * dt;
+    vL += a * dt; this.aLong += (a - this.aLong) * Math.min(1, dt * 6);
+    // yol üstünde miyiz? (saniyede ~20 kez bakılır)
+    this.offT -= dt; if (this.offT <= 0) {
+      this.offT = 0.05; const n = this.R.nearest(this.x, this.z, 16, undefined, this.y);
+      const on = !!n && n.d < this.R.halfAt(n.w, n.k, n.t) + 2.6; this.offroad += ((on ? 0 : 1) - this.offroad) * 0.25;
+    }
     // yan tutuş: el freninde kayar
-    const grip = !onGround ? 0.2 : c.handbrake ? 1.3 : 7.5 - Math.min(3, sp / 12);
+    const grip = (!onGround ? 0.2 : c.handbrake ? 1.3 : 7.5 - Math.min(3, sp / 12)) * (1 - 0.4 * this.offroad);
     const vS0 = vS; vS *= Math.exp(-grip * dt);
     this.slip = Math.abs(vS0) + (c.brake > 0 && sp > 8 && vL > 0 ? sp * 0.15 : 0) + (c.handbrake && sp > 4 ? 4 : 0);
     // dönüş
@@ -233,10 +243,19 @@ export class Car {
     this.spin += (vL * dt) / CAR.wheelR;
   }
   /** görünümü fizik durumuna eşitle */
-  sync(c: Controls, night: number) {
+  sync(c: Controls, night: number, dt = 1 / 60) {
     this.obj.position.set(this.x, this.y, this.z);
-    const lat = -this.yawRate * this.vLong * 0.012; // virajda dışa yatar
-    this.obj.rotation.set(0, 0, 0); this.obj.rotateY(this.yaw); this.obj.rotateX(-this.pitch); this.obj.rotateZ(-this.roll + Math.max(-0.06, Math.min(0.06, lat)));
+    this.obj.rotation.set(0, 0, 0); this.obj.rotateY(this.yaw); this.obj.rotateX(-this.pitch); this.obj.rotateZ(-this.roll);
+    // gövde süspansiyon üstünde: gazda arkaya çöker, frende öne dalar, virajda dışa yatar (yaylı, hafif salınımlı)
+    const tgtP = THREE.MathUtils.clamp(-this.aLong * 0.0045, -0.05, 0.06), tgtR = THREE.MathUtils.clamp(-this.yawRate * this.vLong * 0.011, -0.075, 0.075);
+    const k = 90, d = 11, h = Math.min(dt, 1 / 30);
+    this.bodyPv += ((tgtP - this.bodyP) * k - this.bodyPv * d) * h; this.bodyP += this.bodyPv * h;
+    this.bodyRv += ((tgtR - this.bodyR) * k - this.bodyRv * d) * h; this.bodyR += this.bodyRv * h;
+    // yol dışında gövde titrer
+    this.rumble += dt * (8 + this.speed * 2.2);
+    const shake = this.offroad * Math.min(1, this.speed / 8) * (this.airborne ? 0 : 1);
+    this.shell.rotation.set(this.bodyP + Math.sin(this.rumble * 1.7) * 0.008 * shake, 0, this.bodyR + Math.sin(this.rumble * 2.3) * 0.012 * shake);
+    this.shell.position.y = Math.abs(Math.sin(this.rumble)) * 0.035 * shake - Math.abs(this.bodyP) * 0.25;
     this.wheels.forEach((w, i) => { w.rotation.set(this.spin, i < 2 ? -this.steer : 0, 0, 'YXZ'); });
     this.brakeMat.color.set(c.brake > 0 && this.vLong > 0.3 ? '#ff2a1a' : night > 0.3 ? '#b3160f' : '#7a1210');
     this.headMat.color.set(night > 0.3 ? '#ffffff' : '#dfe3e6');
