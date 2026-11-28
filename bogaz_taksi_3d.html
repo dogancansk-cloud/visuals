@@ -8,7 +8,7 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <meta name="description" content="Boğaz Taksi 3B: İstanbul Boğazı ve Haliç'te deniz taksisi. Taslak sürüm.">
-<meta property="og:title" content="Boğaz Taksi 3B"><meta property="og:description" content="İstanbul Boğazı ve Haliç'te 3 boyutlu deniz taksisi: yolcu, kargo ve VIP görevleri. Taslak · work in progress."><meta property="og:type" content="website"><meta property="og:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_taksi_3d_og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:title" content="Boğaz Taksi 3B"><meta property="og:description" content="İstanbul Boğazı ve Haliç'te 3 boyutlu deniz taksisi: yolcu, kargo ve VIP görevleri, yakıt, vapur trafiği. Taslak · work in progress."><meta property="og:type" content="website"><meta property="og:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_taksi_3d_og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2319c2cc'/%3E%3C/svg%3E">
 <style>
 :root{--panel:rgba(14,26,38,.62);--ink:#fff;--accent:#2fd6df;--wpanel:rgba(251,251,248,.94);--wink:#0f2a3a;--teal:#0e8f9a}
@@ -55,20 +55,37 @@ html,body{margin:0;height:100%;overflow:hidden;background:#d7b9a0;font-family:-a
 #goals p{margin:8px 0 0;font-size:12px;color:#5c6b78}
 #toast{position:fixed;left:50%;top:calc(110px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--teal);color:#fff;font-weight:800;font-size:14px;border-radius:14px;padding:9px 16px;z-index:7;transition:opacity .3s;max-width:calc(100% - 32px);text-align:center;pointer-events:none}
 @media (max-width:420px){#hud{gap:8px;padding-left:12px}.hs small{display:none}}
+.hf{display:flex;flex-direction:column;gap:2px;font-weight:800;font-size:13px;min-width:46px;line-height:1.1}.hf u{display:block;height:4px;border-radius:2px;background:#d3dcdc;overflow:hidden;text-decoration:none}.hf u s{display:block;height:100%;width:100%;background:var(--teal)}.hf.low b{color:#c8372d}.hf.low u s{background:#c8372d}
+#start{position:fixed;inset:0;z-index:8;display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(28px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,rgba(14,26,38,.05) 30%,rgba(14,26,38,.55));transition:opacity .4s}
+#start.hide{opacity:0;pointer-events:none}
+.sc{width:min(100%,400px);background:var(--wpanel);color:var(--wink);border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.sc h1{margin:0;font-size:26px;letter-spacing:-.01em}.sc h1 em{font-style:normal;color:var(--teal)}
+#sDiff{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+#sDiff button{border:0;border-radius:12px;background:#eef3f3;color:var(--wink);font:700 13.5px inherit;font-family:inherit;padding:10px 0;cursor:pointer}
+#sDiff button[aria-pressed=true]{background:var(--teal);color:#fff}
+#sInfo{margin:0;display:flex;gap:6px;flex-wrap:wrap;font-size:12.5px;font-weight:700;color:#3d4f5c}#sInfo span{background:#eef3f3;border-radius:10px;padding:5px 9px}
+.sb{border:0;border-radius:16px;font:800 16px inherit;font-family:inherit;padding:13px;cursor:pointer;background:var(--teal);color:#fff}.sb.alt{background:#eef3f3;color:var(--wink);font-size:14px;padding:10px}
+.sc [hidden]{display:none!important}
+body.menu #hud,body.menu #mini,body.menu #pier,body.menu #job,body.menu #hint,body.menu #tow{display:none}
+#tow{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:5;border:0;border-radius:16px;background:#c8372d;color:#fff;font:800 15px inherit;font-family:inherit;padding:12px 18px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}#tow[hidden]{display:none}
+.of:disabled{opacity:.6;cursor:default}
+@media (max-width:420px){#gBtnT{display:none}}
 </style>
 </head>
-<body>
+<body class="menu">
 <canvas id="c"></canvas>
 <div id="load"><i></i><span id="loadT">Boğaz yükleniyor…</span></div>
 <a class="btn" id="back" href="./" aria-label="Geri">←</a>
 <button class="btn" id="lang">EN</button>
 <canvas id="mini"></canvas>
 <div id="pier" class="hide"><small id="pierK">İskele</small><b id="pierN"></b></div>
-<div id="hud"><span id="hMoney">₺0</span><span class="hs"><b id="hDone">0</b> <small id="hDoneK">teslimat</small></span><button id="gBtn" type="button">★ <span id="gBtnT">Görevler</span></button></div>
+<div id="hud"><span id="hMoney">₺0</span><span class="hf" id="hFuel"><b>⛽ <span id="hFuelV">60</span></b><u><s id="hFuelB"></s></u></span><span class="hs"><b id="hDone">0</b> <small id="hDoneK">teslimat</small></span><button id="gBtn" type="button">★ <span id="gBtnT">Görevler</span></button></div>
 <div id="job" class="hide"><div class="ja" id="jArrow">➤</div><div class="jt"><small id="jK"></small><b id="jT"></b><span id="jS"></span></div><div class="jc" id="jC"></div></div>
 <div id="offers" class="hide"></div>
 <div id="goals" class="hide"></div>
 <div id="toast" class="hide"></div>
+<button id="tow" type="button" hidden></button>
+<div id="start" class="hide"><div class="sc"><h1>Boğaz Taksi <em>3B</em></h1><div id="sDiff"></div><p id="sInfo"></p><button class="sb" id="sGo" type="button"></button><button class="sb alt" id="sAlt" type="button"></button></div></div>
 <div id="hint" class="hide"></div>
 <div id="joy"><i></i></div>
 <div id="fail"><p id="failT">3B görüntü bu cihazda açılamadı. <a href="bogaz_taksi.html">2B Boğaz Taksi</a> her cihazda çalışır.</p></div>
@@ -88,7 +105,7 @@ const T=k=>TX[LANG][k];
 const TOUCH=matchMedia('(pointer:coarse)').matches;
 function applyLang(){document.documentElement.lang=LANG;$('lang').textContent=LANG==='tr'?'EN':'TR';$('loadT').textContent=T('load');$('pierK').textContent=T('pier');$('hint').textContent=T(TOUCH?'touch':'keys');$('back').setAttribute('aria-label',T('back'));$('failT').innerHTML=T('fail')}
 applyLang();
-$('lang').onclick=()=>{LANG=LANG==='tr'?'en':'tr';try{localStorage.setItem('bt3d-lang',LANG)}catch(_){}applyLang();try{hudUp();renderGoals();renderJob();renderOffers()}catch(_){}};
+$('lang').onclick=()=>{LANG=LANG==='tr'?'en':'tr';try{localStorage.setItem('bt3d-lang',LANG)}catch(_){}applyLang();try{hudUp();renderGoals();renderJob();renderOffers();renderStart();$('tow').hidden=true;fuelUi()}catch(_){}};
 
 /* ================= Harita: 2B Boğaz Taksi ile birebir aynı veri (1 birim = 2B oyundaki 1 birim) ================= */
 const TAU=Math.PI*2,clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
@@ -169,6 +186,7 @@ const PD=[
  ['Fener',530,2290,-.62,.78,'E'],['Hasköy',440,2200,.78,-.62,'E'],['Balat',440,2200,-.78,.62,'E'],
  ['Sütlüce',370,2090,.89,-.46,'E'],['Eyüp',320,1970,-1,.15,'E']
 ];
+const FUELP=new Set(['Sarıyer','İstinye','Bebek','Beşiktaş','Beykoz','Kanlıca','Üsküdar','Kadıköy','Karaköy','Eyüp']); // 2B oyunla aynı yakıt iskeleleri
 let PIERS=[],WATER,WMAT,BOAT,WAKE,LABELS=[],RINGS=[],BEAM;
 const PLAT_L=20;
 
@@ -339,15 +357,16 @@ function buildPiers(){
   const ringG=new THREE.RingGeometry(5.2,6.6,28);ringG.rotateX(-Math.PI/2);
   PIERS=PD.map(d=>{const s=march(d[1],d[2],d[3],d[4]);
     let off=PLAT_L+5,wx,wz;do{wx=s.x-s.dx*off;wz=s.z-s.dz*off;off+=3}while(!nav(wx,wz,5)&&off<80);
-    const p={name:d[0],side:d[5],x:s.x,z:s.z,dx:s.dx,dz:s.dz,wx,wz};
+    const p={name:d[0],side:d[5],x:s.x,z:s.z,dx:s.dx,dz:s.dz,wx,wz,fuel:FUELP.has(d[0])};
     const g=new THREE.Group();g.position.set(s.x,0,s.z);g.rotation.y=-Math.atan2(-s.dz,-s.dx); // yerel +x denize bakar
     const pl=new THREE.Mesh(new THREE.BoxGeometry(PLAT_L+6,1.1,7),wood);pl.position.set(PLAT_L/2-3,1.4,0);g.add(pl);
     for(let i=0;i<4;i++)for(const zz of [-3.2,3.2]){const o=new THREE.Mesh(new THREE.CylinderGeometry(.45,.45,6,5),post);o.position.set(i*PLAT_L/3,-1,zz);g.add(o)}
     const kh=hgt(s.x+s.dx*7,s.z+s.dz*7);
     const k=new THREE.Mesh(new THREE.BoxGeometry(7,5,7),kiosk);k.position.set(-7,Math.max(kh,1)+2,0);g.add(k);
     const kr=new THREE.Mesh(new THREE.ConeGeometry(5.6,2.6,4),roof);kr.rotation.y=Math.PI/4;kr.position.set(-7,Math.max(kh,1)+5.8,0);g.add(kr);
+    if(p.fuel){const pm=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.8,1.5),lam('#e2473b'));pm.position.set(5,3.3,2);g.add(pm);const pt=new THREE.Mesh(new THREE.BoxGeometry(1.7,.5,1.7),lam('#fbfbf8'));pt.position.set(5,4.9,2);g.add(pt)}
     scene.add(g);
-    const lb=label(d[0]);lb.position.set(s.x+s.dx*4,Math.max(kh,1)+15,s.z+s.dz*4);scene.add(lb);LABELS.push(lb);
+    const lb=label((p.fuel?'⛽ ':'')+d[0]);lb.position.set(s.x+s.dx*4,Math.max(kh,1)+15,s.z+s.dz*4);scene.add(lb);LABELS.push(lb);
     const ring=new THREE.Mesh(ringG,ringM.clone());ring.position.set(wx,.4,wz);scene.add(ring);RINGS.push(ring);
     return p});
 }
@@ -384,11 +403,12 @@ function buildMini(){const r=Math.min(devicePixelRatio||1,2),w=84*r,h=176*r;mini
   const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d'),img=x.createImageData(w,h);
   for(let j=0;j<h;j++)for(let i=0;i<w;i++){const wx=MM.x0+(i+.5)/w*(MM.x1-MM.x0),wz=MM.z0+(j+.5)/h*(MM.z1-MM.z0),d=sdf(wx,wz),k=(j*w+i)*4;
     if(d<0){img.data[k]=56;img.data[k+1]=130;img.data[k+2]=150;img.data[k+3]=235}else{img.data[k]=206;img.data[k+1]=198;img.data[k+2]=168;img.data[k+3]=215}}
-  x.putImageData(img,0,0);x.fillStyle='#fff';for(const p of PIERS){const [px,py]=m2(p.wx,p.wz,w,h);x.beginPath();x.arc(px,py,1.3*r,0,TAU);x.fill()}
+  x.putImageData(img,0,0);for(const p of PIERS){const [px,py]=m2(p.wx,p.wz,w,h);x.fillStyle=p.fuel?'#e2473b':'#fff';x.beginPath();x.arc(px,py,(p.fuel?1.9:1.3)*r,0,TAU);x.fill()}
   MBASE=c}
 const m2=(x,z,w,h)=>[(x-MM.x0)/(MM.x1-MM.x0)*w,(z-MM.z0)/(MM.z1-MM.z0)*h];
 function drawMini(){const w=mini.width,h=mini.height,r=w/84;mctx.clearRect(0,0,w,h);mctx.save();mctx.beginPath();mctx.roundRect(0,0,w,h,12*r);mctx.clip();mctx.drawImage(MBASE,0,0);
   {const ti=JOB.target();if(ti>=0){const [tx,ty]=m2(PIERS[ti].wx,PIERS[ti].wz,w,h),pu=1+.35*Math.sin(time*5);mctx.fillStyle='#ff7a45';mctx.strokeStyle='#fff';mctx.lineWidth=1.4*r;mctx.beginPath();mctx.arc(tx,ty,3.6*r*pu,0,TAU);mctx.fill();mctx.stroke()}}
+  for(const n of NPCS){const [qx,qy]=m2(n.x,n.z,w,h);mctx.fillStyle=n.type==='ferry'?'#fbfbf8':'#14283c';mctx.beginPath();mctx.arc(qx,qy,(n.type==='ferry'?1.5:2.2)*r,0,TAU);mctx.fill()}
   const [bx,by]=m2(boat.x,boat.z,w,h);mctx.translate(bx,by);mctx.rotate(boat.a);mctx.fillStyle='#19c2cc';mctx.strokeStyle='#14283c';mctx.lineWidth=1.2*r;
   mctx.beginPath();mctx.moveTo(6*r,0);mctx.lineTo(-4*r,3.6*r);mctx.lineTo(-2*r,0);mctx.lineTo(-4*r,-3.6*r);mctx.closePath();mctx.fill();mctx.stroke();mctx.restore()}
 
@@ -411,18 +431,24 @@ function step(dt){
   let thr=0,turn=0;
   if(joy){const dx=joy.dx/50,dy=-joy.dy/50;if(Math.hypot(dx,dy)>.15){turn=clamp(dx*1.4,-1,1);thr=dy>0?dy:dy*1.0}}
   else{thr=(keys.arrowup||keys.w)?1:(keys.arrowdown||keys.s)?-1:0;turn=((keys.arrowright||keys.d)?1:0)-((keys.arrowleft||keys.a)?1:0)}
+  updateNpcs(dt);if(bumpT>0)bumpT-=dt;if(stun>0){stun-=dt;thr=0}
+  if(JOB.fuel<=0){JOB.fuel=0;thr=0}else JOB.fuel-=Math.abs(thr)*.95*dt; // 2B ile aynı tüketim
   const tv=thr>0?thr*MAXV:thr*MAXV*REV,acc=Math.abs(tv)<Math.abs(boat.v)?30:42;
   boat.v+=clamp(tv-boat.v,-acc*dt,acc*dt);
   boat.turn+=(turn-boat.turn)*Math.min(1,dt*6);
   boat.a+=boat.turn*1.9*dt*(.35+.65*Math.min(1,Math.abs(boat.v)/25))*(boat.v<0?-1:1);
-  const nx=boat.x+Math.cos(boat.a)*boat.v*dt,nz=boat.z+Math.sin(boat.a)*boat.v*dt;
+  let nx=boat.x+Math.cos(boat.a)*boat.v*dt,nz=boat.z+Math.sin(boat.a)*boat.v*dt;
+  for(const n of NPCS){const dx=nx-n.x,dz=nz-n.z,ca=Math.cos(n.a),sa=Math.sin(n.a),lx=dx*ca+dz*sa,ly=-dx*sa+dz*ca,hx=n.len*.5+7,hy=n.wid*.5+3.5;
+    if(Math.abs(lx)<hx&&Math.abs(ly)<hy){const sd=ly>=0?1:-1,push=hy-Math.abs(ly)+1;nx+=-sa*sd*push;nz+=ca*sd*push;
+      if(bumpT<=0){const D=DF();stun=D.stun;bumpT=stun+1.5;boat.v*=.2;JOB.money-=D.hit;JOB.streak=0;hudUp();toast((LANG==='en'?'Collision! Engine stalled '+D.stun+' s · −₺':'Çarpışma! Motor '+D.stun+' sn durdu · −₺')+D.hit)}}}
   const ok=(x,z)=>nav(x,z,4)&&nav(x+Math.cos(boat.a)*6*Math.sign(boat.v||1),z+Math.sin(boat.a)*6*Math.sign(boat.v||1),1);
   if(ok(nx,nz)){boat.x=nx;boat.z=nz}else if(ok(nx,boat.z)){boat.x=nx;boat.v*=.94}else if(ok(boat.x,nz)){boat.z=nz;boat.v*=.94}else boat.v*=-.25;
   // iskele yakınlığı
   let best=-1,bd=1e9;for(let i=0;i<PIERS.length;i++){const p=PIERS[i],d=Math.hypot(p.wx-boat.x,p.wz-boat.z);if(d<bd){bd=d;best=i}}
   const np=bd<30&&Math.abs(boat.v)<24?best:-1;
   if(np!==nearPier){nearPier=np;if(np>=0){$('pierN').textContent=PIERS[np].name;$('pier').classList.remove('hide')}else $('pier').classList.add('hide')}
-  jobStep(dt);jobUiT+=dt;if(jobUiT>.25){jobUiT=0;renderJob()}
+  jobStep(dt);jobUiT+=dt;if(jobUiT>.25){jobUiT=0;renderJob();fuelUi()}
+  saveT+=dt;if(saveT>6){saveT=0;saveG()}
   // dümen suyu
   wakeT-=dt;if(wakeT<=0&&Math.abs(boat.v)>6){wakeT=.035;const ca=Math.cos(boat.a),sa=Math.sin(boat.a),sp=Math.abs(boat.v)/MAXV;
     for(const sd of [-1,1]){const w=WAKE.list[WAKE.i];WAKE.i=(WAKE.i+1)%WAKE.N;w.l=1;w.x=boat.x-ca*6.5-sa*sd*2.2;w.z=boat.z-sa*6.5+ca*sd*2.2;w.vx=-sa*sd*4*sp;w.vz=ca*sd*4*sp;w.s=2+sp*2}}
@@ -435,7 +461,15 @@ const KINDS=[
   {k:'pax',ic:'🧑‍🤝‍🧑',w:5,items:[['yolcu','passengers'],['öğrenci','students'],['turist','tourists'],['balıkçı','fishermen'],['müzisyen','musicians'],['düğün davetlisi','wedding guests']],n:[2,6]},
   {k:'cargo',ic:'📦',w:3,items:[['simit tablası','simit trays'],['çay kasası','tea crates'],['balık kasası','fish crates'],['çiçek','flower bunches'],['halı','carpets'],['kitap kolisi','boxes of books']],n:[2,5]},
   {k:'vip',ic:'⭐',w:1,items:[['ünlü şef','celebrity chef'],['gelin ve damat','bride and groom'],['belediye başkanı','mayor']],n:[1,1]}];
-const JOB={cur:null,offers:null,offPier:-1,money:0,done:0,ontime:0,streak:0,best:0,
+const TANK=60,FUEL_PRICE=5,TOW=500;
+// zorluk: 2B oyunla aynı değerler (ücret, süre, geç teslim oranı, çarpışma cezası, trafik)
+const DIFF={kolay:{n:['Kolay','Easy'],pay:1.2,time:1.25,lp:.45,lc:.55,stun:2,hit:40,tank:1,ferry:3,spd:.85,cr:0,wb:40},
+  orta:{n:['Orta','Medium'],pay:1,time:1,lp:.3,lc:.4,stun:3,hit:70,tank:2,ferry:5,spd:1,cr:1,wb:40},
+  zor:{n:['Zor','Hard'],pay:.8,time:.9,lp:.15,lc:.25,stun:4,hit:100,tank:3,ferry:8,spd:1.15,cr:1,wb:26},
+  kaos:{n:['Kaos','Chaos'],pay:.65,time:.8,lp:.05,lc:.15,stun:5,hit:130,tank:4,ferry:11,spd:1.3,cr:2,wb:16}};
+const DF=()=>DIFF[JOB.diff]||DIFF.orta;
+let saveT=0,HAS_SAVE=false;
+const JOB={fuel:TANK,diff:'orta',cur:null,offers:null,offPier:-1,money:0,done:0,ontime:0,streak:0,best:0,
   target(){return this.cur?this.cur.to:-1}};
 const GOALDEF=[{id:'del',g:[3,6,10],tr:n=>n+' teslimat yap',en:n=>'Make '+n+' deliveries',r:[150,300,500]},
   {id:'on',g:[2,4,7],tr:n=>n+' işi zamanında bitir',en:n=>'Finish '+n+' jobs on time',r:[150,300,500]},
@@ -444,8 +478,8 @@ const GOALDEF=[{id:'del',g:[3,6,10],tr:n=>n+' teslimat yap',en:n=>'Make '+n+' de
   {id:'vip',g:[1,2,3],tr:n=>n+' VIP misafir taşı',en:n=>'Carry '+n+' VIP guests',r:[200,400,700]}];
 let GOALS=null;
 const SKEY='bt3d-save';
-function saveG(){try{localStorage.setItem(SKEY,JSON.stringify({m:JOB.money,d:JOB.done,o:JOB.ontime,b:JOB.best,g:GOALS}))}catch(_){}}
-function loadG(){try{const v=JSON.parse(localStorage.getItem(SKEY)||'null');if(v){JOB.money=v.m||0;JOB.done=v.d||0;JOB.ontime=v.o||0;JOB.best=v.b||0;GOALS=v.g||null}}catch(_){}if(!GOALS)newGoals(0)}
+function saveG(){try{localStorage.setItem(SKEY,JSON.stringify({m:JOB.money,d:JOB.done,o:JOB.ontime,b:JOB.best,g:GOALS,f:Math.round(JOB.fuel*10)/10,df:JOB.diff}))}catch(_){}}
+function loadG(){try{const v=JSON.parse(localStorage.getItem(SKEY)||'null');if(v){HAS_SAVE=true;JOB.fuel=typeof v.f==='number'?v.f:TANK;JOB.diff=DIFF[v.df]?v.df:'orta';JOB.money=v.m||0;JOB.done=v.d||0;JOB.ontime=v.o||0;JOB.best=v.b||0;GOALS=v.g||null}}catch(_){}if(!GOALS)newGoals(0)}
 function newGoals(tier){const pool=GOALDEF.slice().sort(()=>Math.random()-.5).slice(0,3);GOALS={tier,list:pool.map(d=>({id:d.id,goal:d.g[Math.min(tier,2)],r:d.r[Math.min(tier,2)],v:0,ok:false}))}}
 function goalAdd(id,v){if(!GOALS)return;let any=false;for(const g of GOALS.list){if(g.id!==id||g.ok)continue;g.v=Math.min(g.goal,g.v+v);if(g.v>=g.goal){g.ok=true;JOB.money+=g.r;any=true;toast('★ '+(LANG==='en'?'Goal done! +₺':'Görev tamam! +₺')+g.r)}}
   if(GOALS.list.every(g=>g.ok)){const t=GOALS.tier+1;setTimeout(()=>{newGoals(t);toast(LANG==='en'?'New goals unlocked ★':'Yeni görevler açıldı ★');renderGoals();saveG()},2200)}
@@ -457,18 +491,24 @@ function genOffer(from,mode){let to=-1,tries=0;const lo=mode==='far'?1500:300,hi
   while(tries++<60){const c=(Math.random()*PIERS.length)|0;if(c===from)continue;const d=dist(from,c);if(d>=lo&&d<=hi){to=c;break}}
   if(to<0){to=(from+5)%PIERS.length}
   const K=pickKind(),it=K.items[(Math.random()*K.items.length)|0],n=K.n[0]+((Math.random()*(K.n[1]-K.n[0]+1))|0),d=dist(from,to);
-  const limit=Math.round(14+d/38),pay=Math.round((30+d*.11*(K.k==='vip'?1.8:K.k==='cargo'?1.1:1))/5)*5;
+  const limit=Math.round((14+d/38)*DF().time),pay=Math.round((30+d*.11*(K.k==='vip'?1.8:K.k==='cargo'?1.1:1))*DF().pay/5)*5;
   return{from,to,k:K.k,ic:K.ic,n,it,d,limit,pay}}
-function offerAt(pi){JOB.offPier=pi;JOB.offers=[genOffer(pi,'near'),genOffer(pi,'mid'),genOffer(pi,'far')];renderOffers()}
+function offerAt(pi){JOB.offPier=pi;JOB.offers=JOB.cur?[]:[genOffer(pi,'near'),genOffer(pi,'mid'),genOffer(pi,'far')];renderOffers()}
 function lbl(o){return (o.n>1?o.n+' ':'')+L2(o.it)}
+function fuelRow(){const p=PIERS[JOB.offPier];if(!p||!p.fuel)return'';const need=Math.floor(TANK-JOB.fuel);
+  return `<button class="of" type="button" data-f="1" ${need<1?'disabled':''}><span class="oi">⛽</span><span class="ot"><b>${LANG==='en'?'Fill the tank':'Depoyu doldur'}</b><span>${Math.ceil(Math.max(0,JOB.fuel))}/${TANK} L · ₺${FUEL_PRICE}/L</span></span><span class="op">${need<1?'✓':'₺'+need*FUEL_PRICE}</span></button>`}
+function fuelUi(){const f=Math.max(0,JOB.fuel);$('hFuelV').textContent=Math.ceil(f);$('hFuelB').style.width=(f/TANK*100)+'%';$('hFuel').classList.toggle('low',f/TANK<.2);
+  const out=f<=0&&!paused;if($('tow').hidden===out){$('tow').hidden=!out;$('tow').textContent=(LANG==='en'?'Out of fuel · Call a tow (₺':'Yakıt bitti · Çekici çağır (₺')+TOW+')'}}
 function renderOffers(){const el=$('offers');if(!JOB.offers){el.classList.add('hide');return}$('hint').classList.add('hide');
-  el.innerHTML=`<h3>${PIERS[JOB.offPier].name}<small>${LANG==='en'?'Pick a job. The clock starts when you leave.':'Bir iş seç. Süre iskeleden ayrılınca başlar.'}</small></h3>`+JOB.offers.map((o,i)=>`<button class="of" type="button" data-o="${i}"><span class="oi">${o.ic}</span><span class="ot"><b>${lbl(o)} → ${PIERS[o.to].name}</b><span>${km(o.d)} km · ${o.limit} ${LANG==='en'?'s':'sn'}</span></span><span class="op">₺${o.pay}</span></button>`).join('');
+  el.innerHTML=`<h3>${PIERS[JOB.offPier].name}<small>${JOB.offers.length?(LANG==='en'?'Pick a job. The clock starts when you leave.':'Bir iş seç. Süre iskeleden ayrılınca başlar.'):(LANG==='en'?'Fuel pier':'Yakıt iskelesi')}</small></h3>`+fuelRow()+JOB.offers.map((o,i)=>`<button class="of" type="button" data-o="${i}"><span class="oi">${o.ic}</span><span class="ot"><b>${lbl(o)} → ${PIERS[o.to].name}</b><span>${km(o.d)} km · ${o.limit} ${LANG==='en'?'s':'sn'}</span></span><span class="op">₺${o.pay}</span></button>`).join('');
   el.classList.remove('hide')}
-$('offers').addEventListener('click',e=>{const b=e.target.closest('[data-o]');if(!b)return;const o=JOB.offers[+b.dataset.o];JOB.cur={...o,t:o.limit,started:false};JOB.offers=null;renderOffers();renderJob();toast((LANG==='en'?'Head to ':'Hedef: ')+PIERS[o.to].name)});
+$('offers').addEventListener('click',e=>{const fb=e.target.closest('[data-f]');
+  if(fb){const need=Math.floor(TANK-JOB.fuel);if(need>0){JOB.fuel+=need;JOB.money-=need*FUEL_PRICE;toast(JOB.money<0?(LANG==='en'?'Fuel bought on credit':'Yakıt borçla alındı'):'⛽ +'+need+' L');hudUp();fuelUi();renderOffers();saveG()}return}
+  const b=e.target.closest('[data-o]');if(!b)return;const o=JOB.offers[+b.dataset.o];JOB.cur={...o,t:o.limit,started:false};JOB.offers=null;renderOffers();renderJob();toast((LANG==='en'?'Head to ':'Hedef: ')+PIERS[o.to].name)});
 function renderJob(){const el=$('job');if(!JOB.cur){el.classList.add('hide');return}const j=JOB.cur;
   $('jK').textContent=(LANG==='en'?'Deliver to':'Teslim yeri')+' · '+km(Math.hypot(PIERS[j.to].wx-boat.x,PIERS[j.to].wz-boat.z))+' km';$('jT').textContent=PIERS[j.to].name;$('jS').textContent=j.ic+' '+lbl(j)+' · ₺'+j.pay;
   const c=$('jC');c.textContent=(j.t<0?'-':'')+Math.floor(Math.abs(j.t)/60)+':'+String(Math.floor(Math.abs(j.t))%60).padStart(2,'0');c.classList.toggle('late',j.t<0);el.classList.remove('hide')}
-function deliver(){const j=JOB.cur,on=j.t>=0;let pay=on?j.pay+Math.round(Math.max(0,j.t)/j.limit*j.pay*.3/5)*5:Math.round(j.pay*.5/5)*5;
+function deliver(){const j=JOB.cur,on=j.t>=0;let pay=on?j.pay+Math.round(Math.max(0,j.t)/j.limit*j.pay*.3/5)*5:Math.round(j.pay*(j.k==='cargo'?DF().lc:DF().lp)/5)*5;
   JOB.money+=pay;JOB.done++;if(on){JOB.ontime++;JOB.streak++}else JOB.streak=0;JOB.best=Math.max(JOB.best,JOB.streak);
   toast((on?(LANG==='en'?'On time! +₺':'Zamanında! +₺'):(LANG==='en'?'Late · +₺':'Geç kaldın · +₺'))+pay);
   goalAdd('del',1);if(on)goalAdd('on',1);goalAdd('earn',pay);if(j.d*.0042>=2)goalAdd('far',1);if(j.k==='vip')goalAdd('vip',1);
@@ -487,13 +527,124 @@ function jobStep(dt){const j=JOB.cur;
   const slow=Math.abs(boat.v)<9;
   if(ip>=0&&slow){dockT+=dt;if(dockT>.45){
     if(j&&ip===j.to){deliver();offerAt(ip)}
-    else if(!j&&JOB.offPier!==ip){offerAt(ip)}}}
+    else if(JOB.offPier!==ip&&(!j||PIERS[ip].fuel)){offerAt(ip)}}}
   else{dockT=0;if(JOB.offers&&(ip<0||Math.abs(boat.v)>14)){JOB.offers=null;JOB.offPier=-1;renderOffers()}}
   if(ip<0)JOB.offPier=-1;
   if(j){if(!j.started&&Math.hypot(PIERS[j.from].wx-boat.x,PIERS[j.from].wz-boat.z)>14)j.started=true;if(j.started)j.t-=dt;
     const tp=PIERS[j.to],ang=Math.atan2(tp.wz-boat.z,tp.wx-boat.x)-boat.a;$('jArrow').style.transform=`rotate(${(ang*180/Math.PI)-90}deg)`;
     BEAM.visible=true;BEAM.position.set(tp.wx,0,tp.wz);BEAM.material.opacity=.35+.15*Math.sin(time*4)}else BEAM.visible=false}
 let jobUiT=0;
+/* ================= Deniz trafiği: tanker, vapur, kruvaziyer (rotalar 2B oyunla aynı) ================= */
+const NPCS=[];let stun=0,bumpT=0,paused=true;
+const TPATH=[[1700,-1500],[1640,-640],[1540,-220],[1485,-20],[1450,250],[1350,600],[1380,950],[1340,1320],[1260,1650],[1140,1970],[1020,2280],[1000,2680],[1150,3150],[1260,3460],[1280,4600]];
+const FROUTES=[[['Eminönü'],[900,2440],[1010,2640],['Kadıköy']],[['Beşiktaş'],['Üsküdar']],[['Sarıyer'],['Beykoz']],[['Bebek'],['Kandilli']],[['Kabataş'],[1000,2400],['Harem']],
+ [['Ortaköy'],['Beylerbeyi']],[['Emirgan'],['Kanlıca']],[['Yeniköy'],['Paşabahçe']],[['İstinye'],['Çubuklu']],[['Arnavutköy'],['Çengelköy']],[['Rumeli Kavağı'],['Anadolu Kavağı']]];
+const CRUISE=[[[836,2235],[833,2251],[830,2267],[864,2332],[925,2420],[1000,2565],[1012,2700],[1150,3150],[1260,3460],[1280,4300]],
+  [[818,2296],[815,2312],[812,2328],[840,2385],[910,2475],[1010,2600],[1030,2720],[1170,3160],[1270,3460],[1290,4300]]];
+const PRIO={tanker:3,cruise:2,ferry:1};
+const wat=(x,z)=>sdf(x,z)<-2;
+// vapur durağı: iskelenin yanında, yanaşma halkasını kapatmadan
+function stopOf(name){const p=PIERS.find(q=>q.name===name);
+  for(const lat of[26,30,34])for(const sg of[1,-1])for(const d of[24,28,32]){const ux=-p.dz*sg,uz=p.dx*sg,x=p.x-p.dx*d+ux*lat,z=p.z-p.dz*d+uz*lat;
+    if([-18,-9,0,9,18].every(k=>wat(x-p.dx*k,z-p.dz*k)&&wat(x-p.dx*k+ux*6,z-p.dz*k+uz*6)&&wat(x-p.dx*k-ux*6,z-p.dz*k-uz*6))
+      &&PIERS.every(o=>o===p||Math.hypot(o.wx-x,o.wz-z)>48)
+      &&BRIDGES.every(b=>{const[x1,z1,x2,z2]=b.p,vx=x2-x1,vz=z2-z1,t=clamp(((x-x1)*vx+(z-z1)*vz)/(vx*vx+vz*vz),0,1);return Math.hypot(x1+vx*t-x,z1+vz*t-z)>45})
+      &&!(x>790&&x<925&&z>2195&&z<2345))return{at:[x,z],ap:[x-p.dx*60,z-p.dz*60]}}
+  return{at:[p.x-p.dx*75,p.z-p.dz*75],ap:null}}
+function mkRoute(pts,smooth){const o=[];for(let i=0;i<pts.length-1;i++){const a=pts[Math.max(i-1,0)],b=pts[i],c=pts[i+1],d=pts[Math.min(i+2,pts.length-1)],n=Math.max(2,Math.ceil(Math.hypot(c[0]-b[0],c[1]-b[1])/14));
+    for(let k=0;k<n;k++){const q=k/n;o.push(smooth?[cr(a[0],b[0],c[0],d[0],q),cr(a[1],b[1],c[1],d[1],q)]:[lerp(b[0],c[0],q),lerp(b[1],c[1],q)])}}
+  o.push(pts[pts.length-1].slice());const cum=[0];for(let i=1;i<o.length;i++)cum.push(cum[i-1]+Math.hypot(o[i][0]-o[i-1][0],o[i][1]-o[i-1][1]));return{pts:o,cum,len:cum[cum.length-1]}}
+function posOn(n,s){const r=n.r;s=clamp(s,0,r.len);let lo=1,hi=r.cum.length-1;while(lo<hi){const m=(lo+hi)>>1;if(r.cum[m]<s)lo=m+1;else hi=m}
+  const a=r.pts[lo-1],b=r.pts[lo],f=(s-r.cum[lo-1])/((r.cum[lo]-r.cum[lo-1])||1),tg=Math.atan2(b[1]-a[1],b[0]-a[0]),h=tg+(n.dir<0?Math.PI:0),
+    ln=n.lane*(n.type==='tanker'?1:(n.type==='cruise'?clamp((Math.min(s,r.len-s)-70)/140,0,1):clamp(Math.min(s,r.len-s)/70,0,1))); // herkes sancak şeridini tutar
+  return{x:lerp(a[0],b[0],f)-Math.sin(h)*ln,z:lerp(a[1],b[1],f)+Math.cos(h)*ln,a:h,tg}}
+function routeOk(n){const d0=n.dir;let ok=true;for(const dir of(n.type==='tanker'?[1]:[1,-1])){n.dir=dir;for(let s=0;s<=n.r.len&&ok;s+=12){const p=posOn(n,s);if(sdf(p.x,p.z)>-1)ok=false}}n.dir=d0;return ok}
+function boxHit(ax,az,aa,al,aw,o,m){const A=[Math.cos(aa),Math.sin(aa),al/2+m*2,aw/2+m],B=[Math.cos(o.a),Math.sin(o.a),o.len/2,o.wid/2],dx=o.x-ax,dz=o.z-az;
+  for(const P of[A,B])for(const u of[[P[0],P[1]],[-P[1],P[0]]]){
+    const ra=A[2]*Math.abs(A[0]*u[0]+A[1]*u[1])+A[3]*Math.abs(-A[1]*u[0]+A[0]*u[1]),rb=B[2]*Math.abs(B[0]*u[0]+B[1]*u[1])+B[3]*Math.abs(-B[1]*u[0]+B[0]*u[1]);
+    if(Math.abs(dx*u[0]+dz*u[1])>ra+rb)return false}
+  return true}
+
+/* gemi modelleri (+x ileri) */
+function hullGeo(L,W,h,y,bow,stern){const s=new THREE.Shape(),hl=L/2,hw=W/2,b=L*bow,t=L*stern;
+  s.moveTo(-hl+t,-hw);s.lineTo(hl-b,-hw);s.quadraticCurveTo(hl-b*.3,-hw*.75,hl,0);s.quadraticCurveTo(hl-b*.3,hw*.75,hl-b,hw);s.lineTo(-hl+t,hw);
+  if(t>0){s.quadraticCurveTo(-hl+t*.3,hw*.75,-hl,0);s.quadraticCurveTo(-hl+t*.3,-hw*.75,-hl+t,-hw)}else s.closePath();
+  const g=new THREE.ExtrudeGeometry(s,{depth:h,bevelEnabled:false,curveSegments:5});g.rotateX(Math.PI/2);g.translate(0,y+h,0);return g}
+const SM={};const sm=c=>SM[c]||(SM[c]=lam(c));
+function mkShip(n){const g=new THREE.Group(),L=n.len,W=n.wid;
+  const add=(geo,c,x=0,y=0,z=0)=>{const m=new THREE.Mesh(geo,sm(c));m.position.set(x,y,z);g.add(m);return m};
+  const box=(w,h,d,c,x,y,z=0)=>add(new THREE.BoxGeometry(w,h,d),c,x,y,z);
+  if(n.type==='ferry'){ // Şehir Hatları vapuru: iki ucu aynı, baca ortada
+    add(hullGeo(L,W,1.8,-1.2,.2,.2),'#1f2d3a');add(hullGeo(L,W,2,.6,.2,.2),'#fbfbf8');
+    box(L*.72,3,W*.84,'#f4efe2',0,4.1);box(L*.725,1.1,W*.85,'#2a4152',0,4.4);
+    box(L*.56,2.6,W*.72,'#f4efe2',0,6.9);box(L*.565,1,W*.73,'#2a4152',0,7.1);box(L*.6,.4,W*.78,'#fbfbf8',0,8.4);
+    add(new THREE.CylinderGeometry(1.5,1.7,4.6,10),'#f0a03a',0,10.8);add(new THREE.CylinderGeometry(1.55,1.55,.9,10),'#1f2428',0,13.4);
+  }else if(n.type==='tanker'){
+    add(hullGeo(L,W,2.5,-2.2,.14,0),'#7a2a22');add(hullGeo(L,W,5,.3,.14,0),n.col);
+    box(L*.7,.6,W*.82,'#9a6a4e',L*.05,5.5);box(L*.62,.9,1.4,'#b9bcc0',L*.05,6.2);box(L*.62,.9,1.4,'#b9bcc0',L*.05,6.2,W*.22);box(L*.62,.9,1.4,'#b9bcc0',L*.05,6.2,-W*.22);
+    for(const k of[-.18,.02,.22])box(1,3,W*.7,'#b9bcc0',L*k,7);
+    box(9,11,W*.8,'#fbfbf8',-L/2+9,10.8);box(9.2,1.2,W*.82,'#2a4152',-L/2+9,13.6);box(4,1.4,W*1.04,'#fbfbf8',-L/2+10,15.4);
+    box(3,5,4,n.col,-L/2+4.5,16.5);add(new THREE.CylinderGeometry(.25,.25,9,5),'#dddddd',L/2-8,9.8);
+  }else{ // kruvaziyer
+    add(hullGeo(L,W,2,-1.6,.22,.06),'#1e3f66');add(hullGeo(L,W,5,.4,.22,.06),'#fbfbf8');
+    box(L*.72,2.6,W*.88,'#fbfbf8',-L*.03,6.7);box(L*.725,1,W*.89,'#2a4152',-L*.03,6.9);
+    box(L*.64,2.4,W*.8,'#fbfbf8',-L*.05,9.2);box(L*.645,.9,W*.81,'#2a4152',-L*.05,9.4);
+    box(L*.5,2.2,W*.72,'#fbfbf8',-L*.07,11.5);box(L*.505,.8,W*.73,'#2a4152',-L*.07,11.7);
+    box(5,4,4,'#0e8f9a',-L*.16,14.6);box(3,1.6,W*.9,'#fbfbf8',L*.2,12.6);
+  }
+  scene.add(g);return g}
+function buildNpcs(){for(const n of NPCS)scene.remove(n.m);NPCS.length=0;const d=DF(),up=TPATH.slice().reverse();
+  const add=(o,pts)=>{o.r=mkRoute(pts,true);if(!routeOk(o)){o.r=mkRoute(pts,false);if(!routeOk(o))return}o.s=o.s0*o.r.len;o.m=mkShip(o);NPCS.push(o)};
+  [[TPATH,.22,30,88,17,'#8c3b2b'],[up,.6,27,100,18,'#2b4c5e'],[TPATH,.66,30,94,17,'#3d5a45'],[up,.18,27,84,16,'#6b4a2b']].slice(0,d.tank)
+    .forEach(q=>add({type:'tanker',s0:q[1],dir:1,lane:26,spd:q[2]*d.spd,len:q[3],wid:q[4],col:q[5],wait:0},q[0]));
+  CRUISE.slice(0,d.cr).forEach((pts,i)=>add({type:'cruise',s0:i?1:0,dir:i?-1:1,lane:54,spd:24*d.spd,len:58,wid:13,col:'#ffffff',wait:i?4:d.wb*.5,wb:d.wb,ws:10},pts));
+  FROUTES.slice(0,d.ferry).forEach(r=>add({type:'ferry',s0:0,dir:1,lane:10,spd:30*d.spd,len:46,wid:12,col:'#f8f9fa',wait:Math.random()*14},r.flatMap((q,i)=>{if(typeof q[0]!=='string')return[q];const o=stopOf(q[0]);return !o.ap?[o.at]:i===0?[o.at,o.ap]:[o.ap,o.at]})));
+  updateNpcs(0)}
+function updateNpcs(dt){
+  NPCS.forEach((n,i)=>{
+    if(n.wait>0){n.wait-=dt;n.st=0}
+    else{if(n.gh>0)n.gh-=dt;const s1=n.s+n.dir*n.spd*dt,q=posOn(n,s1);let hold=false;
+      // yol verme: önceliği düşük gemi, üstüne bineceği gemiyi bekler; 6 sn kilitlenirse 4 sn serbest geçer
+      if(n.x!=null&&!(n.gh>0))for(let k=0;k<NPCS.length&&!hold;k++){if(k===i)continue;const o=NPCS[k];if(o.x==null)continue;
+        if(boxHit(q.x,q.z,q.a,n.len,n.wid,o,4)){const away=Math.hypot(q.x-o.x,q.z-o.z)>Math.hypot(n.x-o.x,n.z-o.z);
+          if(!away&&(PRIO[n.type]<PRIO[o.type]||(PRIO[n.type]===PRIO[o.type]&&i>k)||o.wait>0))hold=true}}
+      if(hold){if((n.st=(n.st||0)+dt)>6){n.gh=4;n.st=0}}
+      else{n.st=0;n.s=s1;
+        if(n.type==='tanker'){if(n.s>n.r.len)n.s=0}
+        else if(n.s>=n.r.len){n.s=n.r.len;n.dir=-1;n.wait=n.type==='cruise'?n.ws:5}
+        else if(n.s<=0){n.s=0;n.dir=1;n.wait=n.type==='cruise'?n.wb:5}}}
+    const p=posOn(n,n.s);n.x=p.x;n.z=p.z;n.a=p.a;n.tg=p.tg});
+}
+function drawNpcs(dt){for(const n of NPCS){const m=n.m;
+    // vapurun iki ucu aynı: dönüşte çevrilmez. Diğerleri yavaşça döner.
+    const want=n.type==='ferry'?n.tg:n.a;if(n.ra==null)n.ra=want;let da=((want-n.ra+Math.PI)%TAU+TAU)%TAU-Math.PI;n.ra+=clamp(da,-dt*.5,dt*.5)+(Math.abs(da)<.6?da*Math.min(1,dt*4):0)*.5;
+    // uzaktaki giriş/çıkış noktalarında gemi küçülerek kaybolur (ansızın belirmesin)
+    const k=n.type==='tanker'?clamp(Math.min(n.s,n.r.len-n.s)/220,0,1):n.type==='cruise'?clamp((n.r.len-n.s)/220,0,1):1;
+    m.visible=k>.02;m.scale.setScalar(Math.max(k,.02));m.position.set(n.x,wave(n.x,n.z,time)*.2,n.z);m.rotation.y=-n.ra}}
+
+/* ================= Başlangıç ekranı ================= */
+let pickD='orta',startMode='new';
+function renderStart(){const en=LANG==='en',cont=startMode==='cont',D=DIFF[pickD];
+  $('sDiff').hidden=$('sInfo').hidden=cont;
+  $('sDiff').innerHTML=Object.keys(DIFF).map(k=>`<button type="button" data-d="${k}" aria-pressed="${k===pickD}">${L2(DIFF[k].n)}</button>`).join('');
+  $('sInfo').innerHTML=`<span>${en?'Pay':'Ücret'} %${Math.round(D.pay*100)}</span><span>${en?'Time':'Süre'} %${Math.round(D.time*100)}</span><span>🚢 ${D.tank+D.ferry+D.cr} ${en?'ships':'gemi'}</span><span>${en?'Crash':'Çarpışma'} −₺${D.hit}</span>`;
+  $('sGo').textContent=cont?(en?'Continue':'Devam et')+' · '+L2(DF().n)+' · ₺'+JOB.money.toLocaleString(en?'en-US':'tr-TR'):(en?'Start':'Başla');
+  $('sAlt').hidden=!HAS_SAVE;$('sAlt').textContent=cont?(en?'New game':'Yeni oyun'):(en?'Back':'Geri')}
+function showStart(){startMode=HAS_SAVE?'cont':'new';pickD=JOB.diff;paused=true;document.body.classList.add('menu');renderStart();$('start').classList.remove('hide')}
+function startGame(fresh){
+  if(fresh){Object.assign(JOB,{fuel:TANK,diff:pickD,cur:null,offers:null,offPier:-1,money:250,done:0,ontime:0,streak:0,best:0});newGoals(0)}
+  HAS_SAVE=true;stun=0;bumpT=0;boat.v=0;
+  const s=PIERS.find(p=>p.name==='Karaköy');boat.a=Math.atan2(-s.dz,-s.dx)+.9;boat.x=s.wx-s.dx*14;boat.z=s.wz-s.dz*14;
+  buildNpcs();hudUp();fuelUi();renderGoals();renderJob();renderOffers();saveG();camStep(0,true);
+  paused=false;document.body.classList.remove('menu');$('start').classList.add('hide');
+  started=false;$('hint').classList.remove('hide');setTimeout(()=>firstInput(),9000)}
+$('sDiff').addEventListener('click',e=>{const b=e.target.closest('[data-d]');if(b){pickD=b.dataset.d;renderStart()}});
+$('sGo').addEventListener('click',()=>startGame(startMode==='new'));
+$('sAlt').addEventListener('click',()=>{startMode=startMode==='cont'?'new':'cont';renderStart()});
+$('tow').addEventListener('click',()=>{let best=-1,bd=1e9;PIERS.forEach((p,i)=>{if(!p.fuel)return;const d=Math.hypot(p.wx-boat.x,p.wz-boat.z);if(d<bd){bd=d;best=i}});
+  const p=PIERS[best];JOB.money-=TOW;JOB.fuel=TANK;boat.x=p.wx-p.dx*14;boat.z=p.wz-p.dz*14;boat.v=0;camStep(0,true);hudUp();fuelUi();saveG();
+  toast((LANG==='en'?'Towed to '+p.name+', tank full · −₺':'Çekici seni '+p.name+' iskelesine getirdi, depo dolu · −₺')+TOW)});
+
 /* ---------- Kamera ---------- */
 const cam={x:0,y:30,z:0,lx:0,ly:0,lz:0};
 function camStep(dt,snap){const ca=Math.cos(boat.a),sa=Math.sin(boat.a),sp=Math.abs(boat.v)/MAXV,back=30+sp*8,up=11+sp*3;
@@ -519,13 +670,14 @@ function render(dt){
   for(let i=0;i<PIERS.length;i++){const p=PIERS[i],d=Math.hypot(p.wx-cam.x,p.wz-cam.z);
     LABELS[i].material.opacity=clamp((620-d)/220,0,1);LABELS[i].visible=d<620;
     const r=RINGS[i];r.visible=d<500;if(r.visible){r.position.y=wave(p.wx,p.wz,time)+.35;const tg=i===JOB.target();r.visible=r.visible||tg;r.material.color.set(tg?'#ff7a45':'#ffffff');r.material.opacity=tg?.9:(i===nearPier?.95:.45+.25*Math.sin(time*3+i))*clamp((500-d)/150,0,1);r.scale.setScalar(tg?1.25+.1*Math.sin(time*5):i===nearPier?1.15:1)}}
+  drawNpcs(dt);
   renderer.render(scene,camera);drawMini();
 }
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<h?68:56;camera.updateProjectionMatrix();if(WAKE)WAKE.mat.uniforms.uScale.value=h*renderer.getPixelRatio()/(2*Math.tan(camera.fov*Math.PI/360))}
 addEventListener('resize',resize);
 
 let last=0;
-function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-(last||now))/1000);last=now;step(dt);camStep(dt);render(dt)}
+function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-(last||now))/1000);last=now;if(paused){time+=dt;updateNpcs(dt)}else step(dt);camStep(dt);render(dt)}
 
 /* ================= Başlat ================= */
 setTimeout(()=>{
@@ -536,9 +688,9 @@ setTimeout(()=>{
   const s=PIERS.find(p=>p.name==='Karaköy');boat.a=Math.atan2(-s.dz,-s.dx)+.9;boat.x=s.wx-s.dx*14;boat.z=s.wz-s.dz*14;
   resize();camStep(0,true);
   $('load').style.opacity=0;setTimeout(()=>$('load').remove(),700);
-  $('hint').classList.remove('hide');setTimeout(()=>firstInput(),9000);
+  showStart();fuelUi();
   requestAnimationFrame(frame);
-  window.__bt3d={boat,PIERS,BRIDGES,JOB,GOALS:()=>GOALS,jobStep,setCam:()=>camStep(0,true),step,render,renderer,camera};
+  window.__bt3d={NPCS,startGame,DIFF,setDiff:d=>{pickD=d},boat,PIERS,BRIDGES,JOB,GOALS:()=>GOALS,jobStep,setCam:()=>camStep(0,true),step,render,renderer,camera};
 },30);
 </script>
 <script data-goatcounter="https://dogancansk.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
