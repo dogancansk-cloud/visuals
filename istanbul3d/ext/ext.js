@@ -1,6 +1,7 @@
 // İstanbul 3D eklentisi: etiket düzeni, yer listesi + bilgi kartları, uçuş, bellek temizliği.
 import { PLACES, REGIONS, REGIONS_EN, NEW_LABELS, AREAS } from './places.js';
 import { addMosques } from './mosques.js';
+import { addLandmarks } from './landmarks.js';
 
 const LQ = new URLSearchParams(location.search).get('lang');
 const EN = LQ ? LQ === 'en' : !(navigator.language || 'tr').toLowerCase().startsWith('tr');
@@ -184,6 +185,7 @@ whenReady((M) => {
   try {
     if (M.__three) addMosques(M, M.__three);
   } catch (e) { console.warn('asia mosques', e); }
+  if (M.__three) addLandmarks(M, M.__three).catch((e) => console.warn('landmarks', e));
   buildUI(M);
   const hint = document.getElementById('badge');
   if (hint) hint.textContent = T('yükseklikler yaklaşık · etikete dokun: bilgi', 'heights approximate · tap a label for info');
