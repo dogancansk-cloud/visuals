@@ -8,7 +8,7 @@
 <meta name="twitter:card" content="summary_large_image">
 
 <meta name="description" content="Boğaz Taksi 3B: İstanbul Boğazı ve Haliç'te deniz taksisi. Taslak sürüm.">
-<meta property="og:title" content="Boğaz Taksi 3B"><meta property="og:description" content="İstanbul Boğazı ve Haliç'te 3 boyutlu deniz taksisi: yolcu, kargo ve VIP görevleri, yakıt, vapur trafiği. Taslak · work in progress."><meta property="og:type" content="website"><meta property="og:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_taksi_3d_og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:title" content="Boğaz Taksi 3B"><meta property="og:description" content="İstanbul Boğazı ve Haliç'te 3 boyutlu deniz taksisi: yolcu, kargo ve VIP görevleri, yakıt, vapur trafiği, simge yapılar. Taslak · work in progress."><meta property="og:type" content="website"><meta property="og:image" content="https://dogancansk-cloud.github.io/visuals/bogaz_taksi_3d_og.jpg"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle cx='8' cy='8' r='7' fill='%2319c2cc'/%3E%3C/svg%3E">
 <style>
 :root{--panel:rgba(14,26,38,.62);--ink:#fff;--accent:#2fd6df;--wpanel:rgba(251,251,248,.94);--wink:#0f2a3a;--teal:#0e8f9a}
@@ -69,6 +69,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#d7b9a0;font-family:-a
 body.menu #hud,body.menu #mini,body.menu #pier,body.menu #job,body.menu #hint,body.menu #tow{display:none}
 #tow{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:5;border:0;border-radius:16px;background:#c8372d;color:#fff;font:800 15px inherit;font-family:inherit;padding:12px 18px;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.25);white-space:nowrap}#tow[hidden]{display:none}
 .of:disabled{opacity:.6;cursor:default}
+#hint{white-space:normal;width:max-content}
 @media (max-width:420px){#gBtnT{display:none}}
 </style>
 </head>
@@ -105,7 +106,7 @@ const T=k=>TX[LANG][k];
 const TOUCH=matchMedia('(pointer:coarse)').matches;
 function applyLang(){document.documentElement.lang=LANG;$('lang').textContent=LANG==='tr'?'EN':'TR';$('loadT').textContent=T('load');$('pierK').textContent=T('pier');$('hint').textContent=T(TOUCH?'touch':'keys');$('back').setAttribute('aria-label',T('back'));$('failT').innerHTML=T('fail')}
 applyLang();
-$('lang').onclick=()=>{LANG=LANG==='tr'?'en':'tr';try{localStorage.setItem('bt3d-lang',LANG)}catch(_){}applyLang();try{hudUp();renderGoals();renderJob();renderOffers();renderStart();$('tow').hidden=true;fuelUi()}catch(_){}};
+$('lang').onclick=()=>{LANG=LANG==='tr'?'en':'tr';try{localStorage.setItem('bt3d-lang',LANG)}catch(_){}applyLang();try{hudUp();renderGoals();renderJob();renderOffers();renderStart();$('tow').hidden=true;fuelUi();lmLabels()}catch(_){}};
 
 /* ================= Harita: 2B Boğaz Taksi ile birebir aynı veri (1 birim = 2B oyundaki 1 birim) ================= */
 const TAU=Math.PI*2,clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,t)=>a+(b-a)*t;
@@ -255,6 +256,8 @@ const wave=(x,z,t)=>.55*Math.sin(x*.045+t*.9)*Math.cos(z*.038+t*.7)+.3*Math.sin(
 function buildTown(){
   const occ=new Set(),HOUSES=[],TREES=[],avoid=[];
   for(const p of PIERS)avoid.push([p.x,p.z,26]);
+  for(const L of LM)if(L.r)avoid.push([L.x,L.z,L.r]);
+  avoid.push([811,2262,70]); // Galataport rıhtımı
   for(const b of BRIDGES)for(const e of [[b.p[0],b.p[1]],[b.p[2],b.p[3]]])avoid.push([e[0],e[1],b.k==='s'?40:26]);
   const SP=TOUCH?14:12;
   for(let z=-500;z<3600;z+=SP)for(let x=-450;x<2450;x+=SP){
@@ -331,6 +334,72 @@ function buildBridge(b){
   }
   scene.add(g);
 }
+
+/* ================= Simge yapılar (konumlar 2B oyundaki haritadan) ================= */
+// Kit: bir yapının bütün parçalarını tek parçada birleştirir (telefonda hızlı çizilsin diye)
+const LMAT=new THREE.MeshLambertMaterial({color:'#ffffff',vertexColors:true,flatShading:true});
+function Kit(){const P=[],C=[],col=new THREE.Color(),m=new THREE.Matrix4(),q=new THREE.Quaternion(),e=new THREE.Euler(),v=new THREE.Vector3(),one=new THREE.Vector3(1,1,1);
+  const K={add(geo,c,x=0,y=0,z=0,ry=0){const g=geo.index?geo.toNonIndexed():geo;e.set(0,ry,0);q.setFromEuler(e);m.compose(v.set(x,y,z),q,one);g.applyMatrix4(m);col.set(c);
+      const a=g.attributes.position.array;for(let i=0;i<a.length;i+=3){P.push(a[i],a[i+1],a[i+2]);C.push(col.r,col.g,col.b)}return K},
+    box:(w,h,d,c,x,y,z,ry)=>K.add(new THREE.BoxGeometry(w,h,d),c,x,y,z,ry),
+    cyl:(rt,rb,h,c,x,y,z,n=8)=>K.add(new THREE.CylinderGeometry(rt,rb,h,n),c,x,y,z),
+    cone:(r,h,c,x,y,z,n=8,ry=0)=>K.add(new THREE.ConeGeometry(r,h,n),c,x,y,z,ry),
+    dome:(r,c,x,y,z)=>K.add(new THREE.SphereGeometry(r,10,5,0,TAU,0,Math.PI/2),c,x,y,z),
+    mesh(){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(P,3));g.setAttribute('color',new THREE.Float32BufferAttribute(C,3));g.computeVertexNormals();return new THREE.Mesh(g,LMAT)}};
+  return K}
+const LM=[];let LMLAB=[];
+function landPt(x,z,min){for(let i=0;i<150&&sdf(x,z)<min;i++){const g=grad(x,z);x+=g.x*2;z+=g.z*2}return[x,z]}
+function defLandmarks(){const hp=PIERS.find(q=>q.name==='Haydarpaşa');
+  // [ad TR, ad EN, x, z, kıyıdan en az uzaklık, çevresinde ev olmayan yarıçap, tür, ayar]
+  const D=[['Galata Kulesi','Galata Tower',735,2252,30,16,'galata'],['Galataport','Galataport',811,2262,13,0,'port'],
+   ['Dolmabahçe Sarayı','Dolmabahçe Palace',858,2122,15,60,'palace',{len:110,clock:1}],['Çırağan Sarayı','Çırağan Palace',928,2028,15,42,'palace',{len:72}],['Beylerbeyi Sarayı','Beylerbeyi Palace',1322,2022,15,30,'palace',{len:46}],
+   ['Haydarpaşa Garı','Haydarpaşa Station',hp.x+hp.dx*32,hp.z-40,16,40,'station'],
+   ['Rumeli Hisarı','Rumeli Fortress',1190,1392,34,46,'hisar',{big:1}],['Anadolu Hisarı','Anadolu Fortress',1468,1392,22,26,'hisar',{}],
+   ['Topkapı Sarayı','Topkapı Palace',748,2548,40,40,'topkapi'],
+   ['Ayasofya','Hagia Sophia',700,2592,40,38,'mosque',{S:.95,min:4,wall:'#d8a48c',mh:40}],['Sultanahmet Camii','Blue Mosque',648,2622,40,46,'mosque',{S:1,min:6,wall:'#d9dcdf',court:1}],
+   ['Süleymaniye Camii','Süleymaniye Mosque',548,2452,40,46,'mosque',{S:1.05,min:4,wall:'#e3ddd0',court:1}],['Eyüp Sultan Camii','Eyüp Sultan Mosque',235,1985,30,26,'mosque',{S:.6,min:2,wall:'#f3efe6'}],
+   ['Ortaköy Camii','Ortaköy Mosque',958,1934,12,20,'mosque',{S:.5,min:2,wall:'#f3efe6'}],['Çamlıca Camii','Çamlıca Mosque',1560,1895,60,58,'mosque',{S:1.25,min:6,wall:'#eeeae0',court:1}],
+   ['Çamlıca Kulesi','Çamlıca Tower',1420,2255,60,18,'spire']];
+  for(const d of D){const [x,z]=landPt(d[2],d[3],d[4]);LM.push({n:[d[0],d[1]],x,z,r:d[5],k:d[6],o:d[7]||{}})}}
+function mosque(K,o){const S=o.S,w=o.wall,dc='#8e98a3';
+  K.box(34*S,12*S,34*S,w,0,6*S,0);K.box(24*S,6*S,24*S,w,0,15*S,0);K.dome(12*S,dc,0,18*S,0);K.cone(.9*S,3.5*S,'#d9b54a',0,31.5*S,0,5);
+  for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]])K.dome(7.5*S,dc,dx*13*S,12*S,dz*13*S);
+  for(const [dx,dz] of [[1,1],[1,-1],[-1,1],[-1,-1]])K.dome(3.6*S,dc,dx*14*S,12*S,dz*14*S);
+  const mp=o.min===6?[[1,1],[1,-1],[-1,1],[-1,-1],[-2.5,1],[-2.5,-1]]:o.min===4?[[1,1],[1,-1],[-1,1],[-1,-1]]:[[1,1],[1,-1]];
+  for(const [a,b] of mp){const x=a*19.5*S,z=b*19.5*S,h=(o.mh||46)*S;K.cyl(1.25*S,1.7*S,h,w,x,h/2,z,6);K.cyl(2.1*S,2.1*S,1.1*S,w,x,h*.6,z,6);K.cyl(2*S,2*S,1.1*S,w,x,h*.8,z,6);K.cone(1.7*S,8*S,dc,x,h+4*S,z,6)}
+  if(o.court){K.box(30*S,6*S,34*S,w,-32*S,3*S,0);for(let i=-2;i<=2;i++){K.dome(2.6*S,dc,-45*S,6*S,i*7*S);K.dome(2.6*S,dc,-19*S,6*S,i*7*S)}}
+  return 50*S}
+function buildLandmarks(){
+  for(const L of LM){const g=grad(L.x,L.z),phi=Math.atan2(-g.z,-g.x),cx=Math.cos(phi),sx=Math.sin(phi),o=L.o,K=Kit(); // yerel +x denize bakar
+    const W=(lx,lz)=>[L.x+lx*cx-lz*sx,L.z+lx*sx+lz*cx],rr=Math.max(L.r*.5,10);
+    let base=1e9;for(const [a,b] of [[0,0],[rr,0],[-rr,0],[0,rr],[0,-rr]]){const [wx,wz]=W(a,b);base=Math.min(base,hgt(wx,wz))}base=Math.max(base,.4)-1;
+    const G=(lx,lz)=>{const [wx,wz]=W(lx,lz);return Math.max(hgt(wx,wz),.4)-base}; // o noktadaki zemin (yapıya göre)
+    let top=30;const st='#cdbfa6',st2='#b3a58c',wh='#f1ece0',rf='#8a8f96',sl='#56636f';
+    if(L.k==='mosque'){K.box(40*o.S,6,40*o.S,o.wall,0,-3,0);top=mosque(K,o)}
+    else if(L.k==='galata'){K.cyl(7,7.8,42,st,0,19,0,10);K.cyl(8.3,8.3,1.5,st2,0,35,0,10);K.cyl(6.3,6.3,7,st,0,42.5,0,10);K.cone(7.6,15,sl,0,53.5,0,10);K.cone(.7,4,'#d9b54a',0,62,0,5);top=64}
+    else if(L.k==='spire'){K.cyl(3,5.6,74,'#f1f1ee',0,35,0,8);K.cyl(8.5,4.5,10,'#e3e6e8',0,75,0,10);K.cyl(8.5,8.5,8,'#2a4152',0,84,0,10);K.cyl(3.5,8.5,9,'#f1f1ee',0,92.5,0,10);K.cyl(.5,1.8,42,'#f1f1ee',0,118,0,6);K.box(1.4,2.4,1.4,'#e2473b',0,140,0);top=142}
+    else if(L.k==='palace'){const n=o.len;K.box(14,13,n,wh,0,4.5,0);K.box(14.3,1.3,n*.96,'#b9a98f',0,3.6,0);K.box(14.3,1.3,n*.96,'#b9a98f',0,7.6,0);K.box(15,1.2,n+1.2,rf,0,11.6,0);
+      K.box(19,18,n*.2,wh,0,7,0);K.box(20,1.4,n*.2+1.2,rf,0,16.7,0);K.box(19.3,1.4,n*.16,'#b9a98f',0,10,0);
+      for(const sgn of[-1,1]){K.box(17,15,n*.1,wh,0,5.5,sgn*n*.45);K.box(18,1.2,n*.1+1.2,rf,0,13.6,sgn*n*.45)}
+      K.box(9,2.6,n+12,'#d8d2c4',11.5,-.2,0);
+      if(o.clock){K.box(4.5,26,4.5,'#e6dccb',-2,11,-n/2-14);K.box(5.4,1,5.4,'#b9a98f',-2,17,-n/2-14);K.cone(3.6,7,rf,-2,27.5,-n/2-14,4,Math.PI/4)}top=24}
+    else if(L.k==='station'){const c='#cfae7e',d='#4a4f57';K.box(16,18,62,c,0,7,0);for(const sgn of[-1,1])K.box(30,18,14,c,-15,7,sgn*24);
+      K.box(16.4,1.4,60,'#a8875c',0,6,0);K.box(16.4,1.4,60,'#a8875c',0,11,0);K.box(17,2,63,d,0,17,0);K.box(11,4,59,d,0,20,0);
+      for(const sgn of[-1,1]){K.cyl(3.6,3.6,24,c,8,10,sgn*31,8);K.cone(4.2,10,d,8,27,sgn*31,8)}K.box(10,2.6,74,'#d8d2c4',13,-.2,0);top=32}
+    else if(L.k==='port'){K.box(16,8,124,'#d7d9da',0,3,0);K.box(16.3,2.6,120,'#2a4152',0,3.6,0);K.box(19,.9,126,'#f1f1ee',0,7.4,0);K.box(10,2.4,132,'#c9c5bb',11,-.3,0);top=14}
+    else if(L.k==='topkapi'){K.box(48,7,10,wh,0,2.5,14);K.box(10,7,44,wh,-19,2.5,-8);K.box(30,6,9,wh,6,2,-26);K.box(54,5,2,st,4,1.5,22);
+      for(let i=0;i<5;i++)K.dome(3.2,rf,-18+i*9,6,14);for(let i=0;i<5;i++)K.cone(1.7,7,rf,-19,9.5,-26+i*8,6);
+      K.box(6,28,6,wh,4,13,0);K.box(7.2,1.2,7.2,'#b9a98f',4,22,0);K.cone(4.6,15,sl,4,34.5,0,4,Math.PI/4);top=44}
+    else if(L.k==='hisar'){const big=o.big,T=big?[[14,-24,6.5,26],[14,24,6.5,24],[-26,0,7.8,34]]:[[8,-10,4,13],[8,10,4,13],[-6,0,4.4,15]];
+      for(const [lx,lz,r,h] of T){const gy=G(lx,lz),t=gy+h;K.cyl(r,r*1.1,h+14,st,lx,t-(h+14)/2,lz,10);K.cyl(r*1.16,r*1.16,2.6,st2,lx,t-.4,lz,10);
+        if(big){K.cyl(r*.62,r*.62,5,st,lx,t+2.5,lz,10);K.cone(r*.75,6,sl,lx,t+8,lz,10)}top=Math.max(top,t+12)}
+      for(const [i,j] of [[0,1],[1,2],[2,0]]){const a=T[i],b=T[j],mx=(a[0]+b[0])/2,mz=(a[1]+b[1])/2,len=Math.hypot(b[0]-a[0],b[1]-a[1]),gy=(G(a[0],a[1])+G(b[0],b[1]))/2,wh2=big?12:8;
+        K.box(len,wh2+16,2.6,st,mx,gy+wh2-(wh2+16)/2,mz,-Math.atan2(b[1]-a[1],b[0]-a[0]))}
+      if(!big){K.box(9,18,9,st,-1,G(-1,0)+9,0);K.box(10.2,2.2,10.2,st2,-1,G(-1,0)+18,0);top=G(-1,0)+24}}
+    const m=K.mesh();m.position.set(L.x,base,L.z);m.rotation.y=-phi;scene.add(m);L.top=base+top}
+  lmLabels()}
+function lmLabels(){for(const l of LMLAB)scene.remove(l);LMLAB=LM.map(L=>{const lb=label(L2(L.n));lb.position.set(L.x,L.top+10,L.z);lb.visible=false;scene.add(lb);return lb})}
+function lmStep(){for(let i=0;i<LM.length;i++){const L=LM[i],d=Math.hypot(L.x-cam.x,L.z-cam.z),lb=LMLAB[i];lb.visible=d<400;if(lb.visible)lb.material.opacity=clamp((400-d)/120,0,1)*.9}}
 
 function buildKizKulesi(){
   const g=new THREE.Group();g.position.set(KIZ.x,0,KIZ.z);
@@ -571,8 +640,8 @@ function hullGeo(L,W,h,y,bow,stern){const s=new THREE.Shape(),hl=L/2,hw=W/2,b=L*
   if(t>0){s.quadraticCurveTo(-hl+t*.3,hw*.75,-hl,0);s.quadraticCurveTo(-hl+t*.3,-hw*.75,-hl+t,-hw)}else s.closePath();
   const g=new THREE.ExtrudeGeometry(s,{depth:h,bevelEnabled:false,curveSegments:5});g.rotateX(Math.PI/2);g.translate(0,y+h,0);return g}
 const SM={};const sm=c=>SM[c]||(SM[c]=lam(c));
-function mkShip(n){const g=new THREE.Group(),L=n.len,W=n.wid;
-  const add=(geo,c,x=0,y=0,z=0)=>{const m=new THREE.Mesh(geo,sm(c));m.position.set(x,y,z);g.add(m);return m};
+function mkShip(n){const K=Kit(),L=n.len,W=n.wid;
+  const add=(geo,c,x=0,y=0,z=0)=>K.add(geo,c,x,y,z);
   const box=(w,h,d,c,x,y,z=0)=>add(new THREE.BoxGeometry(w,h,d),c,x,y,z);
   if(n.type==='ferry'){ // Şehir Hatları vapuru: iki ucu aynı, baca ortada
     add(hullGeo(L,W,1.8,-1.2,.2,.2),'#1f2d3a');add(hullGeo(L,W,2,.6,.2,.2),'#fbfbf8');
@@ -592,7 +661,7 @@ function mkShip(n){const g=new THREE.Group(),L=n.len,W=n.wid;
     box(L*.5,2.2,W*.72,'#fbfbf8',-L*.07,11.5);box(L*.505,.8,W*.73,'#2a4152',-L*.07,11.7);
     box(5,4,4,'#0e8f9a',-L*.16,14.6);box(3,1.6,W*.9,'#fbfbf8',L*.2,12.6);
   }
-  scene.add(g);return g}
+  const g=K.mesh();scene.add(g);return g}
 function buildNpcs(){for(const n of NPCS)scene.remove(n.m);NPCS.length=0;const d=DF(),up=TPATH.slice().reverse();
   const add=(o,pts)=>{o.r=mkRoute(pts,true);if(!routeOk(o)){o.r=mkRoute(pts,false);if(!routeOk(o))return}o.s=o.s0*o.r.len;o.m=mkShip(o);NPCS.push(o)};
   [[TPATH,.22,30,88,17,'#8c3b2b'],[up,.6,27,100,18,'#2b4c5e'],[TPATH,.66,30,94,17,'#3d5a45'],[up,.18,27,84,16,'#6b4a2b']].slice(0,d.tank)
@@ -670,7 +739,7 @@ function render(dt){
   for(let i=0;i<PIERS.length;i++){const p=PIERS[i],d=Math.hypot(p.wx-cam.x,p.wz-cam.z);
     LABELS[i].material.opacity=clamp((620-d)/220,0,1);LABELS[i].visible=d<620;
     const r=RINGS[i];r.visible=d<500;if(r.visible){r.position.y=wave(p.wx,p.wz,time)+.35;const tg=i===JOB.target();r.visible=r.visible||tg;r.material.color.set(tg?'#ff7a45':'#ffffff');r.material.opacity=tg?.9:(i===nearPier?.95:.45+.25*Math.sin(time*3+i))*clamp((500-d)/150,0,1);r.scale.setScalar(tg?1.25+.1*Math.sin(time*5):i===nearPier?1.15:1)}}
-  drawNpcs(dt);
+  drawNpcs(dt);lmStep();
   renderer.render(scene,camera);drawMini();
 }
 function resize(){const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<h?68:56;camera.updateProjectionMatrix();if(WAKE)WAKE.mat.uniforms.uScale.value=h*renderer.getPixelRatio()/(2*Math.tan(camera.fov*Math.PI/360))}
@@ -681,7 +750,7 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-(las
 
 /* ================= Başlat ================= */
 setTimeout(()=>{
-  buildTerrain();buildWater();buildPiers();BRIDGES.forEach(buildBridge);buildKizKulesi();buildTown();
+  buildTerrain();buildWater();buildPiers();BRIDGES.forEach(buildBridge);buildKizKulesi();defLandmarks();buildLandmarks();buildTown();
   BOAT=buildBoat();WAKE=buildWake();buildMini();
   {const g=new THREE.CylinderGeometry(6,6,140,20,1,true);g.translate(0,70,0);BEAM=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color:'#ff7a45',transparent:true,opacity:.4,depthWrite:false,side:THREE.DoubleSide}));BEAM.visible=false;scene.add(BEAM)}
   loadG();hudUp();renderGoals();
@@ -690,7 +759,7 @@ setTimeout(()=>{
   $('load').style.opacity=0;setTimeout(()=>$('load').remove(),700);
   showStart();fuelUi();
   requestAnimationFrame(frame);
-  window.__bt3d={NPCS,startGame,DIFF,setDiff:d=>{pickD=d},boat,PIERS,BRIDGES,JOB,GOALS:()=>GOALS,jobStep,setCam:()=>camStep(0,true),step,render,renderer,camera};
+  window.__bt3d={LM,NPCS,startGame,DIFF,setDiff:d=>{pickD=d},boat,PIERS,BRIDGES,JOB,GOALS:()=>GOALS,jobStep,setCam:()=>camStep(0,true),step,render,renderer,camera};
 },30);
 </script>
 <script data-goatcounter="https://dogancansk.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
