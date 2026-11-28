@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import './style.css';
 import { Ground, GroundView } from './world/ground';
 import { Roads } from './world/roads';
-import { Buildings } from './world/buildings';
+import { Buildings, loadFacadeTextures } from './world/buildings';
 import { Props } from './world/props';
 import { loadLandmarks, type LM } from './world/landmarks';
 import { Env, WEATHER_TR, type Weather } from './env';
@@ -24,13 +24,13 @@ const MAP = new URL('../istanbul3d/', location.href).href; // modeller haritanı
 const PHONE = (matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 820) || innerWidth < 700;
 type QName = 'dusuk' | 'orta' | 'yuksek';
 const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; detail: number; cars: number; peds: number; lights: boolean }> = {
-  dusuk: { detail: 90, pr: 0.85, shadows: false, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
-  orta: { detail: 160, pr: 1.25, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
+  dusuk: { detail: 90, pr: 1.25, shadows: true, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
+  orta: { detail: 160, pr: 1.5, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
   yuksek: { detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
 };
 const qStored = (() => { try { return localStorage.getItem('drv2_q'); } catch { return null; } })();
 const qAuto = !QS.get('q') && (!qStored || qStored === 'oto');
-let qName: QName = (QS.get('q') as QName) || (qStored && qStored !== 'oto' ? (qStored as QName) : PHONE ? 'dusuk' : 'orta');
+let qName: QName = (QS.get('q') as QName) || (qStored && qStored !== 'oto' ? (qStored as QName) : 'orta');
 if (!QUAL[qName]) qName = 'orta';
 const Q = QUAL[qName];
 
@@ -45,7 +45,7 @@ async function get<T>(name: string, kind: 'json' | 'bin', label: string): Promis
 
 async function main() {
   const [meta, groundBuf, roadsData, bldBuf, treeBuf] = await Promise.all([
-    get<{ grid: { x0: number; z0: number; step: number; nx: number; nz: number }; palette: { walls: string[]; roofs: string[]; flats: string[] }; chunk: number; chunks: number[][]; spawns: { id: string; x: number; z: number; yaw: number; road: string }[]; landmarks: LM[] }>('meta.json', 'json', 'Bilgiler'),
+    get<{ grid: { x0: number; z0: number; step: number; nx: number; nz: number }; look: { oldZ: number; sa: number[]; gk: number[] }; chunk: number; chunks: number[][]; spawns: { id: string; x: number; z: number; yaw: number; road: string }[]; landmarks: LM[] }>('meta.json', 'json', 'Bilgiler'),
     get<ArrayBuffer>('ground.bin', 'bin', 'Zemin'),
     get<{ ways: (number | number[])[][]; names: Record<string, string>; lamps: number[][] }>('roads.json', 'json', 'Yollar'),
     get<ArrayBuffer>('buildings.bin', 'bin', 'Binalar'),
@@ -55,11 +55,12 @@ async function main() {
   await new Promise((r) => setTimeout(r, 30));
 
   // ---------- çizici ----------
-  const renderer = new THREE.WebGLRenderer({ antialias: !PHONE, powerPreference: 'high-performance' });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   let pr = Math.min(devicePixelRatio, Q.pr); renderer.setPixelRatio(pr);
+  const PR_MIN = Math.min(devicePixelRatio, 1.1);
   renderer.setSize(innerWidth, innerHeight);
   renderer.shadowMap.enabled = Q.shadows; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
   $('app').appendChild(renderer.domElement);
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.3, 6000);
@@ -69,7 +70,7 @@ async function main() {
   const G = new Ground(meta.grid, groundBuf);
   const groundView = new GroundView(G); scene.add(groundView.group);
   const roads = new Roads(roadsData, G); scene.add(roads.group);
-  const blds = new Buildings(bldBuf, meta.chunks, meta.palette, meta.chunk); scene.add(blds.group);
+  const blds = new Buildings(bldBuf, meta.chunks, meta.look, meta.chunk); scene.add(blds.group);
   const props = new Props(treeBuf, roads.lamps, G, Q.trees, Q.lamps); scene.add(props.group);
   const sea = new Sea(PHONE); scene.add(sea.mesh);
   const env = new Env(scene, Q.shadows, Q.fog, PHONE);
@@ -86,13 +87,13 @@ async function main() {
   const toast = (t: string, ms = 1800) => { const el = $('toast'); el.textContent = t; el.classList.add('on'); clearTimeout((toast as unknown as { h: number }).h); (toast as unknown as { h: number }).h = window.setTimeout(() => el.classList.remove('on'), ms); };
   car.onHit = (p) => audio.bump(p);
   car.onSplash = () => { audio.splash(); toast('Denize düştün!\nYola geri alınıyorsun', 1600); };
-  signals.onRedRun = () => toast('🚦 Kırmızı ışık!', 1300);
   traffic.onPedHit = () => toast('Yayaya dikkat!', 1200);
 
   const spawn = meta.spawns.find((s) => s.id === (QS.get('spawn') || 'eminonu')) || meta.spawns[0];
   if (QS.get('at')) { const [ax, az, ay] = QS.get('at')!.split(',').map(Number); spawn.x = ax; spawn.z = az; spawn.yaw = ay || 0; }
   car.place(spawn.x, spawn.z, spawn.yaw);
 
+  const texReady = loadFacadeTextures(MAP, renderer, PHONE);
   // landmark modelleri arka planda
   loadLandmarks(meta.landmarks, MAP, lmGroup).catch(() => {});
 
@@ -135,7 +136,7 @@ async function main() {
     walls.rebuild(blds.colliders.values()); wallsDirty = false;
     car.place(spawn.x, spawn.z, spawn.yaw);
   };
-  await warm();
+  await warm(); await Promise.race([texReady, new Promise((r) => setTimeout(r, 6000))]);
   props.update(car.x, car.z, 260, 300);
   $('loading').classList.add('done');
   toast(PHONE || document.body.classList.contains('touch') ? 'Sağda gaz/fren, solda sürükle: direksiyon' : 'W A S D ile sür', 3500);
@@ -200,7 +201,7 @@ async function main() {
     ftAvg += (dt * 1000 - ftAvg) * 0.05; adaptT += dt;
     if (qAuto && adaptT > 1.5) {
       adaptT = 0;
-      if (ftAvg > 26 && pr > 0.6) { pr = Math.max(0.6, pr - 0.15); renderer.setPixelRatio(pr); }
+      if (ftAvg > 30 && pr > PR_MIN) { pr = Math.max(PR_MIN, pr - 0.1); renderer.setPixelRatio(pr); } // görüntü asla bloklaşacak kadar düşmez
       else if (ftAvg < 15 && pr < Math.min(devicePixelRatio, Q.pr)) { pr = Math.min(Math.min(devicePixelRatio, Q.pr), pr + 0.1); renderer.setPixelRatio(pr); }
     }
     requestAnimationFrame(frame);

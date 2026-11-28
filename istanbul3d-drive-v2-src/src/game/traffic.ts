@@ -48,6 +48,7 @@ export class Traffic {
     const ax = w.pts[2 * k], az = w.pts[2 * k + 1], bx = w.pts[2 * k + 2], bz = w.pts[2 * k + 3];
     let dx = (bx - ax) * dir, dz = (bz - az) * dir; const l = Math.hypot(dx, dz) || 1; dx /= l; dz /= l;
     const rx = -dz, rz = dx; // sağ
+    if (w.hw) { const h = this.R.halfAt(w, k, t), full = w.width / 2; lat = Math.abs(lat) <= full ? lat * (h / full) : Math.sign(lat) * Math.max(0.3, h - 0.5); } // dar sokak: şerit ve yaya içeride kalsın
     const x = ax + (bx - ax) * t + rx * lat, z = az + (bz - az) * t + rz * lat;
     const y = w.ys ? this.R.yAt(w, k) * (1 - t) + this.R.yAt(w, k + 1) * t : this.G.H(x, z);
     return { x, y, z, dx, dz };

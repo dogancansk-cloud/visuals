@@ -3,11 +3,11 @@
 import * as THREE from 'three';
 import type { Ground } from './ground';
 
-export interface Way { i: number; code: number; width: number; lanes: number; oneway: boolean; bridge: boolean; pts: Float32Array; ys: Float32Array | null; len: number; cum: Float32Array; name?: string; a: number; b: number }
+export interface Way { i: number; code: number; width: number; lanes: number; oneway: boolean; bridge: boolean; pts: Float32Array; ys: Float32Array | null; hw: Float32Array | null; len: number; cum: Float32Array; name?: string; a: number; b: number }
 export interface Node { id: number; x: number; z: number; ways: { w: number; end: 0 | 1 }[] }
 
 export const DRIVE = new Set([1, 2, 3, 4, 5, 6, 7, 9]); // servis yolları (8) haritada var ama trafik yok
-const SURF: Record<number, string> = { 1: '#5b5c60', 2: '#5e5f63', 3: '#646569', 4: '#68696c', 5: '#5f6064', 6: '#6e6f71', 7: '#8a8378', 8: '#7c7a75', 9: '#6a6a6c' };
+const SURF: Record<number, string> = { 1: '#665e5c', 2: '#665e5c', 3: '#6b6260', 4: '#786e6a', 5: '#665e5c', 6: '#978c84', 7: '#a2968b', 8: '#8f847c', 9: '#978c84' }; // eski haritanın sıcak yol tonları
 
 export class Roads {
   ways: Way[] = [];
@@ -31,14 +31,14 @@ export class Roads {
     };
     data.ways.forEach((w, i) => {
       const raw = w[5] as number[]; let arr = raw;
-      if (w[4] !== 1) { // 5 m'ye böl: şerit zemini izlesin
+      if (w[4] !== 1 && !w[7]) { // 5 m'ye böl: şerit zemini izlesin (daraltılmış yollar zaten 5 m noktalı gelir)
         arr = [];
         for (let k = 0; k + 2 < raw.length; k += 2) { const L = Math.hypot(raw[k + 2] - raw[k], raw[k + 3] - raw[k + 1]), m = Math.max(1, Math.ceil(L / 5)); for (let q = 0; q < m; q++) arr.push(raw[k] + (raw[k + 2] - raw[k]) * q / m, raw[k + 1] + (raw[k + 3] - raw[k + 1]) * q / m); }
         arr.push(raw[raw.length - 2], raw[raw.length - 1]);
       }
       const pts = new Float32Array(arr); const n = pts.length / 2;
       const cum = new Float32Array(n); for (let k = 1; k < n; k++) cum[k] = cum[k - 1] + Math.hypot(pts[2 * k] - pts[2 * k - 2], pts[2 * k + 1] - pts[2 * k - 1]);
-      const way: Way = { i, code: w[0] as number, width: w[1] as number, lanes: w[2] as number, oneway: w[3] === 1, bridge: w[4] === 1, pts, ys: w[6] ? new Float32Array(w[6] as number[]) : null, len: cum[n - 1], cum, name: data.names[i], a: 0, b: 0 };
+      const way: Way = { i, code: w[0] as number, width: w[1] as number, lanes: w[2] as number, oneway: w[3] === 1, bridge: w[4] === 1, pts, ys: w[6] ? new Float32Array(w[6] as number[]) : null, hw: w[7] ? new Float32Array(w[7] as number[]) : null, len: cum[n - 1], cum, name: data.names[i], a: 0, b: 0 };
       way.a = nodeOf(pts[0], pts[1]); way.b = nodeOf(pts[2 * n - 2], pts[2 * n - 1]);
       this.nodes[way.a].ways.push({ w: i, end: 0 }); this.nodes[way.b].ways.push({ w: i, end: 1 });
       this.ways.push(way);
@@ -51,6 +51,8 @@ export class Roads {
     this.buildMeshes();
   }
   private cellKey(x: number, z: number) { return Math.floor(x / this.CELL) * 100003 + Math.floor(z / this.CELL); }
+  /** yolun k. noktasındaki yarı genişlik (daralan sokaklarda yerel) */
+  halfAt(w: Way, k: number, t = 0) { return w.hw ? w.hw[k] + (w.hw[Math.min(k + 1, w.hw.length - 1)] - w.hw[k]) * t : w.width / 2; }
   /** yolun k. noktasındaki yükseklik */
   yAt(w: Way, k: number) { return w.ys ? w.ys[k] : this.G.H(w.pts[2 * k], w.pts[2 * k + 1]); }
 
@@ -85,12 +87,13 @@ export class Roads {
   private buildMeshes() {
     const CH = 500; const buckets = new Map<string, { road: number[][]; walk: number[][]; mark: number[][]; deck: number[][] }>();
     const bucket = (x: number, z: number) => { const k = `${Math.floor(x / CH)},${Math.floor(z / CH)}`; let b = buckets.get(k); if (!b) buckets.set(k, (b = { road: [[], []], walk: [[], []], mark: [[], []], deck: [[], []] })); return b; };
-    const col = new THREE.Color(); const walkC = new THREE.Color('#b8b0a2'), markC = new THREE.Color('#ecebe4'), yel = new THREE.Color('#e3b93a'), deckC = new THREE.Color('#8f877b'), railC = new THREE.Color('#6f6a64');
+    const col = new THREE.Color(); const walkC = new THREE.Color('#b7aa9c'), markC = new THREE.Color('#f2ead8'), yel = new THREE.Color('#f2ead8'), deckC = new THREE.Color('#8f877b'), railC = new THREE.Color('#6f6a64');
     const quad = (arr: number[][], a: number[], b: number[], c: number[], d: number[], cc: THREE.Color) => { // a b sol-sağ (başlangıç), c d sol-sağ (bitiş)
       arr[0].push(...a, ...b, ...c, ...b, ...d, ...c); for (let i = 0; i < 6; i++) arr[1].push(cc.r, cc.g, cc.b);
     };
     // bir yolu (offset, genişlik) şeridi olarak döşe; s0..s1 metre aralığı
-    const strip = (w: Way, off: number, wid: number, lift: number, cc: THREE.Color, target: 'road' | 'walk' | 'mark' | 'deck', s0 = 0, s1 = Infinity, dash = 0) => {
+    const strip = (w: Way, off: number, wid: number, lift: number, cc: THREE.Color, target: 'road' | 'walk' | 'mark' | 'deck', s0 = 0, s1 = Infinity, dash = 0, rel = 0) => {
+      const full = w.width / 2;
       const n = w.pts.length / 2; const P = w.pts;
       const side = (k: number) => { // nokta k'daki yan vektör (köşede ortalama)
         const k0 = Math.max(0, k - 1), k1 = Math.min(n - 1, k + 1);
@@ -107,7 +110,14 @@ export class Roads {
         const ya = w.ys ? this.yAt(w, k) * (1 - ta) + this.yAt(w, k + 1) * ta : null, yb = w.ys ? this.yAt(w, k) * (1 - tb) + this.yAt(w, k + 1) * tb : null;
         const pt = (p: number[], nn: number[], o: number, yy: number | null) => { const x = p[0] + nn[0] * o, z = p[1] + nn[1] * o; return [x, (yy ?? this.G.H(x, z)) + lift, z]; };
         const b = bucket(pa[0], pa[1]);
-        quad(b[target], pt(pa, na, off - wid / 2, ya), pt(pa, na, off + wid / 2, ya), pt(pb, nb, off - wid / 2, yb), pt(pb, nb, off + wid / 2, yb), cc);
+        // yerel yarı genişlik (binalar arasında daralan sokak): rel 1 = orantılı, rel 2 = yol kenarına göre
+        let oa = off, ob = off, wa = wid, wb = wid;
+        if (w.hw && rel) {
+          const ha = w.hw[k] + (w.hw[k + 1] - w.hw[k]) * ta, hb = w.hw[k] + (w.hw[k + 1] - w.hw[k]) * tb;
+          if (rel === 1) { oa *= ha / full; ob *= hb / full; wa *= ha / full; wb *= hb / full; }
+          else { if (Math.min(ha, hb) < full - 0.3) continue; }
+        }
+        quad(b[target], pt(pa, na, oa - wa / 2, ya), pt(pa, na, oa + wa / 2, ya), pt(pb, nb, ob - wb / 2, yb), pt(pb, nb, ob + wb / 2, yb), cc);
       }
     };
     for (const w of this.ways) {
@@ -117,14 +127,14 @@ export class Roads {
         strip(w, 0, w.width + 1.6, 0.02, deckC, 'deck');
         this.bridgeSides(w, bucket, railC);
       }
-      strip(w, 0, w.width, w.bridge ? 0.06 : 0.05, col, 'road');
-      if (!w.bridge && w.code >= 2 && w.code <= 6) { strip(w, -(hw + 1.3), 2.6, 0.04, walkC, 'walk'); strip(w, hw + 1.3, 2.6, 0.04, walkC, 'walk'); }
+      strip(w, 0, w.width, w.bridge ? 0.06 : 0.05, col, 'road', 0, Infinity, 0, 1);
+      if (!w.bridge && w.code >= 2 && w.code <= 6) { strip(w, -(hw + 1.3), 2.6, 0.04, walkC, 'walk', 0, Infinity, 0, 2); strip(w, hw + 1.3, 2.6, 0.04, walkC, 'walk', 0, Infinity, 0, 2); }
       // çizgiler kavşak ağızlarında kesilir
       const cut = 9;
       if (w.code <= 4 && w.len > 2 * cut + 4) {
         const l = w.bridge ? 0.08 : 0.07;
         if (!w.oneway && w.lanes >= 2) strip(w, 0, 0.15, l, w.code <= 2 ? yel : markC, 'mark', cut, w.len - cut, w.code <= 2 ? 0 : 3);
-        if (w.code <= 3) { strip(w, -(hw - 0.35), 0.15, l, markC, 'mark', cut, w.len - cut); strip(w, hw - 0.35, 0.15, l, markC, 'mark', cut, w.len - cut); }
+        if (w.code <= 3) { strip(w, -(hw - 0.35), 0.15, l, markC, 'mark', cut, w.len - cut, 0, 2); strip(w, hw - 0.35, 0.15, l, markC, 'mark', cut, w.len - cut, 0, 2); }
         if (w.lanes >= 3) { const lw = w.width / w.lanes; for (let q = 1; q < w.lanes; q++) { const o = -hw + q * lw; if (Math.abs(o) < 0.3 && !w.oneway) continue; strip(w, o, 0.12, l, markC, 'mark', cut, w.len - cut, 3); } }
       }
     }

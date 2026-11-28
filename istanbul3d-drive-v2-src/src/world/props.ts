@@ -8,6 +8,8 @@ function colored(g: THREE.BufferGeometry, c: string) {
   for (let i = 0; i < n; i++) { a[i * 3] = col.r; a[i * 3 + 1] = col.g; a[i * 3 + 2] = col.b; }
   g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g;
 }
+// sonbahar ağaç renkleri (eski harita)
+const AUTUMN = ['#f0b52a', '#e8891f', '#d4581f', '#b8321e', '#efc93a', '#8aa83a', '#5b8a32', '#d97a26', '#c9a227', '#7fa03c'].map((c) => new THREE.Color(c));
 export const lampUniform = { uNight: { value: 0 } };
 /** yumuşak ışık lekesi dokusu (lamba ve far altındaki aydınlık) */
 export function glowTexture(warm = true) {
@@ -27,9 +29,9 @@ export class Props {
     for (let i = 0; i < this.nTrees; i++) { this.trees[i * 4] = dv.getFloat32(i * 10, true); this.trees[i * 4 + 1] = dv.getFloat32(i * 10 + 4, true); this.trees[i * 4 + 2] = dv.getUint8(i * 10 + 8) / 100; this.trees[i * 4 + 3] = dv.getUint8(i * 10 + 9); }
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
     // yuvarlak taçlı ağaç
-    const trunk = colored(new THREE.CylinderGeometry(0.18, 0.28, 3, 5).translate(0, 1.5, 0), '#6b5340');
-    const crown = colored(new THREE.IcosahedronGeometry(2.4, 0).scale(1, 0.95, 1).translate(0, 4.6, 0), '#5f8048');
-    const crown2 = colored(new THREE.IcosahedronGeometry(1.6, 0).translate(0.9, 5.7, 0.4), '#6e8f50');
+    const trunk = colored(new THREE.CylinderGeometry(0.2, 0.3, 3, 5).translate(0, 1.5, 0), '#4a3a30');
+    const crown = colored(new THREE.IcosahedronGeometry(3.0, 0).scale(1, 0.92, 1).translate(0, 5.0, 0), '#ffffff');
+    const crown2 = colored(new THREE.IcosahedronGeometry(1.9, 0).translate(1.3, 6.3, 0.5), '#f1f1f1');
     this.treeMesh = new THREE.InstancedMesh(mergeGeometries([trunk, crown, crown2])!, mat, maxTrees);
     // selvi / çam
     const t2 = colored(new THREE.CylinderGeometry(0.15, 0.2, 2, 5).translate(0, 1, 0), '#5d4a3a');
@@ -58,7 +60,7 @@ export class Props {
       const x = T[i * 4], z = T[i * 4 + 1], dx = x - px, dz = z - pz; if (dx * dx + dz * dz > r2) continue;
       const sc = Math.max(0.6, Math.min(1.6, T[i * 4 + 2] || 1)); const pine = T[i * 4 + 3] % 3 === 2;
       q.setFromAxisAngle(up, (i * 2.399) % 6.283); s.setScalar(sc); p.set(x, this.G.H(x, z) - 0.2, z); M.compose(p, q, s);
-      if (pine) { if (b < this.pineMesh.instanceMatrix.count) this.pineMesh.setMatrixAt(b++, M); } else if (a < this.treeMesh.instanceMatrix.count) this.treeMesh.setMatrixAt(a++, M);
+      if (pine) { if (b < this.pineMesh.instanceMatrix.count) this.pineMesh.setMatrixAt(b++, M); } else if (a < this.treeMesh.instanceMatrix.count) { this.treeMesh.setColorAt(a, AUTUMN[(i * 7 + (i >> 3)) % AUTUMN.length]); this.treeMesh.setMatrixAt(a++, M); }
     }
     this.treeMesh.count = a; this.pineMesh.count = b;
     let c = 0; const rl2 = rLamp * rLamp;
@@ -71,5 +73,6 @@ export class Props {
     }
     this.lampMesh.count = this.bulbMesh.count = this.poolMesh.count = c; this.poolMesh.instanceMatrix.needsUpdate = true;
     for (const m of [this.treeMesh, this.pineMesh, this.lampMesh, this.bulbMesh]) m.instanceMatrix.needsUpdate = true;
+    if (this.treeMesh.instanceColor) this.treeMesh.instanceColor.needsUpdate = true;
   }
 }

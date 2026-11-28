@@ -174,10 +174,29 @@ const pip = (r, x, z) => { let c = false; for (let a = 0, b = r.length - 2; a < 
 const blds = [];
 const src = [...scene.buildings.filter((b) => !(b.p[0] && b.p[0][0] && inZone(b.p[0][0][0], b.p[0][0][1]) && !inScene(b.p[0][0][0], b.p[0][0][1]))), ...bjk.buildings];
 let dropped = 0;
+// eski haritanın gizleme listeleri: köprü üstü, Taksim meydanı, yer altı (metro kutuları), çift kayıt / deniz içi
+const hide = [];
+for (const [f, tol] of [['bridge_filter', 1.5], ['taksim_building_filter', 3], ['underground_filter', 1.5]]) for (const c of J(`${MAP}/${f}.json`).centroids) hide.push([c[0], c[1], tol, f === 'underground_filter']);
+for (const d of J(`${MAP}/wm11_building_filter.json`).detail) if (!String(d.why).startsWith('under')) hide.push([d.c[0], d.c[1], 1.5, false]);
+// yol ekseni noktaları (5 m aralık): bir bina bunlardan birini içine alıyorsa yolun ortasında demektir
+const RP = new Map(); const RC = 50;
+for (const r of R) { if (r.w[0] === 7 || r.w[0] === 8 || r.bridge) continue; for (const [x, z] of r.pts) { const k = `${Math.floor(x / RC)},${Math.floor(z / RC)}`; (RP.get(k) || RP.set(k, []).get(k)).push(x, z); } }
+const onRoad = (ext) => {
+  let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; for (let i = 0; i < ext.length; i += 2) { x0 = Math.min(x0, ext[i]); x1 = Math.max(x1, ext[i]); z0 = Math.min(z0, ext[i + 1]); z1 = Math.max(z1, ext[i + 1]); }
+  for (let a = Math.floor(x0 / RC); a <= Math.floor(x1 / RC); a++) for (let c = Math.floor(z0 / RC); c <= Math.floor(z1 / RC); c++) {
+    const l = RP.get(`${a},${c}`); if (!l) continue;
+    for (let i = 0; i < l.length; i += 2) if (l[i] >= x0 && l[i] <= x1 && l[i + 1] >= z0 && l[i + 1] <= z1 && pip(ext, l[i], l[i + 1])) return true;
+  }
+  return false;
+};
+let hidden = 0, roadHit = 0, roadArea = 0;
 for (const b of src) {
   if (!b.p || !b.p.length || !b.p[0] || !b.p[0][0] || b.p[0][0].length < 6) continue;
   const ext = b.p[0][0];
   if (removePts.some(([x, z]) => pip(ext, x, z))) { dropped++; continue; }
+  { let vx = 0, vz = 0; for (let i = 0; i < ext.length; i += 2) { vx += ext[i]; vz += ext[i + 1]; } vx /= ext.length / 2; vz /= ext.length / 2;
+    if (hide.some(([x, z, tol, inside]) => Math.hypot(x - vx, z - vz) < tol || (inside && pip(ext, x, z)))) { hidden++; continue; } }
+  if (b.p.some((poly) => onRoad(poly[0]))) { roadHit++; let a = 0; for (let i = 0; i < ext.length; i += 2) { const j = (i + 2) % ext.length; a += ext[i] * ext[j + 1] - ext[j] * ext[i + 1]; } roadArea += Math.abs(a / 2); continue; }
   let mn = 1e9, mx = -1e9, cx = 0, cz = 0, n = 0;
   for (const poly of b.p) for (let i = 0; i < poly[0].length; i += 2) { const h = sampleF(poly[0][i], poly[0][i + 1]); mn = Math.min(mn, h); mx = Math.max(mx, h); cx += poly[0][i]; cz += poly[0][i + 1]; n++; }
   cx /= n; cz /= n;
@@ -186,7 +205,68 @@ for (const b of src) {
   const eave = Math.max((mn + mx) / 2 + b.h, mx + 2.6); // yokuş üstü tarafta da en az bir kat
   blds.push({ b, cx, cz, base, eave });
 }
-log(`binalar: ${blds.length} (yol açmak için silinen ${dropped})`);
+log(`binalar: ${blds.length} (elle silinen ${dropped}, gizleme listesi ${hidden}, yol ortasında ${roadHit}, ort. alan ${(roadArea / Math.max(1, roadHit)).toFixed(0)} m²)`);
+
+// ---------- yol genişliği: binalar arasındaki gerçek boşluğa göre daralt ----------
+// Veri genişliği dar sokaklarda gerçek aralıktan fazla; binalar yola taşıyordu. Her yol noktasında en yakın duvara uzaklık ölçülür.
+{
+  const EC = 20, EH = new Map();
+  const areaOf = (r) => { let a = 0; for (let i = 0; i < r.length; i += 2) { const j = (i + 2) % r.length; a += r[i] * r[j + 1] - r[j] * r[i + 1]; } return Math.abs(a / 2); };
+  blds.forEach((o, bi) => { o.area = areaOf(o.b.p[0][0]); for (const poly of o.b.p) for (const r of poly) for (let i = 0; i < r.length; i += 2) {
+    const j = (i + 2) % r.length, ax = r[i], az = r[i + 1], bx = r[j], bz = r[j + 1];
+    for (let a = Math.floor(Math.min(ax, bx) / EC); a <= Math.floor(Math.max(ax, bx) / EC); a++) for (let c = Math.floor(Math.min(az, bz) / EC); c <= Math.floor(Math.max(az, bz) / EC); c++) { const k = `${a},${c}`; (EH.get(k) || EH.set(k, []).get(k)).push(bi, ax, az, bx, bz); }
+  } });
+  const dseg = (x, z, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1e-9))); return Math.hypot(x - ax - dx * t, z - az - dz * t); };
+  const kill = new Set();
+  const clearance = (x, z, max, onNear) => {
+    let d = max;
+    for (let a = Math.floor((x - max) / EC); a <= Math.floor((x + max) / EC); a++) for (let c = Math.floor((z - max) / EC); c <= Math.floor((z + max) / EC); c++) {
+      const l = EH.get(`${a},${c}`); if (!l) continue;
+      for (let i = 0; i < l.length; i += 5) { if (kill.has(l[i])) continue; const q = dseg(x, z, l[i + 1], l[i + 2], l[i + 3], l[i + 4]); if (q < d) d = q; if (onNear && q < 1.2) onNear(l[i]); }
+    }
+    return d;
+  };
+  // 0) yol eksenini iki yandaki duvarların ortasına kaydır (OSM ekseni ile bina çizimi çoğu dar sokakta 1-2 m kaçık)
+  let shifted = 0;
+  for (const r of R) {
+    if (r.bridge) continue; const P = r.pts, n = P.length, full = r.w[1] / 2, C = full + 1.5; if (n < 4) continue;
+    for (let pass = 0; pass < 2; pass++) {
+      const sh = new Array(n).fill(0), N = new Array(n);
+      for (let i = 0; i < n; i++) {
+        const a = P[Math.max(0, i - 1)], b = P[Math.min(n - 1, i + 1)]; let tx = b[0] - a[0], tz = b[1] - a[1]; const l = Math.hypot(tx, tz) || 1; tx /= l; tz /= l; const nx = -tz, nz = tx; N[i] = [nx, nz];
+        let dL = C, dR = C; const [x, z] = P[i], rad = C + 1;
+        for (let ca = Math.floor((x - rad) / EC); ca <= Math.floor((x + rad) / EC); ca++) for (let cc = Math.floor((z - rad) / EC); cc <= Math.floor((z + rad) / EC); cc++) {
+          const L = EH.get(`${ca},${cc}`); if (!L) continue;
+          for (let k = 0; k < L.length; k += 5) {
+            const ax = L[k + 1], az = L[k + 2], dx = L[k + 3] - ax, dz = L[k + 4] - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1e-9)));
+            const vx = ax + dx * t - x, vz = az + dz * t - z, al = vx * tx + vz * tz; if (Math.abs(al) > 2.5) continue; const lat = vx * nx + vz * nz;
+            if (lat > 0) dL = Math.min(dL, lat); else dR = Math.min(dR, -lat);
+          }
+        }
+        if (Math.min(dL, dR) < full + 0.3) sh[i] = Math.max(-2.5, Math.min(2.5, (dL - dR) / 2));
+      }
+      let any = false;
+      for (let it = 0; it < 2; it++) { const c = sh.slice(); for (let i = 1; i < n - 1; i++) sh[i] = (c[i - 1] + 2 * c[i] + c[i + 1]) / 4; }
+      for (let i = 0; i < n; i++) { const k = Math.min(1, Math.min(i, n - 1 - i) / 2) ; const v = sh[i] * k; if (Math.abs(v) > 0.15) { P[i] = [P[i][0] + N[i][0] * v, P[i][1] + N[i][1] * v]; any = true; } }
+      if (any && pass === 0) { shifted++; r.moved = true; }
+    }
+  }
+  // 1) araç yolunun tam üstündeki küçük binalar çıkarılır (araba geçemez)
+  const cand = new Set();
+  for (const r of R) { if (r.bridge || r.w[0] === 7 || r.w[0] === 8) continue; for (const [x, z] of r.pts) clearance(x, z, 2, (bi) => { if (blds[bi].area < 1500) cand.add(bi); }); }
+  for (const bi of cand) kill.add(bi);
+  // 2) kalan binalara göre nokta nokta yarı genişlik
+  let narrowed = 0, tight = 0;
+  for (const r of R) {
+    const full = r.w[1] / 2; if (r.bridge) continue;
+    const minHalf = r.w[0] === 7 || r.w[0] === 8 ? 0.9 : 1.2;
+    const raw = r.pts.map(([x, z]) => { const d = clearance(x, z, full + 0.3, null) - 0.3; if (d < minHalf) tight++; return Math.max(minHalf, Math.min(full, d)); });
+    const hw = raw.map((v, i) => Math.min(v, raw[Math.max(0, i - 1)], raw[Math.min(raw.length - 1, i + 1)]));
+    if (hw.some((v) => v < full - 0.05)) { r.hw = hw; narrowed++; } else if (r.moved) r.hw = hw;
+  }
+  const before = blds.length; const keep = blds.filter((_, i) => !kill.has(i)); blds.length = 0; blds.push(...keep);
+  log(`yol daraltma: ${shifted} yol ekseni ortalandı, ${narrowed} yol daraltıldı, ${before - blds.length} bina yol üstünde olduğu için çıkarıldı, ${tight} sıkışık nokta`);
+}
 
 const CH = 250;
 const chunks = new Map();
@@ -226,13 +306,14 @@ log(`buildings.bin ${(off / 1e6).toFixed(2)} MB, ${index.length} parça`);
 // ---------- yollar ----------
 const roadsOut = R.map((r) => {
   // köprü değilse OSM noktaları yeterli (oyun 5 m'ye kendisi böler); köprüde güverte profili için 5 m noktalar
-  const src = r.bridge ? r.pts.flat() : r.w[5];
+  const src = r.bridge || r.hw ? r.pts.flat() : r.w[5];
   const o = [r.w[0], r.w[1], r.w[2], r.w[3], r.bridge ? 1 : 0, src.map((v) => Math.round(v * 10) / 10)];
   if (r.bridge) o.push(r.h.map((h) => Math.round(h * 100) / 100));
+  else if (r.hw) o.push(0, r.hw.map((h) => Math.round(h * 10) / 10)); // daraltılmış yol: nokta başına yarı genişlik (noktalar 5 m aralıklı, oyun bölmez)
   return o;
 });
 const names = {}; ways.forEach((w, i) => { const n = world.names[String(world.ways.indexOf(w))]; if (n) names[i] = n; });
-fs.writeFileSync(`${OUT}/roads.json`, JSON.stringify({ note: 'OSM (c) OpenStreetMap contributors, ODbL. v2: yol ekseni (köprülerde 5 m noktalar + güverte yüksekliği). [kod, genişlik, şerit, tekyön, köprü, xz..., (köprü y...)]', codes: world.codes, ways: roadsOut, names, trams: world.trams, lamps: world.lamps }));
+fs.writeFileSync(`${OUT}/roads.json`, JSON.stringify({ note: 'OSM (c) OpenStreetMap contributors, ODbL. v2: yol ekseni (köprülerde 5 m noktalar + güverte yüksekliği). [kod, genişlik, şerit, tekyön, köprü, xz..., (köprü y... | 0), (yarı genişlikler)]', codes: world.codes, ways: roadsOut, names, trams: world.trams, lamps: world.lamps }));
 log(`roads.json ${(fs.statSync(`${OUT}/roads.json`).size / 1e6).toFixed(2)} MB`);
 
 // ---------- ağaçlar ----------
@@ -261,5 +342,7 @@ fs.writeFileSync(`${OUT}/meta.json`, JSON.stringify({
   chunk: CH, chunks: index,
   spawns: spawns.spawns,
   landmarks,
+  // eski haritanın görünüm kuralları için: tarihî yarımada sınırı (z), Sultanahmet ve Galata merkezleri
+  look: { oldZ: -(41.0195 - lat0) * 110574, sa: [(28.9784 - lon0) * kx, -(41.0066 - lat0) * 110574], gk: [(28.9741 - lon0) * kx, -(41.0256 - lat0) * 110574] },
 }));
 log('bitti');

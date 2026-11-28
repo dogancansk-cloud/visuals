@@ -37,10 +37,10 @@ export class Ground {
 // ---------- görünüm: karolar (yakın 10 m, uzak 40 m), kenarlarında aşağı inen etek ile ek yeri görünmez ----------
 const TILE = 320; // m (32 hücre)
 const COLS: Record<number, THREE.Color> = {
-  [KIND_LAND]: new THREE.Color('#cfc4b1'),
+  [KIND_LAND]: new THREE.Color('#8f837a'),
   [KIND_WATER]: new THREE.Color('#5e7476'),
-  [KIND_PARK]: new THREE.Color('#86a35f'),
-  [KIND_PLAZA]: new THREE.Color('#ddd0b6'),
+  [KIND_PARK]: new THREE.Color('#86a63a'),
+  [KIND_PLAZA]: new THREE.Color('#a39788'),
 };
 
 export class GroundView {
@@ -71,7 +71,7 @@ float vn(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return m
       const x = x0 + i * st, z = z0 + j * st, y = G.H(x, z);
       pos.push(x, y, z);
       const k = G.kindAt(x, z); c.copy(COLS[k] ?? COLS[0]);
-      if (k === KIND_LAND) { const hs = Math.min(1, y / 110); c.lerp(new THREE.Color('#bfb59f'), hs * 0.6); }
+      
       if (k === KIND_WATER) c.multiplyScalar(0.8);
       col.push(c.r, c.g, c.b);
     }
