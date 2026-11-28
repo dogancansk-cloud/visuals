@@ -5,9 +5,9 @@ import type { Backend } from './net';
 import type { Kart, ItemKind } from './kart';
 import { CHARS } from './characters';
 
-export interface PlayerInfo { name: string; char: number; t: number }
+export interface PlayerInfo { name: string; char: number; t: number; /** bitirdiği (ya da bıraktığı) son yarışın numarası */ fin?: number }
 export interface GridEntry { id: string; char: number; bot: boolean; name: string; skill: number }
-export interface Meta { host: string; pist: string; bots: boolean; pub: boolean; state: 'lobby' | 'race'; startAt: number; grid: GridEntry[] | null; race: number; autoAt: number }
+export interface Meta { host: string; pist: string; bots: boolean; pub: boolean; state: 'lobby' | 'race'; startAt: number; grid: GridEntry[] | null; race: number; autoAt: number; /** lobiye dönüldükten sonra hâlâ yarışanların bekleneceği son an */ holdTo?: number }
 export type NetEvent = { k: 'use'; id: string; it: ItemKind | 'throw'; j: number } | { k: 'hit'; v: string; by: string; o: string };
 
 export const MAX_P = 8;
@@ -55,7 +55,7 @@ export class Room {
   onChange: () => void = () => {}; onStart: (m: Meta) => void = () => {}; onEvent: (e: NetEvent) => void = () => {};
   /** oda kapandı ya da bağlantı gitti */
   onGone: () => void = () => {};
-  private unsub: (() => void)[] = []; private lastRace = -1; private tickT = 0; private alive = true; private hostGone = 0;
+  private unsub: (() => void)[] = []; private lastRace = -1; private tickT = 0; private alive = true; private hostGone = 0; private beat = 0;
   private constructor(readonly net: Backend, readonly code: string, private me: PlayerInfo) {}
   get uid() { return this.net.uid; }
   get isHost() { return !!this.meta && this.meta.host === this.net.uid; }
@@ -65,7 +65,13 @@ export class Room {
   static async create(net: Backend, me: PlayerInfo, pist: string, pub: boolean) {
     let code = '';
     for (let n = 0; n < 12; n++) { code = Array.from({ length: 4 }, () => LETTERS[Math.floor(Math.random() * LETTERS.length)]).join(''); if (!(await net.get(`rooms/${code}/meta`))) break; }
+    // bayat odaları temizle: 10 dakikadır sahibinden haber alınamayan odalar silinir
+    try {
+      const idx = ((await net.get('idx')) || {}) as Record<string, number>, now = net.now();
+      for (const c of Object.keys(idx)) if (now - idx[c] > 600000) { net.remove(`rooms/${c}`); net.remove(`idx/${c}`); net.remove(`pub/${c}`); }
+    } catch { /* temizlik şart değil */ }
     const meta: Meta = { host: net.uid, pist, bots: true, pub, state: 'lobby', startAt: 0, grid: null, race: 0, autoAt: 0 };
+    net.set(`idx/${code}`, net.now());
     net.set(`rooms/${code}/meta`, meta);
     const r = new Room(net, code, me); r.meta = meta; r.enter(); return r;
   }
@@ -108,7 +114,7 @@ export class Room {
 
   /** oda sahibi: ızgarayı kurar ve geri sayımı başlatır */
   start() {
-    if (!this.isHost || !this.meta) return;
+    if (!this.isHost || !this.meta || this.racing().length) return;
     const ids = Object.keys(this.players).sort((a, b) => this.players[a].t - this.players[b].t).slice(0, MAX_P);
     const grid: GridEntry[] = ids.map((id) => ({ id, char: this.players[id].char, bot: false, name: this.players[id].name, skill: 0 }));
     if (this.meta.bots) {
@@ -122,7 +128,12 @@ export class Room {
     this.net.update(this.p('meta'), { state: 'race', startAt: this.net.now() + 6500, grid, race: (this.meta.race || 0) + 1, autoAt: 0 });
   }
   /** oda sahibi lobiye dönünce oda yeni yarışa açılır */
-  backToLobby() { if (this.isHost && this.meta && this.meta.state !== 'lobby') this.net.update(this.p('meta'), { state: 'lobby', autoAt: 0 }); }
+  backToLobby() { if (this.isHost && this.meta && this.meta.state !== 'lobby') this.net.update(this.p('meta'), { state: 'lobby', autoAt: 0, holdTo: this.net.now() + 60000 }); }
+  /** lobiye dönüldüğü halde son yarışı henüz bitirmemiş oyuncular (en çok 60 sn beklenir) */
+  racing(): string[] {
+    const m = this.meta; if (!m || m.state !== 'lobby' || !m.grid || !m.holdTo || this.net.now() > m.holdTo) return [];
+    return m.grid.filter((g) => !g.bot && this.players[g.id] && this.players[g.id].fin !== m.race).map((g) => g.id);
+  }
 
   sendStates(o: Record<string, number[]>) { this.net.update(this.p('st'), o); }
   send(e: NetEvent) { this.net.push(this.p('ev'), e); }
@@ -135,9 +146,11 @@ export class Room {
     this.hostGone = ids.length && !this.players[m.host] ? this.hostGone + 1 : 0;
     if (this.hostGone >= 6 && ids.sort()[0] === net.uid) { net.update(this.p('meta'), { host: net.uid }); this.hostGone = 0; return; }
     if (!this.isHost) return;
+    if (++this.beat % 20 === 1) net.set(`idx/${this.code}`, net.now());
     if (m.pub) { net.set(`pub/${this.code}`, { n: ids.length, ts: net.now(), lobby: m.state === 'lobby' }); net.onDisconnectRemove(`pub/${this.code}`); }
     if (m.pub && m.state === 'lobby') {
-      if (ids.length >= 2 && !m.autoAt) net.update(this.p('meta'), { autoAt: net.now() + 10000 });
+      if (this.racing().length) { if (m.autoAt) net.update(this.p('meta'), { autoAt: 0 }); }
+      else if (ids.length >= 2 && !m.autoAt) net.update(this.p('meta'), { autoAt: net.now() + 10000 });
       else if (ids.length < 2 && m.autoAt) net.update(this.p('meta'), { autoAt: 0 });
       else if (m.autoAt && net.now() >= m.autoAt) this.start();
     }
@@ -147,6 +160,6 @@ export class Room {
     this.alive = false; for (const u of this.unsub) u(); this.unsub = [];
     const last = Object.keys(this.players).filter((u) => u !== this.net.uid).length === 0;
     if (this.meta?.pub && (this.isHost || last)) this.net.remove(`pub/${this.code}`);
-    if (last) this.net.remove(this.p()); else this.net.remove(this.p(`players/${this.net.uid}`));
+    if (last) { this.net.remove(this.p()); this.net.remove(`idx/${this.code}`); } else this.net.remove(this.p(`players/${this.net.uid}`));
   }
 }

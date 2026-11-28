@@ -1,6 +1,7 @@
 // Gerçek Galata–Karaköy: arazi (pist çevresinde düzeltilmiş), sokaklar, binalar, ağaçlar, simge yapılar, deniz, gün batımı göğü.
 import { inTram } from '../street';
 import * as THREE from 'three';
+import { todU, TOD_GLSL } from '../tod';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -100,9 +101,9 @@ export class World {
     const g = new THREE.SphereGeometry(1800, 40, 20);
     const m = new THREE.ShaderMaterial({
       side: THREE.BackSide, depthWrite: false, fog: false,
-      uniforms: { sun: { value: SUN_DIR }, rain: { value: 0 } },
+      uniforms: { sun: { value: SUN_DIR }, rain: { value: 0 }, tod: todU },
       vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position,1.0); gl_Position = p.xyww; }',
-      fragmentShader: `uniform vec3 sun; uniform float rain; varying vec3 vP;
+      fragmentShader: TOD_GLSL + `uniform vec3 sun; uniform float rain; varying vec3 vP;
         void main(){
           float h = vP.y; float s = max(0.0, dot(normalize(vP), sun));
           vec3 top = vec3(0.07, 0.36, 0.92), mid = vec3(0.26, 0.62, 1.0), low = vec3(0.66, 0.88, 1.0), hor = vec3(0.80, 0.94, 1.0);
@@ -110,7 +111,7 @@ export class World {
           c = mix(c, hor, smoothstep(0.08, -0.02, h) * 0.8);
           c += vec3(1.0, 0.97, 0.85) * pow(s, 10.0) * 0.22 + vec3(1.0, 0.98, 0.9) * pow(s, 260.0) * 1.6;
           if (h < -0.02) c = mix(hor, vec3(0.45, 0.72, 0.95), smoothstep(-0.02, -0.2, h));
-          c = mix(c, vec3(0.47, 0.5, 0.6) * (0.85 + 0.25 * h), rain * 0.88);
+          c = todSky(c, normalize(vP), sun); c = mix(c, vec3(0.47, 0.5, 0.6) * (0.85 + 0.25 * h) * (1.0 - 0.7 * tod.y), rain * 0.88);
           gl_FragColor = vec4(c, 1.0);
         }`,
     });
@@ -124,9 +125,9 @@ export class World {
       for (let b = 0; b < 6; b++) { const sg = new THREE.SphereGeometry(s * (0.6 + rnd() * 0.6), 9, 6); sg.scale(1.7, 0.55, 1.1); sg.translate(cx + (b - 3) * s * 0.8, y + rnd() * s * 0.3, cz + (rnd() - 0.5) * s); parts.push(sg); }
     }
     const cm = new THREE.ShaderMaterial({
-      fog: false, uniforms: { sun: { value: SUN_DIR }, rain: { value: 0 } },
+      fog: false, uniforms: { sun: { value: SUN_DIR }, rain: { value: 0 }, tod: todU },
       vertexShader: 'varying vec3 vN; varying vec3 vW; void main(){ vN = normalize(mat3(modelMatrix) * normal); vW = (modelMatrix * vec4(position,1.0)).xyz; gl_Position = projectionMatrix * viewMatrix * vec4(vW,1.0); }',
-      fragmentShader: 'uniform vec3 sun; uniform float rain; varying vec3 vN; varying vec3 vW; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.55, l) * 0.5 + step(0.8, l) * 0.5; vec3 c = mix(vec3(0.74, 0.84, 0.97), vec3(0.95, 0.97, 1.0), t); c = mix(c, vec3(1.0, 1.0, 1.0), step(0.93, l) * 0.8); c = mix(c, mix(vec3(0.36, 0.38, 0.47), vec3(0.56, 0.58, 0.66), t), rain); gl_FragColor = vec4(c, 1.0); }',
+      fragmentShader: TOD_GLSL + 'uniform vec3 sun; uniform float rain; varying vec3 vN; varying vec3 vW; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.55, l) * 0.5 + step(0.8, l) * 0.5; vec3 c = mix(vec3(0.74, 0.84, 0.97), vec3(0.95, 0.97, 1.0), t); c = mix(c, vec3(1.0, 1.0, 1.0), step(0.93, l) * 0.8); c = mix(c, mix(vec3(0.36, 0.38, 0.47), vec3(0.56, 0.58, 0.66), t), rain * (1.0 - 0.5 * tod.y)); c = todCloud(c); gl_FragColor = vec4(c, 1.0); }',
     });
     this.skyMats.push(cm);
     const clouds = new THREE.Mesh(mergeGeometries(parts), cm); clouds.renderOrder = -9; this.scene.add(clouds);
@@ -136,9 +137,10 @@ export class World {
     const g = new THREE.PlaneGeometry(6000, 6000, 1, 1); g.rotateX(-Math.PI / 2);
     const m = new THREE.ShaderMaterial({
       fog: true,
-      uniforms: { t: { value: 0 }, sun: { value: SUN_DIR }, fogColor: { value: new THREE.Color() }, fogNear: { value: 1 }, fogFar: { value: 1000 } },
+      uniforms: { tod: todU, t: { value: 0 }, sun: { value: SUN_DIR }, fogColor: { value: new THREE.Color() }, fogNear: { value: 1 }, fogFar: { value: 1000 } },
       vertexShader: '#include <fog_pars_vertex>\nvarying vec3 vW; void main(){ vW = (modelMatrix * vec4(position,1.0)).xyz; vec4 mvPosition = viewMatrix * vec4(vW,1.0); gl_Position = projectionMatrix * mvPosition;\n#include <fog_vertex>\n}',
       fragmentShader: `#include <fog_pars_fragment>
+        ${TOD_GLSL}
         uniform float t; uniform vec3 sun; varying vec3 vW;
         void main(){
           vec3 V = normalize(cameraPosition - vW); vec3 R = reflect(-V, vec3(0.0,1.0,0.0));
@@ -147,7 +149,7 @@ export class World {
           float glint = pow(max(0.0, dot(R, sun)), 40.0);
           c = mix(c, vec3(1.0, 0.98, 0.9), clamp(glint * 1.4, 0.0, 0.85));
           c = mix(c, vec3(0.9, 0.97, 1.0), step(1.25, w + glint * 0.8) * 0.7);
-          gl_FragColor = vec4(c, 1.0);
+          c = todSea(c); gl_FragColor = vec4(c, 1.0);
         #include <fog_fragment>
         }`,
     });

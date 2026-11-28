@@ -20,6 +20,8 @@ import { Crowd } from './crowd';
 import { Street, TRAM, inTram } from './street';
 import { connect, type Backend } from './net';
 import { ev } from './stats';
+import { Podium } from './podium';
+import { Tod, Lamps, TOD_NAME, type TodMode } from './tod';
 import { Room, pack, type Meta, type NetEvent, type PlayerInfo } from './online';
 import { Bosphorus, BG_SUN } from './bg/bosphorus';
 import { Particles } from './fx';
@@ -154,6 +156,7 @@ const crowd = (() => {
 })();
 const fx = new Particles(scene, mobile ? 600 : 1000);
 const trails = new Trails(scene);
+const podium = new Podium(scene, fx);
 const audio = new Audio();
 const input = new Input($('#ui'));
 const msg = new Msg($('#msg'));
@@ -190,6 +193,17 @@ const weather = new Weather(scene, sun, hemi, world.skyMats, mobile);
 weather.onStart = () => msg.show('Yağmur başladı!', 't1');
 if (PIST === 'kc') weather.onStart = null;
 weather.onThunder = () => audio.thunder();
+// günün saati: her yarışta rastgele (çarşı kapalı mekân, hep aynı)
+const tod = new Tod(scene, hemi, sun, SUN_FROM, ink, PIST === 'kc');
+const lamps = (() => {
+  const F = track.T.flags, every = Math.max(4, Math.round(17 / (track.L / track.T.n)));
+  if (PIST === 'kc') return new Lamps(scene, track, null, mobile);
+  if (PIST === 'bg') return new Lamps(scene, track, { every, off: 0.7, ok: (i) => !(F[i] & (F_GAP | F_WOOD)), color: (i) => (F[i] & F_BRIDGE || F[i] & F_SEA ? [0xff5ad0, 0x6fb8ff, 0xb48cff][Math.floor(i / every) % 3] : 0xffd9a0) }, mobile);
+  return new Lamps(scene, track, { every, off: 0.9, ok: (i) => !(F[i] & F_TUNNEL) }, mobile);
+})();
+let todNow: TodMode = 0;
+function setTod(m: TodMode) { todNow = m; tod.set(m); lamps.set(tod.mode); weather.dim = tod.mode === 2 ? 0.28 : tod.mode === 1 ? 0.75 : 1; weather.rebase(); }
+const pickTod = (r: number): TodMode => (Q.has('tod') ? (Number(Q.get('tod')) as TodMode) : r < 0.4 ? 0 : r < 0.72 ? 1 : 2);
 
 function setupRace() {
   for (const k of karts) scene.remove(k.model.root);
@@ -212,6 +226,7 @@ function setupRace() {
   if (Q.has('at')) { player.place0(Number(Q.get('at')), 0); }
   playerAI = auto ? new AI(player, track, 1) : null;
   raceT = 0; doneT = 0; lastBeep = 4; gasEdgeT = -9; startBoostGiven = false;
+  setTod(pickTod(Math.random()));
   weather.plan(); if (Q.has('rain')) weather.startAt = 0.1;
   if (PIST === 'kc') weather.clear(); // çarşının içinde yağmur yok
   for (const k of karts) k.sync(0, 0);
@@ -219,28 +234,31 @@ function setupRace() {
 
 const kartEvents = {
   onBoost(k: Kart, level: number) {
+    burst(k, level >= 3 ? C.l3 : level === 2 ? C.l2 : C.l1, 10 + level * 8, 7);
     if (k !== player) return;
+    fovKick = 4 + level * 3; shake = Math.max(shake, 0.1 + level * 0.07); flashV = 0.1 + level * 0.07;
     audio.boost(level);
     msg.show(['', 'TURBO!', 'SÜPER TURBO!', 'ULTRA TURBO!'][level], 't' + level);
   },
   onDriftFail(k: Kart, late: boolean) { if (k === player) { audio.fail(); msg.show(late ? 'Geç kaldın!' : 'Erken!', 'bad'); } },
   onDriftStart(k: Kart) { if (k === player) audio.hop(); },
-  onDriftLevel(k: Kart, lv: number) { if (k === player) { audio.ready(lv); try { navigator.vibrate?.(14); } catch { /* yok */ } } },
+  onDriftLevel(k: Kart, lv: number) { burst(k, lv >= 3 ? C.l3 : lv === 2 ? C.l2 : C.l1, 16, 5); if (k === player) { audio.ready(lv); try { navigator.vibrate?.(14); } catch { /* yok */ } } },
   onLand(k: Kart, v: number) { if (k === player && v > 5) audio.land(); dust(k, v > 9 ? 14 : 6); },
-  onWall(k: Kart) { if (k === player) audio.wall(); },
+  onWall(k: Kart) { if (k === player) { audio.wall(); shake = Math.max(shake, 0.22); } sparks(k.pos.x + Math.cos(k.yaw) * 0.9, k.pos.y + 0.5, k.pos.z + Math.sin(k.yaw) * 0.9, 9); },
   onHit() { /* items olayında */ },
 };
 
 // ---------- kamera ----------
 const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
-let camFov = 70, camInit = false, camYaw = 0, shake = 0;
+let camFov = 70, camInit = false, camYaw = 0, shake = 0, fovKick = 0, flashV = 0, warpV = 0;
 function updateCamera(dt: number, time: number) {
+  if (podium.on) { podium.update(dt, time, camera); camInit = false; ink.mat.uniforms.speed.value = 0; ink.mat.uniforms.warp.value = 0; ink.mat.uniforms.flash.value = 0; return; }
   if (state === 'select') {
-    const short = innerHeight < 500, back = camera.aspect < 1 ? 11 : short ? 8.6 : 7.2;
+    const short = innerHeight < 500, back = camera.aspect < 1 ? 11 : short ? 7.6 : 7.2;
     camera.position.copy(SR).addScaledVector(srRight, back).add(new THREE.Vector3(0, 1.9, 0)).addScaledVector(new THREE.Vector3(-srRight.z, 0, srRight.x), camera.aspect > 1.3 ? 1.2 : 0);
-    camera.lookAt(SR.x, SR.y + (short ? 1.0 : 2.2), SR.z); camera.fov = 50; camera.updateProjectionMatrix(); camInit = false;
+    camera.lookAt(SR.x, SR.y + (short ? 0.55 : 2.2), SR.z); camera.fov = 50; camera.updateProjectionMatrix(); camInit = false;
     if (srKart) { srKart.root.rotation.y = time * 0.6; srKart.root.position.y = 0.52 + Math.abs(Math.sin(time * 3)) * 0.04; srKart.wheels.forEach((w) => (w.rotation.z -= 0.05)); for (const a of srKart.anim) a(time, 14, Math.sin(time * 0.8) * 0.5); }
-    ink.mat.uniforms.speed.value = 0; return;
+    ink.mat.uniforms.speed.value = 0; ink.mat.uniforms.warp.value = 0; ink.mat.uniforms.flash.value = 0; return;
   }
   if (state === 'title' && PIST === 'kc') {
     const s = (time * 9) % track.L, p = track.point(s, 0), q = track.point(s + 14, 0);
@@ -269,11 +287,14 @@ function updateCamera(dt: number, time: number) {
   camera.position.copy(camPos).add(new THREE.Vector3((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake));
   camera.lookAt(camLook);
   camera.rotateZ(-k.driftVis * 0.035);
-  const tf = 70 + Math.min(9, Math.max(0, sp - 18) * 0.45) + (k.boostT > 0 ? 9 : 0);
+  fovKick *= Math.exp(-dt * 4); flashV *= Math.exp(-dt * 7);
+  const tf = 70 + Math.min(9, Math.max(0, sp - 18) * 0.45) + (k.boostT > 0 ? 9 : 0) + fovKick;
   camFov += (tf - camFov) * Math.min(1, dt * 5);
   camera.fov = camera.aspect < 1 ? Math.min(100, (2 * Math.atan(Math.tan((camFov * Math.PI) / 360) / camera.aspect * 0.62) * 180) / Math.PI) : camFov; camera.updateProjectionMatrix();
   ink.mat.uniforms.speed.value = state === 'race' ? Math.min(1, Math.max(0, (sp - 30) / 9) + (k.boostT > 0 ? 0.6 : 0)) : 0;
   ink.mat.uniforms.time.value = time;
+  warpV += ((state === 'race' && k.boostT > 0 ? 1 : 0) - warpV) * Math.min(1, dt * (k.boostT > 0 ? 9 : 3.5));
+  ink.mat.uniforms.warp.value = warpV; ink.mat.uniforms.flash.value = flashV;
 }
 
 // ---------- efektler ----------
@@ -291,7 +312,8 @@ function kartFx(k: Kart) {
     for (const sd of [-1, 1]) {
       const p = local(k, -0.8, 0.15, sd * 0.85);
       if (ready || k.boosts > 0) fx.emit(p.x, p.y, p.z, (Math.random() - 0.5) * 4, Math.random() * 3 + 1, (Math.random() - 0.5) * 4, col, 1, 0.22, 0.35, 12);
-      if (Math.random() < 0.3) fx.emit(p.x, p.y + 0.2, p.z, (Math.random() - 0.5), 1.2, (Math.random() - 0.5), C.white, 0.3, 0.7, 0.45);
+      // lastik dumanı: hıza göre yoğunlaşır, arkaya ve dışa savrulur
+      if (Math.random() < 0.35 + Math.min(0.5, k.speed / 60)) fx.emit(p.x, p.y + 0.15, p.z, -Math.cos(k.yaw) * 2 + (Math.random() - 0.5) * 1.5, 0.9 + Math.random() * 0.9, -Math.sin(k.yaw) * 2 + (Math.random() - 0.5) * 1.5, C.white, 0.34, 0.75 + Math.random() * 0.55, 0.55 + Math.random() * 0.3);
     }
   }
   if (k.boostT > 0) for (const e of k.model.exhaust) {
@@ -306,6 +328,16 @@ function kartFx(k: Kart) {
     fx.emit(p.x, p.y, p.z, -Math.cos(k.yaw) * 3 + (Math.random() - 0.5) * 2, 1.5 + Math.random() * 2, -Math.sin(k.yaw) * 3 + (Math.random() - 0.5) * 2, C.spray, 0.3 * weather.level, 0.26, 0.4, 10);
   }
   if (k.spinT > 0 && Math.random() < 0.6) { const p = local(k, 0, 1.6, 0); fx.emit(p.x, p.y, p.z, (Math.random() - 0.5) * 3, 2, (Math.random() - 0.5) * 3, C.flame2, 1, 0.3, 0.5); }
+}
+/** halka şeklinde kıvılcım patlaması (drift kademesi, turbo) */
+function burst(k: Kart, col: THREE.Color, n: number, sp: number) {
+  if (k.pos.distanceToSquared(camera.position) > 60 * 60) return;
+  for (let i = 0; i < n; i++) { const a = (i / n) * Math.PI * 2 + Math.random() * 0.3, v = sp * (0.6 + Math.random() * 0.6); fx.emit(k.pos.x - Math.cos(k.yaw) * 0.7, k.pos.y + 0.3, k.pos.z - Math.sin(k.yaw) * 0.7, Math.cos(a) * v, 1.5 + Math.random() * 3.5, Math.sin(a) * v, col, 1, 0.24, 0.4 + Math.random() * 0.25, 9); }
+}
+/** çarpışma kıvılcımı */
+function sparks(x: number, y: number, z: number, n: number) {
+  if (camera.position.distanceToSquared(tmp.set(x, y, z)) > 50 * 50) return;
+  for (let i = 0; i < n; i++) fx.emit(x, y, z, (Math.random() - 0.5) * 9, 1 + Math.random() * 5, (Math.random() - 0.5) * 9, Math.random() < 0.5 ? C.flame : C.flame2, 1, 0.17, 0.3 + Math.random() * 0.2, 16);
 }
 function dust(k: Kart, n: number) { for (let i = 0; i < n; i++) fx.emit(k.pos.x + (Math.random() - 0.5) * 2, k.pos.y + 0.2, k.pos.z + (Math.random() - 0.5) * 2, (Math.random() - 0.5) * 5, Math.random() * 2, (Math.random() - 0.5) * 5, C.dust, 0.8, 1.2, 0.7); }
 
@@ -362,6 +394,7 @@ function step(dt: number) {
       const d = Math.sqrt(d2), o = (1.55 - d) / (a.remote || b.remote ? 1 : 2), nx = dx / d, nz = dz / d;
       if (!a.remote) { a.pos.x -= nx * o; a.pos.z -= nz * o; } if (!b.remote) { b.pos.x += nx * o; b.pos.z += nz * o; }
       const rv = (b.vel.x - a.vel.x) * nx + (b.vel.z - a.vel.z) * nz;
+      if (rv < -5) { sparks((a.pos.x + b.pos.x) / 2, a.pos.y + 0.6, (a.pos.z + b.pos.z) / 2, 7); if (a === player || b === player) shake = Math.max(shake, 0.2); }
       if (rv < 0) { if (!a.remote) { a.vel.x += nx * rv * 0.6; a.vel.z += nz * rv * 0.6; } if (!b.remote) { b.vel.x -= nx * rv * 0.6; b.vel.z -= nz * rv * 0.6; } }
     }
   }
@@ -389,6 +422,7 @@ function step(dt: number) {
 
 function onPlayerFinish() {
   state = 'done'; doneT = 0;
+  if (onMeta && room) room.setMe({ fin: onMeta.race });
   ev(onMeta ? 'online_finish' : 'finish', { pist: PIST, place: player.place }); if (player.place === 1) ev(onMeta ? 'online_win' : 'win');
   playerAI = new AI(player, track, 0.7);
   const win = player.place === 1;
@@ -451,7 +485,7 @@ function makePortraits() {
 }
 
 function showTitle() {
-  state = 'title'; view = 'title'; paused = false; setHud(false); weather.clear(); audio.rain(0);
+  state = 'title'; view = 'title'; paused = false; setHud(false); podium.hide(); setTod(0); weather.clear(); audio.rain(0);
   menu.innerHTML = `<div class="title"><div class="logo">BOSPHORUS<br>DRIFT<small>${PISTS[PIST].toLocaleUpperCase("tr")}</small></div>
     <div class="seg pist tpist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === PIST ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>
     <div class="row"><button class="btn" id="bPlay">Yarış</button><button class="btn on" id="bOn">Online</button><button class="btn alt" id="bHow">Nasıl oynanır</button></div>
@@ -469,7 +503,7 @@ function showTitle() {
 
 // ---------- online: oda, lobi, eşleşme ----------
 let net: Backend | null = null, room: Room | null = null, onMeta: Meta | null = null;
-let view: 'title' | 'online' | 'lobby' = 'title', lobbyT = 0, sendAcc = 0;
+let view: 'title' | 'online' | 'lobby' = 'title', lobbyT = 0, sendAcc = 0, lobbyBusy = false;
 const botSkill = new Map<string, number>();
 const nm = (k: Kart) => k.label || k.def.name;
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
@@ -522,31 +556,32 @@ function enterRoom(r: Room) {
   showLobby();
 }
 function leaveRoom(note = '') {
-  room?.leave(); room = null; onMeta = null; botSkill.clear();
+  room?.leave(); room = null; onMeta = null; botSkill.clear(); podium.hide();
   for (const k of karts) k.model.root.visible = false;
   setHud(false); audio.music(false);
   if (note) showOnline(note); else showTitle();
 }
 function showLobby() {
   const r = room; if (!r || !r.meta) return;
-  state = 'title'; view = 'lobby'; paused = false; setHud(false);
+  state = 'title'; view = 'lobby'; paused = false; setHud(false); podium.hide(); if (todNow) setTod(0);
   if (!portraits.length) makePortraits();
-  if (onMeta) { onMeta = null; for (const k of karts) k.model.root.visible = false; audio.music(false); }
+  if (onMeta) { const race = onMeta.race; onMeta = null; for (const k of karts) k.model.root.visible = false; audio.music(false); r.setMe({ fin: race }); }
   const m = r.meta, ids = Object.keys(r.players).sort((a, b) => r.players[a].t - r.players[b].t), host = r.isHost;
-  const left = m.autoAt ? Math.max(0, Math.ceil((m.autoAt - r.net.now()) / 1000)) : 0;
+  const left = m.autoAt ? Math.max(0, Math.ceil((m.autoAt - r.net.now()) / 1000)) : 0, busy = r.racing();
   const status = m.state === 'race' ? 'Yarış sürüyor. Bitince yeni yarış başlar.'
+    : busy.length ? `${busy.map((id) => esc(r.players[id].name)).join(', ')} hâlâ yarışıyor. Bitirince (en çok ${Math.max(1, Math.ceil(((m.holdTo || 0) - r.net.now()) / 1000))} sn) yeni yarış başlayabilir.`
     : m.pub ? (ids.length < 2 ? 'Rakip bekleniyor… Biri gelince yarış başlar.' : `Yarış ${left} sn sonra başlıyor`)
     : host ? (ids.length < 2 ? 'Kodu arkadaşlarına gönder. Hazır olunca başlat.' : 'Herkes hazırsa başlat.') : 'Oda sahibinin başlatması bekleniyor…';
   menu.innerHTML = `<div class="panel lobby"><h2>${m.pub ? 'Rastgele eşleşme' : `Oda kodu <span class="code">${r.code}</span>`}</h2>
-    ${m.pub ? '' : '<div class="row"><button class="btn ghost" id="lShare">Kodu paylaş</button></div>'}
-    <div class="plist">${ids.map((id) => { const p = r.players[id]; return `<div class="pl${id === r.uid ? ' me' : ''}"><img src="${portraits[p.char] || ''}" alt=""><b>${esc(p.name)}</b>${id === m.host ? '<i>oda sahibi</i>' : ''}</div>`; }).join('')}<div class="pl empty">${ids.length}/8 oyuncu</div></div>
-    <div class="lbl">Karakterin</div>
+    <div class="lcols"><div class="lcol">${m.pub ? '' : '<div class="row"><button class="btn ghost" id="lShare">Kodu paylaş</button></div>'}
+    <div class="plist">${ids.map((id) => { const p = r.players[id]; return `<div class="pl${id === r.uid ? ' me' : ''}"><img src="${portraits[p.char] || ''}" alt=""><b>${esc(p.name)}</b>${id === m.host ? '<i>oda sahibi</i>' : ''}</div>`; }).join('')}<div class="pl empty">${ids.length}/8 oyuncu</div></div></div>
+    <div class="lcol"><div class="lbl">Karakterin</div>
     <div class="chips small">${CHARS.map((ch, i) => `<button class="chip${i === charIdx ? ' sel' : ''}" data-i="${i}" style="--c:#${ch.color.toString(16).padStart(6, '0')}"><img src="${portraits[i]}" alt="${ch.name}"></button>`).join('')}</div>
     <div class="lbl">Pist${host ? '' : `: ${PISTS[PIST]}`} · Bilgisayar rakipler${host ? '' : `: ${m.bots ? 'var' : 'yok'}`}</div>
     ${host ? `<div class="selRow"><div class="seg pist">${(Object.keys(PISTS) as (keyof typeof PISTS)[]).map((k) => `<button data-p="${k}" class="${k === m.pist ? 'sel' : ''}">${PISTS[k]}</button>`).join('')}</div>
-      <div class="seg"><button data-b="1" class="${m.bots ? 'sel' : ''}">Rakip var</button><button data-b="0" class="${m.bots ? '' : 'sel'}">Yok</button></div></div>` : ''}
+      <div class="seg"><button data-b="1" class="${m.bots ? 'sel' : ''}">Rakip var</button><button data-b="0" class="${m.bots ? '' : 'sel'}">Yok</button></div></div>` : ''}</div></div>
     <div class="note">${status}</div>
-    <div class="row">${host && !m.pub && m.state === 'lobby' ? '<button class="btn" id="lGo">Başlat</button>' : ''}<button class="btn ghost" id="lLeave">Odadan çık</button></div></div>`;
+    <div class="row">${host && !m.pub && m.state === 'lobby' ? `<button class="btn" id="lGo"${busy.length ? ' disabled' : ''}>Başlat</button>` : ''}<button class="btn ghost" id="lLeave">Odadan çık</button></div></div>`;
   menu.querySelectorAll<HTMLElement>('.chip').forEach((b) => (b.onclick = () => { charIdx = Number(b.dataset.i); store.set('char', String(charIdx)); audio.click(); r.setMe({ char: charIdx }); showLobby(); }));
   menu.querySelectorAll<HTMLElement>('.seg button[data-p]').forEach((b) => (b.onclick = () => { audio.click(); r.setMeta({ pist: b.dataset.p! }); }));
   menu.querySelectorAll<HTMLElement>('.seg button[data-b]').forEach((b) => (b.onclick = () => { audio.click(); r.setMeta({ bots: b.dataset.b === '1' }); }));
@@ -569,7 +604,7 @@ function nameTag(text: string) {
 }
 function startOnlineRace(m: Meta) {
   const r = room; if (!r || !m.grid) return;
-  onMeta = m; view = 'title'; menu.innerHTML = ''; paused = false; showroom.visible = false;
+  onMeta = m; view = 'title'; menu.innerHTML = ''; paused = false; showroom.visible = false; podium.hide();
   ev('online_start', { players: m.grid.filter((g) => !g.bot).length }); ev('pist_' + PIST); ev('char_' + CHARS[charIdx].id);
   for (const k of karts) scene.remove(k.model.root);
   items.reset(); trails.reset(); karts = []; ais = []; botSkill.clear();
@@ -586,7 +621,7 @@ function startOnlineRace(m: Meta) {
   });
   playerAI = auto ? new AI(player, track, 1) : null;
   raceT = 0; doneT = 0; lastBeep = 4; gasEdgeT = -9; startBoostGiven = false; lastLap = 0; camInit = false; sendAcc = 0;
-  weather.clear();
+  setTod(pickTod(((m.startAt % 1000) / 1000 + m.race * 0.37) % 1)); weather.clear();
   for (const k of karts) k.sync(0, 0);
   state = 'count'; countT = (m.startAt - r.net.now()) / 1000 + 0.6;
   setHud(true); audio.start(); audio.music(true);
@@ -595,14 +630,16 @@ function startOnlineRace(m: Meta) {
 function onlineFrame(rawDt: number) {
   const r = room; if (!r) return;
   r.tick(rawDt);
-  if (view === 'lobby') { lobbyT += rawDt; if (lobbyT > 1 && r.meta?.autoAt) { lobbyT = 0; showLobby(); } }
+  if (view === 'lobby') { lobbyT += rawDt; if (lobbyT > 1 && (r.meta?.autoAt || r.racing().length || lobbyBusy)) { lobbyT = 0; lobbyBusy = r.racing().length > 0; if (!document.activeElement || document.activeElement === document.body) showLobby(); } }
   if (!onMeta) return;
   const now = r.net.now();
   for (const k of karts) {
     if (!k.remote) continue;
     // oda sahibi ayrıldıysa botları devral
-    if (r.isHost && botSkill.has(k.netId)) { k.remote = false; ais.push(new AI(k, track, botSkill.get(k.netId)!)); continue; }
-    const g = r.ghosts.get(k.netId); if (!g || !g.has) continue;
+    const g = r.ghosts.get(k.netId);
+    // botları oda sahibi sürer; sahip ayrıldıysa ya da lobiye döndüyse (2,5 sn haber yok) bu cihaz devralır
+    if (botSkill.has(k.netId) && (r.isHost || (g && g.has && state !== 'count' && performance.now() - g.lastAt > 2500))) { k.remote = false; ais.push(new AI(k, track, botSkill.get(k.netId)!)); continue; }
+    if (!g || !g.has) continue;
     g.apply(k, now);
     if (!k.finished && !k.gone && state !== 'count' && performance.now() - g.lastAt > 7000) { k.gone = true; k.model.root.visible = false; if (k.label) msg.show(`${k.label} ayrıldı`, 'bad'); }
   }
@@ -633,6 +670,7 @@ const HIT_TEXT: Record<string, [string, (n: string) => string]> = {
 function hitNote(v: Kart, by: string, owner: Kart | null) {
   if (near(v)) by === 'kedi' ? audio.meow() : audio.hit();
   const t = HIT_TEXT[by] || ['Vuruldun!', (n: string) => `${n} vuruldu!`];
+  if (v === player) { shake = Math.max(shake, 0.45); flashV = Math.max(flashV, 0.12); }
   if (v === player) msg.show(t[0] + (v.lastLoss ? ` −${v.lastLoss} simit` : ''), 'bad'); else if (owner === player) msg.show(t[1](nm(v)), 't1');
 }
 
@@ -658,7 +696,7 @@ function setShowroomKart(i: number) {
 }
 const STAT_NAMES = ['Hız', 'İvme', 'Yol tutuş'];
 function showSelect() {
-  state = 'select'; if (!portraits.length) makePortraits();
+  state = 'select'; podium.hide(); if (todNow) setTod(0); if (!portraits.length) makePortraits();
   showroom.visible = true; setShowroomKart(charIdx);
   for (const k of karts) k.model.root.visible = false;
   const c = CHARS[charIdx];
@@ -703,7 +741,7 @@ function showHelp(back: () => void) {
 }
 function showPause() {
   paused = true;
-  menu.innerHTML = `<div class="panel"><h2>Duraklatıldı</h2><div class="row" style="flex-direction:column;align-items:center">
+  menu.innerHTML = `<div class="panel pause"><h2>Duraklatıldı</h2><div class="row col">
     <button class="btn" id="pRes">Devam</button><button class="btn alt" id="pRe">Yeniden başla</button><button class="btn ghost" id="pHow">Nasıl oynanır</button><button class="btn ghost" id="pMute">${audio.muted ? 'Ses: kapalı' : 'Ses: açık'}</button>${fsBtnHtml('pFs')}<button class="btn ghost" id="pMenu">Ana menü</button></div></div>`;
   bindFs('pFs', showPause);
   $('#pRes').onclick = resume;
@@ -715,6 +753,17 @@ function showPause() {
   audio.music(false);
 }
 function resume() { paused = false; menu.innerHTML = ''; audio.music(true); last = performance.now(); }
+/** yarış bitince: kürsü sahnesi, altta kısa özet; "Sonuçlar" ile tablo açılır */
+function showPodium() {
+  $('#hud').classList.add('hide');
+  const order = [...karts].sort((a, b) => a.place - b.place), top = order.slice(0, 3), me = player.place;
+  podium.show(SR, srRight, top.map((k) => CHARS.indexOf(k.def)), me > 3 ? CHARS.indexOf(player.def) : null, me);
+  if (me <= 3) life.fireworks(SR);
+  menu.innerHTML = `<div class="podbar"><h2>${me === 1 ? 'Kazandın! 🏆' : me <= 3 ? `Kürsüdesin: ${me}. oldun!` : `${me}. oldun`}</h2>
+    <div class="podnames">${top.map((k, i) => `<span class="${k === player ? 'me' : ''}"><b>${i + 1}</b>${esc(nm(k))}</span>`).join('')}</div>
+    <div class="row"><button class="btn" id="pdRes">Sonuçlar</button></div></div>`;
+  $('#pdRes').onclick = () => { audio.click(); showResults(); resLast = ''; };
+}
 function showResults() {
   $('#hud').classList.add('hide');
   menu.innerHTML = `<div class="panel"><h2>${player.place === 1 ? 'Kazandın! 🏆' : 'Yarış bitti'}</h2><table class="res" id="resT">${resRows()}</table>
@@ -729,7 +778,7 @@ function resRows() {
 }
 let resLast = '';
 function startCountdown() {
-  onMeta = null; menu.innerHTML = ''; paused = false; showroom.visible = false;
+  onMeta = null; menu.innerHTML = ''; paused = false; showroom.visible = false; podium.hide();
   setupRace(); state = 'count'; countT = 3.6; lastLap = 0; camInit = false;
   ev('start'); ev('pist_' + PIST); ev('char_' + CHARS[charIdx].id);
   setHud(true); audio.start(); audio.music(true);
@@ -794,6 +843,7 @@ function frame(now: number) {
     if (n < lastBeep && n >= 1 && n <= 3) { lastBeep = n; hud.count.innerHTML = `<div>${n}</div>`; audio.beep(false); }
     if (countT <= 0.6 && lastBeep > 0) {
       lastBeep = 0; hud.count.innerHTML = '<div class="go">BAŞLA!</div>'; audio.beep(true);
+      if (tod.mode) msg.show(tod.mode === 2 ? 'Gece yarışı' : 'Gün batımı yarışı', 't1');
       state = 'race'; raceT = 0;
       // başlangıç turbosu: son 0.45 sn içinde basıldıysa
       if (gasEdgeT <= 1.05 && gasEdgeT > 0.6 && !startBoostGiven) { startBoostGiven = true; player.boost(7, 1.3); msg.show('Süper kalkış!', 't2'); }
@@ -805,12 +855,12 @@ function frame(now: number) {
   if (state !== 'title' && state !== 'select') {
     const sub = Math.max(2, Math.ceil(dt / 0.009));
     for (let i = 0; i < sub; i++) step(dt / sub);
-    for (const k of karts) { k.sync(dt, time); kartFx(k); }
-    if (dt > 0) trails.update(karts, camera.position);
+    for (const k of karts) { k.sync(dt, time); if (podium.on) k.model.root.visible = false; else kartFx(k); }
+    if (dt > 0 && !podium.on) trails.update(karts, camera.position);
     if (state === 'race' || state === 'count') updateHud(dt);
     audio.engine(player.speed, playerAI ? 1 : input.c.gas, player.drifting && player.grounded, player.boostT > 0, !paused && state !== 'done');
     if (state === 'done') {
-      doneT += dt; if (doneT > 3 && doneT - dt <= 3) { showResults(); resLast = ''; }
+      doneT += dt; if (doneT > 3 && doneT - dt <= 3) showPodium();
       const rt = document.getElementById('resT'); if (rt && Math.floor(doneT * 4) !== Math.floor((doneT - dt) * 4)) { const h = resRows(); if (h !== resLast) { rt.innerHTML = h; resLast = h; } }
     }
   } else audio.engine(0, 0, false, false, false);
@@ -826,9 +876,11 @@ function frame(now: number) {
     audio.rain(paused ? 0 : weather.level);
     if (player && (racing || state === 'count')) props.uPlayer.value.copy(player.pos);
   }
+  lamps.update(karts, player || null, (state === 'count' || racing) && !podium.on);
+  if (podium.on) lamps.focus(SR.x + srRight.x * 5, SR.y + 4.5, SR.z + srRight.z * 5);
   updateCamera(dt, time);
   // gölge kamerası oyuncuyu izler
-  const focus = state === 'title' ? (PIST === 'kc' ? camera.position : new THREE.Vector3(track.T.tower.x, track.T.tower.y0 + 10, track.T.tower.z)) : state === 'select' ? SR : player.pos;
+  const focus = state === 'title' ? (PIST === 'kc' ? camera.position : new THREE.Vector3(track.T.tower.x, track.T.tower.y0 + 10, track.T.tower.z)) : state === 'select' || podium.on ? SR : player.pos;
   sun.position.copy(focus).addScaledVector(SUN_FROM, 220); sun.target.position.copy(focus);
   ink.render(scene, camera);
 }

@@ -69,11 +69,11 @@ export class Bazaar {
   update(a: number, b?: number) { this.uTime.value = b ?? a; }
 
   // ---------- yardımcılar ----------
-  private P(i: number, d: number, dy = 0) { const T = this.T, k = ((i % T.n) + T.n) % T.n; return [T.x[k] - T.tz[k] * d, T.y[k] + dy, T.z[k] + T.tx[k] * d] as const; }
+  private P(i: number, d: number, dy = 0) { const T = this.T, k = ((Math.round(i) % T.n) + T.n) % T.n; return [T.x[k] - T.tz[k] * d, T.y[k] + dy, T.z[k] + T.tx[k] * d] as const; }
   private V(i: number, d: number, dy = 0) { const p = this.P(i, d, dy); return new THREE.Vector3(p[0], p[1], p[2]); }
-  private half(i: number) { return this.T.w[((i % this.T.n) + this.T.n) % this.T.n] / 2 + 1.7; }
-  private street(i: number) { return !(this.T.flags[((i % this.T.n) + this.T.n) % this.T.n] & (F_HALL | F_GATE | F_HAN)); }
-  private yaw(i: number) { const k = ((i % this.T.n) + this.T.n) % this.T.n; return Math.atan2(this.T.tz[k], this.T.tx[k]); }
+  private half(i: number) { return this.T.w[((Math.round(i) % this.T.n) + this.T.n) % this.T.n] / 2 + 1.7; }
+  private street(i: number) { return !(this.T.flags[((Math.round(i) % this.T.n) + this.T.n) % this.T.n] & (F_HALL | F_GATE | F_HAN)); }
+  private yaw(i: number) { const k = ((Math.round(i) % this.T.n) + this.T.n) % this.T.n; return Math.atan2(this.T.tz[k], this.T.tx[k]); }
   /** pist kenarında, yüzü piste dönük kutu (yerel: x boyuna, z dışa) */
   private boxAt(i: number, d: number, y: number, sx: number, sy: number, sz: number, col: number) {
     const b = new THREE.BoxGeometry(sx, sy, sz), p = this.P(i, d, y);

@@ -17,12 +17,12 @@ export class Ink {
       uniforms: {
         tColor: { value: this.rt.texture }, tDepth: { value: this.rt.depthTexture },
         res: { value: new THREE.Vector2(1, 1) }, near: { value: 0.3 }, far: { value: 2000 },
-        ink: { value: new THREE.Color(0x1d2550) }, width: { value: 1 }, speed: { value: 0 }, time: { value: 0 }, vivid: { value: 0 },
+        ink: { value: new THREE.Color(0x1d2550) }, width: { value: 1 }, speed: { value: 0 }, time: { value: 0 }, vivid: { value: 0 }, warp: { value: 0 }, flash: { value: 0 },
         tBloom: { value: this.bA.texture }, bloomK: { value: 0.55 }, vig: { value: 0.22 },
       },
       vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
       fragmentShader: `
-        uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float near; uniform float far; uniform vec3 ink; uniform float width; uniform float speed; uniform float time; uniform float vivid; uniform sampler2D tBloom; uniform float bloomK; uniform float vig;
+        uniform sampler2D tColor; uniform sampler2D tDepth; uniform vec2 res; uniform float near; uniform float far; uniform vec3 ink; uniform float width; uniform float speed; uniform float time; uniform float vivid; uniform float warp; uniform float flash; uniform sampler2D tBloom; uniform float bloomK; uniform float vig;
         varying vec2 vUv;
         float lin(vec2 uv){ float d = texture2D(tDepth, uv).x; return (near * far) / (far - d * (far - near)); }
         float hash(float n){ return fract(sin(n) * 43758.5453); }
@@ -40,6 +40,12 @@ export class Ink {
           e *= mix(1.0, 0.25, smoothstep(120.0, 600.0, c)); // uzakta incelir
           if (c > far * 0.9) e *= 0.0;
           vec3 col = texture2D(tColor, vUv).rgb;
+          // turbo: kenarlara doğru ışınsal bulanıklık ve hafif renk ayrışması
+          if (warp > 0.01) {
+            vec2 dc = vUv - 0.5; float k = warp * smoothstep(0.03, 0.42, dot(dc, dc)) * 0.06;
+            vec3 acc = col + texture2D(tColor, vUv - dc * k * 0.33).rgb + texture2D(tColor, vUv - dc * k * 0.66).rgb + texture2D(tColor, vUv - dc * k).rgb;
+            col = acc * 0.25; col.r = mix(col.r, texture2D(tColor, vUv - dc * k * 1.5).r, 0.3); col.b = mix(col.b, texture2D(tColor, vUv + dc * k * 0.5).b, 0.3);
+          }
           vec3 glow = texture2D(tBloom, vUv).rgb; col += glow * glow * bloomK;
           // canlılık: doygunluk ve hafif kontrast (çizgi film gibi)
           float lum = dot(col, vec3(0.299, 0.587, 0.114));
@@ -57,6 +63,7 @@ export class Ink {
             float line = on * smoothstep(0.42, 0.06, abs(f - 0.5)) * smoothstep(0.28, 0.62, rr);
             col = mix(col, vec3(1.0, 0.98, 0.95), line * speed * 0.55);
           }
+          col += vec3(1.0, 0.95, 0.82) * flash;
           gl_FragColor = vec4(col, 1.0);
           #include <colorspace_fragment>
         }`,

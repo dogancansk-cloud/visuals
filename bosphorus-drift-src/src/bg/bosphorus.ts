@@ -1,6 +1,7 @@
 // Boğaz dünyası: turkuaz deniz, iki yaka, tepelerde renkli evler, Kız Kulesi, Galata ve Boğaz köprüleri, yalılar.
 // Canlı çevre: seyreden vapurlar, sallanan tekneler, zıplayan yunuslar, olta sallayan balıkçılar, coşan seyirci, süzülen bulutlar.
 import * as THREE from 'three';
+import { todU, TOD_GLSL } from '../tod';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Geo, rr, type Track, type Textures } from '../track';
 import { F_BRIDGE, F_RAMP } from '../trackpath';
@@ -37,7 +38,7 @@ export class Bosphorus {
   }
 
   // ---------- yardımcılar ----------
-  private W(i: number) { return ((i % this.T.n) + this.T.n) % this.T.n; }
+  private W(i: number) { return ((Math.round(i) % this.T.n) + this.T.n) % this.T.n; }
   private P(i: number, d: number, dy = 0) { const T = this.T, k = this.W(i); return [T.x[k] - T.tz[k] * d, T.y[k] + dy, T.z[k] + T.tx[k] * d] as const; }
   private V(i: number, d: number, dy = 0) { const p = this.P(i, d, dy); return new THREE.Vector3(p[0], p[1], p[2]); }
   private yaw(i: number) { const k = this.W(i); return Math.atan2(this.T.tz[k], this.T.tx[k]); }
@@ -111,14 +112,14 @@ export class Bosphorus {
   private sky() {
     const g = new THREE.SphereGeometry(1800, 32, 16);
     const m = new THREE.ShaderMaterial({
-      side: THREE.BackSide, depthWrite: false, fog: false, uniforms: { sun: { value: BG_SUN }, rain: { value: 0 } },
+      side: THREE.BackSide, depthWrite: false, fog: false, uniforms: { sun: { value: BG_SUN }, rain: { value: 0 }, tod: todU },
       vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); vec4 p = projectionMatrix * modelViewMatrix * vec4(position,1.0); gl_Position = p.xyww; }',
-      fragmentShader: `uniform vec3 sun; uniform float rain; varying vec3 vP;
+      fragmentShader: TOD_GLSL + `uniform vec3 sun; uniform float rain; varying vec3 vP;
         void main(){ float h = vP.y; float s = max(0.0, dot(normalize(vP), sun));
           vec3 c = mix(vec3(0.62, 0.86, 1.0), vec3(0.16, 0.52, 0.98), smoothstep(0.0, 0.6, h));
           c = mix(c, vec3(0.80, 0.94, 1.0), smoothstep(0.10, -0.02, h));
           c += vec3(1.0, 0.95, 0.8) * (pow(s, 200.0) * 1.5 + pow(s, 12.0) * 0.12);
-          c = mix(c, vec3(0.5, 0.55, 0.63) * (0.85 + 0.25 * h), rain * 0.88);
+          c = todSky(c, normalize(vP), sun); c = mix(c, vec3(0.5, 0.55, 0.63) * (0.85 + 0.25 * h) * (1.0 - 0.7 * tod.y), rain * 0.88);
           gl_FragColor = vec4(c, 1.0); }`,
     });
     this.skyMats.push(m);
@@ -131,9 +132,9 @@ export class Bosphorus {
       for (let b = 0; b < 5; b++) { const sg = new THREE.SphereGeometry(sz * (0.6 + this.rnd() * 0.6), 9, 6); sg.scale(1.6, 0.6, 1.1); sg.translate(cx + (b - 2) * sz * 0.8, y + this.rnd() * sz * 0.3, cz + (this.rnd() - 0.5) * sz); parts.push(sg); }
     }
     const cm = new THREE.ShaderMaterial({
-      fog: false, uniforms: { sun: { value: BG_SUN }, rain: { value: 0 } },
+      fog: false, uniforms: { sun: { value: BG_SUN }, rain: { value: 0 }, tod: todU },
       vertexShader: 'varying vec3 vN; void main(){ vN = normalize(mat3(modelMatrix) * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
-      fragmentShader: 'uniform vec3 sun; uniform float rain; varying vec3 vN; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.45, l) * 0.5 + step(0.7, l) * 0.5; vec3 c = mix(vec3(0.72, 0.84, 0.98), vec3(1.0), t); c = mix(c, mix(vec3(0.38, 0.4, 0.48), vec3(0.6, 0.62, 0.7), t), rain); gl_FragColor = vec4(c, 1.0); }',
+      fragmentShader: TOD_GLSL + 'uniform vec3 sun; uniform float rain; varying vec3 vN; void main(){ float l = dot(vN, sun) * 0.5 + 0.5; float t = step(0.45, l) * 0.5 + step(0.7, l) * 0.5; vec3 c = mix(vec3(0.72, 0.84, 0.98), vec3(1.0), t); c = mix(c, mix(vec3(0.38, 0.4, 0.48), vec3(0.6, 0.62, 0.7), t), rain * (1.0 - 0.5 * tod.y)); c = todCloud(c); gl_FragColor = vec4(c, 1.0); }',
     });
     this.skyMats.push(cm);
     const cl = new THREE.Mesh(mergeGeometries(parts), cm); cl.renderOrder = -9; this.clouds.add(cl); this.scene.add(this.clouds);
@@ -143,9 +144,10 @@ export class Bosphorus {
     const g = new THREE.PlaneGeometry(6000, 6000, 1, 1); g.rotateX(-Math.PI / 2);
     this.waterMat = new THREE.ShaderMaterial({
       fog: true,
-      uniforms: { t: { value: 0 }, sun: { value: BG_SUN }, fogColor: { value: new THREE.Color() }, fogNear: { value: 1 }, fogFar: { value: 1000 } },
+      uniforms: { tod: todU, t: { value: 0 }, sun: { value: BG_SUN }, fogColor: { value: new THREE.Color() }, fogNear: { value: 1 }, fogFar: { value: 1000 } },
       vertexShader: '#include <fog_pars_vertex>\nvarying vec3 vW; void main(){ vW = (modelMatrix * vec4(position,1.0)).xyz; vec4 mvPosition = viewMatrix * vec4(vW,1.0); gl_Position = projectionMatrix * mvPosition;\n#include <fog_vertex>\n}',
       fragmentShader: `#include <fog_pars_fragment>
+        ${TOD_GLSL}
         uniform float t; uniform vec3 sun; varying vec3 vW;
         void main(){
           vec3 V = normalize(cameraPosition - vW); vec3 R = reflect(-V, vec3(0.0,1.0,0.0));
@@ -155,7 +157,7 @@ export class Bosphorus {
           float glint = pow(max(0.0, dot(R, sun)), 60.0);
           c = mix(c, vec3(1.0), clamp(glint * 1.2, 0.0, 0.8));
           c = mix(c, vec3(0.85, 0.98, 1.0), step(1.22, w + glint * 0.6) * 0.75);
-          gl_FragColor = vec4(c, 1.0);
+          c = todSea(c); gl_FragColor = vec4(c, 1.0);
         #include <fog_fragment>
         }`,
     });
