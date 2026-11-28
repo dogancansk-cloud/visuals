@@ -5,7 +5,8 @@ import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js
 import type { Roads, Way } from '../world/roads';
 import type { Ground } from '../world/ground';
 import type { Signals } from './signals';
-import { carBodyGeometry, wheelGeometry, type Obstacle } from './car';
+import { carBodyGeometry, type Obstacle } from './car';
+import { sedanBody, wheelGeom, lampGeom, paintMaterial, CAR } from './carmodel';
 
 const SPEED: Record<number, number> = { 1: 16, 2: 13.5, 3: 11.5, 4: 10, 5: 10, 6: 8, 7: 5, 9: 9.5 };
 const PAINT = ['#f2c200', '#f2c200', '#f2c200', '#f4f4f2', '#f4f4f2', '#d0d2d4', '#2a2c30', '#1f3b70', '#8a1c1c', '#7d8a93', '#4a5a3a', '#c9b48a', '#9a9ea3'];
@@ -26,12 +27,13 @@ export class Traffic {
     this.driveWays = R.ways.filter((w) => w.code !== 8 && w.code !== 7 && w.len > 25);
     this.walkWays = R.ways.filter((w) => w.code >= 2 && w.code <= 7 && !w.bridge && w.len > 20);
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
-    const wheels = (zs: number[], xw: number) => zs.flatMap((z) => [-xw, xw].map((x) => wheelGeometry().translate(x, 0.34, z)));
-    this.carMesh = new THREE.InstancedMesh(mergeGeometries([carBodyGeometry('#ffffff'), ...wheels([1.35, -1.35], 0.86)])!, mat, nCar);
-    this.busMesh = new THREE.InstancedMesh(mergeGeometries([carBodyGeometry('#ffffff', false, 'bus'), ...wheels([3.8, -3.6], 1.1)])!, mat, Math.max(2, Math.ceil(nCar / 10)));
-    const lightG = (z: number, y: number) => mergeGeometries([new THREE.BoxGeometry(0.36, 0.11, 0.06).translate(-0.6, y, z), new THREE.BoxGeometry(0.36, 0.11, 0.06).translate(0.6, y, z)])!;
-    this.headMesh = new THREE.InstancedMesh(lightG(2.24, 0.7), new THREE.MeshBasicMaterial({ color: '#fff4d6' }), nCar + 4);
-    this.tailMesh = new THREE.InstancedMesh(lightG(-2.25, 0.78), new THREE.MeshBasicMaterial({ color: '#c01a10' }), nCar + 4);
+    const noUv = (g: THREE.BufferGeometry) => { if (g.index) g = g.toNonIndexed(); g.deleteAttribute('uv'); return g; };
+    // otomobiller oyuncununkiyle aynı modelin hafif hâli (parlak boya, örnek rengiyle boyanır)
+    const wheels = (zs: number[], xw: number, y: number, sc = 1) => zs.flatMap((z) => [-xw, xw].map((x) => wheelGeom(0).scale(sc, sc, sc).translate(x, y, z)));
+    this.carMesh = new THREE.InstancedMesh(mergeGeometries([sedanBody('#ffffff', 0), ...wheels([CAR.wheelZ, -CAR.wheelZ], CAR.wheelX, CAR.wheelR)])!, paintMaterial(), nCar);
+    this.busMesh = new THREE.InstancedMesh(mergeGeometries([noUv(carBodyGeometry('#ffffff', false, 'bus')), ...wheels([3.8, -3.6], 1.1, 0.46, 1.4)])!, mat, Math.max(2, Math.ceil(nCar / 10)));
+    this.headMesh = new THREE.InstancedMesh(lampGeom(true), new THREE.MeshBasicMaterial({ color: '#fff4d6' }), nCar + 4);
+    this.tailMesh = new THREE.InstancedMesh(lampGeom(false), new THREE.MeshBasicMaterial({ color: '#c01a10' }), nCar + 4);
     // yaya: gövde+baş, bacaklar ayrı (yürürken sallanır)
     const col = (g: THREE.BufferGeometry, c: string) => { g = g.toNonIndexed(); const cc = new THREE.Color(c), n = g.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) { a[i * 3] = cc.r; a[i * 3 + 1] = cc.g; a[i * 3 + 2] = cc.b; } g.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g; };
     this.pedBody = new THREE.InstancedMesh(mergeGeometries([col(new THREE.BoxGeometry(0.46, 0.66, 0.26).translate(0, 1.2, 0), '#ffffff'), col(new THREE.SphereGeometry(0.13, 8, 6).translate(0, 1.68, 0), '#e0b896'), col(new THREE.BoxGeometry(0.12, 0.58, 0.12).translate(-0.3, 1.18, 0), '#ffffff'), col(new THREE.BoxGeometry(0.12, 0.58, 0.12).translate(0.3, 1.18, 0), '#ffffff')])!, mat, nPed);
@@ -139,7 +141,7 @@ export class Traffic {
       if (a.kind === 1) { if (nb < this.busMesh.instanceMatrix.count) { this.busMesh.setMatrixAt(nb, m); this.busMesh.setColorAt(nb++, a.col); } }
       else if (nc < this.carMesh.instanceMatrix.count) { this.carMesh.setMatrixAt(nc, m); this.carMesh.setColorAt(nc++, a.col); this.headMesh.setMatrixAt(nl, m); this.tailMesh.setMatrixAt(nl++, m); }
     }
-    this.carMesh.count = nc; this.busMesh.count = nb; this.headMesh.count = this.tailMesh.count = night > 0.2 ? nl : 0;
+    this.carMesh.count = nc; this.busMesh.count = nb; this.headMesh.count = this.tailMesh.count = nl; void night;
     for (const mm of [this.carMesh, this.busMesh, this.headMesh, this.tailMesh]) { mm.instanceMatrix.needsUpdate = true; if (mm.instanceColor) mm.instanceColor.needsUpdate = true; }
     this.updatePeds(dt, car);
   }

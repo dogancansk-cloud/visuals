@@ -1,4 +1,4 @@
-// Yollar: zemin üstüne aynı yükseklik fonksiyonuyla serilen asfalt şeritler, kaldırımlar, şerit çizgileri, köprü güverteleri.
+// Yollar: yol ağı verisi, şerit çizgileri ve köprü güverteleri. Zemindeki asfalt ve kaldırım burada çizilmez; zemin dokusuna boyanır (roadpaint.ts).
 // Ayrıca yol ağı (kavşaklar) ve "bu noktada hangi yol var" araması.
 import * as THREE from 'three';
 import type { Ground } from './ground';
@@ -120,23 +120,26 @@ export class Roads {
         quad(b[target], pt(pa, na, oa - wa / 2, ya), pt(pa, na, oa + wa / 2, ya), pt(pb, nb, ob - wb / 2, yb), pt(pb, nb, ob + wb / 2, yb), cc);
       }
     };
+    // kavşak yarıçapı: bir düğümde 3+ yol buluşuyorsa çizgiler orada kesilir (iki yolun uç uca eklendiği yerde kesilmez)
+    const nodeR = (id: number) => { const ws = this.nodes[id].ways.filter((r) => this.ways[r.w].code !== 8); if (ws.length < 3) return 0; return Math.max(...ws.map((r) => this.ways[r.w].width / 2)) + 3.5; };
+    const asph = new THREE.Color('#56575c');
     for (const w of this.ways) {
-      col.set(SURF[w.code] || '#555'); const hw = w.width / 2;
-      // köprü: güverte kalınlığı ve korkuluk
+      const hw = w.width / 2;
+      // köprü: güverte, korkuluk ve asfalt geometri olarak (zemindeki yollar zemin dokusuna boyanır: roadpaint.ts)
       if (w.bridge) {
         strip(w, 0, w.width + 1.6, 0.02, deckC, 'deck');
         this.bridgeSides(w, bucket, railC);
+        strip(w, 0, w.width, 0.06, asph, 'road');
       }
-      strip(w, 0, w.width, w.bridge ? 0.06 : 0.05, col, 'road', 0, Infinity, 0, 1);
-      if (!w.bridge && w.code >= 2 && w.code <= 6) { strip(w, -(hw + 1.3), 2.6, 0.04, walkC, 'walk', 0, Infinity, 0, 2); strip(w, hw + 1.3, 2.6, 0.04, walkC, 'walk', 0, Infinity, 0, 2); }
-      // çizgiler kavşak ağızlarında kesilir
-      const cut = 9;
-      if (w.code <= 4 && w.len > 2 * cut + 4) {
-        const l = w.bridge ? 0.08 : 0.07;
-        if (!w.oneway && w.lanes >= 2) strip(w, 0, 0.15, l, w.code <= 2 ? yel : markC, 'mark', cut, w.len - cut, w.code <= 2 ? 0 : 3);
-        if (w.code <= 3) { strip(w, -(hw - 0.35), 0.15, l, markC, 'mark', cut, w.len - cut, 0, 2); strip(w, hw - 0.35, 0.15, l, markC, 'mark', cut, w.len - cut, 0, 2); }
-        if (w.lanes >= 3) { const lw = w.width / w.lanes; for (let q = 1; q < w.lanes; q++) { const o = -hw + q * lw; if (Math.abs(o) < 0.3 && !w.oneway) continue; strip(w, o, 0.12, l, markC, 'mark', cut, w.len - cut, 3); } }
-      }
+      if (w.code > 6 && w.code !== 9) continue;
+      const s0 = nodeR(w.a), s1 = w.len - nodeR(w.b); if (s1 - s0 < 6) continue;
+      const l = w.bridge ? 0.09 : 0.06;
+      // orta çizgi: çift yönlü caddelerde düz, sokaklarda kesikli
+      if (!w.oneway && w.lanes >= 2 && w.width >= 5.5) strip(w, 0, 0.16, l, markC, 'mark', s0, s1, w.code <= 3 ? 0 : 4, 1);
+      // kenar çizgileri: ana yollarda
+      if (w.code <= 3) { strip(w, -(hw - 0.3), 0.14, l, markC, 'mark', s0, s1, 0, 2); strip(w, hw - 0.3, 0.14, l, markC, 'mark', s0, s1, 0, 2); }
+      // şerit çizgileri: kesikli
+      if (w.lanes >= 3 || (w.oneway && w.lanes >= 2)) { const lw = w.width / w.lanes; for (let q = 1; q < w.lanes; q++) { const o = -hw + q * lw; if (Math.abs(o) < 0.3 && !w.oneway) continue; strip(w, o, 0.13, l, markC, 'mark', s0, s1, 4, 1); } }
     }
     const mk = (a: number[][], mat: THREE.Material, order: number, shadow = false) => {
       if (!a[0].length) return null;
@@ -149,7 +152,7 @@ export class Roads {
     this.roadMat = this.asphalt; this.markMat = markM; this.walkMat = walkM;
     for (const [k, b] of buckets) {
       const [i, j] = k.split(',').map(Number); const grp = new THREE.Group(); grp.name = `roads_${k}`;
-      for (const m of [mk(b.walk, walkM, 1), mk(b.road, this.asphalt, 2), mk(b.mark, markM, 3), mk(b.deck, deckM, 0, true)]) if (m) grp.add(m);
+      for (const m of [mk(b.road, this.asphalt, 2), mk(b.mark, markM, 3), mk(b.deck, deckM, 0, true)]) if (m) grp.add(m);
       this.group.add(grp); this.chunks.push({ mesh: grp, cx: (i + 0.5) * CH, cz: (j + 0.5) * CH });
     }
   }

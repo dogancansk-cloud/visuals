@@ -5,6 +5,7 @@ import type { Ground } from '../world/ground';
 import type { Roads } from '../world/roads';
 import type { Controls } from './input';
 import { glowTexture } from '../world/props';
+import { sedanBody, wheelGeom, lampGeom, paintMaterial, wheelMaterial, CAR } from './carmodel';
 
 // ---------- görünüm (oyuncu ve trafik aynı modeli kullanır) ----------
 function box(w: number, h: number, l: number, x: number, y: number, z: number, c: THREE.Color) {
@@ -116,15 +117,12 @@ export class Car {
   readonly headlight: THREE.SpotLight | null; private pool: THREE.Mesh; private poolMat: THREE.MeshBasicMaterial;
   onHit: ((power: number) => void) | null = null; onSplash: (() => void) | null = null;
   constructor(private G: Ground, private R: Roads, private walls: Walls, withLight: boolean) {
-    const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
-    this.body = new THREE.Mesh(carBodyGeometry('#2f5d8a'), mat); this.body.castShadow = true; this.obj.add(this.body);
-    const wg = wheelGeometry();
-    for (const [x, z] of [[-0.86, 1.35], [0.86, 1.35], [-0.86, -1.35], [0.86, -1.35]]) { const w = new THREE.Mesh(wg, mat); w.position.set(x, 0.34, z); w.castShadow = true; this.obj.add(w); this.wheels.push(w); }
+    // görünüm: carmodel.ts (yuvarlak hatlı gövde, parlak boya, jantlı tekerlek)
+    this.body = new THREE.Mesh(sedanBody('#1b4f8f', 1), paintMaterial()); this.body.castShadow = true; this.obj.add(this.body);
+    const wg = wheelGeom(1), wm = wheelMaterial();
+    for (const [x, z] of [[-CAR.wheelX, CAR.wheelZ], [CAR.wheelX, CAR.wheelZ], [-CAR.wheelX, -CAR.wheelZ], [CAR.wheelX, -CAR.wheelZ]]) { const w = new THREE.Mesh(wg, wm); w.position.set(x, CAR.wheelR, z); w.castShadow = true; this.obj.add(w); this.wheels.push(w); }
     this.headMat = new THREE.MeshBasicMaterial({ color: '#fff6dc' }); this.brakeMat = new THREE.MeshBasicMaterial({ color: '#5a0d0d' });
-    for (const s of [-0.6, 0.6]) {
-      const h = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.11, 0.06), this.headMat); h.position.set(s, 0.7, 2.24); this.obj.add(h);
-      const b = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.11, 0.06), this.brakeMat); b.position.set(s, 0.78, -2.25); this.obj.add(b);
-    }
+    this.obj.add(new THREE.Mesh(lampGeom(true), this.headMat), new THREE.Mesh(lampGeom(false), this.brakeMat));
     if (withLight) {
       const L = new THREE.SpotLight(0xfff0d0, 0, 70, 0.55, 0.5, 1.2); L.position.set(0, 0.9, 2.0); L.target.position.set(0, 0, 20); this.obj.add(L, L.target); this.headlight = L;
     } else this.headlight = null;
@@ -232,7 +230,7 @@ export class Car {
     const lo = GEARS[this.gear - 1] * 0.5, hi = GEARS[this.gear];
     const targetRpm = vL < -0.3 ? 900 + v * 260 : 850 + Math.max(0, (v - lo) / (hi - lo)) * 5200 + c.throttle * (this.gear === 1 && v < 3 ? 1800 : 300);
     this.rpm += (Math.min(6800, targetRpm) - this.rpm) * Math.min(1, dt * 8);
-    this.spin += (vL * dt) / 0.34;
+    this.spin += (vL * dt) / CAR.wheelR;
   }
   /** görünümü fizik durumuna eşitle */
   sync(c: Controls, night: number) {
@@ -240,8 +238,8 @@ export class Car {
     const lat = -this.yawRate * this.vLong * 0.012; // virajda dışa yatar
     this.obj.rotation.set(0, 0, 0); this.obj.rotateY(this.yaw); this.obj.rotateX(-this.pitch); this.obj.rotateZ(-this.roll + Math.max(-0.06, Math.min(0.06, lat)));
     this.wheels.forEach((w, i) => { w.rotation.set(this.spin, i < 2 ? -this.steer : 0, 0, 'YXZ'); });
-    this.brakeMat.color.set(c.brake > 0 && this.vLong > 0.3 ? '#ff2a1a' : night > 0.3 ? '#a3150f' : '#5a0d0d');
-    this.headMat.color.set(night > 0.3 ? '#ffffff' : '#e8e2d0');
+    this.brakeMat.color.set(c.brake > 0 && this.vLong > 0.3 ? '#ff2a1a' : night > 0.3 ? '#b3160f' : '#7a1210');
+    this.headMat.color.set(night > 0.3 ? '#ffffff' : '#dfe3e6');
     if (this.headlight) this.headlight.intensity = night * 60;
     this.poolMat.opacity = night * (this.headlight ? 0.25 : 0.55); this.pool.visible = night > 0.05;
     const [fx, fz] = this.fwd; this.pool.position.set(this.x, this.G.H(this.x + fx * 12, this.z + fz * 12) + 0.3, this.z); this.pool.rotation.set(0, this.yaw, 0);

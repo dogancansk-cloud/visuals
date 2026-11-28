@@ -1,7 +1,9 @@
 // İstanbul 3D Sürüş v2 — giriş noktası: yükleme, sahne, döngü, arayüz.
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import './style.css';
-import { Ground, GroundView } from './world/ground';
+import { Ground, GroundView, groundUniforms } from './world/ground';
+import { makeRoadPainter } from './world/roadpaint';
 import { Roads } from './world/roads';
 import { Buildings, loadFacadeTextures } from './world/buildings';
 import { Props } from './world/props';
@@ -23,10 +25,10 @@ const MAP = new URL('../istanbul3d/', location.href).href; // modeller haritanı
 // ---------- kalite ----------
 const PHONE = (matchMedia('(pointer:coarse)').matches && Math.min(screen.width, screen.height) < 820) || innerWidth < 700;
 type QName = 'dusuk' | 'orta' | 'yuksek';
-const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; detail: number; cars: number; peds: number; lights: boolean }> = {
-  dusuk: { detail: 90, pr: 1.25, shadows: true, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
-  orta: { detail: 160, pr: 1.5, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
-  yuksek: { detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
+const QUAL: Record<QName, { pr: number; shadows: boolean; near: number; far: number; groundNear: number; fog: number; trees: number; lamps: number; detail: number; mask: number; cars: number; peds: number; lights: boolean }> = {
+  dusuk: { mask: 512, detail: 90, pr: 1.25, shadows: true, near: 330, far: 900, groundNear: 500, fog: 900, trees: 600, lamps: 120, cars: 24, peds: 30, lights: false },
+  orta: { mask: 1024, detail: 160, pr: 1.5, shadows: true, near: 450, far: 1300, groundNear: 700, fog: 1300, trees: 1400, lamps: 220, cars: 42, peds: 60, lights: true },
+  yuksek: { mask: 1024, detail: 280, pr: 2, shadows: true, near: 650, far: 1900, groundNear: 950, fog: 1900, trees: 2600, lamps: 360, cars: 70, peds: 100, lights: true },
 };
 const qStored = (() => { try { return localStorage.getItem('drv2_q'); } catch { return null; } })();
 const qAuto = !QS.get('q') && (!qStored || qStored === 'oto');
@@ -63,6 +65,8 @@ async function main() {
   renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.0;
   $('app').appendChild(renderer.domElement);
   const scene = new THREE.Scene();
+  // araba boyasındaki yansımalar için basit ortam (yalnız parlak malzemeleri etkiler)
+  { const pm = new THREE.PMREMGenerator(renderer); scene.environment = pm.fromScene(new RoomEnvironment(), 0.04).texture; pm.dispose(); }
   const camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.3, 6000);
   addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
 
@@ -70,6 +74,7 @@ async function main() {
   const G = new Ground(meta.grid, groundBuf);
   const groundView = new GroundView(G); scene.add(groundView.group);
   const roads = new Roads(roadsData, G); scene.add(roads.group);
+  groundView.painter = makeRoadPainter(roads, Math.min(8, renderer.capabilities.getMaxAnisotropy())); groundView.res = [Q.mask, 192];
   const blds = new Buildings(bldBuf, meta.chunks, meta.look, meta.chunk); scene.add(blds.group);
   const props = new Props(treeBuf, roads.lamps, G, Q.trees, Q.lamps); scene.add(props.group);
   const sea = new Sea(PHONE); scene.add(sea.mesh);
@@ -95,7 +100,7 @@ async function main() {
 
   const texReady = loadFacadeTextures(MAP, renderer, PHONE);
   // landmark modelleri arka planda
-  loadLandmarks(meta.landmarks, MAP, lmGroup).catch(() => {});
+  loadLandmarks(meta.landmarks, MAP, lmGroup, (x, z) => G.H(x, z)).catch(() => {});
 
   // ---------- arayüz ----------
   if (matchMedia('(pointer:coarse)').matches) document.body.classList.add('touch');
@@ -147,6 +152,7 @@ async function main() {
     const [fx, fz] = car.fwd; const v = car.speed;
     let dist = 7.6, h = 2.7, look = 1.4;
     if (camMode === 1) { dist = 14; h = 5.5; look = 1.2; }
+    const tallScreen = camera.aspect < 0.8; if (tallScreen) { dist *= 1.25; h *= 1.25; } // dik telefon: biraz geriden, geniş açı
     const want = new THREE.Vector3();
     if (camMode === 2) {
       want.set(car.x + fx * 0.3, car.y + 1.45, car.z + fz * 0.3);
@@ -167,7 +173,7 @@ async function main() {
       camLook.lerp(new THREE.Vector3(car.x + fx * 4, car.y + look, car.z + fz * 4), 1 - Math.exp(-dt * 12));
     }
     camera.position.copy(camPos); camera.lookAt(camLook);
-    const fov = (camMode === 2 ? 70 : 58) + Math.min(14, v * 0.32); if (Math.abs(camera.fov - fov) > 0.1) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
+    const fov = (camMode === 2 ? 70 : 58) + (tallScreen ? 16 : 0) + Math.min(14, v * 0.32); if (Math.abs(camera.fov - fov) > 0.1) { camera.fov += (fov - camera.fov) * Math.min(1, dt * 3); camera.updateProjectionMatrix(); }
   };
 
   // ---------- döngü ----------
@@ -185,11 +191,11 @@ async function main() {
     traffic.update(dt, car, env.night);
     env.update(dt, camera.position, car.obj.position);
     sea.update(t, env, camera.position); props.night(env.night);
-    car.sync(input.c, env.night);
+    car.sync(input.c, env.night); scene.environmentIntensity = 1 - 0.8 * env.night;
     updateCamera(dt);
     // dünya parçaları (her karede biraz)
     lodT += dt; if (lodT > 0.15) { lodT = 0; groundView.update(car.x, car.z, Q.groundNear, Q.far + 400, 3); blds.update(car.x, car.z, Q.near, Q.far, Q.detail); roads.update(car.x, car.z, Q.far); props.update(car.x, car.z, Q.trees > 1000 ? 380 : 260, Q.lamps > 200 ? 320 : 230); }
-    roads.asphalt.color.setScalar(1 - env.wet * 0.35);
+    roads.asphalt.color.setScalar(1 - env.wet * 0.3); groundUniforms.uWet.value = env.wet;
     audio.update({ rpm: car.rpm, throttle: input.c.throttle, speed: car.speed, slip: car.slip, horn: input.c.horn, rain: env.rainAmt, sea: G.kindAt(car.x + car.fwd[0] * 30, car.z + car.fwd[1] * 30) === 1 ? 1 : 0, t });
     hudT += dt; if (hudT > 0.1) {
       hudT = 0; kmh.textContent = String(Math.round(car.speed * 3.6)); gearEl.textContent = car.vLong < -0.5 ? 'G' : String(car.gear); clockEl.textContent = env.hourText();
@@ -206,7 +212,7 @@ async function main() {
     }
     requestAnimationFrame(frame);
   };
-  (window as unknown as Record<string, unknown>).__drv2 = { car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
+  (window as unknown as Record<string, unknown>).__drv2 = { groundView, car, env, roads, G, traffic, signals, blds, camera, renderer, scene, setCam: (m: number) => (camMode = m), get ft() { return ftAvg; }, get pr() { return pr; } };
   requestAnimationFrame(frame);
 }
 

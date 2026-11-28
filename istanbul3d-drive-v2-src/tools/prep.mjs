@@ -57,6 +57,23 @@ const H = new Float32Array(N), KIND = new Uint8Array(N); // 0 kara, 1 su, 2 park
 for (let j = 0; j < NZ; j++) for (let i = 0; i < NX; i++) H[j * NX + i] = Hraw(GX0 + i * STEP, GZ0 + j * STEP);
 log(`ızgara ${NX}×${NZ}`);
 
+// ---------- anıtların altı düzlenir (modeller düz zemine göre yapılmış; Topkapı hariç: o, oyunda araziye göre eğilir) ----------
+{
+  const [lo0, la0] = scene.origin, kx0 = Math.cos(la0 * Math.PI / 180) * 111320;
+  const PR = { ayasofya: 100, sultanahmet: 95, yenicami: 70, rustempasa: 30, galata: 14, nusretiye: 32, ayatriada: 28, stantoine: 60, dikilitas: 7, ormedikilitas: 7, yilanlisutun: 7, almancesmesi: 7 };
+  const pads = [];
+  for (const [id, r] of Object.entries(PR)) { const f = path.resolve(MAP, `../models/${id}.anchor.json`); if (!fs.existsSync(f)) continue; const a = J(f); pads.push([(a.anchor.lon - lo0) * kx0, -(a.anchor.lat - la0) * 110574, r, r > 20 ? 30 : 10]); }
+  for (const [x, z, r, bl] of pads) {
+    const ci = Math.round((x - GX0) / STEP), cj = Math.round((z - GZ0) / STEP), n = Math.ceil((r + bl) / STEP);
+    const h0 = H[cj * NX + ci];
+    for (let j = Math.max(0, cj - n); j <= Math.min(NZ - 1, cj + n); j++) for (let i = Math.max(0, ci - n); i <= Math.min(NX - 1, ci + n); i++) {
+      const d = Math.hypot(GX0 + i * STEP - x, GZ0 + j * STEP - z); if (d > r + bl) continue;
+      let w = d <= r ? 1 : 1 - (d - r) / bl; w = w * w * (3 - 2 * w); const k = j * NX + i; H[k] += (h0 - H[k]) * w;
+    }
+  }
+  log(`anıt zeminleri: ${pads.length}`);
+}
+
 // çokgeni ızgaraya boya (hücre merkezi içerideyse). poly = [dış, delik...] düz halkalar
 function raster(poly, fn) {
   let z0 = 1e9, z1 = -1e9;
@@ -147,7 +164,7 @@ log(`yollar: ${R.length}, profil hazır`);
 const best = new Float32Array(N).fill(0), tgt = new Float32Array(N);
 for (const r of R) {
   if (r.bridge) continue;
-  const half = r.w[1] / 2, inner = half + 1.5, outer = half + 9;
+  const half = r.w[1] / 2, inner = half + (r.w[0] >= 2 && r.w[0] <= 6 ? 4 : 1.5), outer = inner + 9; // kaldırım da düz zeminde kalsın
   for (let p = 0; p < r.pts.length; p++) {
     const [x, z] = r.pts[p], hh = r.h[p];
     const i0 = Math.max(0, Math.floor((x - outer - GX0) / STEP)), i1 = Math.min(NX - 1, Math.ceil((x + outer - GX0) / STEP));
@@ -246,7 +263,7 @@ log(`binalar: ${blds.length} (elle silinen ${dropped}, gizleme listesi ${hidden}
         if (Math.min(dL, dR) < full + 0.3) sh[i] = Math.max(-2.5, Math.min(2.5, (dL - dR) / 2));
       }
       let any = false;
-      for (let it = 0; it < 2; it++) { const c = sh.slice(); for (let i = 1; i < n - 1; i++) sh[i] = (c[i - 1] + 2 * c[i] + c[i + 1]) / 4; }
+      for (let it = 0; it < 8; it++) { const c = sh.slice(); for (let i = 1; i < n - 1; i++) sh[i] = (c[i - 1] + 2 * c[i] + c[i + 1]) / 4; } // yumuşak kayma: eksen dalgalanmasın
       for (let i = 0; i < n; i++) { const k = Math.min(1, Math.min(i, n - 1 - i) / 2) ; const v = sh[i] * k; if (Math.abs(v) > 0.15) { P[i] = [P[i][0] + N[i][0] * v, P[i][1] + N[i][1] * v]; any = true; } }
       if (any && pass === 0) { shifted++; r.moved = true; }
     }
@@ -261,7 +278,9 @@ log(`binalar: ${blds.length} (elle silinen ${dropped}, gizleme listesi ${hidden}
     const full = r.w[1] / 2; if (r.bridge) continue;
     const minHalf = r.w[0] === 7 || r.w[0] === 8 ? 0.9 : 1.2;
     const raw = r.pts.map(([x, z]) => { const d = clearance(x, z, full + 0.3, null) - 0.3; if (d < minHalf) tight++; return Math.max(minHalf, Math.min(full, d)); });
-    const hw = raw.map((v, i) => Math.min(v, raw[Math.max(0, i - 1)], raw[Math.min(raw.length - 1, i + 1)]));
+    // kenar dalgalanmasın: önce ±2 nokta en küçük, sonra yumuşat, sonra yine ölçülen boşluğu aşma
+    const nn = raw.length, mn = raw.map((_, i) => { let m = 1e9; for (let k = Math.max(0, i - 3); k <= Math.min(nn - 1, i + 3); k++) m = Math.min(m, raw[k]); return m; });
+    const hw = mn.slice(); for (let it = 0; it < 6; it++) { const c = hw.slice(); for (let i = 1; i < nn - 1; i++) hw[i] = (c[i - 1] + 2 * c[i] + c[i + 1]) / 4; }
     if (hw.some((v) => v < full - 0.05)) { r.hw = hw; narrowed++; } else if (r.moved) r.hw = hw;
   }
   const before = blds.length; const keep = blds.filter((_, i) => !kill.has(i)); blds.length = 0; blds.push(...keep);

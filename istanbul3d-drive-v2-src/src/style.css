@@ -76,3 +76,14 @@ body.touch #credit { left: 50%; transform: translateX(-50%); bottom: calc(2px + 
   #horn { bottom: 122px; }
 }
 [hidden] { display: none !important; }
+
+/* dik telefon ekranı: hız göstergesi sol üste (pedallarla çakışmasın), sokak adı düğmelerin altına */
+@media (orientation: portrait) and (max-width: 640px) {
+  body.touch #speedo, #speedo { bottom: auto; top: calc(env(safe-area-inset-top) + 8px); left: 8px; transform: none; padding: 2px 10px; }
+  #kmh { font-size: 24px; }
+  #street { top: calc(env(safe-area-inset-top) + 52px); left: 8px; transform: none; max-width: 56vw; font-size: 12px; }
+  #top { max-width: calc(100vw - 120px); flex-wrap: wrap; justify-content: flex-end; }
+  #minimap { top: calc(env(safe-area-inset-top) + 92px); }
+  #credit, body.touch #credit { left: 8px; right: 8px; transform: none; max-width: none; text-align: center; }
+  #touch { height: 34vh; }
+}

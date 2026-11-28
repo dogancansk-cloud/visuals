@@ -5,7 +5,18 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 
 export interface LM { id: string; name: string; model: string; x: number; z: number; y: number; ry: number; s: number }
 
-export async function loadLandmarks(list: LM[], base: string, group: THREE.Group, onEach?: () => void) {
+/** geniş bir yamaca yayılan model (Topkapı ve surları): her köşe, bulunduğu yerin zemin yüksekliğine göre kaydırılır */
+function drape(root: THREE.Object3D, H: (x: number, z: number) => number, y0: number) {
+  root.updateMatrixWorld(true); const v = new THREE.Vector3(), inv = new THREE.Matrix4();
+  root.traverse((o) => {
+    const m = o as THREE.Mesh; if (!m.isMesh) return;
+    const src = m.geometry.attributes.position, out = new Float32Array(src.count * 3); inv.copy(m.matrixWorld).invert();
+    for (let i = 0; i < src.count; i++) { v.fromBufferAttribute(src, i).applyMatrix4(m.matrixWorld); v.y += H(v.x, v.z) - y0; v.applyMatrix4(inv); out[i * 3] = v.x; out[i * 3 + 1] = v.y; out[i * 3 + 2] = v.z; }
+    m.geometry.setAttribute('position', new THREE.BufferAttribute(out, 3)); m.geometry.computeBoundingSphere(); m.geometry.computeBoundingBox();
+  });
+}
+
+export async function loadLandmarks(list: LM[], base: string, group: THREE.Group, H: (x: number, z: number) => number, onEach?: () => void) {
   const loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
   for (const L of list) {
@@ -19,7 +30,8 @@ export async function loadLandmarks(list: LM[], base: string, group: THREE.Group
       const l0 = gltf.scene.getObjectByName('LOD0'), l1 = gltf.scene.getObjectByName('LOD1');
       if (l0) { add(l0, 0); add(l1, 700); } else add(gltf.scene, 0);
       lod.position.set(L.x, L.y, L.z); lod.rotation.y = L.ry; lod.scale.setScalar(L.s);
-      group.add(lod); onEach?.();
+      group.add(lod);
+      if (L.id === 'topkapi') drape(lod, H, L.y); onEach?.();
     } catch (e) { console.warn('landmark', L.id, e); }
   }
 }
